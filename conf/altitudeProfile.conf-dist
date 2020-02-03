@@ -1,0 +1,18 @@
+<?php
+# 
+# Altitude Profile Plugin Configurations 
+# 
+
+# Define the absolute path to the digital terrain model file
+# which is used to calculate heigth values
+define("ALTITUDE_PROFILE_DTM_IMAGE_FILE", %%ALTITUDE_PROFILE_DTM_IMAGE_FILE%%);
+
+# Define the bounding box
+define("ALTITUDE_PROFILE_BBOX_MINX", %%ALTITUDE_PROFILE_BBOX_MINX%%);
+define("ALTITUDE_PROFILE_BBOX_MAXX", %%ALTITUDE_PROFILE_BBOX_MAXX%%);
+define("ALTITUDE_PROFILE_BBOX_MINY", %%ALTITUDE_PROFILE_BBOX_MINY%%);
+define("ALTITUDE_PROFILE_BBOX_MAXY", %%ALTITUDE_PROFILE_BBOX_MAXY%%);
+
+# Define the path to the dtm.php file
+# Default: http://localhost/mapbender/plugins/dtm.php
+define("ALTITUDE_PROFILE_DTM_PHP_FILE", %%ALTITUDE_PROFILE_DTM_PHP_FILE%%);
