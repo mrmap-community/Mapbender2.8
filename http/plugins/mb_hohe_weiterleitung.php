@@ -20,7 +20,7 @@ if($ajaxResponse->getMethod() != "getheigth") {
 
 $json = new Mapbender_JSON();
 $xyz = $ajaxResponse->getParameter('stringxyz');
-$url = "http://localhost/mapbender/plugins/dgm.php";
+$url = "http://localhost/mapbender/plugins/dtm.php";
 $e = new connector();
 $e->set("httpType","post");
 $e->set("httpPostFieldsNumber",1);
