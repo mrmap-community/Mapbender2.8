@@ -1,0 +1,33 @@
+{
+	"point": {
+		"simple_style_spec_attributes":
+			["title","description","marker-size","marker-symbol","marker-color"],
+		"simple_style_spec_defaults":
+			["dummy title","dummy description","medium","marker","#7e7e7e"],
+		"mapbender_extensions":
+			["marker-type"],
+		"mapbender_extensions_default":
+			[""]
+		},
+	"linestring": {
+		"simple_style_spec_attributes":
+			["title","description","stroke","stroke-opacity","stroke-width"],
+		"simple_style_spec_defaults":
+			["dummy title","dummy description","#555555",1.0,2],
+		"mapbender_extensions":
+			[],
+		"mapbender_extensions_default":
+			[]
+		},
+	"polygon": {
+		"simple_style_spec_attributes":
+			["title","description","stroke","stroke-opacity","stroke-width","fill","fill-opacity"],
+		"simple_style_spec_defaults":
+			["dummy title","dummy description","#555555",1.0,2,"#555557",0.6],
+		"mapbender_extensions":
+			[],
+		"mapbender_extensions_default":
+			[]
+		}
+}
+

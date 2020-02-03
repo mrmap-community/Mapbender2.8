@@ -1,0 +1,478 @@
+<?php
+require_once dirname(__FILE__) . "/../../conf/atomFeedClient.conf";
+//require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
+?>
+
+var mapframe_dataset_list, mapframe_file_list, datasetSelect, file_list, bboxDataset, bboxFiles, formats, sf;
+
+
+function updateFormats() {
+            var in_options = {
+                'internalProjection': mapframe_dataset_list.baseLayer.projection,
+                'externalProjection': new OpenLayers.Projection("EPSG:4326")
+            };   
+            var out_options = {
+                'internalProjection': mapframe_dataset_list.baseLayer.projection,
+                'externalProjection': new OpenLayers.Projection("EPSG:900913")
+            };
+            var gmlOptions = {
+                featureType: "feature",
+                featureNS: "http://example.com/feature"
+            };
+            var gmlOptionsIn = OpenLayers.Util.extend(
+                OpenLayers.Util.extend({}, gmlOptions),
+                in_options
+            );
+            var gmlOptionsOut = OpenLayers.Util.extend(
+                OpenLayers.Util.extend({}, gmlOptions),
+                out_options
+            );
+            var kmlOptionsIn = OpenLayers.Util.extend(
+                {extractStyles: true}, in_options);
+            formats = {
+              'in': {
+                wkt: new OpenLayers.Format.WKT(in_options),
+                geojson: new OpenLayers.Format.GeoJSON(in_options),
+                georss: new OpenLayers.Format.GeoRSS(in_options),
+                gml2: new OpenLayers.Format.GML.v2(gmlOptionsIn),
+                gml3: new OpenLayers.Format.GML.v3(gmlOptionsIn),
+                kml: new OpenLayers.Format.KML(kmlOptionsIn),
+                atom: new OpenLayers.Format.Atom(in_options),
+                gpx: new OpenLayers.Format.GPX(in_options)
+              }, 
+              'out': {
+                wkt: new OpenLayers.Format.WKT(out_options),
+                geojson: new OpenLayers.Format.GeoJSON(out_options),
+                georss: new OpenLayers.Format.GeoRSS(out_options),
+                gml2: new OpenLayers.Format.GML.v2(gmlOptionsOut),
+                gml3: new OpenLayers.Format.GML.v3(gmlOptionsOut),
+                kml: new OpenLayers.Format.KML(out_options),
+                atom: new OpenLayers.Format.Atom(out_options),
+                gpx: new OpenLayers.Format.GPX(out_options)
+              } 
+	};
+}
+
+function init(){
+	//generate 2 Mapframes	
+	//add active class to dataset info before showing map, afterwords remove it!
+	$('#dataset_info').toggleClass('active');
+	mapframe_dataset_list = new OpenLayers.Map('mapframe_dataset_list');
+	$('#dataset_info').toggleClass('active');
+	$('#representations').toggleClass('active');
+	mapframe_file_list = new OpenLayers.Map('mapframe_file_list');
+	$('#representations').toggleClass('active');
+	<?php echo "\n".$backgroundLayer_1."\n"?>
+	<?php echo "\n".$backgroundLayer_2."\n"?>
+	//var wms_osm = new OpenLayers.Layer.WMS( "OpenLayers WMS",
+        //        "http://osm.omniscale.net/proxy/service?", {layers: 'osm'}, {singleTile: true});
+	//var wms_osm = new OpenLayers.Layer.WMS( "OpenLayers WMS",
+        //        "http://osm.omniscale.net/proxy/service?", {layers: 'osm'}, {singleTile: true});
+	<?php echo "\n".$backgroundLayer_3."\n"?>
+	<?php echo "\n".$backgroundLayer_4."\n"?>
+	//Vector layer for the georss polygons of the service feed - maybe more than one 
+	bboxDataset = new OpenLayers.Layer.Vector("Dataset bounding boxes");
+	//Vector layer for the georss polygons of one single data feed entry - maybe more than one if the dataset is tiled into different sections 
+	bboxFiles = new OpenLayers.Layer.Vector("File bounding boxes");
+	mapframe_dataset_list.addLayers([<?php echo $addBackgroundLayerUpper; ?>]);
+	mapframe_dataset_list.addLayers([bboxDataset]);
+	mapframe_dataset_list.addControl(new OpenLayers.Control.MousePosition());
+	mapframe_dataset_list.addControl(new OpenLayers.Control.PanPanel());
+	mapframe_file_list.addLayers([<?php echo $addBackgroundLayerLower; ?>]);
+	mapframe_file_list.addLayers([bboxFiles]);
+	mapframe_file_list.addControl(new OpenLayers.Control.MousePosition());
+	mapframe_file_list.addControl(new OpenLayers.Control.PanPanel());
+	updateFormats();
+	//initialize mapframes
+	mapframe_dataset_list.setCenter(new OpenLayers.LonLat(<?php echo $olCentreLon; ?>, <?php echo $olCentreLat; ?>), <?php echo $olScale; ?>);
+	mapframe_file_list.setCenter(new OpenLayers.LonLat(<?php echo $olCentreLon; ?>, <?php echo $olCentreLat; ?>), <?php echo $olScale; ?>);
+	resetForm();
+	//start parsing when no empty string was found in input for url
+	if ($('#download_feed_url').val() != "") {
+		resetForm();
+		method =  "getServiceFeedObjectFromUrl";
+        	data = $("#download_feed_url").val();
+		//call server by ajax function
+		callServer(data,method);
+	}
+	//initialize button for load service feed - the first feed will be parsed.
+	$(document).ready(function(e) {
+    		$('#download_feed_button').click(function() {
+			resetForm();
+			method =  "getServiceFeedObjectFromUrl";
+        		data = $("#download_feed_url").val();
+			//call server by ajax function
+			callServer(data,method);
+    		});
+		$('.example_service_feed').click(function() {
+			//alert('click');
+			resetForm();
+			method =  "getServiceFeedObjectFromUrl";
+        		data = $( this ).attr('value');
+			//call server by ajax function
+			callServer(data,method);
+    		});
+		$('#stop_parsing').click(function () {
+  			alert("test");
+		});
+	});
+	//don't show elements of dataset feed
+	//
+}
+
+//central function to call server by ajax, result is a featureCollection which is generated by mapbenders server component
+function callServer(data,method,id) {
+	if (id === undefined) id = 0;
+	//alert("ajax call begin");
+	if (method == "getServiceFeedObjectFromUrl") {
+		//$("#parse_service_feed_modal").toggle();
+		$("#loading_image_service").css("display","block");
+	}
+	if (method == "getDatasetFeedObjectFromUrl") {
+		//$("#parse_dataset_feed_modal").toggle();
+		$("#loading_image_dataset").css("display","block");
+	}
+	$.ajax({
+  		url: '../plugins/mb_downloadFeedServer.php',
+  		type: "post",
+		async: false, //cause reading the first feed may take longer than the second
+		data: {url: data, method: method , id: id},
+       		dataType: "json",
+  		success: function(result) {
+			if (method == "getServiceFeedObjectFromUrl") {
+				//hide modal
+				//$("#parse_dataset_feed_modal").toggle();
+				$("#loading_image_service").css("display","none");
+				//select tab
+				$('#mytabs a[href="#dataset_info"]').tab('show');
+				//draw georss polygons from service feed 
+				drawMetadataPolygons(result);
+				//show datasets in a dropdown list
+				showDatasetList(result);
+			}
+			if (method == "getDatasetFeedObjectFromUrl") {
+				//function to draw bboxes of single link to data tile and the corresponding list of tiles 
+				//alert("ajax datasetfeed read!");	
+				//hide modal
+				//$("#parse_service_feed_modal").toggle();
+				$("#loading_image_dataset").css("display","none");
+				//select tab
+				//$('#mytabs a[href="#representations"]').tab('show');
+				showDatasetEntryList(result, id);
+				
+			}
+			
+ 		}
+	});
+	return false;
+}
+
+function resetForm() {
+	//reset form
+	//don't show elements of dataset feed
+	$("#representation_select").css("display","none");
+	$("#representation_info").css("display","none");
+	$("#dataset_information").css("display","none");
+	$("#capabilities_hybrid").css("display","none");
+	$("#label_capabilities_hybrid").css("display","none");
+	$("#label_dataset_select").css("display","none");
+	//change size of outer fieldset
+	$("#client").css("height","450px");
+	$("#download_link_list").remove();
+	$("#download_link").remove();
+	//$('#dataset_select').remove();
+	$("#tab_header_number_datasets").text("");
+	$("#tab_header_number_representations").text("");
+	$("#number_of_tiles").text("");
+	$('.selectpicker').selectpicker('destroy');
+	//$('.dropdown-toggle').dropdown()
+
+}
+
+function showDatasetList(featureCollection,id) {
+	resetForm();
+	if (id === undefined) id = 0;
+	if (featureCollection == null) {
+		alert("No parseable content found");
+		return false;
+	}
+	//remove old dataset select option
+	$('#dataset_select').remove();
+	//delete identifier anchor
+	$('#dataset_identifier_link').remove();
+	//delete capabilities anchor
+	$('#capabilities_link').remove();
+	//delete old entries
+	var datasetSelect =  $(document.createElement('select')).appendTo('#dataset_list');
+	datasetSelect.attr({'id':'dataset_select'});
+	var selectOptions = "";
+	//iterate over all single features which can be identified with the entries of the inspire service feed 
+	for(var i=0; i<featureCollection.features.length; ++i) {
+		//fill in first title, rights and abstract in fields
+		if (i == id) {
+			$('#dataset_title').empty();
+			$('#dataset_title').append(featureCollection.features[i].properties.title);
+			$('#dataset_rights').empty();
+			$('#dataset_rights').append(featureCollection.features[i].properties.rights);
+			$('#dataset_abstract').empty();
+			$('#dataset_abstract').append(featureCollection.features[i].properties.summary);
+			//add capabilities anchor
+			identifierAnchor =  $(document.createElement('a')).appendTo('#capabilities_hybrid');
+			identifierAnchor.attr({'id':'capabilities_link'});
+			identifierAnchor.attr({'target':'_blank'});
+			identifierAnchor.attr({'href':featureCollection.features[i].properties.capabilitiesLink});
+			identifierAnchor.text(featureCollection.features[i].properties.capabilitiesLink);
+			//show hybrid link only if it is there
+			if (typeof featureCollection.features[i].properties.capabilitiesLink !== 'undefined' && featureCollection.features[i].properties.capabilitiesLink !== '' && featureCollection.features[i].properties.capabilitiesLink !== null) {	
+				$("#capabilities_hybrid").css("display","block");
+				$("#label_capabilities_hybrid").css("display","block");
+			}
+			//add identifier anchor
+			identifierAnchor =  $(document.createElement('a')).appendTo('#dataset_identifier');
+			identifierAnchor.attr({'id':'dataset_identifier_link'});
+			identifierAnchor.attr({'uuid':featureCollection.features[i].properties.code});
+			identifierAnchor.attr({'href':'../php/mod_iso19139ToHtml.php?url='+encodeURIComponent(featureCollection.features[i].properties.metadataLink)});
+			identifierAnchor.attr({'target':'_blank'});
+			identifierAnchor.text(featureCollection.features[i].properties.namespace+"#"+featureCollection.features[i].properties.code);
+		}
+		selectOptions = selectOptions+"<option value='"+featureCollection.features[i].properties.datasetFeedLink+"' url='"+featureCollection.features[i].properties.datasetFeedLink+"' optionid='"+i+"'>"+featureCollection.features[i].properties.title+"</option>";
+	
+	}
+	//add number of datasets to tab header
+	$("#tab_header_number_datasets").text(" "+"("+featureCollection.features.length+")");
+	datasetSelect.append(selectOptions);
+	//following has to be enabled for boootstrap selectboxes
+	datasetSelect.addClass('selectpicker');
+	datasetSelect.attr({'data-style':'btn-primary'});
+	datasetSelect.attr({'data-width':'100%'});
+	datasetSelect.attr({'data-live-search':'true'});
+	$("#dataset_information").css("display","block");
+	$("#label_dataset_select").css("display","block");
+	//preselect option
+	$("#dataset_select option[optionid='" + id + "']").attr("selected","selected");
+	$('#dataset_select').bind('change', function() {
+		var $this = $(this);
+		optionSelected = $(this).find('option:selected').attr('optionid');
+		//alert(optionSelected);	
+		showDatasetList(featureCollection,optionSelected);
+		//zoom viewer to extent and highlight vector of current extent
+		drawMetadataPolygon(featureCollection.features[optionSelected]);
+		method =  "getDatasetFeedObjectFromUrl";
+        	data = $this.val();
+		//resetForm();
+		callServer(data,method);
+		
+	});
+	method =  "getDatasetFeedObjectFromUrl";
+	//call second feed with first entry for default
+        data = featureCollection.features[0].properties.datasetFeedLink;
+	$('.selectpicker').selectpicker('refresh');
+	datasetFeedObject = callServer(data,method);	
+}
+
+function showDatasetEntryList(featureCollection, id) {
+	if (id === undefined) id = 0;
+	if (featureCollection == null) {
+		alert("No parseable content found");
+		return false;
+	}
+	//remove old select element for the different possible representations (formats, crs, ...)
+	$('#dataset_representation_list').empty();
+	//generate new select element 
+	var datasetEntrySelect =  $(document.createElement('select')).appendTo('#dataset_representation_list');
+	datasetEntrySelect.attr({'id':'dataset_representation_select'});
+	//initialize options
+	var selectROptions = "";
+	//iterate over all possible representations, which are modeled as entries in the dataset feed (here features of the featureCollection)
+	for(var i=0; i<featureCollection.features.length; ++i) {
+		selectROptions = selectROptions+"<option value='"+i+"' url='"+featureCollection.features[i].properties.datasetFeedLink+"'>"+featureCollection.features[i].properties.title+"</option>";
+	}
+	$("#tab_header_number_representations").text(" "+"("+featureCollection.features.length+")");
+	datasetEntrySelect.append(selectROptions);
+	//following has to be enabled for boootstrap selectboxes
+	datasetEntrySelect.addClass('selectpicker');
+	datasetEntrySelect.attr({'data-style':'btn-primary'});
+	datasetEntrySelect.attr({'data-width':'100%'});
+	datasetEntrySelect.selectpicker('refresh');
+	fillSectionList(featureCollection, id);
+	$('#dataset_representation_select').bind('change', function() {
+    		var $this = $(this);
+		fillSectionList(featureCollection,$this.val());
+	});
+}
+
+function fillSectionList(featureCollection, k) {
+		bboxFiles.removeAllFeatures();
+		$('#section_option').remove();
+		//initialize option string
+		var selectFOptions = "";
+		//count number of links in representation
+		var numberOfLinks = featureCollection.features[k].properties.link.length;
+		if (numberOfLinks >= 1 || numberOfLinks === undefined) {
+			//show list 
+			$("#representation_select").css("display","block");
+			//deactivate mapframe2 by default
+			$("#mapframe_file_list").css("display","none");
+			//$("#multi_select").css("display","none");
+			$("#representation_info").css("display","block");
+			//extent size of outer fieldset
+			$("#client").css("height","730px");
+		} else {
+			alert("No links to datasets or parts of them found in feed!");
+		}
+		$("#download_link_list").remove();
+		downloadLinkList = $(document.createElement('ul')).appendTo('#section_list');
+		downloadLinkList.attr({'id':'download_link_list'});
+                for (var i = 0; i < numberOfLinks; i++) {
+			if (featureCollection.features[k].properties.link[i]['@attributes'].bbox == '' || featureCollection.features[k].properties.link[i]['@attributes'].bbox === undefined) {
+				//show simple link foreach part
+				//$("#download_link").remove();
+				//show Downloadlink
+				if (featureCollection.features[k].properties.link[i]['@attributes'].length == '' || featureCollection.features[k].properties.link[i]['@attributes'].length === undefined) {
+					downloadLink = "<li><a target='_blank' value='download_link_"+i+"' href='"+featureCollection.features[k].properties.link[i]['@attributes'].href+"' title='"+featureCollection.features[k].properties.link[i]['@attributes'].title+"'>"+featureCollection.features[k].properties.link[i]['@attributes'].title+"</li>";
+				} else {
+					downloadLink = "<li><a target='_blank' value='download_link_"+i+"' href='"+featureCollection.features[k].properties.link[i]['@attributes'].href+"' title='"+featureCollection.features[k].properties.link[i]['@attributes'].title+"'>"+featureCollection.features[k].properties.link[i]['@attributes'].title+" - (~"+featureCollection.features[k].properties.link[i]['@attributes'].length / 1000000 +" MB)"+"</li>";
+				}
+				//append link
+				$('#download_link_list').append(downloadLink);
+				//selectFOptions = selectFOptions+"<option value='"+i+"' url='"+featureCollection.features[k].properties.link[i]['@attributes'].href+"' title='"+featureCollection.features[k].properties.link[i]['@attributes'].title+"'  onclick='window.open(\""+featureCollection.features[k].properties.link[i]['@attributes'].href+"\");'>"+featureCollection.features[k].properties.link[i]['@attributes'].title+"</option>";
+			} else {
+                		ext = featureCollection.features[k].properties.link[i]['@attributes'].bbox;
+				extArrayNew = new Array();
+				extArray = ext.split(" ");
+				//sort array to lat lon
+				extArrayNew[0] = extArray[1];
+				extArrayNew[1] = extArray[0];
+				extArrayNew[2] = extArray[3];
+				extArrayNew[3] = extArray[2];
+                		bound = OpenLayers.Bounds.fromArray(extArrayNew);
+				attributes = {id: i, url:featureCollection.features[k].properties.link[i]['@attributes'].href, title: featureCollection.features[k].properties.link[i]['@attributes'].title};
+                		box = new OpenLayers.Feature.Vector(bound.toGeometry(),attributes);
+                		bboxFiles.addFeatures(box);
+				//selectFOptions = selectFOptions+"<option value='"+i+"' url='"+featureCollection.features[k].properties.link[i]['@attributes'].href+"' title='"+featureCollection.features[k].properties.link[i]['@attributes'].title+"' onclick='highlightFeatureIndexById("+i+",true);' onmouseover='highlightFeatureIndexById("+i+",false);'>"+featureCollection.features[k].properties.link[i]['@attributes'].title+"</option>";
+			}
+				
+               	}
+		//set number of links:
+		$("#number_of_tiles").text(" "+"("+numberOfLinks+"<?php echo " tile(s)"?>"+")");
+
+		//count features of bboxFiles
+		//bboxFiles if not available show error message
+		//selectFObject = $(document.createElement('select')).appendTo('#section_list');
+		//selectFObject.attr({'id':'section_option'});
+		//selectFObject.attr({'multiple':'multiple'});
+		//add options 
+		//selectFOptionsObject = $('#section_option').append(selectFOptions);
+		//selectFOptionsObject.attr({'width': 300});
+		//alert(bboxFiles.features.length);
+		if (bboxFiles.features.length >= 1) {//TODO
+			//show mapframe
+			$("#mapframe_file_list").css("display","block");
+			//extent size of outer fieldset
+			$("#client").css("height","900px");
+			bound = bboxFiles.getDataExtent();
+			//Add wms layer from mb_metadata table (bounding_geom column)
+			<?php echo "\n".$metadataPolygonLayer."\n"?>
+			mapframe_file_list.addLayers([wms222]);
+			//Add polygon layer from mb_metadata tables bounding_geom column
+			mapframe_file_list.zoomToExtent(bound);
+			//set number of tiles
+			bboxFiles.features.length
+			bboxFiles.events.on({
+   				featureselected: function(event) {
+        				var feature = event.feature;
+        				var id = feature.attributes.id;
+					var url = feature.attributes.url;
+					$("#download_link").remove();
+					//show Downloadlink
+					downloadLink = $(document.createElement('a')).appendTo('#section_list');
+					downloadLink.attr({'href':url});
+					downloadLink.attr({'target':'_blank'});
+					downloadLink.attr({'id':'download_link'});
+					if (feature.attributes.length == '' || feature.attributes.length === undefined) {
+						downloadLink.text(feature.attributes.title);
+					} else {
+						downloadLink.text(feature.attributes.title+" - (~"+feature.attributes.length / 1000000+" MB)");
+					}
+					//$('#section_option option').removeAttr('selected')
+					//$("#section_option option[value='"+id+"']").attr('selected',true);
+					//window.open(url,'download_window');
+
+					/*if ($('#multi_select').is(':checked')) {
+						alert("checked");
+					} else {
+						alert("un-checked");
+					}
+					alert(url);*/				
+    				}
+			});
+		
+                	sf = new OpenLayers.Control.SelectFeature(bboxFiles);
+                	mapframe_file_list.addControl(sf);
+                	sf.activate();
+		}
+}
+
+function drawMetadataPolygons(featureCollection) {
+	 var type = "geojson";
+         var features = formats['in'][type].read(featureCollection);
+         var bounds;
+         if(features) {
+             if(features.constructor != Array) {
+                 features = [features];
+             }
+             for(var i=0; i<features.length; ++i) {
+                 if (!bounds) {
+                     bounds = features[i].geometry.getBounds();
+                 } else {
+                     bounds.extend(features[i].geometry.getBounds());
+                 }
+             }
+	     //delete old features:
+	     bboxDataset.removeAllFeatures();
+             bboxDataset.addFeatures(features);
+             mapframe_dataset_list.zoomToExtent(bounds);
+	}
+}
+
+function drawMetadataPolygon(feature) {
+	 var type = "geojson";
+         var features = formats['in'][type].read(feature);
+         var bounds;
+         if(features) {
+             if(features.constructor != Array) {
+                 features = [features];
+             }
+             for(var i=0; i<features.length; ++i) {
+                 if (!bounds) {
+                     bounds = features[i].geometry.getBounds();
+                 } else {
+                     bounds.extend(features[i].geometry.getBounds());
+                 }
+             }
+	     //delete old features:
+	     bboxDataset.removeAllFeatures();
+             bboxDataset.addFeatures(features);
+             mapframe_dataset_list.zoomToExtent(bounds);
+	}
+}
+
+function highlightFeatureIndexById(id, open) {
+	features = bboxFiles.features;
+	for(var i=0; i<features.length; ++i) {
+		if(features[i].attributes.id == id) {
+			index = i;
+			break;
+		}
+	}
+	//unselect all if one is selected 
+	sf.unselectAll();
+	sf.select(bboxFiles.features[index]);
+	if (open) {
+		window.open(bboxFiles.features[index].attributes.url,'download_window');
+	}
+}
+
+
+
+		

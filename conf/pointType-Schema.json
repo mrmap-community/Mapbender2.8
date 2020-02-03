@@ -1,0 +1,259 @@
+// {
+//     "Point": {
+//         "created": {
+//             "category": "Fix-Data",
+//             "value": ""
+//         },
+//         "description": {
+//             "category": "Editable-Data",
+//             "value": "description"
+//         },
+//         "iconOffsetX": {
+//             "category": "Style-Data",
+//             "value": -10
+//         },
+//         "iconOffsetY": {
+//             "category": "Style-Data",
+//             "value": -10
+//         },
+//         "marker-color": {
+//             "category": "Style-Data",
+//             "value": "#7e7e7e"
+//         },
+//         "marker-size": {
+//             "category": "Style-Data",
+//             "value": 34
+//         },
+//         "marker-symbol": {
+//             "category": "Style-Data",
+//             "value": "marker"
+//         },
+//         "name": {
+//             "category": "Editable-Data",
+//             "value": "name"
+//         },
+//         "title": {
+//             "category": "Editable-Data",
+//             "value": "title"
+//         },
+//         "updated": {
+//             "category": "Fix-Data",
+//             "value": ""
+//         },
+//         "uuid": {
+//             "category": "Fix-Data",
+//             "value": -10
+//         }
+//     }
+// }
+
+
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "properties": {
+    "Point": {
+      "id": "Point",
+      "type": "object",
+      "properties": {
+        "created": {
+          "id": "created",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Fix-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": ""
+            }
+          },
+          "required": [
+            "category",
+            "value"
+          ]
+        },
+        "description": {
+          "id": "description",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Editable-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": "description"
+            }
+          }
+        },
+        "iconOffsetX": {
+          "id": "iconOffsetX",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Style-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "integer",
+              "default": -10
+            }
+          }
+        },
+        "iconOffsetY": {
+          "id": "iconOffsetY",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Style-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "integer",
+              "default": -10
+            }
+          }
+        },
+        "marker-color": {
+          "id": "marker-color",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Style-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": "#7e7e7e"
+            }
+          }
+        },
+        "marker-size": {
+          "id": "marker-size",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Style-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "integer",
+              "default": 34
+            }
+          }
+        },
+        "marker-symbol": {
+          "id": "marker-symbol",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Style-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": "marker"
+            }
+          }
+        },
+        "name": {
+          "id": "name",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Editable-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": "name"
+            }
+          }
+        },
+        "title": {
+          "id": "title",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Editable-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": "title"
+            }
+          }
+        },
+        "updated": {
+          "id": "updated",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Fix-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "string",
+              "default": ""
+            }
+          }
+        },
+        "uuid": {
+          "id": "uuid",
+          "type": "object",
+          "properties": {
+            "category": {
+              "id": "category",
+              "type": "string",
+              "default": "Fix-Data"
+            },
+            "value": {
+              "id": "value",
+              "type": "integer",
+              "default": -10
+            }
+          }
+        }
+      },
+      "required": [
+        "created",
+        "description",
+        "iconOffsetX",
+        "iconOffsetY",
+        "marker-color",
+        "marker-size",
+        "marker-symbol",
+        "name",
+        "title",
+        "updated",
+        "uuid"
+      ]
+    }
+  },
+  "required": [
+    "Point"
+  ]
+}

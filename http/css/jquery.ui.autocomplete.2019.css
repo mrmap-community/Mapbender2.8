@@ -1,0 +1,138 @@
+/*
+ * jQuery UI Autocomplete 1.8.16
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Autocomplete#theming
+ */
+.ui-autocomplete { position: absolute; cursor: default; }	
+
+/* workarounds */
+* html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */
+
+/*
+ * jQuery UI Menu 1.8.16
+ *
+ * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Menu#theming
+ */
+
+	/*SUCHSCHLITZ ANPASSEN*/
+
+@media (max-width:508px){
+#symboldForInputId{
+text-indent:-9999px}
+}
+
+
+#symbolForInputCloseId {
+	display:none;
+	margin-top: 16px;
+	padding-right:15px;	
+}
+#symbolForClearInputId {
+	display:none;
+	padding-right:22px;
+	padding-bottom:1px;
+}
+
+
+#geographicName {display:none;}
+#geographicName {
+	float:left;
+	height: 37px;
+	padding: 0px 31px 0px 10px;
+	font-family: Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
+	font-size:15px;
+	letter-spacing:1px;
+	background-color:whitesmoke;
+	overflow: auto;
+	border: 1px solid #aaa;
+	border-radius: 0;
+	margin-right: -34px;
+	margin-top: 6px;
+	max-width: calc(100vw - 60px);
+	}
+#geographicName:focus {
+	border: 1px solid #d62029;
+}
+
+	/*Have to be edited in mod_jsonAutocompleteGazetteer_light.php*/
+  
+#symboldForInputId {
+    font-family: Helvetica,Roboto,Arial,sans-serif;
+    color: #777;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-left: 2px solid #DDD;
+    padding: 0px 15px 0px 35px;
+    line-height: 51px;
+    display:inline-block;
+    text-decoration: none;
+    background-image: url(../img/geoportal2019/search.svg);
+    background-repeat: no-repeat;
+    background-position: left+15px center;
+	cursor:pointer;
+}
+
+#symboldForInputId:hover {
+    background-image: url(../img/geoportal2019/search_over.svg);
+    color:#333;
+    background-color: #EEE;
+}
+
+.ui-menu {
+	list-style:none;
+	padding: 2px;
+	margin: 0;
+	display:block;
+	float: left;
+	box-shadow: 0 5px 10px -2px rgb(201, 202, 202); /*neu*/
+}
+.ui-menu .ui-menu {
+	margin-top: 0.6em;       /*angepasst - vorher -3px*/
+}
+.ui-menu .ui-menu-item {
+	margin:0;
+	padding: 0;
+	zoom: 1;
+	float: left;
+	clear: left;
+	width: 100%;
+}
+.ui-menu .ui-menu-item a {
+	text-decoration:none;
+	display:block;
+	padding:.2em .4em;
+	line-height:2.0;        /*angepasst - vorher 1.5*/
+	zoom:1;
+	font-family: Verdana,Arial,sans-serif;       /*neu*/
+	font-size: 12px;       /*neu*/
+	border-bottom: solid 1px #efefef;       /*neu*/
+}
+.ui-menu .ui-menu-item a.ui-state-hover,
+.ui-menu .ui-menu-item a.ui-state-active {
+	font-weight: normal;
+	margin: 0px;       /*angepasst - vorher -1px*/
+	font-family: Verdana,Arial,sans-serif;       /*neu*/
+	font-size: 12px;       /*neu*/
+	background-color: #efefef;       /*neu*/
+	background-image: none;       /*neu*/
+	border-top:none;       /*neu*/
+	border-left:none;       /*neu*/
+	border-right:none;	       /*neu*/
+	border-bottom: solid 1px #efefef;       /*neu*/
+	padding:.2em .4em;       /*neu*/
+}
+
+body ul.ui-autocomplete{
+	max-height: calc(-50px + 100vh);
+	max-width: calc(100vw - 66px);
+	overflow-y: auto;
+	overflow-x: hidden;
+	}

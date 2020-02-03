@@ -1,0 +1,5 @@
+<?php
+//********************************************************************
+//configuration for mapbender mobilemap2
+$backgroundWms = array(913,914,915);
+?>

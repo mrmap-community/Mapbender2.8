@@ -1,0 +1,469 @@
+
+	<div id="netgis-client" style="position: relative; overflow: hidden; width: 100%; height: 100%;">
+		
+		<!--
+		NetGIS WebGIS Client
+		(c) Sebastian Pauli, NetGIS, 2017-2019
+		-->
+	
+		<!-- Custom Styles -->
+		<link rel="stylesheet" type="text/css" href="./styles/common.css" />
+		<link rel="stylesheet" type="text/css" href="./styles/layout.css" />
+		<link rel="stylesheet" type="text/css" href="./styles/map.css" />
+		<link rel="stylesheet" type="text/css" href="./styles/popup.css" />
+		<link rel="stylesheet" type="text/css" href="./styles/menu.css" />
+		<link rel="stylesheet" type="text/css" href="./styles/manager.css" />
+		<link rel="stylesheet" type="text/css" href="./styles/sidemenu.css" />
+		
+		<!-- App Loader -->
+		<div id="client-loader" style="position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; background: white; z-index: 2000;">
+			<div style="position: absolute; left: 0px; right: 0px; top: 40%; font-size: 50px; text-align: center;">
+				<span class="text-primary glyphicon glyphicon-cog spinner"></span>
+			</div>
+		</div>
+		
+		<!-- Navbar -->
+		<nav id="navbar-container" class="navbar navbar-inverse navbar-fixed-top shadow-lg" style="position: relative;"><!-- navbar-fixed-top navbar-embedded -->
+			<div class="container-fluid">
+				
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<!--<span class="glyphicon glyphicon-menu-hamburger"></span>-->
+					</button>
+					<a id="menu-title" class="navbar-brand" href=".">GeoPortal.RLP</a>
+				</div>
+				
+				<div class="collapse navbar-collapse" id="navbar">
+					<ul class="nav navbar-nav">
+						
+						<!-- Layers -->
+						<li id="layer-menu-container" class="dropdown">
+							
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="icon-left glyphicon glyphicon-th-list"></span>Ebenen <span class="caret"></span></a>
+							<ul class="dropdown-menu layer-list" id="layer-menu">
+								<li><a href="#" data-toggle="modal" data-target="#layer-dialog"><span class="icon-left glyphicon glyphicon-cog"></span>Verwalten / Suchen</a></li>
+								<li class="divider hidden-xs"></li>
+							</ul>
+							
+						</li>
+						
+						<!-- Tools -->
+						<li id="tool-menu-container" class="dropdown">
+							
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="icon-left glyphicon glyphicon-th-large"></span>Tools <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="#" class="tool-pan"><span class="icon-left glyphicon glyphicon-move"></span>Ansicht bewegen</a></li>
+								<li><a href="#" class="tool-zoom-box-in"><span class="icon-left glyphicon glyphicon-zoom-in"></span>Hineinzoomen (Rechteck)</a></li>
+								<li><a href="#" class="tool-zoom-box-out"><span class="icon-left glyphicon glyphicon-zoom-out"></span>Herauszoomen (Rechteck)</a></li>
+								<li><a href="#" class="tool-view-undo"><span class="icon-left glyphicon glyphicon-step-backward"></span>Vorherige Ansicht</a></li>
+								<li><a href="#" class="tool-view-redo"><span class="icon-left glyphicon glyphicon-step-forward"></span>Nächste Ansicht</a></li>
+								<li><a href="#" class="tool-feature-info"><span class="icon-left glyphicon glyphicon-info-sign"></span>Objekt-Abfrage</a></li>
+								<li><a href="#" class="tool-measure-length"><span class="icon-left glyphicon glyphicon-resize-full"></span>Strecke messen</a></li>
+								<li><a href="#" class="tool-measure-area"><span class="icon-left glyphicon glyphicon-edit"></span>Fläche messen</a></li>
+							</ul>
+							
+						</li>
+						
+						<!-- Geolocation -->
+						<li id="geolocation-menu-container" class="dropdown">
+							
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="icon-left glyphicon glyphicon-record"></span>Position <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="#" class="btn-position-active"><span class="icon-left glyphicon glyphicon-unchecked"></span>Aktiviert</a></li>
+								<li><a href="#" class="btn-position-center"><span class="icon-left glyphicon glyphicon-unchecked"></span>Auto.-Zentrieren</a></li>
+								<li><a href="#" class="btn-position-zoom"><span class="icon-left glyphicon glyphicon-record"></span>Position zentrieren</a></li>
+							</ul>
+							
+						</li>
+						
+						<!-- Scale -->
+						<li id="scale-menu-container" class="dropdown">
+							
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="icon-left glyphicon glyphicon-cog"></span>Ma&szlig;stab <span class="caret"></span></a>
+							<ul class="dropdown-menu" id="scale-menu">
+								<li id="scale-custom" data-scale=""><a href="#"><span class="icon-left glyphicon glyphicon-check"></span>1 : <span class="scale-value">XXXX</span></a></li>
+								<li id="scale-divider" class="divider hidden-xs"></li>
+							</ul>
+							
+						</li>
+						
+						<!-- Info -->
+						<li id="info-menu-container" class="dropdown">
+							
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="icon-left glyphicon glyphicon-info-sign"></span>Info <span class="caret"></span></a>
+							<ul class="dropdown-menu" id="info-menu">
+								<li><a id="usage-terms-link" href="#" target="_blank"><span class="icon-left glyphicon glyphicon-share"></span>Nutzungsbedingungen</a></li>
+							</ul>
+							
+						</li>
+						
+					</ul>
+					<div id="search-bar-container" class="nav navbar-form navbar-right">
+						
+						<!-- Search Bar -->
+						<div class="input-group">
+							<span id="search-button" class="input-group-addon clickable" data-toggle="collapse" data-target="#search-panel">
+								<i class="glyphicon glyphicon-search"></i>
+								<i class="glyphicon glyphicon-refresh spinner hidden"></i>
+							</span>
+							<input id="search-input" type="text" class="form-control" placeholder="Ortssuche..." autocomplete="off" value="" />
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</nav>
+		
+		<!-- Content -->
+		<div class="container-fluid container-full">
+			
+			<div class="row row-full">
+				
+				<!-- Viewport -->
+				<div class="col-md-12 col-lg-12 col-full no-padding">
+					
+					<!-- Map Container -->
+					<div id="map-container"></div>
+					
+					<div id="position-overlay" class="clickable" title="Ihre Position"><span class="glyphicon glyphicon-record"></span></div>
+					
+					<div id="zoom-bar-container" class="btn-group-vertical map-control-right index-top shadow-md">
+						<button type="button" class="btn btn-primary tool-view-full" title="Volle Ausdehnung zoomen"><img src="./images/icon_rlp.png" height="20"></button>
+						<button type="button" class="btn btn-primary tool-zoom-in" title="Hineinzoomen"><span class="glyphicon glyphicon-plus"></span></button>
+						<button type="button" class="btn btn-primary tool-zoom-out" title="Herauszoomen"><span class="glyphicon glyphicon-minus"></span></button>
+					</div>
+					
+					<div class="btn-group-vertical map-control-left index-top shadow-md">
+						<button id="feature-info-button" type="button" class="btn btn-primary tool-feature-info" title="Abfragen"><span class="glyphicon glyphicon-info-sign"></span></button>
+						<button id="legend-button" type="button" class="btn btn-primary tool-legend" title="Legende" data-toggle="modal" data-target="#legend-dialog"><span class="glyphicon glyphicon-option-vertical"></span></button>
+					</div>
+					
+					<div id="measure-container" class="measure-overlay">
+						<span id="measure-content"></span>
+						<span id="measure-close" class="glyphicon glyphicon-remove clickable" style="margin-left: 0.25em"></span>
+					</div>
+					
+					<div id="result-overlay">
+						<span class="glyphicon glyphicon-record"></span>
+					</div>
+					
+					<div id="watermark-container" class="index-top small">
+						<a href="http://www.geoportal.rlp.de/portal/servicebereich/impressum.html" target="_blank">&copy; GDI-RP</a>
+					</div>
+					
+					<div id="popup-container" class="ol-popup">
+						<div id="popup-closer" class="ol-popup-closer text-primary"></div>
+						<div id="popup-content">
+							<br/>
+							<button class="btn btn-primary btn-block" onclick="netgis.menu.toggleSideMenu( true );">
+								<span class="glyphicon glyphicon-info-sign"></span>
+							</button>
+						</div>
+					</div>
+					
+				</div>
+				
+				<!-- Search Output -->
+				<div class="col-xs-12 collapse no-padding shadow-lg" id="search-panel">
+					<div class="list-group" id="search-list">
+						<a class="list-group-item" data-toggle="collapse" href="#search-panel">
+							<span class="glyphicon glyphicon-search icon-left"></span>
+							<strong>Suchergebnisse:</strong>
+							<span class="glyphicon glyphicon-remove pull-right"></span>
+							<div id="search-message">
+								<div class="alert alert-info">
+									<strong>Ihre Ortsuche ergab keine Treffer. Tipp: Trennen Sie mehrere Suchbegriffe mit einem Komma!</strong><br/>
+									Beispiel: <i>&#8222;Von-Kuhl-Stra&szlig;e 49, Koblenz&#8220;</i>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		
+		<!-- Side Menu -->
+		<div class="" id="side-menu">
+			<button type="button" class="btn btn-default btn-block" style="width: 100%; height: 50px" onclick="netgis.menu.toggleSideMenu( false );">
+				<span class="glyphicon glyphicon-chevron-left"></span>
+			</button>
+			<div class="container-fluid" id="side-menu-content">
+			</div>
+		</div>
+		
+		<!-- Layer Manager -->
+		<div class="modal fade" id="layer-dialog" style="/*overflow-y: scroll*/">
+			<div class="modal-dialog">
+				
+				<div class="panel panel-primary">
+					
+					<div class="panel-heading clickable" data-toggle="modal" data-target="#layer-dialog">
+						<h4 class="panel-title">Ebenen verwalten<span class="pull-right glyphicon glyphicon-remove"></span></h4>
+					</div>
+					
+					<div class="panel-body">
+						
+						<!-- Layer Search -->
+						<div class="form-group">
+							<div class="input-group">
+								<span id="layer-search-button" class="input-group-addon clickable">
+									<i class="glyphicon glyphicon-search"></i>
+									<i class="glyphicon glyphicon-refresh spinner hidden"></i>
+								</span>
+								<input id="layer-search-input" type="text" class="form-control" placeholder="Datensuche..." />
+							</div>
+						</div>
+						
+						<!-- Search Results -->
+						<div class="panel panel-primary">
+							<div class="panel-heading clickable" data-toggle="collapse" data-target="#layer-results">
+								<h4 class="panel-title">Suchergebnisse (<span id="layer-results-count">0</span>)<span class="icon-right glyphicon glyphicon-chevron-down pull-right"></span></h4>
+							</div>
+							<div id="layer-results" class="panel-collapse collapse">
+								<div class="panel-body">
+									<div class="alert alert-info alert-dismissable hidden" id="layer-results-alert">
+										<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+										Zu Ihrer Suchanfrage wurden <strong><span id="layer-results-total">0</span> Ebenen</strong> gefunden, es können aber nur max. 40 Ergebnisse angezeigt werden.<br/>
+									</div>
+									<div class="list-group" style="margin-bottom: 0px" id="layer-results-list">
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<!-- Layer List -->
+						<div class="panel panel-primary" style="margin-bottom: 0px">
+							<div class="panel-heading clickable" data-toggle="collapse" data-target="#layer-container">
+								<h4 class="panel-title">Ebenen (<span id="layer-count">0</span>)<span class="icon-right glyphicon glyphicon-chevron-down pull-right"></span></h4>
+							</div>
+							<div id="layer-container" class="panel-collapse collapse">
+								<div class="panel-body">
+									
+									<ul class="nav nav-tabs nav-justified">
+										<li id="tab-layers-all" class="active">
+											<a href="#layer-list-all" data-toggle="tab"><span class="icon-left glyphicon glyphicon-folder-open"></span> Themen</a>
+										</li>
+										<li id="tab-layers-map">
+											<a href="#layer-list-map" data-toggle="tab"><span class="icon-left glyphicon glyphicon-eye-open"></span> Karte</a>
+										</li>
+									</ul>
+									
+									<div class="tab-content">
+										<div class="tab-pane active list-group layer-list" id="layer-list-all">
+										</div>
+										<div class="tab-pane list-group layer-list" id="layer-list-map">
+										</div>
+									</div>
+									
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					
+					<div class="panel-footer">
+					</div>
+					
+				</div>
+				
+			</div>
+		</div>
+		
+		<!-- Legend Dialog -->
+		<div class="modal fade" id="legend-dialog">
+			<div class="modal-dialog" style="vertical-align: middle;">
+				
+				<div class="panel panel-primary">
+					<div class="panel-heading clickable" data-toggle="modal" data-target="#legend-dialog">
+						<h4 class="panel-title">Legende<span class="pull-right glyphicon glyphicon-remove"></span></h4>
+					</div>
+					<div class="panel-body" id="legend-panel">
+						
+					</div>
+					<div class="panel-footer">
+						
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+		<!-- Geolocation Dialog -->
+		<div class="modal fade" id="geolocation-dialog">
+			<div class="modal-dialog" style="vertical-align: middle">
+				
+				<div class="panel panel-primary">
+					<div class="panel-heading" data-toggle="modal" data-target="#geolocation-dialog">
+						<h4 class="panel-title clickable">Fehler<span class="pull-right glyphicon glyphicon-remove"></span></h4>
+					</div>
+					<div class="panel-body">
+						<div class="alert alert-info">
+							<strong>Die Positionierung ihres Gerätes konnte nicht aktiviert werden.</strong><br/>
+							Bitte stellen Sie sicher, dass Sie ihrem Web-Browser den Zugriff auf ihren Standort erlauben 
+							und diese Seite über eine gesicherte Verbindung aufrufen (https).
+						</div>
+					</div>
+					<div class="panel-footer">
+						
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+		<!-- Loader Dialog -->
+		<div class="modal fade" id="loader-dialog">
+			<div class="modal-dialog" style="vertical-align: middle;">
+					
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<h4 class="panel-title" id="loader-title">Bitte warten...<span class="glyphicon glyphicon-refresh pull-right"></span></h4>
+					</div>
+					<div class="panel-body">
+						<span id="loader-message">Karte wird geladen.</span>
+					</div>
+					<div class="panel-footer">
+						<div class="progress" style="margin-bottom: 0px;">
+							<div class="progress-bar progress-bar-striped progress-bar-info active" role="progressbar"></div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+		
+		
+		<!-- Templates -->		
+		<script type="text/html" id="menu-layer-template">
+			<li data-id="id" >
+				<a href="#" class="btn-layer" data-template-bind='{ "attribute": "data-id", "value": "id" }'>
+					<span class="icon-left glyphicon glyphicon-unchecked"></span>
+					<span data-content="title"></span>
+				</a>
+			</li>
+		</script>
+				
+		<script type="text/html" id="menu-group-template">
+			<li data-id="id" class="dropdown-submenu">
+				<a href="#" class="btn-group" data-template-bind='{ "attribute": "data-id", "value": "id" }'>
+					<span class="icon-left glyphicon glyphicon-unchecked"></span>
+					<span class="icon-folder glyphicon glyphicon-folder-open"></span>
+					<span data-content="title"></span>
+					<span class="hidden-md hidden-lg caret"></span>
+					<span class="hidden-xs hidden-sm caret-right"></span>
+				</a>
+				<ul class="dropdown-menu child-container">
+				</ul>
+			</li>
+		</script>	
+		
+		<script type="text/html" id="layer-item-template">
+			<div data-id="id">
+				<a href="#" class="btn-layer list-group-item" data-template-bind='{ "attribute": "data-id", "value": "id" }'>
+					<span class="icon-left glyphicon glyphicon-unchecked"></span>
+					<span data-content="title"></span>
+					<span class="pull-right">
+						<span class="btn-remove glyphicon glyphicon-remove"></span>
+					</span>
+				</a>
+			</div>
+		</script>
+				
+		<script type="text/html" id="layer-group-template">
+			<div data-id="id" class="hover-group">
+				<a href="" class="btn-group list-group-item collapser" data-template-bind='{ "attribute": "data-id", "value": "id" }' data-toggle="collapse">
+					<span class="icon-left glyphicon glyphicon-unchecked"></span>
+					<span class="icon-folder glyphicon glyphicon-folder-open"></span>
+					<span data-content="title"></span>
+					<span class="pull-right">
+						<span class="btn-remove-group glyphicon glyphicon-remove" title="Dienst entfernen"></span>
+						<span class="glyphicon glyphicon-chevron-down"></span>
+					</span>
+				</a>
+				<div class="collapse child-container">
+				</div>
+			</div>
+		</script>
+		
+		<script type="text/html" id="map-layer-template">
+			<div data-id="id">
+				<a href="#" class="btn-layer list-group-item" data-template-bind='{ "attribute": "data-id", "value": "id" }'>
+					<span class="icon-left glyphicon glyphicon-check"></span>
+					<span data-content="title"></span>
+					<span class="pull-right">
+						<span class="btn-zoom glyphicon glyphicon-fullscreen" title="Zoom"></span>
+						<span class="btn-up glyphicon glyphicon-arrow-up" title="Rauf"></span>
+						<span class="btn-down glyphicon glyphicon-arrow-down" title="Runter"></span>
+					</span>
+				</a>
+			</div>
+		</script>
+		
+		<script type="text/html" id="layer-result-template">
+			<div class="list-group-item" data-template-bind='{ "attribute": "data-index", "value": "index" }'>
+				<h4 class="list-group-item-heading clickable">
+					<span class="icon-folder glyphicon glyphicon-folder-open"></span>
+					<span class="result-item-title" data-content="title"></span>
+					<!--<span class="badge" data-content="count"></span>-->
+					<span class="btn-add pull-right glyphicon glyphicon-plus"></span>
+				</h4>
+				<div class="list-group-item-text">
+					<div class="collapse">
+						<table class="table table-condensed">
+							<thead><tr><th>Beschreibung:</tb></tr></thead>
+							<tbody><tr><td data-content="details"></td></tr></tbody>
+						</table>
+						<table class="table table-condensed">
+							<thead><tr><th>Ebenen:</tb></tr></thead>
+							<tbody data-content="rows"></tbody>
+						</table>
+					</div>
+					<button class="btn btn-default btn-xs btn-block collapser"><span class="glyphicon glyphicon-triangle-bottom"></span></button>
+				</div>
+				
+			</div>
+		</script>
+		
+		<script type="text/html" id="search-result-template">
+			<a href="#" class="list-group-item search-result" data-template-bind='{ "attribute": "data-index", "value": "index" }'>
+				<span class="icon-left glyphicon glyphicon-map-marker"></span>
+				<span data-content="title"></span>
+			</a>
+		</script>
+		
+		<!-- TODO: layer item collapse -->
+		
+		<script type="text/html" id="legend-item-template">
+			<div class="panel panel-primary">
+				<div class="panel-heading clickable">
+					<h4 class="panel-title"><span data-content="title"></span></h4>
+				</div>
+				<div class="panel-body">
+					<img data-template-bind='{ "attribute": "src", "value": "url" }'></img>
+				</div>
+			</div>
+		</script>
+		
+		<!-- Custom Scripts -->
+		<script type="text/javascript" src="./scripts/netgis/config.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/events.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/entity.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/component.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/entities.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/params.js"></script>
+		
+		<script type="text/javascript" src="./scripts/netgis/loader.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/map.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/menu.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/manager.js"></script>
+		<script type="text/javascript" src="./scripts/netgis/layers.js"></script>
+		
+		<!-- Embedded Client Callback -->
+		<script type="text/javascript">$( document ).ready( netgis.client.onDocReady );</script>
+		
+	</div>

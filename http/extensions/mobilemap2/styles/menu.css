@@ -1,0 +1,93 @@
+
+#navbar-container
+{
+}
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+.caret.caret-up
+{
+    border-top-width: 0;
+    border-bottom: 4px solid #000;
+}
+
+.caret-right
+{
+	border-bottom: 4px solid transparent;
+    border-top: 4px solid transparent;
+    border-left: 4px solid;
+    display: inline-block;
+    height: 0;
+    /*opacity: 0.3;
+    vertical-align: top;*/
+	vertical-align: middle;
+    width: 0;
+	
+	margin-left: 0.5em;
+}
+
+#search-panel
+{
+	position: absolute;
+	bottom: 0px;
+	z-index: 910;
+	background: white;
+}
+
+#search-list
+{
+	margin-bottom: 0px;
+}
+
+#search-list .list-group-item
+{
+	border-top-right-radius: 0px;
+	border-top-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+}
+
+.navbar-embedded .navbar-header
+{
+	float: none;
+}
+
+.navbar-embedded .navbar-toggle
+{
+	display: block;
+}
+
+.navbar-embedded .navbar-collapse.collapse
+{
+	display: none !important;
+}
+
+.navbar-embedded .navbar-nav
+{
+	float: none !important;
+}
+
+.navbar-embedded .navbar-nav>li
+{
+	float: none;
+}
+
+.navbar-embedded .navbar-collapse.collapse.in
+{
+	display: block !important;
+}
+
+.navbar-embedded
+{
+	max-height: 100%;
+	overflow: auto;
+	z-index: 1010;
+}

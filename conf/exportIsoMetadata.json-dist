@@ -1,0 +1,34 @@
+{
+  "excludeFromCswExportRule": 
+    [
+      8401,
+      8413,
+      8399,
+      8398,
+      8379,
+      8382,
+      8403,
+      8394,
+      8377,
+      8384,
+      8402,
+      8404,
+      8411,
+      8405,
+      8337,
+      8396,
+      8378,
+      8393,
+      8397,
+      8380,
+      8395,
+      8383,
+      8381,
+      8376,
+      8400,
+      8412,
+      8410
+    ],
+  "metadataGenerationUri": "http://localhost/mapbender",
+  "metadataExportType": "all"
+}

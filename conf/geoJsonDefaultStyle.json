@@ -1,0 +1,19 @@
+{
+	"Polygon": {
+             	"stroke": "#555555",
+             	"stroke-opacity": "1",
+		"stroke-width":"2",
+		"fill":"#555555",
+		"fill-opacity":"0.5"
+        	},
+	"LineString": {
+             	"stroke": "#555555",
+             	"stroke-opacity": "1",
+		"stroke-width":"2"
+        	},
+	"Point": {
+             	"marker-size":"34",
+             	"marker-symbol":"marker",
+		"marker-color":"#7e7e7e"
+        	}
+}

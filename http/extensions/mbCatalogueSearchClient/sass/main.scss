@@ -1,0 +1,15 @@
+@charset "utf-8"; // Set charset to utf-8
+
+// Import normalize.scss
+// https://github.com/hail2u/normalize.scss
+@import "lib/normalize.scss/normalize";
+
+@import "config";
+@import "basics";
+
+@import "lib/mixin";
+@import "lib/icomoon";
+
+@import "template/base";
+@import "template/geoportal";
+@import "template/zebra_datepicker";

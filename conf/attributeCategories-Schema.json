@@ -1,0 +1,53 @@
+// {
+//     "categories": {
+//         "Fix-Data": "Fix-Data",
+//         "Editable-Data": "Editable-Data",
+//         "Style-Data": "Style-Data",
+//         "Custom-Data": "Custom-Data"
+//     }
+// }
+
+
+
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "/",
+  "type": "object",
+  "properties": {
+    "categories": {
+      "id": "categories",
+      "type": "object",
+      "properties": {
+        "Fix-Data": {
+          "id": "Fix-Data",
+          "type": "string",
+          "default": "Fix-Data"
+        },
+        "Editable-Data": {
+          "id": "Editable-Data",
+          "type": "string",
+          "default": "Editable-Data"
+        },
+        "Style-Data": {
+          "id": "Style-Data",
+          "type": "string",
+          "default": "Style-Data"
+        },
+        "Custom-Data": {
+          "id": "Custom-Data",
+          "type": "string",
+          "default": "Custom-Data"
+        }
+      },
+      "required": [
+        "Fix-Data",
+        "Editable-Data",
+        "Style-Data",
+        "Custom-Data"
+      ]
+    }
+  },
+  "required": [
+    "categories"
+  ]
+}

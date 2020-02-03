@@ -1,0 +1,32 @@
+fieldset#owsproxy-log-query {
+    width: 400px;
+}
+div.field label {
+    display: block;
+    float: left;
+    width: 100px;
+    vertical-align: middle;
+}
+div.field input {
+    width: auto;
+    vertical-align: middle;
+}
+
+fieldset#owsproxy-log-result table,td {
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+}
+
+div#result {
+    padding-top: 20px;
+}
+
+tr.result-header {
+    font-weight: bold;
+    background-color: #DDD;
+}
+
+div#result-operation {
+    padding-top: 10px;
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<!--
+ NetGIS WebGIS Client
+(c) Sebastian Pauli, NetGIS, 2017-2019
+-->
+
+<html lang="de">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<title>GeoPortal RLP</title>
+		
+		<!-- Library Styles -->
+		<link rel="stylesheet" type="text/css" href="./libs/bootstrap/css/bootstrap-custom.min.css" />
+		<link rel="stylesheet" type="text/css" href="./libs/openlayers/ol.css" />
+		
+		<style>
+			html, body
+			{
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		
+	</head>
+
+	<body>
+		
+		<div id="geoportal-container" style="width: 100%; height: 100%;"></div>
+		
+		<!-- Library Scripts -->
+		<script type="text/javascript" src="./libs/jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="./libs/jquery-template/jquery.loadTemplate.min.js"></script>
+		<script type="text/javascript" src="./libs/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="./libs/proj4js/proj4.js"></script>
+		<script type="text/javascript" src="./libs/openlayers/ol.js"></script>
+		
+		<!-- Load Client -->
+		<script type="text/javascript" src="./scripts/netgis/client.js"></script>
+		
+		<script>
+			netgis.client.load( "geoportal-container" );
+		</script>
+		
+	</body>
+
+</html>

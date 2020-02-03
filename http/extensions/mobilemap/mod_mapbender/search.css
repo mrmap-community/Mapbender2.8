@@ -1,0 +1,304 @@
+#mapbenderbut{ background-image:url(../img/but_sprite.png); background-position: 0 -180px; width: 40px; height: 40px; } 
+
+.icon {
+	position: relative;
+	display: block;
+	margin-top: 6px;
+	margin-bottom: 6px;
+	margin-left:2px;
+	margin-right:2px;
+	margin-left:2px;
+	width: 35px;
+	height: 35px;
+	background-repeat: no-repeat;
+	background-position: center center;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: none;
+	border-left-style: none;
+	font-weight: normal;
+	font-size: small;
+	-webkit-tap-highlight-color: rgba(100,200,50,0);
+	-webkit-focus-ring-color:  rgba(200, 200,20, 0);
+	-moz-border-radius: 5px;
+	-webkit-border-radius:5px;	
+	border-radius: 5px;
+
+}
+
+.query_info {
+	float:left;
+	background-image: url(img/ico_info.png);
+	background-color: #808080;
+}
+
+.query_noinfo{
+	float:left;
+	background-image: url(img/ico_noinfo.png);
+	background-color: #CCC;
+}
+
+.layer_checked {
+	float: left;
+	background-image: url(img/ico_check_active.png);
+}
+
+.layer_unchecked {
+	float: left;
+	background-image: url(img/ico_check.png);
+}
+
+.query_queryable {
+	width: 40px;
+}
+
+.query_checked {
+	float: left;
+	background-image: url(img/ico_checkop_active.png);
+	background-color: #808080;
+}
+
+.query_unchecked {
+	float: left;
+	background-image: url(img/ico_checkop.png);
+	background-color: #808080;
+}
+
+.layer_add {
+	float: right;
+	background-image: url(img/ico_plus.png);
+}
+
+.layer_remove {
+	float: right;
+	background-image: url(img/ico_delete.png);
+}
+
+
+.layer_preview {
+	float: center;
+	background-image: url(img/ico_preview.png);
+}
+
+.arrow_up {
+	float: right;
+	background-image: url(img/ico_arrow_up.png);
+}
+
+.arrow_empty {
+	float: right;
+}
+
+.base_checked {
+	background-image: url(img/ico_basecheck_active.png);
+}
+
+.base_unchecked {
+	background-image: url(img/ico_basecheck.png);
+}
+
+
+
+.baselayer {
+	width:200px;
+	display: block;
+	margin-bottom: 4px;
+	padding-left: 44px;
+	padding-right: 4px;
+	padding-top:8px;
+	padding-bottom:8px;	
+	background-repeat: no-repeat;
+	background-position: 5px center;
+	-moz-border-radius: 4px;
+	-webkit-border-radius:4px;	
+	border-radius: 4px;
+	background-color: #FFF;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: none;
+	border-left-style: none;
+	font-weight: bold;
+	-webkit-tap-highlight-color: rgba(100,200,50,0);
+	-webkit-focus-ring-color:  rgba(200, 200,20, 0);
+
+}
+
+
+.searchbutton {
+	z-index:1002;
+	cursor:pointer;
+	border: 2px solid #871D33;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	border-radius: 8px;
+	margin:4px;
+	background-image: url(img/ico_zoomin.png);
+	background-repeat: no-repeat;
+	background-position: 5px center;
+	padding-top: 10px;
+	padding-right: 8px;
+	padding-bottom: 10px;
+	padding-left: 28px;
+	background-color:#FFFFFF;
+}
+
+
+.highlight {
+    background: none repeat scroll 0 0 #FFFF00;
+}
+
+.apptools{
+	background-color:#E8E8E8;
+	border: 1px solid #666;
+	padding:5px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	border-radius: 8px;
+}
+
+.ui-page .ui-content .ui-listview .ui-li-desc {
+    white-space : normal;
+}
+
+.service.ui-li-static.ui-li {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+#ownlist.ui-li-static.ui-li {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.ui-collapsible {
+	border-radius: 0.6em;
+    	border-radius: 0.6em;
+	border:1px solid #aaa;
+}
+
+.ui-collapsible-heading {
+	padding: 1px;
+}
+
+.layer {
+	padding:0px;
+	background:#f9f9f9;
+}
+
+.unselected {
+	background:#f9f9f9;
+}
+
+.selected {
+	background:#adff2f;
+}
+
+.collapsible {
+	margin-right:-2px;
+	margin-left:-2px;
+}
+
+.layer_added {
+	background:#CCFF99;
+}
+
+.layer_isbase {
+	border:1px solid #aaa;
+	background:#f9f9f9;
+	padding-left: 10px;
+	margin-top: 7px;
+	margin-bottom: 7px;
+	margin-right:-2px;
+	margin-left:-2px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;	
+	border-radius: 8px;
+}
+
+
+.ui-collapsible-content {
+	background:none;
+	border:none;
+}
+
+
+.logo_table {
+	width: 48px;
+	height: 21px; 
+	float: left;
+	position: relative;
+}
+
+.logo_container {
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.logo {
+	max-height: 100%; 
+	max-width: 100%;
+}
+
+.logo_header {
+	position: absolute;
+	left: 50px;
+	overflow: hidden;
+	white-space: nowrap;
+	float: left;
+}
+
+.service_container {
+	margin-bottom
+}
+
+.layer_container {
+	padding-left: 10px;
+	padding:1px;
+}
+
+.service_logo {
+	max-width: 50px;
+	height: 40px;
+}
+
+.logo_container {
+	float: left;
+	width: 50px;
+	height: 40px;
+	margin-top:2px;
+	margin-left: 4px;
+	margin-right: 2px;
+}
+
+.layerinfo {
+	vertical-align: top;
+	text-align: center;
+	padding-right: 4px;
+}
+
+.query_iframe{
+	width: 100%;
+	max-height: 200px;
+	border:none;
+} 
+
+.query_iframe_full{
+	width: 100%;
+	height: 100%;
+	border:none;
+} 
+/* //SP: Button Container für Feature Results */
+.ui-block-a
+{
+	width: 70% !important;
+}
+.ui-block-b
+{
+	width: 30% !important;
+}

@@ -1,0 +1,63 @@
+
+.overview-map
+{
+    position: static;
+    width: 100%;
+}
+
+.ol-overviewmap-map
+{
+    width: 100% !important;
+}
+
+.map-control-right
+{
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+.map-control-left
+{
+    position: absolute;
+    bottom: 47px;
+    left: 15px;
+}
+
+.ol-scale-line
+{
+    bottom: 15px;
+    left: 15px;
+    /*right: 13px;*/
+	background-color: #871D33;
+	background-image: linear-gradient( to bottom, #871e32 0, #55131f 100% );
+}
+
+#watermark-container
+{
+	position: absolute;
+	left: 15px;
+	top: 15px;
+	text-shadow: 0px 1px 4px white, 0px 0px 2px white;
+}
+
+#position-overlay
+{
+    font-size: 2em;
+    color: red;
+    text-shadow: 0px 1px 3px rgba( 0, 0, 0, 0.5 );
+}
+
+.measure-overlay
+{
+	text-align: center;
+	/*display: block;*/
+	background: #871D33;
+	color: #ffffff;
+	opacity: 0.8;
+	/*text-shadow: 0px 0px 2px #871D33;*/
+	font-weight: bold;
+	padding: 0.2em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}

@@ -1,0 +1,136 @@
+.layer-list
+{
+	margin-top: 15px;
+	margin-bottom: 0px;
+	/*box-shadow: none;*/
+}
+
+.layer-list .list-group-item
+{
+	border: 0px;
+}
+
+.layer-list .list-group-item:first-child
+{
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
+
+.layer-list .list-group-item:last-child
+{
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.layer-list .btn-remove
+{
+	color: red;
+}
+
+.layer-list .btn-remove-group
+{
+	color: red;
+}
+
+.layer-list .btn-up
+{
+	color: blue;
+}
+
+.layer-list .btn-down
+{
+	color: blue;
+}
+
+.layer-list .pull-right
+{
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+}
+
+.layer-list .pull-right > span
+{
+	display: block;
+	float: left;
+	height: 100%;
+	padding: 13px;
+	padding-top: 13px;
+	padding-bottom: 7px;
+}
+
+.layer-list .pull-right > span:hover
+{
+	background: lightgray;
+}
+
+#layer-results .btn-add
+{
+	color: green;
+}
+
+.list-item-details
+{
+	display: inline-block;
+	max-width: 80%;
+	overflow: hidden;
+}
+
+.list-item-details.short
+{
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+#layer-results .list-group-item-text
+{
+	min-height: 23px;
+}
+
+#layer-results-list .list-group-item:hover
+{
+    background-color: #f5f5f5;
+}
+
+#layer-results .icon-folder
+{
+	vertical-align: middle;
+	margin-top: -0.8em;
+}
+
+.result-item-title
+{
+	display: inline-block;
+	max-width: 80%;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+h4>.badge
+{
+	vertical-align: middle;
+	margin-top: -0.6em;
+}
+
+#layer-results .layer-result-child
+{
+	cursor: pointer;
+}
+
+#layer-results .layer-result-child:hover
+{
+	background-color: #e0e0e0;
+}
+
+#layer-results .layer-result-child .btn-add
+{
+	display: none;
+}
+
+#layer-results .layer-result-child:hover .btn-add
+{
+	display: initial;
+}

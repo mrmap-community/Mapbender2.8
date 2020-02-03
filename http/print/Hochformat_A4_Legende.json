@@ -1,0 +1,114 @@
+{
+    "type" : "templatePDF",
+    "orientation" : "P",
+    "units" : "mm",
+    "format" : "a4",
+    "controls" : [
+        {
+            "id" : "title",
+            "label" : "Titel",
+            "type" : "text",
+	    "maxCharacter" : 20,
+            "size" : 20,
+            "pageElementsLink" : {
+                "titel" : "value"
+            }
+        },
+        {
+            "id" : "dpi",
+            "label" : "DPI",
+            "type" : "select",
+            "size" : 20,
+            "pageElementsLink" : {
+                "karte" : "res_dpi"
+            },
+            "options" : [
+                {
+                    "value" : "72",
+                    "label" : "72 dpi"
+                },
+                {
+                    "value" : "144",
+                    "label" : "144 dpi"
+                }
+            ]
+        },
+        {
+            "id" : "angle",
+            "label" : "Winkel",
+            "type" : "text",
+            "pageElementsLink" : {
+                "nordpfeil" : "angle",
+                "karte" : "angle",
+                "minikarte" : "angle"
+            }
+        },
+        {
+            "id" : "coordinates",
+            "type" : "hidden"
+        },
+        {
+            "id" : "scale",
+            "label" : "Maßstab",
+            "type" : "text",
+            "pageElementsLink" : {
+                "scale" : "value"
+            }
+        }
+    ],
+    "pages" : [
+        {
+            "tpl" : "Hochformat_A4_Legende.pdf",
+            "useTplPage" : 1,
+            "elements" : {
+                "karte" : {
+                    "type" : "map",
+                    "res_dpi" : 72,
+                    "x_ul" : 10.8,
+                    "y_ul" : 20.6,
+                    "width" : 188,
+                    "height" : 169.3,
+                    "coords" : 1,
+                    "coords_font_family" : "Arial",
+                    "coords_font_size" : 8
+                },
+                "titel" : {
+                    "type" : "text",
+                    "x_ul" : 10.8,
+                    "y_ul" : 12,
+                    "font_family" : "Arial",
+                    "font_size" : 15
+                },
+		"messung" : {
+                 "type" : "measure",
+                 "do_fill" : 0,
+                 "fill_color" : {
+                     "r" : 255,
+                     "g" : 0,
+                     "b" : 0
+                     },
+                 "do_stroke" : 1,
+                 "stroke_color" : {
+                     "r" : 255,
+                     "g" : 0,
+                     "b" : 0
+                     },
+                 "line_style" : {
+                     "width" : 2.0
+                     }
+                    },
+
+               "legende" : {
+                    "type" : "legend",
+                    "x_ul" : 10,
+                    "y_ul" : 205,
+                    "width" : 200,
+                    "height" : 10,
+                    "font_family" : "Arial",
+                    "font_size" : 9,
+                    "scale" : 0.5
+                }
+            }
+        }
+    ]
+}

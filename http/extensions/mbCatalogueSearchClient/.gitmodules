@@ -1,0 +1,3 @@
+[submodule "sass/lib/normalize.scss"]
+	path = sass/lib/normalize.scss
+	url = https://github.com/hail2u/normalize.scss

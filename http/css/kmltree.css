@@ -1,0 +1,263 @@
+/*
+li{ border: 1px solid black; }
+ul{ border: 1px dotted blue; }
+a{ border: 1px dotted red; }
+*/
+
+
+#kmlTree .style-preview svg {
+    margin: 5px 3px -8px 3px !important;
+}
+
+/* The Whole kml Tree */
+
+ul.kmlTree {
+	overflow: auto;
+	width: 10em;
+/*	background-image: url("http://localhost:8888/vertical_dots.png");*/
+	background-repeat: repeat-y	;
+	background-position: 20px;
+
+}
+ul.kmlTree, ul.kmlTree ul {
+	list-style-type: none;
+	margin-left: 0;
+	padding-left: 0;
+        margin-top: 0;
+}
+
+ul.kmlTree a{
+	font-size: x-small;
+}
+
+
+ul.kmlTree  li{
+	padding-left: 2px;
+/*	margin-left: 1em;*/
+}
+
+ul.kmlTree button,#kml-load-tabs button {
+	padding: 0;
+	margin-left: 0;
+	background-color: transparent;
+	width: 20px;
+	height: 20px;
+	vertical-align: middle;
+	border: none;
+	cursor: pointer;
+}
+
+ul.kmlTree a:link, ul.kmlTree a:visited, ul.kmlTree a:hover, ul.kmlTree a:active {
+	background-color: transparent;
+	text-decoration: none;
+	color: black;
+}
+
+
+/* a Root Node  */
+
+ul.kmlTree  li.kml.open{
+	padding-left: 0;
+}
+
+ul.kmlTree li.kml ul li{
+	margin-left:  0.2em;
+}
+
+ul.kmlTree li.kml > button.add,#kml-load-tabs .add {
+	background-image:  url("../img/add.png");
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+}
+
+ul.kmlTree li.open.kml > button.toggle{
+	background-image: url("../img/geokml_logo_folder.png");
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+}
+
+ul.kmlTree li.closed.kml > button.toggle{
+	background-image: url("../img/geokml_logo_folder.png");
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+}
+ul.kmlTree li.kml.open, ul.kmlTree li.kml.closed {
+	background-image: none;
+}
+
+
+/*  a kml Node */
+
+ul.kmlTree li.open > button.toggle{
+	background-image: url("../img/tree_new/expanded_folder.png");
+	background-repeat: no-repeat;
+	background-position: 0 0;
+}
+
+ul.kmlTree li.closed >  button.toggle{
+	background-image: url("../img/tree_new/closed_folder.png");
+	background-repeat: no-repeat;
+	background-position: 0 0;
+}
+
+ul.kmlTree li button.remove{
+	background-image: url("../img/button_digitize/geomRemove.png");
+	background-repeat: no-repeat;
+	background-position: 0 0;
+}
+
+ul.kmlTree li button.digitize-layer {
+    background-image: url('../img/button_digitize/polygon_off.png');
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    width: 28px;
+    height: 27px;
+}
+
+ul.kmlTree li button.digitize-layer.active {
+    background-image: url('../img/button_digitize/polygon_on.png');
+}
+
+ul.kmlTree li.open, ul.kmlTree li.closed {
+/*	background-image: url("http://localhost:8888/vertical_dots.png");*/
+	background-repeat: repeat-x	;
+	background-position: 10px 10px;
+	padding-bottom: 0.5em;
+}
+
+ul.kmlTree li.closed >ul{
+	display: none;
+}
+
+
+
+ul.kmlTree li.kml  li input{
+	vertical-align: middle;
+	margin: 0;
+}
+
+
+/* a kmlItem Node */
+
+ul.kmlTree  ul ul {
+	padding: 0;
+}
+
+ul.kmlTree  ul ul li {
+	padding: 0;
+	border: 1px solid transparent;
+}
+ul.kmlTree  ul ul li:hover {
+	border: 1px dotted gray;
+}
+
+ul.kmlTree li.kmltree-selected {
+    background-color: yellow;
+}
+
+a.icon {
+    background-repeat: no-repeat;
+    background-position: center left;
+    padding-left: 21px !important;
+    margin-left: 5px;
+}
+
+a.icon-wmc {
+    background-image: url('../img/tree_new/expanded_folder.png');
+}
+
+a.icon-local {
+    background-image: url('../img/osgeo_graphics/geosilk/database.png');
+}
+
+a.icon-remote {
+    background-image: url('../img/up-ilink.png');
+    background-size: 22px;
+}
+
+a.icon-new {
+    background-image: url('../img/add.png');
+}
+
+#kml-new button.add-kml {
+    background-image:  url("../img/add.png");
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+.kmltree-metadata-list {
+    list-style-type: none;
+}
+
+.kmltree-metadata-list li {
+    cursor: pointer;
+    line-height: 22px;
+}
+
+.kmltree-metadata-list li img {
+    vertical-align: middle;
+}
+
+#licenseTbl td, #licenseTbl th{
+
+border: 1px solid rgb(211, 214, 255);
+
+}
+#licenseTbl td:empty{
+
+border: none !important;
+
+}
+
+.geometry-div{
+
+    text-align: right
+
+}
+
+.geometry-div .geometry-p{
+
+    margin: 1px;
+
+}
+
+
+#publishDenied {
+
+position:absolute;
+width:50%;
+cursor:pointer;
+left: -10px;
+
+}
+
+#publishConfirmed {
+
+
+width:50%;
+cursor:pointer;
+
+}
+
+/*dialog_override*/
+#kml-from-wmc {overflow:auto;}
+#kml-from-wmc div table.display {border-collapse:unset;}
+#kml-from-wmc div.dataTables_length, #kml-from-wmc div.dataTables_filter, #kml-from-wmc div.dataTables_info, #kml-from-wmc div.dataTables_paginate {
+	font-size: 12px;
+	margin: 5px 0px 5px 0px;
+	line-height: 26px;
+	padding: 0 5px 0 5px;	
+	box-sizing: border-box;
+}
+#kml-from-wmc div.dataTables_length {border-right:none;width:50%;}
+#kml-from-wmc div.dataTables_filter{border-left:none;width:50%;}
+#kml-from-wmc div table.display thead th {
+	padding: 3px 18px 3px 10px;
+	border: 1px solid #d3d3d3;
+	font-weight: normal;
+	font-size: 12px;
+	cursor: pointer;	
+}
+#kml-from-upload input, #kml-from-url input.kmlurl, #kml-new input{margin:5px 0px 10px 0px;}
+#kml-from-url, #kml-new, #kml-from-upload {font-size:12px;line-height:20px;}
+#kml-from-url input.kmlurl {margin-left: 2px;}

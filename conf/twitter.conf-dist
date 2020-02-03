@@ -1,0 +1,15 @@
+<?php
+//
+//twitter.conf
+//documentation see: http://140dev.com/twitter-api-programming-tutorials/hello-twitter-oauth-php/
+// --------------------------------------------
+// twitter keys
+// --------------------------------------------
+
+define("TWITTER_CONSUMER_KEY", "");
+define("TWITTER_CONSUMER_SECRET", "");
+define("TWITTER_ACCESS_TOKEN", "");
+define("TWITTER_ACCESS_TOKEN_SECRET", "");
+
+// --------------------------------------------
+?>

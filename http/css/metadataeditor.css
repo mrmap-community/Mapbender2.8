@@ -1,0 +1,31 @@
+body{ background-color: #ffffff; margin: 5 5 5 5 }
+* {font-family: Verdana;font-size: 96%;box-sizing: border-box;}
+#ui-datepicker-div {display: none;}
+div.ui-layout-content {padding:0px; !important}
+div.ui-tabs-panel{padding:0 !important;margin:0 !important;}
+label {width: 40%;float: left;}
+label>input {width:190px}
+p {clear: both;display: table;width: 100%;}
+input {font-weight: bold;vertical-align: top;width: 50%;}
+input[type='checkbox'],input[type='radio'],input[type='button'],input[type='submit'] {width:auto;height:auto;border:1px solid #EDECEC;background-color:#EDECEC;font-weight:700;color:#303030;padding:5px 10px 5px 10px;cursor:pointer;}
+input[type='button'],input[type='submit']{margin:10px 0px 10px 10px;}
+input[disabled]{background-color:#EDECEC;color:lightgrey;cursor:no-drop;}
+input[disabled]:hover{border:1px solid #EDECEC !important;}
+input[readonly]{background-color:#EDECEC;color:lightgrey;cursor:no-drop;}
+input[type='file']{width: 100%;padding: 6px 10px;background-color: #EDECEC;box-sizing: border-box;display: block;margin-bottom: -17px;border-left: 10px solid white;border-right: 10px solid white;}
+input[type='checkbox']:hover,input[type='radio']:hover,input[type='button']:hover,input[type='submit']:hover {border:1px solid #d62029}
+#previewImgForm {font-size: 80%;}
+fieldset {margin-top: 10px;}
+.dataTables_wrapper{min-height:unset;}
+.metadata_span {padding-right:0;vertical-align: top;}
+.help-dialog, .original-metadata-wms, .original-metadata-layer, .clickable, .original-metadata-wfs, .original-metadata-featuretype {cursor: pointer;}
+.metadata_img, .help-dialog, .original-metadata-wms, .original-metadata-layer, .original-metadata-wfs, .original-metadata-featuretype {width: 25px;height: 25px;vertical-align: middle;}
+.metadata_selectbox {height:66px;width:250px;vertical-align:top;}
+.label_classification {width: 150px;height: 40px;float: left;}
+div#choose {float: left;width: 30%;height:100%;position:relative;overflow:hidden;}
+div#choose:hover{overflow:initial !important;background-color:white;display:inline-block;width:unset;min-width:30%;}
+div#layer {margin-left: 31%;width: 69%;}
+div#preview {max-width:305px;float: left;}
+div#classification {float: left;max-width: 305px;}
+div#buttons {float: left;}
+div#selectbox {margin-left: 280px;padding-top: 60px;}

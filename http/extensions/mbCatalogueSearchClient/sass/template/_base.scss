@@ -1,0 +1,186 @@
+/**
+ * Global
+ */
+.hide{
+    display: none;
+}
+.show{
+    display: block;
+}
+.center{
+    text-align: center;
+}
+
+.fs-10px{
+    font-size: 10px;
+}
+.fs-15px{
+    font-size: 15px;
+}
+.fs-20px{
+    font-size: 20px;
+}
+.fs-35px{
+    font-size: 35px;
+}
+
+/**
+ * Accordion classes for open and close
+ */
+.accordion {
+    @extend .icon;
+
+    &.open {
+        vertical-align: middle;
+         @extend .icon-chevron-small-down;
+    }
+    &.closed {
+        vertical-align: middle;
+        @extend .icon-chevron-small-right;
+    }
+}
+
+.searchbar {
+    margin: 20px auto;
+    height: 50px;
+    width: 500px;
+    display: block;
+    position: relative;
+
+    @include respond-to(small-screen) {
+        width: 100%;
+        margin-left: 5px;
+        margin-right: 5px;
+    }
+
+    .simple-search-field, .search-start {
+        background-color: $input-background;
+        border-radius: $border-radius;
+        height: $line-height;
+        line-height: $line-height;
+        display: inline-block;
+        //@include box-shadow(0, 1px, 1px, rgba(0, 0, 0, 0.075), inset);
+    }
+    .simple-search-field {
+        //width: 100%;
+        width: 85%;
+        //width: 86.5%;
+        height: 40px;
+        //border: 1px solid $primary-bg;
+        border: 1px solid #ccc;
+        padding: 0 60px 0 $padding/2;
+        display: block;
+
+        &:focus {
+            border: 1px solid rgba(135, 29, 51, 0.9);
+        }
+    }
+
+    .simple-search-autocomplete {
+        border-left: 1px solid darken($primary-bg, 10%);
+        border-right: 1px solid darken($primary-bg, 10%);
+        border-bottom: 1px solid darken($primary-bg, 10%);
+        background-color: $input-background;
+        width: 100%;
+        position: absolute;
+        top: 40px;
+        left: 0;
+        display: none;
+        cursor: pointer;
+        z-index: 1;
+
+        & div {
+            width: 100%;
+            overflow: hidden;
+            //padding: 4px 60px 4px $padding/2;
+            //line-height: $line-height;
+            padding: 10px;
+            display: block;
+        }
+
+        & div:hover,& div.active {
+            background-color: darken($input-background, 5%);
+        }
+
+        &.active {
+            display: block;
+        }
+    }
+
+    /*search-btn*/
+    .search-start,
+    .search--submit {
+        font-weight: bold;
+        height: 40px;
+        border: 1px solid #eee;
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+        padding: 10px;
+        background-color: darken($input-background, 5%);
+        border-color: darken($primary-bg, 50%);
+        &:hover {
+            background-color: darken($input-background, 10%);
+            border-color: darken($primary-bg, 50%);
+        }
+    }
+}
+
+.search-tabs {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    border-bottom: 1px solid $primary;
+
+    & > .tab-item {
+        cursor: pointer;
+        display: inline-block;
+        padding: 0 $padding/2;
+        line-height: $line-height;
+        height: $line-height;
+        border-width: 1px 1px 0 1px;
+        border-style: solid;
+        border-color: $primary;
+        border-top-left-radius: $border-radius;
+        border-top-right-radius: $border-radius;
+        background-color: $input-background;
+
+        &.active {
+            //background-color: $background;
+            background-color: $primary;
+            margin-bottom: -1px;
+            height: $line-height + 1px;
+            height: 31px;
+            color: $font-color-white;
+        }
+    }
+}
+
+.search-content {
+    padding: 10px;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+    border-color: $primary;
+    border-bottom-left-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+    display: none;
+
+    &.active {
+        display: block;
+
+        .search-cat {
+            display: none;
+            &.active {
+                display: block;
+            }
+        }
+    }
+}
+
+.search-extended {
+    display: none;
+    &.active {
+        display: block;
+    }
+}

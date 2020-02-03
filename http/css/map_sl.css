@@ -1,0 +1,26 @@
+/* ------------------------------------------------------------------ */
+/* --------------- Coloring --------------------------------------------------- */
+
+#tabs ul, #tabs ol {
+	padding:0;
+}
+
+#tabs	.ui-state-default, .ui-widget-content .ui-state-default {	
+	background:url("images/bg-navigation.gif") repeat-x scroll 0 0 transparent;
+}
+
+button {	
+	background:url("images/bg-navigation.gif") repeat-x scroll 0 0 transparent;
+	font-weight:normal;
+	color:#555555;
+	font-size:12px;
+}
+
+#tabs .ui-widget-header {
+	background:white;	
+	
+}
+
+#navFrame .ui-state-default, .ui-widget-content .ui-state-default {
+    background: none repeat scroll 0 0 #e0e0e0;
+}

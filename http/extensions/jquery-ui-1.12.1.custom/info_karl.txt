@@ -1,0 +1,5 @@
+Wird im typo3 in allen templates mittels typoscript eingebunden.
+Verwendet wird es für:
+logininfo.php (rlp und he)
+search_right.php (rlp_q4u_search_pi1)
+Trefferanzeige linked resource dialog

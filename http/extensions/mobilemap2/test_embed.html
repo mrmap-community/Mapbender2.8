@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<!--
+ NetGIS WebGIS Client
+(c) Sebastian Pauli, NetGIS, 2017-2019
+-->
+
+<html lang="de">
+
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<title>GeoPortal RLP</title>
+		
+		<link rel="stylesheet" type="text/css" href="./libs/bootstrap/css/bootstrap-custom.min.css" />
+		<link rel="stylesheet" type="text/css" href="./libs/openlayers/ol.css" />
+		
+		<style>
+			html, body
+			{
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		
+	</head>
+
+	<body>
+		
+		<p>Embedded Geoportal Client:</p>
+		
+		<div id="geoportal-container" style="border: 1px solid red; width: 600px; height: 400px; margin-left: 100px;"></div>
+		
+		<hr/>
+		
+		<!-- Demo Digitize URL: "/test_embed.html?withDigitize=1&xID=input-x&yID=input-y" -->
+		<p>
+			Coordinates: 
+			<input id="input-x" type="text" />
+			<input id="input-y" type="text" />
+		</p>
+		
+		<script type="text/javascript" src="./libs/jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="./libs/jquery-template/jquery.loadTemplate.min.js"></script>
+		<script type="text/javascript" src="./libs/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="./libs/proj4js/proj4.js"></script>
+		<script type="text/javascript" src="./libs/openlayers/ol-debug.js"></script>
+		
+		<script type="text/javascript" src="./scripts/netgis/client.js"></script>
+		
+		<script>
+			netgis.client.load
+			(
+				"geoportal-container",
+				function()
+				{
+					// Make sure the menu is not too large, otherwise we get a line wrap
+					netgis.menu.setTitleVisible( false );
+					netgis.menu.setToolMenuVisible( false );
+					netgis.menu.setScaleMenuVisible( false );
+					netgis.menu.setInfoMenuVisible( false );
+				}
+			);
+		</script>
+		
+	</body>
+
+</html>

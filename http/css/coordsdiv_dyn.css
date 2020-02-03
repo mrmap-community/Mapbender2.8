@@ -1,0 +1,7 @@
+/*mod_coords_div.php*/
+div.actualcoords {background-color:#EFEFEF;width:160px;padding:10px;position:fixed;right:230px;top:25px;}
+div.selectedcoords {margin-top:10px;}
+img.mapcodehelp {margin-bottom:5px;}
+div.selectedmapcode {margin-top:10px;}
+div.selectedmapcode img:hover {cursor:pointer;}
+

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mb:metadataurl xmlns:mb="http://www.mapbender.org/ows/metadataurl" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco">
+  <MetadataURL type="ISO19115:2003">
+    <Format>text/xml</Format>
+    <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.geoportal.rlp.de" xlink:type="simple"/>
+  </MetadataURL>
+</mb:metadataurl>

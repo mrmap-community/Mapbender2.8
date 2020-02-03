@@ -1,0 +1,370 @@
+@font-face {
+	font-family: 'icomoon';
+	src:url('fonts/icomoon.eot?sxe5mz');
+	src:url('fonts/icomoon.eot?#iefixsxe5mz') format('embedded-opentype'),
+		url('fonts/icomoon.woff?sxe5mz') format('woff'),
+		url('fonts/icomoon.ttf?sxe5mz') format('truetype'),
+		url('fonts/icomoon.svg?sxe5mz#icomoon') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+	font-family: 'icomoon';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-airfield-24:before {
+	content: "\e600";
+}
+.icon-airport-24:before {
+	content: "\e601";
+}
+.icon-alcohol-shop-24:before {
+	content: "\e602";
+}
+.icon-america-football-24:before {
+	content: "\e603";
+}
+.icon-art-gallery-24:before {
+	content: "\e604";
+}
+.icon-bakery-24:before {
+	content: "\e605";
+}
+.icon-bank-24:before {
+	content: "\e606";
+}
+.icon-bar-24:before {
+	content: "\e607";
+}
+.icon-baseball-24:before {
+	content: "\e608";
+}
+.icon-basketball-24:before {
+	content: "\e609";
+}
+.icon-beer-24:before {
+	content: "\e60a";
+}
+.icon-bicycle-24:before {
+	content: "\e60b";
+}
+.icon-building-24:before {
+	content: "\e60c";
+}
+.icon-bus-24:before {
+	content: "\e60d";
+}
+.icon-cafe-24:before {
+	content: "\e60e";
+}
+.icon-camera-24:before {
+	content: "\e60f";
+}
+.icon-campsite-24:before {
+	content: "\e610";
+}
+.icon-car-24:before {
+	content: "\e611";
+}
+.icon-cemetery-24:before {
+	content: "\e612";
+}
+.icon-chemist-24:before {
+	content: "\e613";
+}
+.icon-cinema-24:before {
+	content: "\e614";
+}
+.icon-circle-24:before {
+	content: "\e615";
+}
+.icon-circle-stroked-24:before {
+	content: "\e616";
+}
+.icon-city-24:before {
+	content: "\e617";
+}
+.icon-clothing-store-24:before {
+	content: "\e618";
+}
+.icon-college-24:before {
+	content: "\e619";
+}
+.icon-commercial-24:before {
+	content: "\e61a";
+}
+.icon-cricket-24:before {
+	content: "\e61b";
+}
+.icon-cross-24:before {
+	content: "\e61c";
+}
+.icon-dam-24:before {
+	content: "\e61d";
+}
+.icon-danger-24:before {
+	content: "\e61e";
+}
+.icon-disability-24:before {
+	content: "\e61f";
+}
+.icon-dog-park-24:before {
+	content: "\e620";
+}
+.icon-embassy-24:before {
+	content: "\e621";
+}
+.icon-emergency-telephone-24:before {
+	content: "\e622";
+}
+.icon-entrance-24:before {
+	content: "\e623";
+}
+.icon-farm-24:before {
+	content: "\e624";
+}
+.icon-fast-food-24:before {
+	content: "\e625";
+}
+.icon-ferry-24:before {
+	content: "\e626";
+}
+.icon-fire-station-24:before {
+	content: "\e627";
+}
+.icon-fuel-24:before {
+	content: "\e628";
+}
+.icon-garden-24:before {
+	content: "\e629";
+}
+.icon-golf-24:before {
+	content: "\e62a";
+}
+.icon-grocery-24:before {
+	content: "\e62b";
+}
+.icon-hairdresser-24:before {
+	content: "\e62c";
+}
+.icon-harbor-24:before {
+	content: "\e62d";
+}
+.icon-heart-24:before {
+	content: "\e62e";
+}
+.icon-heliport-24:before {
+	content: "\e62f";
+}
+.icon-hospital-24:before {
+	content: "\e630";
+}
+.icon-industrial-24:before {
+	content: "\e631";
+}
+.icon-land-use-24:before {
+	content: "\e632";
+}
+.icon-laundry-24:before {
+	content: "\e633";
+}
+.icon-library-24:before {
+	content: "\e634";
+}
+.icon-lighthouse-24:before {
+	content: "\e635";
+}
+.icon-lodging-24:before {
+	content: "\e636";
+}
+.icon-logging-24:before {
+	content: "\e637";
+}
+.icon-london-underground-24:before {
+	content: "\e638";
+}
+.icon-maki-24-base:before {
+	content: "\e639";
+}
+.icon-marker-24:before {
+	content: "\e63a";
+}
+.icon-marker-stroked-24:before {
+	content: "\e63b";
+}
+.icon-minefield-24:before {
+	content: "\e63c";
+}
+.icon-mobilephone-24:before {
+	content: "\e63d";
+}
+.icon-monument-24:before {
+	content: "\e63e";
+}
+.icon-museum-24:before {
+	content: "\e63f";
+}
+.icon-music-24:before {
+	content: "\e640";
+}
+.icon-oil-well-24:before {
+	content: "\e641";
+}
+.icon-park2-24:before {
+	content: "\e642";
+}
+.icon-park-24:before {
+	content: "\e643";
+}
+.icon-parking-24:before {
+	content: "\e644";
+}
+.icon-parking-garage-24:before {
+	content: "\e645";
+}
+.icon-pharmacy-24:before {
+	content: "\e646";
+}
+.icon-pitch-24:before {
+	content: "\e647";
+}
+.icon-place-of-worship-24:before {
+	content: "\e648";
+}
+.icon-playground-24:before {
+	content: "\e649";
+}
+.icon-police-24:before {
+	content: "\e64a";
+}
+.icon-polling-place-24:before {
+	content: "\e64b";
+}
+.icon-post-24:before {
+	content: "\e64c";
+}
+.icon-prison-24:before {
+	content: "\e64d";
+}
+.icon-rail-24:before {
+	content: "\e64e";
+}
+.icon-rail-above-24:before {
+	content: "\e64f";
+}
+.icon-rail-light-24:before {
+	content: "\e650";
+}
+.icon-rail-metro-24:before {
+	content: "\e651";
+}
+.icon-rail-underground-24:before {
+	content: "\e652";
+}
+.icon-religious-christian-24:before {
+	content: "\e653";
+}
+.icon-religious-jewish-24:before {
+	content: "\e654";
+}
+.icon-religious-muslim-24:before {
+	content: "\e655";
+}
+.icon-restaurant-24:before {
+	content: "\e656";
+}
+.icon-roadblock-24:before {
+	content: "\e657";
+}
+.icon-rocket-24:before {
+	content: "\e658";
+}
+.icon-school-24:before {
+	content: "\e659";
+}
+.icon-scooter-24:before {
+	content: "\e65a";
+}
+.icon-shop-24:before {
+	content: "\e65b";
+}
+.icon-skiing-24:before {
+	content: "\e65c";
+}
+.icon-slaughterhouse-24:before {
+	content: "\e65d";
+}
+.icon-soccer-24:before {
+	content: "\e65e";
+}
+.icon-square-24:before {
+	content: "\e65f";
+}
+.icon-square-stroked-24:before {
+	content: "\e660";
+}
+.icon-star-24:before {
+	content: "\e661";
+}
+.icon-star-stroked-24:before {
+	content: "\e662";
+}
+.icon-suitcase-24:before {
+	content: "\e663";
+}
+.icon-swimming-24:before {
+	content: "\e664";
+}
+.icon-telephone-24:before {
+	content: "\e665";
+}
+.icon-tennis-24:before {
+	content: "\e666";
+}
+.icon-theatre-24:before {
+	content: "\e667";
+}
+.icon-toilets-24:before {
+	content: "\e668";
+}
+.icon-town-24:before {
+	content: "\e669";
+}
+.icon-town-hall-24:before {
+	content: "\e66a";
+}
+.icon-triangle-24:before {
+	content: "\e66b";
+}
+.icon-triangle-stroked-24:before {
+	content: "\e66c";
+}
+.icon-village-24:before {
+	content: "\e66d";
+}
+.icon-warehouse-24:before {
+	content: "\e66e";
+}
+.icon-waste-basket-24:before {
+	content: "\e66f";
+}
+.icon-water-24:before {
+	content: "\e670";
+}
+.icon-wetland-24:before {
+	content: "\e671";
+}
+.icon-zoo-24:before {
+	content: "\e672";
+}

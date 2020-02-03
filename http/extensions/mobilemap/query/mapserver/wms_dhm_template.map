@@ -1,0 +1,97 @@
+MAP
+  NAME 'hdm_query'
+  SIZE 1000 1000
+  UNITS meters
+  SYMBOLSET '../symbols/symbolsatkis_neu.sym'
+  FONTSET '../fonts/fonts.list'
+  EXTENT 290000 5420000 466000 5648000
+  PROJECTION
+    'init=epsg:25832'
+  END
+  IMAGECOLOR 192 192 192
+  IMAGEQUALITY 86
+
+#http://mgeospatial.wordpress.com/2010/01/16/how-to-produce-8bits-agg-homemade-colors-palette-with-mapserver/
+#OUTPUTFORMAT
+#   NAME "png8bitaggauto"
+#   DRIVER "AGG/PNG"
+#   MIMETYPE "image/png"
+#   IMAGEMODE "pc256"
+#   EXTENSION "png"
+#   FORMATOPTION "TRANSPARENT=ON"
+#   FORMATOPTION "INTERLACE=OFF"
+#   FORMATOPTION "QUANTIZE_FORCE=ON"
+#  FORMATOPTION "QUANTIZE_COLORS=256"
+#END
+
+OUTPUTFORMAT
+  NAME png
+  DRIVER AGG/PNG
+  MIMETYPE "image/png"
+  IMAGEMODE RGBA
+  EXTENSION "png"
+ FORMATOPTION "INTERLACE=OFF"
+END
+
+  LEGEND
+    IMAGECOLOR 255 255 255
+    STATUS ON
+    KEYSIZE 18 12
+    LABEL
+      TYPE BITMAP
+      SIZE MEDIUM
+      COLOR 0 0 0
+    END
+  END
+
+  WEB
+    IMAGEPATH '/data/umn/tmp/'
+    IMAGEURL '/data/umn/tmp/'
+    METADATA
+      'wms_title'           		'DHM RP Geotiff'
+      'wms_abstract' 			'DHM RP Geotiff'
+      'wms_onlineresource'  		'http://www.gdi-rp-dienste2.rlp.de/cgi-bin/mapserv.fcgi?map=/data/umn/geoportal/dhm_query/dhm.map'
+#http://www.gdi-rp-dienste2.rlp.de/cgi-bin/mapserv.fcgi?map=/data/umn/geoportal/dhm_query/dhm.map&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=wms
+      'wms_srs'             		'EPSG:25832 EPSG:31466 EPSG:31467 EPSG:4326 EPSG:4258 EPSG:900913'
+      'wms_extent' 			'290000 5420000 466000 5648000'
+      'ows_keywordlist' 		'DHM'
+      'ows_fees' 			'none' #Gebuehren
+      'ows_accessconstraints' 		'none' #Zugriffsbeschraenkungen
+      'ows_addresstype' 		'postal'
+      'ows_address' 			'Ferdinand-Sauerbruch-Str. 15'
+      'ows_city' 			'Koblenz' 
+      'ows_stateorprovince' 		'RLP'
+      'ows_postcode' 			'56073' 
+      'ows_country' 			'Deutschland' 
+      'ows_contactperson' 		'Armin Retterath' 
+      'ows_contactinformation' 		''
+      'ows_contactorganization' 	'KGSt. GDI-RP'
+      'ows_contactposition' 		''
+      'ows_contactelectronicmailaddress''kontakt@geoportal.rlp.de'
+      'wms_contactfacsimiletelephone' 	'0261-492466'
+      'wms_contactvoicetelephone' 	'0261-492472'
+      'wms_enable_request'              '*'
+      'wms_encoding' 			'UTF-8'
+    END
+  END
+
+LAYER 
+     NAME "mydhm"
+     DATA "dhm_rlp/dhm.rlp.tif" 
+     DUMP TRUE
+     TYPE RASTER
+	TOLERANCE 0
+	TOLERANCEUNITS pixels
+	STATUS       DEFAULT
+		PROCESSING "SCALE=AUTO"
+	#PROCESSING   “BANDS=1,2,3″
+	#OFFSITE      71 74 65
+     TEMPLATE "../dhm_template.html"
+	METADATA
+		'wms_title' 'DHM Layer'
+		'wms_getfeatureinfo_formatlist' 'text/html,text/plain'
+		'gml_include_items' 'all'
+	END
+END
+
+END

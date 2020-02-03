@@ -1,0 +1,452 @@
+<?php
+# $Id: mapbender.conf-dist 10312 2019-10-30 13:33:02Z armin11 $
+# http://www.mapbender.org/Mapbender.conf
+# Copyright (C) 2010 OSGeo
+
+# --------------------------------------------
+# type of mapbender database
+# --------------------------------------------
+define("SYS_DBTYPE", "pgsql");
+
+# --------------------------------------------
+# database information
+# --------------------------------------------
+define("DBSERVER", "%%DBSERVER%%"); //default "localhost"
+define("PORT", "%%DBPORT%%"); //default "5432"
+define("DB", "%%DBNAME%%");
+define("OWNER", "%%DBOWNER%%");
+define("PW", "%%DBPASSWORD%%");
+
+# --------------------------------------------
+# encoding - default characterset UTF-8
+# --------------------------------------------
+define("CHARSET","UTF-8");
+
+# --------------------------------------------
+# error_reporting
+# --------------------------------------------
+//ini_set('error_reporting', 'E_ALL & ~ E_NOTICE');
+
+# --------------------------------------------
+# directory for temporary files
+# --------------------------------------------
+define("TMPDIR", "../tmp");
+
+# --------------------------------------------
+# absolute directory for temporary files - for use with external cms
+# --------------------------------------------
+
+define("ABSOLUTE_TMPDIR", "/data/mapbender/http/tmp");
+
+# --------------------------------------------
+# directory for log files
+# --------------------------------------------
+define("LOG_DIR", dirname(__FILE__) . "/../log/");
+
+# --------------------------------------------
+# URL to login
+# --------------------------------------------
+define("LOGIN", "http://localhost/mapbender/frames/login.php");
+$login = LOGIN;
+
+# --------------------------------------------
+# URL to mapbender installation - maybe different from LOGIN path!
+# --------------------------------------------
+define("MAPBENDER_PATH", "http://".$_SERVER['HTTP_HOST']."/mapbender");
+
+# --------------------------------------------
+# MAXLOGIN - this parameter is not in use anymore, but still needed for compatibility
+# --------------------------------------------
+define("MAXLOGIN", 3);
+
+# --------------------------------------------
+# URL to owsproxy
+# (no terminating slash)
+# OWSPROXY_USE_LOCALHOST - use 127.0.0.1 and http for the requests if possible
+# --------------------------------------------
+define("OWSPROXY", "http://<ip or name>/owsproxy");
+define("OWSPROXY_USE_LOCALHOST", false);
+# Allow OWSPROXY to serve services which are available to the public user - a new session will be set
+define("OWSPROXY_ALLOW_PUBLIC_USER", false);
+# Bind the owsproxy to the ip address of the session for which it was invoked. Makes the proxy more secure. The dynamiccaly build url can only be used on one computer - beware of NAT rules ;-). The IP has to be written into the session.
+define("OWSPROXY_BIND_IP", false);
+# Allow the use of an existing session for other calling applications. The url will be used to identify an existing session and the application will use this identity! Beware of security problems if the url is given to an other user. This one may alter the original identity! For security reasons set this value to false or at minimum give a whitelist to allow printing - see OWSPROXY_SESSION_GRABBING_WHITELIST.
+define("OWSPROXY_ALLOW_SESSION_GRABBING", false);
+#define("OWSPROXY_SESSION_GRABBING_WHITELIST", "localhost,127.0.0.1");
+#Parameter to steer if owsproxy support mapbender hq printing for mapserver with duplicated mapfiles named _4.map
+define("OWSPROXY_SUPPORT_HQ_PRINTING", false);
+# LIMIT for count of rows, that maybe exported at once from owsproxy_log module
+#define("OWS_LOG_EXPORT_LIMIT_CSV", 1000);
+define("OWS_LOG_EXPORT_LIMIT", 1000);
+#
+# --------------------------------------------
+# Definitions for HTTP Authentication
+# --------------------------------------------
+define('REALM', 'mapbender_registry');
+define('NONCEKEY', 'mapbender');
+$nonceLife = 300;
+define('HTTP_AUTH_PROXY',"https://".$_SERVER['HTTP_HOST']."/http_auth"); //Problem - behind a rewrite rule - define it hardcoded?
+
+# --------------------------------------------
+# type of server-connection
+# curl, socket, http
+# --------------------------------------------
+
+#define("CONNECTION", "curl");
+define("CONNECTION", "http");
+#define("CONNECTION", "socket");
+
+define("CONNECTION_PROXY", ""); // ip
+define("CONNECTION_PORT", ""); // port
+define("CONNECTION_USER", ""); // user
+define("CONNECTION_PASSWORD", ""); // password
+define("CONNECTION_USERAGENT", "Mapbender");
+
+# --------------------------------------------
+# HOSTs not for Proxy (curl)
+# --------------------------------------------
+define("NOT_PROXY_HOSTS", "<ip>,<ip>,<ip>");
+
+# --------------------------------------------
+# security: path to modules
+# --------------------------------------------
+define("CHECK", true);
+
+# --------------------------------------------
+# enable/disable portal
+# --------------------------------------------
+define("PORTAL", false);
+
+# --------------------------------------------
+# enable/disable ows metadata overwrite
+# If set to false, the edited metadata of the ows will not
+# automatically exchanged with the metadata from the server,
+# when updating the service. It has to be done with help of
+# the metadata editor afterwards
+#
+# --------------------------------------------
+define("MD_OVERWRITE", true);
+
+# --------------------------------------------
+# mail settings for internal mapbender mails
+# smtp mailing
+# for further settings check 'class_administration.php'
+# please check phpmailer for more information
+# --------------------------------------------
+define("USE_PHP_MAILING", "false");
+define("MAILHOST", "<host>");
+define("MAILUSERNAME", "<user>");
+define("MAILPASSWORD", "<password>");
+define("MAILADMIN", "<mailaddress of the mailadmin>");
+define("MAILADMINNAME", "<mailadminname>");
+
+
+# --------------------------------------------
+# Send registration mail in cc to portal administrator (MAILADIM) 
+#---------------------------------------------
+define("SEND_REGISTRATION_CC", false);
+
+
+$mailHost = MAILHOST;
+$mailUsername =  MAILUSERNAME;
+$mailPassword =  MAILPASSWORD;
+
+# --------------------------------------------
+# wms monitoring
+# --------------------------------------------
+define("AUTO_UPDATE", "0");
+define("TIME_LIMIT", "300");
+define("PHP_PATH", "/usr/bin/");
+
+# --------------------------------------------
+# Mapbender error logging
+# --------------------------------------------
+define("LOG_LEVEL", "error"); //"off","error","warning","notice" or "all"
+define("LOG_JS", "off"); // "on", "alert", "console" or "off"
+
+
+# --------------------------------------------
+# Internationalization
+# --------------------------------------------
+define("USE_I18N", false);  // requires gettext for PHP.
+							// If "false", LANGUAGE is set to english
+define("LANGUAGE", "en");   // only available if USE_I18N is "true".
+							// "en", "de", "bg", "gr", "nl", "hu", "it", "es","fr","pt"
+# --------------------------------------------
+# Notify subscribers and gui owners by email
+# Mapbender 2.7.4+
+# If set to true, all owners of guis where an updated service is used are notified about the update process.
+# If a layername changed, this information will be part of the mail too!! It enables an external user to actualize the
+# service configuration of his gis client (e.g. reload capabilities).
+# --------------------------------------------
+define("NOTIFY_ON_UPDATE",true);
+
+# --------------------------------------------
+# Define special TIMEOUT for Capabilities Monitoring in seconds - default is defined in class_connector and is set to 20
+# --------------------------------------------
+#define("CAP_MONITORING_TIMEOUT", "30");
+
+# --------------------------------------------
+# Define wait time between start of the single capabilities monitoring scripts. This may be usefull, if many services are on the same server as the monitoring installation. The time defined is given in microseconds - 2000000 is 2 seconds!
+# --------------------------------------------
+#define("CAP_MONITORING_WAITSTATE", "200000");
+
+# --------------------------------------------
+# RSS
+# Mapbender > 2.7 generates a GeoRSS file which shows the changes in the mapbender service database. The
+# GeoRSS file get entries when wms are uploaded, updated or deleted. The RSS file can be used to show the positions
+# of new layers and services on in the own mapframe or in other applications.
+# --------------------------------------------
+define("GEO_RSS_FILE", "../tmp/georss.xml");
+
+
+# --------------------------------------------
+# TWITTER
+# This need a twitter.conf file with the keys and tokens for the twitter account. See conf/twitter.conf-dist.
+# The TWITTER_METADATA will show a twitter sign below inside the metadata html view which can be shared
+# --------------------------------------------
+define("TWITTER_NEWS", false);
+define("TWITTER_METADATA", false);
+
+#---------------------------------------------
+# PREVIEW
+# This path is defined to allow a saving of preview pictures for the content of wms/layers and
+# wmc docs. The preview can generated with the wms and wmc metadata editor guis and the previews are used
+# by the metadata module and are distributed with the iso19139 files which can be generated by mapbender.
+#---------------------------------------------
+define("PREVIEW_DIR", "../geoportal/preview");
+
+#---------------------------------------------
+# METADATA
+# This path is defined to allow a saving of iso19139 xml files which are generated by mapbender and metador
+# The folder should be owned by the webserver user to allow writing of files which are generated from a php
+# script. The content of the folder may be harvested
+#---------------------------------------------
+define("METADATA_DIR", "../../metadata");
+
+#---------------------------------------------
+# METADATA CODESPACE
+#---------------------------------------------
+# This path is used as a default codespace of metadatasets which are administrated thru the simple mapbender layer metadata editor
+#---------------------------------------------
+#define("METADATA_DEFAULT_CODESPACE", "http://www.mapbender.org");
+
+#---------------------------------------------
+# External Validator
+#---------------------------------------------
+# This is an absolute URL to an external validation service
+#---------------------------------------------
+define("INSPIRE_VALIDATOR_URL", "http://inspire-geoportal.ec.europa.eu/GeoportalProxyWebServices/resources/INSPIREResourceTester");
+
+# --------------------------------------------
+#INSPIRE Category, this is an ID of a mapbender custom_category which is used to identify inspire datasets - done so in germany
+# --------------------------------------------
+define("INSPIRE_CUSTOM_CAT_ID", "11");
+
+# --------------------------------------------
+#Exchange the DataURL element in the WMC with a link to the Download options from the SDI registry (data-service-coupling)
+# --------------------------------------------
+define("SHOW_INSPIRE_DOWNLOAD_IN_TREE",true);
+
+# --------------------------------------------
+#Add layer_metadata_featuretype_wfs-conf coupling to wms object to allow the make the layertree more useful (data-service-coupling)
+# --------------------------------------------
+#define("SHOW_COUPLED_FEATURETYPES_IN_TREE",true);
+
+# --------------------------------------------
+# UPLOAD
+# --------------------------------------------
+define("UPLOAD_DIR", "../tmp");
+define("UPLOAD_WHITELIST_FILE_TYPES", "");
+define("UPLOAD_BLACKLIST_FILE_TYPES", "");
+define("UPLOAD_MAX_SIZE_KB", 2048);
+
+# --------------------------------------------
+# use jQuery from Google CDN
+# --------------------------------------------
+define("LOAD_JQUERY_FROM_GOOGLE", false);
+
+# --------------------------------------------
+# define a public user
+# This user is a typical anonymous user which don't need to authenticate itself.
+# Some functions of the portal framework not allowed for this user.
+# --------------------------------------------
+define("PUBLIC_USER", "");
+
+# --------------------------------------------
+# automatically create a session for the public user if no session exists. If this const is set, either the two following should be activated!
+# --------------------------------------------
+#define("PUBLIC_USER_AUTO_CREATE_SESSION", true);
+
+# --------------------------------------------
+# set the default start gui for PUBLIC_USER - beware, that the user must have access to this gui!
+# --------------------------------------------
+#define("PUBLIC_USER_DEFAULT_GUI", "Geoportal-RLP");
+
+# --------------------------------------------
+# define category for applications (guis) that are choosable by users as preferred gui
+# --------------------------------------------
+#define("PREFERRED_GUI_CATEGORY", 2);
+
+# --------------------------------------------
+# set the default srs for the PUBLIC_USER in the SESSION
+# --------------------------------------------
+#define("PUBLIC_USER_DEFAULT_SRS", "EPSG:25832");
+
+# --------------------------------------------
+# define a public group
+# This user is a typical anonymous group which has access on all freely available services and datasets.
+# Some functions of the portal framework not allowed for this group.
+# --------------------------------------------
+#define("PUBLIC_GROUP", "");
+
+
+# --------------------------------------------
+# define a admin user id for catalogue maintenance - defaults to 1 - 'root' user
+# --------------------------------------------
+#define("CATALOGUE_MAINTENANCE_USER", 1);
+
+
+# --------------------------------------------
+# define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework 
+# --------------------------------------------
+#define("REGISTRATING_GROUP",36);
+
+# --------------------------------------------
+# define a the user id of the portal admin in case of self registration - 
+# this becomes the owner of the self-registered users. Defaults to user with id 1 (normally root).
+# --------------------------------------------
+#define("PORTAL_ADMIN_USER_ID","1");
+
+# --------------------------------------------
+# Define a session name (useful for installations when more than one mapbender is installed on one server.
+# These installations won't share the session but will share probably one database. When the user switch from one
+# to another installation - and there are different session names - the configuration from the session will be forgotten. There is a new environment.)
+# --------------------------------------------
+#define("SESSION_NAME", "MAPBENDER");
+
+# --------------------------------------------
+# Activate APC variable cache if wished and installed
+# class_map.php, frames/index.php, class_gui
+#
+#define("MAPBENDER_VARIABLE_CACHE", false);
+#define("MAPBENDER_CACHE_TYPE", "apc");
+
+# --------------------------------------------
+# define memcached server connections, if memcached ist used for session storing
+# lib/class_Mapbender_session.php
+#
+#define("MEMCACHED_IP", "localhost");
+#define("MEMCACHED_PORT", "11211");
+
+# --------------------------------------------
+# define where to store temporary wmc documents (client configurations) when switching between applications. Needed if mb is integrated as iframe in external applications
+# --------------------------------------------
+define("TMP_WMC_SAVE_STORAGE", "file"); #memcached, memcache, #session - not yet implemented, file, cache (apc - thru class_cache.php - there is no possibility to delete those elements when using apc)
+define("TMP_WMC_MAX_AGE", "2400"); # Max age in seconds for temporal wmc before it will be deleted by e.g. a cronjob or by memcached itself
+
+# --------------------------------------------
+# define where to store temporary search results from searchInterface.
+# --------------------------------------------
+define("TMP_SEARCH_RESULT_STORAGE", "file"); #memcached, memcache, #session - not yet implemented, file, cache (apc - thru class_cache.php - there is no possibility to delete those elements when using apc) at this time 2015-06 only apc is possible for storing - there are some problems when using memcached!
+define("TMP_SEARCH_RESULT_MAX_AGE", "2400"); # Max age in seconds for temporal results before they will be deleted by e.g. a cronjob or by memcached / apc itself
+
+# --------------------------------------------
+# define if csw capabilities documents should be cached for csw client interface - faster when resolving coupled resources (new 2019-09)
+# --------------------------------------------
+define("CACHE_CSW_CAPS", false);
+
+#---------------------------------------------
+# HOSTNAME WHITELIST
+# The whitelist is used for some modules who generate urls from a given hostName GET parameter. In such a case it is usefull to give a whitelist for security reasons! If no hostName is given, the parameter $_SERVER['HTTP_HOST'] is used for the urls!
+#---------------------------------------------
+define("HOSTNAME_WHITELIST", "");
+
+#---------------------------------------------
+# CORS PROXY ORIGIN WHITELIST
+# The whitelist is used for CORS Proxy which is able to proxy GetMap REQUEST for OpenData classified WMS resources! The Origin part of the http header is read and the Access-Control-Allow-Origin for the GetMap results is set to this value! If more than one host is given please use space as separator
+#---------------------------------------------
+define("CORS_WHITELIST", "http://localhost http://127.0.0.1");
+
+# --------------------------------------------
+# Calculate bboxes for all supported SRS (Postgis needed)
+# This module will compute bboxes for all srs which will be found in the service capabilities and which are defined
+# in the array below. Normaly mapbender only uses bbox's which are given thru the service caps. In many use cases it is
+# needfull to have more than one bbox given (e.g. metadata). The array is defined to supress the calculation of to many
+# srs like e.g. geoserver offers. The array should include all the srs which are used in the mapbender installation and
+# which are usefull for the special community for which the installation was done (local-sdi, INSPIRE, ...)
+# Since Postgis 1.5 it is needed to define max extents for the projected CRS, cause proj will throw an error. It will be first checked,
+# if the values are in the range of the max extent and the values will be reduced to this before they are transformed!
+# The boxes came from http://spatialreference.org/ WGS84 Bounds. Maybe they can be pulled directly from the epsg registry itself:
+# http://www.epsg-registry.org/export.htm?gml=urn:ogc:def:area:EPSG::1624&resolvePolygon ...
+# Note: IF SRS_ARRAY_MAX_EXTENTS is set, please adopt the extents so, that they are cover your area of intrest completly - don't use only the information from spatialreference.org, cause this infos are only hints!!!!!!!!
+# --------------------------------------------
+#define("SRS_ARRAY", "4326,31466,31467,31468,25832");
+#define("SRS_ARRAY_MAX_EXTENTS", "-180,-90,180,90|5.8700,49.1000,7.5000,53.7500|7.5000,47.2700,10.5000,55.0600|10.5000,47.2700,13.5000,55.0600|5.0500,57.9000,12.0000,65.6700");
+
+# --------------------------------------------
+# define a wrapper for index.php/login.php to use e.g. the get api when integrated in external applications like cms
+# --------------------------------------------
+#define("WRAPPER_PATH","/portal/karten.html");
+#define("WRAPPER_PATH","");
+
+# --------------------------------------------
+# define linked data proxy handling
+# --------------------------------------------
+# configuration done in linkedDataProxy.json!
+# for using the rest api a apache rewrite rule si needed!!!
+# example: - the uri path "spatial-objects" must match the "rewrite_path" string defined in linkedDataProxy.json
+#  RewriteRule ^/spatial-objects/(.*)$ mapbender/php/mod_linkedDataProxy.php?api=$1 [P,QSA,NC,L]
+
+
+# --------------------------------------------
+# define if mapbender is already integrated in new django portal 
+# --------------------------------------------
+#define("DJANGO_PORTAL", true);
+
+define("OWSPROXY_ALLOW_SESSION_GRABBING", false);
+
+# --------------------------------------------
+# user autocomplete
+# --------------------------------------------
+define('SEARCH_LIMIT', 50);
+define('SEARCH_COLUMN1', 'mb_user_name');
+define('SEARCH_COLUMN2', 'mb_user_email');
+
+# --------------------------------------------
+# Layers to be excluded from counting their usage (maybe they are default layers of the default GUI)
+# --------------------------------------------
+#define('LAYERS_EXCLUDED_FROM_COUNTING', '36677');
+
+define('MAX_WMC_LOCAL_DATA_SIZE', 1024*1024);
+
+# --------------------------------------------
+# Logging the invocation of external clients
+# --------------------------------------------
+define('EXTERNAL_CLIENT_LOG', false);
+
+# --------------------------------------------
+# Define default maxResults per page for searchServer
+# --------------------------------------------
+define('DEFAULT_MAX_RESULTS_PER_PAGE', 10);
+
+# --------------------------------------------
+# Configuration of optional CSW sync / Catalogue has to be registered in mapbender database before
+# --------------------------------------------
+#define('SYNC_CATALOGUE_ID',5);
+#define('SYNC_CHANGES_TO_CSW', true);
+
+# --------------------------------------------
+# Configuration for adding further keyword into exported xml based metadata records - this will help to identify them in portals
+# which harvest metadata from the mapbender registry. 
+# --------------------------------------------
+#define('MAPBENDER_REGISTRY_UUID','2f23ed6e-0196-4c2b-8380-768389036509');
+
+
+###HACK for GLOBALS
+$DBSERVER=DBSERVER;
+  $DB=DB;
+  $OWNER=OWNER;
+  $PW=PW;
+
+?>

@@ -1,0 +1,7 @@
+<?php
+//Hash of urls not to be proxied by the featureinfo url proxy
+$urlsToExclude = array(
+	"http://www.google.com",
+	"http://www.google.de"
+);
+?>

@@ -1,0 +1,39 @@
+.Zebra_DatePicker{
+    font-size: $font-size;
+    color: #373737 !important;
+
+    background: $primary !important;
+    border: 1px solid $primary-bg !important;
+    border-radius: $border-radius !important;
+
+    &:hover{
+        background: darken($primary, 10);
+    }
+
+    .dp_header{}
+    .dp_footer{
+        margin-top: 0 !important;
+    }
+
+    .dp_header .dp_hover,
+    .dp_footer .dp_hover{
+        background: lighten($primary, 10) !important;
+    }
+
+    .dp_today{
+        padding: 5px !important;
+    }
+    .dp_daypicker th{
+        background: #fff !important;
+    }
+    .dp_daypicker td,
+    .dp_daypicker th,
+    .dp_monthpicker td,
+    .dp_yearpicker td{
+        border: 1px solid #ddd !important;
+    }
+}
+
+.Zebra_DatePicker_Icon_Inside_Right{
+    margin: 0 10px 0 0 !important;
+}

@@ -1,0 +1,298 @@
+.fieldset-auto-width {
+    float: left;
+    display: inline-block;
+}
+
+.digitize-image {
+    float: left;
+    width: 28px;
+    height: 28px;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    margin-right: 3px;
+}
+
+.digitize-pencil {
+    background-image: url('../img/pencil.png');
+}
+
+.digitize-copy {
+    background-image: url('../img/gnome/edit-copy.png');
+    background-size: 22px;
+}
+
+.digitize-paste {
+    background-image: url('../img/gnome/edit-paste.png');
+}
+
+.digitize-cursor {
+    background-image: url('../img/osgeo_graphics/geosilk/cursor.png');
+}
+
+.digitize-cursor.active {
+    background-image: url('../img/osgeo_graphics/geosilk/cursor_selected.png');
+}
+
+.digitize-remove {
+    background-image: url('../img/button_digitize/geomRemove.png');
+}
+
+.digitize-remove.active {
+    background-image: url('../img/button_digitize/geomRemove_selected.png');
+}
+
+.digitize-add {
+    background-image: url('../img/add.png');
+}
+
+.digitize-point {
+    background-image: url('../img/osgeo_graphics/geosilk/flag_red.png');
+}
+
+.digitize-point.active {
+    background-image: url('../img/osgeo_graphics/geosilk/flag_red_selected.png');
+}
+
+.digitize-line {
+    background-image: url('../img/osgeo_graphics/geosilk/line_red.png');
+}
+
+.digitize-line.active {
+    background-image: url('../img/osgeo_graphics/geosilk/line_red_selected.png');
+}
+
+.digitize-polygon {
+    background-image: url('../img/osgeo_graphics/geosilk/shape_square_red.png');
+}
+
+.digitize-polygon.active {
+    background-image: url('../img/osgeo_graphics/geosilk/shape_square_red_selected.png');
+}
+
+.digitize-style {
+    background-image: url('../img/tree_new/palette.png');
+}
+
+.digitize-label {
+    background-image: url('../img/tree_new/labelling.png');
+}
+
+.digitize-attributes {
+    background-image: url('../img/osgeo_graphics/geosilk/application_view_columns.png');
+}
+
+.digitize-export {
+    background-image: url('../img/gnome/document-save.png');
+    background-size: 20px;
+}
+
+.digitize-export-edit-dialog {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
+
+.bottom-right-20 {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
+
+.digitize-move {
+    background-image: url('../img/button_blue_red/pan_off.png');
+}
+
+.digitize-move.active {
+    background-image: url('../img/button_blue_red/pan_on.png');
+}
+
+.digitize-move:hover {
+    background-image: url('../img/button_blue_red/pan_over.png');
+}
+
+.digitize-move-vertex {
+    background-image: url('../img/button_digitize_blue_red/move_node_off.png');
+}
+
+.digitize-move-vertex.active {
+    background-image: url('../img/button_digitize_blue_red/move_node_on.png');
+}
+
+.digitize-move-vertex:hover {
+    background-image: url('../img/button_digitize_blue_red/move_node_over.png');
+}
+
+.digitize-delete-vertex {
+    background-image: url('../img/button_digitize_blue_red/delete_node_off.png');
+}
+
+.digitize-delete-vertex.active {
+    background-image: url('../img/button_digitize_blue_red/delete_node_on.png');
+}
+
+.digitize-delete-vertex:hover {
+    background-image: url('../img/button_digitize_blue_red/delete_node_over.png');
+}
+
+.digitize-add-vertex {
+    background-image: url('../img/button_digitize_blue_red/new_node_off.png');
+}
+
+.digitize-add-vertex.active {
+    background-image: url('../img/button_digitize_blue_red/new_node_on.png');
+}
+
+.digitize-add-vertex:hover {
+    background-image: url('../img/button_digitize_blue_red/new_node_over.png');
+}
+
+.digitize-save {
+    background-image: url('../img/button_blue_red/wmc_save_off');
+}
+
+.digitize-save.active {
+    background-image: url('../img/button_blue_red/wmc_save_on');
+}
+
+.digitize-save:hover {
+    background-image: url('../img/button_blue_red/wmc_save_over');
+}
+
+.digitize-zoomto {
+    background-image: url('../img/tree_new/zoom.png');
+}
+
+.digitize-close {
+    background-image: url('../img/tree_new/error1.png');
+}
+
+.ui-menu.digitize-contextmenu {
+    line-height: 28px;
+    z-index: 4;
+    margin-top: 25px;
+}
+
+.digitize-menu-arrow {
+    background-image: url('../img/tree_new/menu.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ui-menu-item {
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.digitize-hidden {
+    display: none;
+}
+
+.digitize-preview {
+    float: left;
+    width: 20px;
+    height: 20px;
+    display: inline;
+}
+
+.export-format-kml {
+    background-image: url('../img/kml_logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    width: 32px;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 40px;
+    padding-top: 40px;
+    cursor:default;
+}
+
+.export-format-gpx {
+    background-image: url('../img/gpx.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    width: 32px;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 40px;
+    padding-top: 40px;
+    cursor:default;
+}
+
+.export-format-geojson {
+    background-image: url('../img/json.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    width: 32px;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 40px;
+    padding-top: 40px;
+    cursor:default;
+}
+
+label > input[type="radio"] {
+    /*height: 50px;*/
+}
+
+#selected-features-list {
+    list-style-type: none;
+}
+
+.exportDataLink {
+    cursor: pointer;
+}
+
+.labelling-common >div{
+    display:block;
+}
+
+.labelling-common >div input,.labelling-common >div label{
+    display:inline-block;
+}
+
+.labelling-exclusive >div{
+    display:block;
+}
+.labelling-exclusive >div input,.labelling-exclusive >div label{
+    display:inline-block;
+}
+
+.labelling-exclusive >div .featureList {
+    background-image: url('../img/osgeo_graphics/geosilk/application_view_columns.png');
+    position: relative;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.labelling-exclusive >div .featureList .items {
+    position: absolute;
+    padding: 0px;
+    top: 0px;
+    left: 20px;
+    display: block;
+    background-color: white;
+    border: 1px black solid;
+    min-width: 100px;
+    z-index: 1;
+    display: table;
+}
+.labelling-exclusive >div .featureList .items .featureItem {
+    display: table-row;
+    width: auto;
+    vertical-align: middle;
+}
+
+.labelling-exclusive >div .featureList .items .featureItem div,.labelling-exclusive >div .featureList .items .featureItem span  {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.digitize-style-predefined .icons-selector .selector-popup{position:fixed;}
+.digitize-style-predefined td, .digitize-style-custom td{min-width:120px;}
+

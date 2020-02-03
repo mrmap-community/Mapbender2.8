@@ -1,0 +1,49 @@
+<?php
+DEFINE('CKAN_SERVER_IP','localhost');
+DEFINE('CKAN_SERVER_PORT','5000');
+DEFINE('CKAN_API_PROTOCOL','http');
+DEFINE('CKAN_API_VERSION',3);
+DEFINE('OPEN_LICENCES','2,3,4,5');
+$topicCkanCategoryMap = array(
+	"1" => "farming",
+	"2" => "biota",
+	"3" => "boundaries",
+	"4" => "climatologyMeteorologyAtmosphere",
+	"5" => "economy",
+	"6" => "elevation",
+	"7" => "environment",
+	"8" => "geoscientificInformation",
+	"9" => "health",
+	"10" => "imageryBaseMapsEarthCover",
+	"11" => "intelligenceMilitary",
+	"12" => "inlandWaters",
+	"13" => "location",
+	"14" => "oceans",
+	"15" => "planningCadastre",
+	"16" => "society",
+	"17" => "structure",
+	"18" => "transportation",
+	"19" => "utilitiesCommunication"
+);
+$topicCkanCategoryMap = array(
+	"1" => "umwelt_klima,geo,bevoelkerung,wirtschaft_arbeit",//"1" => "farming",
+	"2" => "geo,infrastruktur_bauen_wohnen,umwelt_klima,verwaltung",//"2" => "biota",
+	"3" => "geo,gesetze_justiz,politik_wahlen,verwaltung,umwelt_klima",//"3" => "boundaries",
+	"4" => "geo,umwelt_klima",//"4" => "climatologyMeteorologyAtmosphere",
+	"5" => "wirtschaft_arbeit",//"5" => "economy",
+	"6" => "geo,infrastruktur_bauen_wohnen",//"6" => "elevation",
+	"7" => "umwelt_klima",//"7" => "environment",
+	"8" => "geo,bildung_wissenschaft",//"8" => "geoscientificInformation",
+	"9" => "gesundheit",//"9" => "health",
+	"10" => "geo",//"10" => "imageryBaseMapsEarthCover",
+	"11" => "wirtschaft_arbeit,gesetze_justiz",//"11" => "intelligenceMilitary",
+	"12" => "geo,infrastruktur_bauen_wohnen,transport_verkehr",//"12" => "inlandWaters",
+	"13" => "geo,verwaltung",//"13" => "location",
+	"14" => "umwelt_klima",//"14" => "oceans",
+	"15" => "geo,infrastruktur_bauen_wohnen,transport_verkehr,gesetze_justiz",//"15" => "planningCadastre",
+	"16" => "soziales,verbraucher,bildung_wissenschaft",//"16" => "society",
+	"17" => "geo,infrastruktur_bauen_wohnen",//"17" => "structure",
+	"18" => "transport_verkehr",//"18" => "transportation",
+	"19" => "infrastruktur_bauen_wohnen"//"19" => "utilitiesCommunication"
+);
+?>

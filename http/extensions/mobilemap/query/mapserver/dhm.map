@@ -1,0 +1,10 @@
+﻿MAP
+NAME "test"
+LAYER # raster layer
+     NAME "mydhm"
+     DATA "dhm_rlp/dhm.rlp.tif" 
+     STATUS default
+     TYPE RASTER
+     TEMPLATE "template/query.html"
+END
+END
