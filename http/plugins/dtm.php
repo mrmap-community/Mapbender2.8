@@ -1,22 +1,29 @@
 <?php
+# 
+# Calculate digital terrain model
+# Peter Lang
+# Landesamt für Vermessung, Geoinformation und Landentwicklung
+# 2020-02-03
+#
 
+require_once "/../../conf/altitudeProfile.conf";
+
+# User constants from configuration file
+$imageFile = ALTITUDE_PROFILE_DTM_IMAGE_FILE;
+$left = ALTITUDE_PROFILE_BBOX_MAXX;
+$right =ALTITUDE_PROFILE_BBOX_MAXX;
+$bottom = ALTITUDE_PROFILE_BBOX_MINY;
+$top = ALTITUDE_PROFILE_BBOX_MAXY;
+$width_pix = ALTITUDE_PROFILE_DTM_IMAGE_FILE_WIDTH;
+$height_pix = ALTITUDE_PROFILE_DTM_IMAGE_FILE_HEIGHT;
 
 $json = $_POST['xyz'];
-
-
 $array = json_decode($json);
 
-$left = 2524972.024;
-$right = 2602802.024;
 $width_cor = $right-$left;
-$width_pix = 15566;
-
-$top = 5512053.598;
-$bottom = 5436918.598;
 $height_cor = $top - $bottom;
-$height_pix = 15027;
-$im = imagecreatefrompng("/data/mapbender/http/img/hoehenprofil/dhm_sl.png");
 
+$im = imagecreatefrompng($imageFile);
 
 function getrgb_x($cor)
 {

@@ -5,13 +5,15 @@
 
 # Define the absolute path to the digital terrain model file
 # which is used to calculate heigth values
-define("ALTITUDE_PROFILE_DTM_IMAGE_FILE", %%ALTITUDE_PROFILE_DTM_IMAGE_FILE%%);
+define("ALTITUDE_PROFILE_DTM_IMAGE_FILE", %%ALTITUDE_PROFILE_DTM_IMAGE_FILE%%); // e.g. "/data/mapbender/http/img/hoehenprofil/dhm_sl.png"
+define("ALTITUDE_PROFILE_DTM_IMAGE_FILE_WIDTH", %%ALTITUDE_PROFILE_DTM_IMAGE_FILE_WIDTH%%); // e.g. 15566
+define("ALTITUDE_PROFILE_DTM_IMAGE_FILE_HEIGHT", %%ALTITUDE_PROFILE_DTM_IMAGE_FILE_HEIGHT%%); // e.g. 15027
 
 # Define the bounding box
-define("ALTITUDE_PROFILE_BBOX_MINX", %%ALTITUDE_PROFILE_BBOX_MINX%%);
-define("ALTITUDE_PROFILE_BBOX_MAXX", %%ALTITUDE_PROFILE_BBOX_MAXX%%);
-define("ALTITUDE_PROFILE_BBOX_MINY", %%ALTITUDE_PROFILE_BBOX_MINY%%);
-define("ALTITUDE_PROFILE_BBOX_MAXY", %%ALTITUDE_PROFILE_BBOX_MAXY%%);
+define("ALTITUDE_PROFILE_BBOX_MINX", %%ALTITUDE_PROFILE_BBOX_MINX%%); // e.g. 2524972.024
+define("ALTITUDE_PROFILE_BBOX_MAXX", %%ALTITUDE_PROFILE_BBOX_MAXX%%); // e.g. 2602802.024
+define("ALTITUDE_PROFILE_BBOX_MINY", %%ALTITUDE_PROFILE_BBOX_MINY%%); // e.g. 5436918.598
+define("ALTITUDE_PROFILE_BBOX_MAXY", %%ALTITUDE_PROFILE_BBOX_MAXY%%); // e.g. 5512053.598
 
 # Define the path to the dtm.php file
 # Default: http://localhost/mapbender/plugins/dtm.php
