@@ -11,7 +11,7 @@ $obj = $json->decode($_REQUEST['obj']);
 //workflow:
 switch($obj->action){
 	case 'getServices':
-		$obj->services = getServices($obj);
+		$obj->services = getServices();
 		sendOutput($obj);
 	break;
 	case 'getWfsConfData':
@@ -19,7 +19,7 @@ switch($obj->action){
 		sendOutput($obj);
 	break;
 	case 'getGuis':
-		$obj->id = getGuis($obj);
+		$obj->id = getGuis();
 		sendOutput($obj);
 	break;
 	case 'getAssignedConfs':

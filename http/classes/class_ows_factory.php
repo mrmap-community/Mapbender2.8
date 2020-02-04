@@ -114,7 +114,6 @@ abstract class OwsFactory {
 		$xml = $x->file;
 		if(!$xml){
 			throw new Exception("Unable to open document: " . $url);
-			return null;
 		}
 		return $xml;		
 	}
@@ -138,7 +137,6 @@ abstract class OwsFactory {
 		}
 		if(!$xml){
 			throw new Exception("Unable to open document: " . $url);
-			return null;
 		}
 		return $xml;		
 	}
@@ -166,7 +164,6 @@ abstract class OwsFactory {
 				new mb_exception($e);
 				return null;
 			}
-			return null;
 		} else {
 			try {
 				$xml = $this->get($url, $auth);
@@ -181,7 +178,6 @@ abstract class OwsFactory {
 				new mb_exception($e);
 				return null;
 			}
-			return null;
 		}
 	}
 }

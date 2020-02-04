@@ -42,21 +42,13 @@ if (!preg_match($pattern, $command)) {
 }
 
 switch ($command) {
-	case "getHtml" :
-		getHtmlForm();
-		break;
+	case "searchStrassen":
+	case "searchHauskoordinaten":
+	case "searchPlz":
 	case "searchGemeinden" :
 		startSearch($command);
 		break;
-	case "searchStrassen" :
-		startSearch($command);
-		break;
-	case "searchHauskoordinaten" :
-		startSearch($command);
-		break;	
-	case "searchPlz" :
-		startSearch($command);
-		break;	
+	case "getHtml":
 	default :
 		getHtmlForm();
 		break;

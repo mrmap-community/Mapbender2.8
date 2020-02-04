@@ -2080,8 +2080,6 @@ SQL;
 				}
 			break;
 			case "file":
-				file_put_contents($filename, $content);
-			break;
 			default:
 				file_put_contents($filename, $content);
 			break;
@@ -2128,9 +2126,6 @@ SQL;
 				}
 			break;
 			case "file":
-				$content = file_get_contents($filename);
-				return $content;
-			break;
 			default:
 				$content = file_get_contents($filename);
 				return $content;

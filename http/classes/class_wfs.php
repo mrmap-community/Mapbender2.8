@@ -109,11 +109,8 @@ abstract class Wfs extends Ows {
 	
 	protected function getFeatureGet ($featureTypeName, $filter, $maxFeatures=null, $version="2.0.0") {
 		switch ($this->getVersion()) {
-			case "2.0.2":
-				$typeNameParameterName = "typeNames";
-				$maxFeaturesParameterName = "COUNT";
-				break;
 			case "2.0.0":
+			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				break;
@@ -138,11 +135,8 @@ abstract class Wfs extends Ows {
 	
 	protected function getFeaturePost ($featureTypeName, $filter, $destSrs, $storedQueryId, $storedQueryParams, $maxFeatures) {
 		switch ($this->getVersion()) {
-			case "2.0.2":
-				$typeNameParameterName = "typeNames";
-				$maxFeaturesParameterName = "COUNT";
-				break;
 			case "2.0.0":
+			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				break;
@@ -530,11 +524,8 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			//add srs to request
 		}
 		switch ($version) {
-			case "2.0.2":
-				$typeNameParameterName = "typeNames";
-				$maxFeaturesParameterName = "COUNT";
-				break;
 			case "2.0.0":
+			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				break;
@@ -610,20 +601,12 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			$exceptionTest =  new SimpleXMLElement($resultOfCount);
 			if ($exceptionTest == false) {
 				throw new Exception('Cannot parse WFS number of hits request!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
     			$e = new mb_exception($e->getMessage());
 		}
-		switch ($version) {
-			case "2.0.0":
-				$errorMessage = $exceptionTest->xpath('/ows:ExceptionReport/ows:Exception/ows:ExceptionText');
-				break;
-			default:
-				$errorMessage = $exceptionTest->xpath('/ows:ExceptionReport/ows:Exception/ows:ExceptionText');
-				break;
-		}
+		$errorMessage = $exceptionTest->xpath('/ows:ExceptionReport/ows:Exception/ows:ExceptionText');
 		if (isset($errorMessage[0])) {
 			$e = new mb_exception($errorMessage[0]);
 			return false;
@@ -639,10 +622,8 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     			$e = new mb_exception($e->getMessage());
 		}
 		switch ($version) {
-			case "2.0.0":
-				$hits = $featureTypeHits->xpath('/wfs:FeatureCollection/@numberMatched');
-				break;
 			case "2.0.2":
+			case "2.0.0":
 				$hits = $featureTypeHits->xpath('/wfs:FeatureCollection/@numberMatched');
 				break;
 			case "1.1.0":
@@ -729,9 +710,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		$propertiesSegment = "";
 		foreach ($feature->properties as $key => $value) {
 			if (isset($value)) {
-				if (is_numeric($value) || $value == "" || $value == "NULL") {
-					$value = $value;
-				} else {
+				if (!is_numeric($value) && $value != "" && $value != "NULL") {
 					$value = "<![CDATA[$value]]>";
 				}
 				if ($value != "NULL") {
@@ -767,10 +746,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		$propertiesSegment = "";
 		foreach ($feature->properties as $key => $value) {
 			if (isset($value)) {
-				if (is_numeric($value) || $value == "" || $value == "NULL") {
-					$value = $value;
-				}
-				else {
+				if (!is_numeric($value) && $value != "" && $value != "NULL") {
 					$value = "<![CDATA[$value]]>";
 				}
 				if ($value != "NULL") {
@@ -803,19 +779,15 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 				"</wfs:Update>";
 	}
 	
-	public function getFeatureById ($featureTypeName, $outputFormat=false, $id, $version=false, $srsName=false) {
+	public function getFeatureById ($featureTypeName, $outputFormat, $id, $version=false, $srsName=false) {
 		if ($version == false) {
 			$version = $this->getVersion();
 		} else {
 			$e = new mb_notice("classes/class_wfs.php: wfs version forced to ".$version."!");
 		}
 		switch ($this->getVersion()) {
-			case "2.0.2":
-				$typeNameParameterName = "typeNames";
-				$maxFeaturesParameterName = "COUNT";
-				$featureIdParameterName = "featureID";
-				break;
 			case "2.0.0":
+			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				$featureIdParameterName = "featureID";
@@ -844,11 +816,9 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 				case "2.0.2":
 					$getRequest .= "&SRSNAME="."http://www.opengis.net/def/crs/EPSG/0/".$srsId;
 					break;
+				case "1.1.0":
 				case "2.0.0":
 					$getRequest .= "&SRSNAME="."urn:ogc:def:crs:EPSG::".$srsId;	
-					break;
-				case "1.1.0":
-					$getRequest .= "&SRSNAME="."urn:ogc:def:crs:EPSG::".$srsId;
 					break;
 				case "1.0.0":
 					$getRequest .= "&SRSNAME="."EPSG:".$srsId;

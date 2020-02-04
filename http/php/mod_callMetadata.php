@@ -1078,16 +1078,6 @@ function delTotalFromQuery($paramName,$queryString) {
 	$queryStringNew = rtrim($queryStringNew,'&');
 	return $queryStringNew;
 }
-//delete all string entries from array
-function deleteEntry($arrayname, $entry) {
-	$n = $arrayname.length;
-	for($i=0; $i<($n+1); $i++){
-		if ($arrayname[$i] == $entry) {
-			$arrayname.splice($i, 1);
-		}
-	}
-	return $arrayname;
-} 
 
 //call class_metadata - in case of file for all requested resources, in case of web only for one resource - cause there are different result files
 if ($resultTarget == 'file') {

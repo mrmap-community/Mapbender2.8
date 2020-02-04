@@ -602,19 +602,13 @@ if ($from_cli) { #do these things if the request was done from the commandline -
 
 			//extract title from iso19139 record
 			switch ($typeOfRecord) {
-    				case 'dataset':
+				case 'series':
+				case 'application':
+				case 'dataset':
 					$graphicURL = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
 					$bbox = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/*/*/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/*/gco:Decimal');
         				break;
-				case 'series':
-					$graphicURL = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
-					$bbox = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/*/*/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/*/gco:Decimal');
-					break;
-				case 'application':
-					$graphicURL = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
-					$bbox = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/*/*/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/*/gco:Decimal');
-					break;
-    				case 'service':
+				case 'service':
 
 					//Graphic URL: <gmd:graphicOverview> <gmd:MD_BrowseGraphic> <gmd:fileName> <gco:CharacterString>http://www.geoportal.rlp.de/mapbender/geoportal/preview/24641_layer_map_preview.jpg</gco:CharacterString> </gmd:fileName> </gmd:MD_BrowseGraphic> </gmd:graphicOverview>
 					$graphicURL = $openSearchXml->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$index.']/gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
@@ -811,10 +805,8 @@ function correctWmsUrl($wms_url) {
 			$wms_url .= "?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 		} else {
 			switch ($lastChar) {
-				case "?":
-					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
-				break;
 				case "&":
+				case "?":
 					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 				break;
 				default:

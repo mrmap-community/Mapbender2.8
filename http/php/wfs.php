@@ -386,12 +386,8 @@ while ($row_metadata = db_fetch_array($res_metadata)) {
 			$linkType[$k] = 'ISO19115:2003';
 			$format[$k] = "text/xml";
 		break;
-		case 'upload':
-			$metadataUrl[$k] = $mapbenderMetadataUrlUrl.$row_metadata['uuid'];
-			$linkType[$k] = 'ISO19115:2003';
-			$format[$k] = "text/xml";
-		break;
 		case 'metador':
+		case 'upload':
 			$metadataUrl[$k] = $mapbenderMetadataUrlUrl.$row_metadata['uuid'];
 			$linkType[$k] = 'ISO19115:2003';
 			$format[$k] = "text/xml";

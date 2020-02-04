@@ -1081,16 +1081,7 @@ function delTotalFromQuery($paramName,$queryString) {
 	$queryStringNew = rtrim($queryStringNew,'&');
 	return $queryStringNew;
 }
-//delete all string entries from array
-function deleteEntry($arrayname, $entry) {
-	$n = $arrayname.length;
-	for($i=0; $i<($n+1); $i++){
-		if ($arrayname[$i] == $entry) {
-			$arrayname.splice($i, 1);
-		}
-	}
-	return $arrayname;
-}
+
 function correctWmsUrl($wms_url) {
 	//check if last sign is ? or & or none of them
 	$lastChar = substr($wms_url,-1);
@@ -1103,10 +1094,8 @@ function correctWmsUrl($wms_url) {
 			$wms_url .= "?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 		} else {
 			switch ($lastChar) {
-				case "?":
-					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
-				break;
 				case "&":
+				case "?":
 					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 				break;
 				default:

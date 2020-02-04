@@ -320,8 +320,8 @@ class FPDI extends FPDF_TPL {
                   			$this->_out('/I'.$image['i'].' '.$image['n'].' 0 R');
                     }
                     if (isset($this->_res['tpl'][$tplidx]['tpls']) && count($this->_res['tpl'][$tplidx]['tpls'])) {
-                        foreach($this->_res['tpl'][$tplidx]['tpls'] as $i => $tpl)
-                            $this->_out($this->tplprefix.$i.' '.$tpl['n'].' 0 R');
+                        foreach($this->_res['tpl'][$tplidx]['tpls'] as $i => $tpl_inner)
+                            $this->_out($this->tplprefix.$i.' '.$tpl_inner['n'].' 0 R');
                     }
                     $this->_out('>>');
             	}

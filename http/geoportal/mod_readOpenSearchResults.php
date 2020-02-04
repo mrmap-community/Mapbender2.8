@@ -465,10 +465,8 @@ function correctWmsUrl($wms_url) {
 			$wms_url .= "?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 		} else {
 			switch ($lastChar) {
-				case "?":
-					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
-				break;
 				case "&":
+				case "?":
 					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 				break;
 				default:

@@ -123,20 +123,20 @@ if(isset($_REQUEST["srs"])){
 		 * @security_patch sqli done
 		 */
 		$sqlMinx = "SELECT X(transform(GeometryFromText('POINT(".pg_escape_string($temp[2])." ".pg_escape_string($temp[3]).")',".pg_escape_string(preg_replace("/EPSG:/","",$temp[1]))."),".pg_escape_string(preg_replace("/EPSG:/","",$_REQUEST["newSRS"])).")) as minx";
-		$resMinx = @pg_query($con,$sqlMinx);
-		$minx = pg_result($resMinx,0,"minx");
+		$resMinx = pg_query($con,$sqlMinx);
+		$minx = floatval(pg_fetch_result($resMinx,0,"minx"));
 		
 		$sqlMiny = "SELECT Y(transform(GeometryFromText('POINT(".pg_escape_string($temp[2])." ".pg_escape_string($temp[3]).")',".pg_escape_string(preg_replace("/EPSG:/","",$temp[1]))."),".pg_escape_string(preg_replace("/EPSG:/","",$_REQUEST["newSRS"])).")) as miny";
-		$resMiny = @pg_query($con,$sqlMiny);
-		$miny = pg_result($resMiny,0,"miny");
+		$resMiny = pg_query($con,$sqlMiny);
+		$miny = floatval(pg_fetch_result($resMiny,0,"miny"));
 		
 		$sqlMaxx = "SELECT X(transform(GeometryFromText('POINT(".pg_escape_string($temp[4])." ".pg_escape_string($temp[5]).")',".pg_escape_string(preg_replace("/EPSG:/","",$temp[1]))."),".pg_escape_string(preg_replace("/EPSG:/","",$_REQUEST["newSRS"])).")) as maxx";
-		$resMaxx = @pg_query($con,$sqlMaxx);
-		$maxx = pg_result($resMaxx,0,"maxx");
+		$resMaxx = pg_query($con,$sqlMaxx);
+		$maxx = floatval(pg_fetch_result($resMaxx,0,"maxx"));
 		
 		$sqlMaxy = "SELECT Y(transform(GeometryFromText('POINT(".pg_escape_string($temp[4])." ".pg_escape_string($temp[5]).")',".pg_escape_string(preg_replace("/EPSG:/","",$temp[1]))."),".pg_escape_string(preg_replace("/EPSG:/","",$_REQUEST["newSRS"])).")) as maxy";
-		$resMaxy = @pg_query($con,$sqlMaxy);		 
-		$maxy = pg_result($resMaxy,0,"maxy");
+		$resMaxy = pg_query($con,$sqlMaxy);
+		$maxy = floatval(pg_fetch_result($resMaxy,0,"maxy"));
 	
 		$extenty = $maxy - $miny;
 		$extentx = $maxx - $minx;

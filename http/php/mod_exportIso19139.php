@@ -176,7 +176,7 @@ switch ($outputFormat) {
 		echo $html;
 	break;
 	case "html2":
-		$html = $mbMetadata->transformToHtml2('tabs',$languageCode);
+		$html = $mbMetadata->transformToHtml2();
 		header("Content-type: text/html; charset=UTF-8");
 		echo $html;
 	break;

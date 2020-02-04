@@ -299,20 +299,6 @@ switch ($_REQUEST["mdtype"]) {
 		echo $html;
 		die();
 	break;
-	case "inspire":
-		echo "<a href='".$url."'>GetRecordById URL</a><br><br>";
-		for($a = 0; $a < count($md_ident); $a++) {
-			echo "<b>".$md_ident[$a]['html']."</b>: ".$md_ident[$a]['value']."<br><br>";
-		}
-		die();
-	break;
-	case "debug":
-		echo "<a href='".$url."'>GetRecordById URL</a><br><br>";
-		for($a = 0; $a < count($md_ident); $a++) {
-			echo "<b>".$md_ident[$a]['html']."</b>: ".$md_ident[$a]['value']."<br><br>";
-		}
-		die();
-	break;
 	case "rdf":
 		$mbMetadata = new Iso19139();
 		$mbMetadata->readFromUrl($url);
@@ -321,6 +307,8 @@ switch ($_REQUEST["mdtype"]) {
 		echo $rdf;
 		die();
 	break;
+	case "inspire":
+	case "debug":
 	default:
 		echo "<a href='".$url."'>GetRecordById URL</a><br><br>";
 		for($a = 0; $a < count($md_ident); $a++) {

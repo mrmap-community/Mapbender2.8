@@ -381,7 +381,6 @@ function createFile($outputFormat, $geoJson, $fileUuid, $numberOfKmls)
         $fileString = file_get_contents(TMPDIR.'/myDataCollection-'.$fileUuid.'.geojson');
         // return the string
         return $fileString;
-        die;
 
     } elseif ($outputFormat == 'gpx') {
         //convert geojson to kml
@@ -402,7 +401,6 @@ function createFile($outputFormat, $geoJson, $fileUuid, $numberOfKmls)
         $kml = TMPDIR."/myDataCollection-".$fileUuid.".kml";
         // create gpx from kml
         return kml_to_gpx($kml);
-        die;
     } elseif ($outputFormat == 'kml') {
 	//convert geojson to kml via classes
 	//initialize new kml objekt
@@ -430,28 +428,26 @@ function createFile($outputFormat, $geoJson, $fileUuid, $numberOfKmls)
         	// return the string
 		$fileString = file_get_contents(TMPDIR.'/myDataCollection-'.$fileUuid.'.kml');
 		return $fileString;
-		die;
 	}
-	die();
-        //convert geojson to kml
-        //create the geojson-file temporary
-        $temp_geojson = TMPDIR.'/myDataCollection-'.$fileUuid.'.geojson';
-        // write the file
-        file_put_contents($temp_geojson, json_encode($geoJson));
-        //transform the file to kml
-        $unique = TMPDIR.'/myDataCollection-'.$fileUuid;
-        $fGeojson = $unique.".geojson";
-        $fKml = $unique.".kml";
-	//TODO: Define this in mapbender.conf or other configuration file!
-        $pathOgr = '/usr/bin/ogr2ogr';
-        //execute ogr2ogr to transfrom json to kml
-        $exec = $pathOgr.' -f KML '.$fKml.' '.$fGeojson;
-        exec(escapeshellcmd($exec));
-        // create string from kml-file
-        $fileString = file_get_contents(TMPDIR.'/myDataCollection-'.$fileUuid.'.kml');
-        //return the string
-        return $fileString;
-        die;
+
+//        //convert geojson to kml
+//        //create the geojson-file temporary
+//        $temp_geojson = TMPDIR.'/myDataCollection-'.$fileUuid.'.geojson';
+//        // write the file
+//        file_put_contents($temp_geojson, json_encode($geoJson));
+//        //transform the file to kml
+//        $unique = TMPDIR.'/myDataCollection-'.$fileUuid;
+//        $fGeojson = $unique.".geojson";
+//        $fKml = $unique.".kml";
+//	TODO: Define this in mapbender.conf or other configuration file!
+//        $pathOgr = '/usr/bin/ogr2ogr';
+//        //execute ogr2ogr to transfrom json to kml
+//        $exec = $pathOgr.' -f KML '.$fKml.' '.$fGeojson;
+//        exec(escapeshellcmd($exec));
+//        // create string from kml-file
+//        $fileString = file_get_contents(TMPDIR.'/myDataCollection-'.$fileUuid.'.kml');
+//        //return the string
+//        return $fileString;
 	
     }
 }

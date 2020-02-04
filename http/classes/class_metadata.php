@@ -156,12 +156,11 @@ $this->resourceClassifications[1]['relation_application'] = 'mb_metadata_inspire
 			case "de":
 				$this->resourceClassifications[2]['title'] = "Sonstige"; //TODO: define the translations somewhere? - This is done in call_metadata.php before. Maybe we can get them from there? - It will be shown in the rightside categories table
 			break;
-			case "en":
-				$this->resourceClassifications[2]['title'] = "Custom";
-			break;
 			case "fr":
 				$this->resourceClassifications[2]['title'] = "Personnaliser"; 
 			break;
+			case "en":
+				// fall through
 			default:
 				$this->resourceClassifications[2]['title'] = "Custom";
 			break;
@@ -183,8 +182,7 @@ $this->resourceClassifications[2]['relation_application'] = 'mb_metadata_custom_
 				$this->resourceClassifications[3]['title'] = "Organisationen";
 				break;
 			case "en":
-				$this->resourceClassifications[3]['title'] = "Organizations";
-				break;
+				// fall through
 			default:
 				$this->resourceClassifications[3]['title'] = "Organizations";
 				break;
@@ -274,10 +272,8 @@ if (isset($this->searchResources) & strtolower($this->searchResources) === "appl
 				$this->searchView = 'wfs_search_table';
 				$this->whereStrCatExtension = " AND custom_category.custom_category_hidden = 0";
 				switch ($this->orderBy) {
-					case "rank":
-						$this->orderBy = " ORDER BY wfs_id,featuretype_id,wfs_conf_id ";
-						break;
 					case "id":
+					case "rank":
 						$this->orderBy = " ORDER BY wfs_id,featuretype_id,wfs_conf_id ";
 						break;
 					case "title":
@@ -1885,8 +1881,6 @@ header('Content-Type: application/json');
 							$this->catJSON->searchMD->category[$i]->title = "Organisationen";
 							break;
 						case "en":
-							$this->catJSON->searchMD->category[$i]->title = "Organizations";
-							break;
 						default:
 							$this->catJSON->searchMD->category[$i]->title = "Organizations";
 							break;

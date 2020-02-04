@@ -64,13 +64,10 @@ class QueryHandler{
 				if ($this->reqParams['service'] == 'WFS') {
 					switch ($this->reqParams['version']) {
 						case "2.0.0":
-							$this->reqParams['typenames'] = $postQueryParser->serviceResourceName;
-							$this->reqParamsToLower['typenames'] = $postQueryParser->serviceResourceName;
-
-							break;
 						case "2.0.2":
 							$this->reqParams['typenames'] = $postQueryParser->serviceResourceName;
 							$this->reqParamsToLower['typenames'] = $postQueryParser->serviceResourceName;
+
 							break;
 						default:
 							$this->reqParams['typename'] = $postQueryParser->serviceResourceName;

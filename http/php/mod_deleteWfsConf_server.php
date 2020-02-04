@@ -14,7 +14,7 @@ $obj = $json->decode(stripslashes($_REQUEST['obj']));
 //workflow:
 switch($obj->action){
 	case 'getServices':
-		$obj->services = getServices($obj);
+		$obj->services = getServices();
 		sendOutput($obj);
 	break;
 	case 'getWfsConfData':

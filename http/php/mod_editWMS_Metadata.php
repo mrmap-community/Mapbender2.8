@@ -124,7 +124,7 @@ if (isset($_REQUEST['update_content']) && $_REQUEST['update_content'] == true) {
 
     $res_update_wms_sql = db_prep_query($update_wms_sql, $v, $t);
 
-    while(list($key,$val) = each($_REQUEST)) {
+    foreach ($_REQUEST as $key => $val) {
         if(preg_match("/___/", $key)) {
             $myKey = explode("___", $key);
             $layer_id = preg_replace("/L_/","",$myKey[0]);

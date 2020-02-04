@@ -86,11 +86,7 @@ class UniversalWmsFactory extends WmsFactory {
 	private function getFactory ($version) {
 		switch ($version) {
 			case "1.0.0":
-				return new Wms_1_1_1_Factory();
-				break;
 			case "1.1.0":
-				return new Wms_1_1_1_Factory();
-				break;
 			case "1.1.1":
 				return new Wms_1_1_1_Factory();
 				break;
@@ -98,7 +94,6 @@ class UniversalWmsFactory extends WmsFactory {
 				throw new Exception("Unknown WMS version " . $version);
 				break;
 		}
-		return null;
 	}
 	
 	public function createFromDb ($id, $appId = null) {

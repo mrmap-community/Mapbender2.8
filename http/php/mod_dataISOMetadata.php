@@ -130,7 +130,6 @@ SQL;
         				$err = new mb_exception("php/mod_dataISOMetadata.php:".$error->message);
     				}
 				throw new Exception("php/mod_dataISOMetadata.php:".'Cannot parse Metadata XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {

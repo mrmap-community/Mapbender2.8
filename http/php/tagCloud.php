@@ -148,15 +148,8 @@ if ($type == 'topicCategories' || $type == 'inspireCategories') {
 	$sql .= " GROUP BY ".$categoryFilter.".".$categoryFilter."_code_".$languageCode.",".$categoryFilter.".".$categoryFilter."_id)";
 	$sql .= ") as a";
 	$sql .= " WHERE a.".$categoryFilter."_code_".$languageCode." <> '' GROUP BY a.".$categoryFilter."_code_".$languageCode.", a.".$categoryFilter."_description_".$languageCode.", a.".$categoryFilter."_uri, a.".$categoryFilter."_id "; 		$sql .= "ORDER BY ";
-	switch ($orderBy) {
-		case "rank":
-			$sql .= "sum";
-			break;
-		case "":
-			break;
-		default:
-			$sql .= "sum";
-			break;
+	if ($orderBy != "") {
+		$sql .= "sum";
 	}
 
 	$sql .= " DESC LIMIT $1";

@@ -35,14 +35,14 @@ class mbSvgDecorator extends mbTemplatePdfDecorator
         global $mapOffset_left, $mapOffset_bottom, $map_height, $map_width, $coord;
         global $yAxisOrientation;
         $yAxisOrientation = 1;
-        $doc              = new \DOMDocument();
+        $doc              = new DOMDocument();
         if (isset($_REQUEST["svg_extent"]) && $_REQUEST["svg_extent"] !== "" && count(explode(',', $_REQUEST["svg_extent"])) === 4 &&
             isset($_REQUEST[$this->svgParam]) && $_REQUEST[$this->svgParam] !== "" && @$doc->loadXML($_REQUEST[$this->svgParam])) {
             $e = new mb_notice("mbSvgDecorator: svg: " . $_REQUEST[$this->svgParam]);
         } else {
             return "No svg found.";
         }
-        $xpath   = new \DOMXPath($doc);
+        $xpath   = new DOMXPath($doc);
         $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
         $xpath->registerNamespace("svg", "http://www.w3.org/2000/svg");
         $coord   = mb_split(",", $this->pdf->getMapExtent());
@@ -102,8 +102,8 @@ class mbSvgDecorator extends mbTemplatePdfDecorator
 //        foreach ($xpath->query("//*[@style]", $doc->documentElement) as $elm) {
 //            $elm->removeAttribute('style');
 //        }
-        $imagick = new \Imagick();
-        $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
+        $imagick = new Imagick();
+        $imagick->setBackgroundColor(new ImagickPixel('transparent'));
         $imagick->readImageBlob($doc->saveXML());
         $imagick->setImageFormat("png32");
         if ($angle != 0) {

@@ -318,22 +318,7 @@ class KML {
 							$e_Icon = $doc->createElement("Icon");
 
 							$e_href = $doc->createElement("href");
-							
-							$makiUrl = "https://raw.githubusercontent.com/mapbox/maki/master/icons/";
-							switch($currentPropertiesSimpleStyle['marker-size']) {
-								case "medium":
-									$symbol = $makiUrl.$currentPropertiesSimpleStyle['marker-symbol']."-15.svg";
-									break;
-								case "small":
-									$symbol = $makiUrl.$currentPropertiesSimpleStyle['marker-symbol']."-15.svg";
-									break;
-								case "large":
-									$symbol = $makiUrl.$currentPropertiesSimpleStyle['marker-symbol']."-15.svg";
-									break;
-								default :
-									$symbol = $makiUrl.$currentPropertiesSimpleStyle['marker-symbol']."-15.svg";
-									break;
-							}
+
 							//test for marker-size as integer - map it to discrete values
 							$sizeInt = (integer)$currentPropertiesSimpleStyle['marker-size'];
 							if (is_int($sizeInt) && $sizeInt > 0) {

@@ -249,7 +249,6 @@ class Iso19139 {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -765,7 +764,7 @@ class Iso19139 {
 	}
 
 	public function transformToHtml3($layout,$languageCode){
-		
+		return '';
 	}
 
 	public function transformToHtml($layout, $languageCode, $serviceInformation=false){
@@ -778,7 +777,6 @@ class Iso19139 {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-				return "error";
 			}
 		}
 		catch (Exception $e) {
@@ -1231,13 +1229,7 @@ class Iso19139 {
 			//***************************************************************************
 			switch ($layout) {
 				case "accordion":
-					$html .= '</div>';
-					$html .= '</div>';
-					break;
 				case "tabs":
-					$html .= '</div>';
-					$html .= '</div>';
-					break;
 				case "plain":
 					$html .= '</div>';
 					$html .= '</div>';
@@ -1320,7 +1312,6 @@ class Iso19139 {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -1395,7 +1386,6 @@ class Iso19139 {
         						$err = new mb_exception("class_Iso19139:".$error->message);
     						}
 						throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-						return false;
 					}
 				}
 				catch (Exception $e) {
@@ -2598,7 +2588,6 @@ SQL;
 			}
 			return true;
 		}
-		return true;
 	}
 
 	public function getExtentGraphic($layer_4326_box) {

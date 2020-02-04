@@ -33,10 +33,8 @@ function correctWmsUrl($wms_url) {
 			$wms_url .= "?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 		} else {
 			switch ($lastChar) {
-				case "?":
-					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
-				break;
 				case "&":
+				case "?":
 					$wms_url .= "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 				break;
 				default:
@@ -311,7 +309,7 @@ if ($mbMetadata->hierarchyLevel == 'dataset' || $mbMetadata->hierarchyLevel == '
 					}
 				} else {
 					$serviceMetadata->service[$k]->serviceType = 'other';
-					if ($mdAccessUrl == "" || isempty($mdAccessUrl)) {
+					if ($mdAccessUrl == "" || empty($mdAccessUrl)) {
 						$serviceMetadata->service[$k]->accessUrl = null;
 					}
 				}

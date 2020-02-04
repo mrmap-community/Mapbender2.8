@@ -72,8 +72,6 @@ class UniversalWfsFactory extends WfsFactory {
 					$factory = new Wfs_1_1_Factory();
 					break;
 				case "2.0.0":
-					$factory = new Wfs_2_0_Factory();
-					break;
 				case "2.0.2":
 					$factory = new Wfs_2_0_Factory();
 					break;

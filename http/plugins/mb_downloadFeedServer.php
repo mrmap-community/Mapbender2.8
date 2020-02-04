@@ -194,7 +194,6 @@ switch ($_REQUEST['method']) {
         				$err = new mb_exception("downloadFeedServer.php:".$error->message);
     				}
 				throw new Exception("downloadFeedServer.php:".'Cannot parse Feed!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -315,7 +314,6 @@ switch ($_REQUEST['method']) {
         				$err = new mb_exception("downloadFeedServer.php:".$error->message);
     				}
 				throw new Exception("downloadFeedServer.php:".'Cannot parse Feed!');
-				return false;
 			}
 		}
 		catch (Exception $e) {

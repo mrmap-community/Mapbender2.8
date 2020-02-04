@@ -66,6 +66,6 @@ class XpathWalker
 
     public function isAdded()
     {
-        $this->added;
+        return $this->added;
     }
 }

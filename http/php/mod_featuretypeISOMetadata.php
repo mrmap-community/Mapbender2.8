@@ -464,7 +464,8 @@ SQL;
     while ($row_metadata = db_fetch_array($res_metadataurl)) {
 	$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
         switch ($row_metadata['origin']) {
-            case 'capabilities':
+			case 'external':
+			case 'capabilities':
                	$pos++;
                 $xmlBuilder->addValue($MD_Metadata,
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@xlink:href',
@@ -482,16 +483,7 @@ SQL;
                         	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@uuidref',
                        		$uniqueResourceIdentifierCodespace.$row_metadata['uuid']);
                 break;
-            case 'external':
-                $pos++;
-                $xmlBuilder->addValue($MD_Metadata,
-                        	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@xlink:href',
-                        	"http://" . $_SERVER['HTTP_HOST'] . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row_metadata['uuid']);
-                $xmlBuilder->addValue($MD_Metadata,
-                        	'./gmd:identificationInfo/srv:SV_ServiceIdentification/srv:operatesOn['.$pos.']/@uuidref',
-                $uniqueResourceIdentifierCodespace.$row_metadata['datasetid']);
-                break;
-            default:
+			default:
                 break;
         }
     }

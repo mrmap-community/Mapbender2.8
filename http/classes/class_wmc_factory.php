@@ -27,7 +27,7 @@ class WmcFactory extends OwsFactory {
 	public function createFromXml ($xml, $auth=false) {
 		try {
 			$wmc = new wmc();
-			$wmc->createFromXml($xml, $auth);
+			$wmc->createFromXml($xml);
 		}
 		catch (Exception $e) {
 			throw new Exception("Could not create WMC from XML.");

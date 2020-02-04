@@ -573,7 +573,7 @@ $res = db_prep_query($sql, $v, $t);
 	while(db_fetch_row($res)){
 		if(db_result($res, $cnt, "level1") == 1 && db_result($res, $cnt, "offspring") >= 0 ){
 			if(count($parent) > 0){unset($parent);}
-			$level =  db_result($res, $cnt, "level1");
+			$level =  intval(db_result($res, $cnt, "level1"));
 			$parent[$level+1] = db_result($res, $cnt, "id");
 			
 			echo "Note(".db_result($res, $cnt, "id").",0,'".db_result($res, $cnt, "my_layer_title")."','".db_result($res, $cnt, "layer")."',".db_result($res, $cnt, "lft");
@@ -584,7 +584,7 @@ $res = db_prep_query($sql, $v, $t);
 			}
 		/**/
 		else if(db_result($res, $cnt, "level1") > $level){
-			$level =  db_result($res, $cnt, "level1");
+			$level = intval(db_result($res, $cnt, "level1"));
 			$parent[$level+1] = db_result($res, $cnt, "id"); 
 			echo "Note(".db_result($res, $cnt, "id").",".$parent[$level].",'".db_result($res, $cnt, "my_layer_title")."','".db_result($res, $cnt, "layer")."',".db_result($res, $cnt, "lft");
 			if(db_result($res, $cnt, "wms_id") != ''){
@@ -594,7 +594,7 @@ $res = db_prep_query($sql, $v, $t);
 		}
 		/**/
 		else if(db_result($res, $cnt, "level1") == $level){
-			$level =  db_result($res, $cnt, "level1");
+			$level = intval(db_result($res, $cnt, "level1"));
 			$parent[$level+1] = db_result($res, $cnt, "id");
 			echo "Note(".db_result($res, $cnt, "id").",".$parent[$level].",'".db_result($res, $cnt, "my_layer_title")."','".db_result($res, $cnt, "layer")."',".db_result($res, $cnt, "lft");
 			if(db_result($res, $cnt, "wms_id") != ''){
@@ -604,7 +604,7 @@ $res = db_prep_query($sql, $v, $t);
 		}
 		/**/
 		else if(db_result($res, $cnt, "level1") < $level){
-			$level =  db_result($res, $cnt, "level1");
+			$level = intval(db_result($res, $cnt, "level1"));
 			$parent[$level + 1] = db_result($res, $cnt, "id"); 
 			echo "Note(".db_result($res, $cnt, "id").",".$parent[$level].",'".db_result($res, $cnt, "my_layer_title")."','".db_result($res, $cnt, "layer")."',".db_result($res, $cnt, "lft");
 			if(db_result($res, $cnt, "wms_id") != ''){

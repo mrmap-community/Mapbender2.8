@@ -27,9 +27,9 @@ $wms_getmap = urldecode($_GET['wms']);
 $layer_name = urldecode($_GET['name']); 
 
 function display_text($string) {
-    $string = mb_preg_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/{}]", "<a href=\"\\0\" target=_blank>\\0</a>", $string);   
-    $string = mb_preg_replace("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2}([zmuvtg]|fo|me)?$", "<a href=\"mailto:\\0\" target=_blank>\\0</a>", $string);   
-    $string = mb_preg_replace("\n", "<br>", $string);
+    $string = preg_replace("[[:alpha:]]+://[^<>[:space:]]+[[:alnum:]/{}]", "<a href=\"\\0\" target=_blank>\\0</a>", $string);
+    $string = preg_replace("^[_a-z0-9-]+(\.[_a-z0-9-]+)*@([0-9a-z](-?[0-9a-z])*\.)+[a-z]{2}([zmuvtg]|fo|me)?$", "<a href=\"mailto:\\0\" target=_blank>\\0</a>", $string);
+    $string = preg_replace("\n", "<br>", $string);
     return $string;
 }  
 

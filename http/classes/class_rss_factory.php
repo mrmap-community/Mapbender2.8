@@ -50,7 +50,7 @@ class RssFactory {
 	}
 	
 	protected function parseDocument ($url, $rss) {
-		$domxpath = $this->createDomXpathFromUrl($url, $rss);
+		$domxpath = $this->createDomXpathFromUrl($url);
 		if (is_null($domxpath)) {
 			return null;
 		}
@@ -94,7 +94,7 @@ class RssFactory {
 	}
 	
 	protected function parseItems ($url, $rss) {
-		$domxpath = $this->createDomXpathFromUrl($url, $rss);
+		$domxpath = $this->createDomXpathFromUrl($url);
 		if (is_null($domxpath)) {
 			return null;
 		}

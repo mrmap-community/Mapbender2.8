@@ -289,7 +289,7 @@ switch (strtolower($reqParams['request'])) {
             			getWfsCapabilities($request, $auth);
         		} else {
             			getWfsCapabilities($request);
-        		}		
+        		}
 		break;
 		case 'wms':
         		$arrayOnlineresources = checkWmsPermission($query->getOwsproxyServiceId(), $userId);
@@ -934,7 +934,7 @@ function registerUrl($url)
     	return $id;
 }
 
-function getCapabilities($url)
+function getCapabilities($url, $auth = false)
 {
     global $arrayOnlineresources;
     global $sid, $serviceId;
@@ -1410,17 +1410,13 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false)
 			$e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
 		}
 		switch ($reqParams['version']) {
-			case "1.0.0":
+            case "1.1.0":
+            case "1.0.0":
 				//get # of features from counting features
 				$numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
 				$numberOfFeatures = count($numberOfFeatures);
 				break;
-			case "1.1.0":
-				//get # of features from counting features
-				$numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-				$numberOfFeatures = count($numberOfFeatures);
-				break;
-			//for wfs 2.0 - don't count features
+            //for wfs 2.0 - don't count features
 			default:
 				//get # of features from attribut
 				$numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');

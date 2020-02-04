@@ -269,7 +269,7 @@ else {
 		}
 	}
 	// display WMS List
-	$wms_id_own = $admin->getWmsByOwner(Mapbender::session()->get("mb_user_id"),true);
+	$wms_id_own = $admin->getWmsByOwner(Mapbender::session()->get("mb_user_id"));
 	
 	if (count($wms_id_own)>0){
 		$v = array();

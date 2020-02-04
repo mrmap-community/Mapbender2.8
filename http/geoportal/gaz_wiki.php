@@ -69,9 +69,9 @@ if(count($lists)==0) {//no results returned
 	$ready->appendChild($tready);
 	echo $xml->saveXML();
 } else {
-	//parse title matches 
-	while(list( , $node) = each($lists)) {
-     		$e = new mb_notice('/api/query/search/p/@title: '.$node);
+	//parse title matches
+	foreach ($lists as $node) {
+		$e = new mb_notice('/api/query/search/p/@title: '.$node);
 		$link = $surl.$node;
 		$title = $node;
 		$m = $xml->createElement('member');

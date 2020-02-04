@@ -32,7 +32,6 @@ if ($gml_string) {
 					$err = new mb_exception("javascripts/mod_renderGML.php: ".$error->message);
 	    			}
 				throw new Exception("javascripts/mod_renderGML.php: ".'Cannot parse SESSION GML!');
-				return false;
 		}
 	}
 	catch (Exception $e) {

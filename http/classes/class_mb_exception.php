@@ -31,10 +31,7 @@ class mb_exception extends mb_log {
 	 * @param	string $message		message that is being logged
 	 */
 	public function __construct ($message) {
-		if ($message == 'Exception') {
-			return $this->mb_log("ERROR: " . $e->getMessage(), $this->level);
-		}
-		return $this->mb_log("ERROR: " . $message, $this->level);
+		$this->mb_log("ERROR: " . $message, $this->level);
 	}
 
 	/**

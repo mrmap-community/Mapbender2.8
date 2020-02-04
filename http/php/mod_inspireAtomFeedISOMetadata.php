@@ -1471,10 +1471,10 @@ function guid(){
 
 
 //do all the other things which had to be done ;-)
-if ($_REQUEST['VALIDATE'] == "true"){
-	validateInspireMetadata($iso19139Doc, $recordId);
+if ($_REQUEST['VALIDATE'] == "true") {
+    validateInspireMetadata($iso19139Doc, $recordId);
 } else {
-	pushISO19139($iso19139Doc, $recordId, $outputFormat); //throw it out to world!
+    pushISO19139($iso19139Doc, $recordId, $outputFormat); //throw it out to world!
 }
 ?>
 

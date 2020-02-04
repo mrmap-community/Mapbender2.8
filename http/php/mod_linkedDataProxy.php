@@ -1614,7 +1614,7 @@ $apiDescriptionJson->components = $jsonTemplate->components;
 //$e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
 				}
 				catch (Exception $e) {
-					$e = new mb_exception('Problem to resolve bbox from gml - set to default values!', $e->getMessage());
+					$e = new mb_exception('Problem to resolve bbox from gml - set to default values! message: ' . $e->getMessage());
 					$geojsonBbox[$geojsonIndex]->mbBbox = "[(".$minxFC.",".$minyFC.",,urn:ogc:def:crs:EPSG::4326)(".$maxxFC.",".$maxyFC.",,urn:ogc:def:crs:EPSG::4326) urn:ogc:def:crs:EPSG::4326]";
 				}
 //$e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);

@@ -750,6 +750,7 @@ SQL;
 		//unique resource identifier
 		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
 		switch ($row_metadata['origin']) {
+			case 'external':
 			case 'capabilities':
 				$operatesOn=$iso19139->createElement("srv:operatesOn");
 				$operatesOn->setAttribute("xlink:href", $mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row_metadata['uuid']);
@@ -760,12 +761,6 @@ SQL;
 				$operatesOn=$iso19139->createElement("srv:operatesOn");
 				$operatesOn->setAttribute("xlink:href", $mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row_metadata['uuid'].'#spatial_dataset_'.md5($row_metadata['uuid']));
 				$operatesOn->setAttribute("uuidref", $uniqueResourceIdentifierCodespace.$row_metadata['uuid']);
-				$SV_ServiceIdentification->appendChild($operatesOn);
-			break;
-			case 'external':
-				$operatesOn=$iso19139->createElement("srv:operatesOn");
-				$operatesOn->setAttribute("xlink:href", $mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row_metadata['uuid']);
-				$operatesOn->setAttribute("uuidref", $uniqueResourceIdentifierCodespace.$row_metadata['datasetid']);
 				$SV_ServiceIdentification->appendChild($operatesOn);
 			break;
 			default:

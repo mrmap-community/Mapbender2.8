@@ -98,8 +98,6 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
 	}
 	catch(Exception $e) {
   		throw $e;
-		$errorMsg = "Error when creatingObjFromXML from wms_upload_url";
-		continue;
 	}
 	$updateWms->owner = $wmsToUpdate[$i]['wms_owner'];
     	if(!$createObjFromXml['success']) {
@@ -114,8 +112,6 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
     	}
 	catch(Exception $e) {
   		throw $e;
-		$errorMsg = "Error when optimizeWMS";
-		continue;
 	}
     	//check overwrite attribute
     	if (!$wmsToUpdate[$i]['scheduler_overwrite']) {
@@ -147,8 +143,6 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
 	}
 	catch(Exception $e) {
   		throw $e;
-		$errorMsg = "Error when updateObjInDB(".$wmsToUpdate[$i]['wms_id'].")";
-		continue;
 	}
     	if(!$updateObjInDb) {
     	    	$errorMsg = "Error while updating wms object in database";

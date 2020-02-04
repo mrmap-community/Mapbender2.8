@@ -82,7 +82,7 @@ class ExternalGraphic
 		$temp .= $offset."  <td>\n";
 		$temp .= $offset."   ExternalGraphic<br>\n";
 		
-		$number = split("_", $id);
+		$number = explode("_", $id);
 		$number = $number[count($number)-1];
 		$temp .= $offset."   <a class='edit' href=\"sld_function_handler.php?function=deleteexternalgraphicormark&id=".$this->parent."&number=".$number."\">l&ouml;schen</a>\n";
 		

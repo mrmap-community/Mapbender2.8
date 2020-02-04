@@ -29,7 +29,7 @@ class mb_notice extends mb_log {
 	 * @param	string $message		message that is being logged
 	 */
 	public function __construct ($message) {
-		return $this->mb_log("Notice: " . $message, $this->level);
+		$this->mb_log("Notice: " . $message, $this->level);
 	}
 
 	/**

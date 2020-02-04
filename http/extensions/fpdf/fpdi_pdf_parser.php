@@ -236,7 +236,6 @@ class fpdi_pdf_parser extends pdf_parser {
                     }
                 break;
                 case null:
-                    $stream = $stream;
                 break;
                 default:
                     if (preg_match("/^\/[a-z85]*$/i", $_filter[1], $filterName) && @include_once('decoders'.$_filter[1].'.php')) {

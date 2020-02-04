@@ -67,10 +67,8 @@ switch ($orderBy) {
 	case "id":	
 		$sql .= " ORDER BY mb_group_id ASC";
 		break;
-	case "title":	
-		$sql .= " ORDER BY mb_group_name ASC";
-		break;
-	default: 
+    case "title":
+    default:
 		$sql .= " ORDER BY mb_group_name ASC";
 		break;
 }

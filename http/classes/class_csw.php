@@ -89,8 +89,8 @@ class csw{
 	
 	/**
 	 * 
-	 * @param $request_type getrecords,describerecords..
-	 * @param $request_method get,post,soap
+	 * @param $request_type string getrecords,describerecords..
+	 * @param $request_method string get,post,soap
 	 * @return unknown_type
 	 * @todo error check to see whether value is available in method
 	 */

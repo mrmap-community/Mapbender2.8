@@ -181,28 +181,16 @@ if($action == 'save'){
 		$user->postalCode = $postal_code;
 		$user->city = $city;
 		$user->country = $country;
-		switch ($create_digest) {
-			case "on":
-				$user->createDigest = 't';
-				break;
-			case "off":
-				$user->createDigest = 'f';
-				break;
-			default: 
-				$user->createDigest = 'f';
-				break;
-		}
-		switch ($is_active) {
-			case "on":
-				$user->isActive = 't';
-				break;
-			case "off":
-				$user->isActive = 'f';
-				break;
-			default: 
-				$user->isActive = 'f';
-				break;
-		}
+        if ($create_digest == "on") {
+            $user->createDigest = 't';
+        } else {
+            $user->createDigest = 'f';
+        }
+        if ($is_active == "on") {
+            $user->isActive = 't';
+        } else {
+            $user->isActive = 'f';
+        }
 		$user->preferredGui = $fkey_preferred_gui_id;
 		$user->create();
 		$user->setNewUserPasswordTicket();
@@ -243,28 +231,16 @@ if ($action == 'update') {
 		$user->city = $city;
 		$user->country = $country;
 		$user->loginCount = $login_count;
-		switch ($create_digest) {
-			case "on":
-				$user->createDigest = 't';
-				break;
-			case "off":
-				$user->createDigest = 'f';
-				break;
-			default: 
-				$user->createDigest = 'f';
-				break;
-		}
-		switch ($is_active) {
-			case "on":
-				$user->isActive = 't';
-				break;
-			case "off":
-				$user->isActive = 'f';
-				break;
-			default: 
-				$user->isActive = 'f';
-				break;
-		}
+        if ($create_digest == "on") {
+            $user->createDigest = 't';
+        } else {
+            $user->createDigest = 'f';
+        }
+        if ($is_active == "on") {
+            $user->isActive = 't';
+        } else {
+            $user->isActive = 'f';
+        }
 		$user->preferredGui = $fkey_preferred_gui_id;
 		$user->commit();
 
