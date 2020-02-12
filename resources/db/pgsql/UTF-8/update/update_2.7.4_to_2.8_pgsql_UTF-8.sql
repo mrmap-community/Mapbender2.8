@@ -3841,7 +3841,7 @@ CREATE INDEX idx_wst_application_timestamp
 -- ALTER TABLE mb_user DROP COLUMN fkey_preferred_gui_id;
 
 ALTER TABLE mb_user ADD COLUMN fkey_preferred_gui_id character varying(50);
-ALTER TABLE gui_element ALTER COLUMN e_mb_mod TYPE text;
+
 -- Foreign Key: fkey_preferred_gui_id_fkey
 
 -- ALTER TABLE mb_user DROP CONSTRAINT fkey_preferred_gui_id_fkey;
@@ -3850,4 +3850,95 @@ ALTER TABLE mb_user
   ADD CONSTRAINT fkey_preferred_gui_id_fkey FOREIGN KEY (fkey_preferred_gui_id)
       REFERENCES gui (gui_id) MATCH SIMPLE
       ON UPDATE CASCADE;
+
+-- add some further iso metadata fields 
+ALTER TABLE mb_metadata ADD COLUMN alternate_title_json text;
+
+ALTER TABLE mb_metadata ADD COLUMN administrative_area text;
+
+-- add some more info about iso themes - to allow a start page like it is possible for inspire themes
+
+-- Column: md_topic_category_key
+
+-- ALTER TABLE md_topic_category DROP COLUMN md_topic_category_key;
+
+ALTER TABLE md_topic_category ADD COLUMN md_topic_category_key character varying(100);
+--ALTER TABLE md_topic_category ALTER COLUMN md_topic_category_key SET NOT NULL;
+
+-- Column: md_topic_category_symbol
+
+-- ALTER TABLE md_topic_category DROP COLUMN md_topic_category_symbol;
+
+--official translation from german working group
+
+ALTER TABLE md_topic_category ADD COLUMN md_topic_category_symbol character varying(255);
+
+--farming
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'tractor-solid', md_topic_category_description_de = 'Tierzucht und/oder Pflanzenanbau',md_topic_category_description_en = 'Rearing of animals or cultivation of plants, for example agriculture, irrigation, aquaculture, plantations, herding, pests and diseases affecting crops and livestock' WHERE md_topic_category_code_en = 'farming';
+--biotope -> biologie
+
+--biota
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_code_de = 'Biologie', md_topic_category_symbol = 'leaf-solid', md_topic_category_description_de = 'Flora und/oder Fauna in der natürlichen Umgebung', md_topic_category_description_en = 'Flora and/or fauna in natural environment Examples: wildlife, vegetation, biological sciences, ecology, wilderness, sealife, wetlands, habitat' WHERE md_topic_category_code_en = 'biota';
+
+--boundaries
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'flag-solid', md_topic_category_description_de = 'gesetzlich festgelegte Grenzen', md_topic_category_description_en = 'Legal land descriptions Examples: political and administrative boundaries' WHERE md_topic_category_code_en = 'boundaries';
+
+--climatologyMeteorologyAtmosphere
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_code_de = 'Atmosphäre', md_topic_category_symbol = 'cloud-solid', md_topic_category_description_de= 'Prozesse und Naturereignisse der Atmosphäre inkl. Klimatologie und Meteorologie',md_topic_category_description_en = 'Processes and phenomena of the atmosphere Examples: cloud cover, weather, climate, atmospheric conditions, climate change, precipitation' WHERE md_topic_category_code_en = 'climatologyMeteorologyAtmosphere';
+
+--economy
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_code_de = 'Wirtschaft', md_topic_category_symbol = 'industry-solid', md_topic_category_description_de= 'wirtschaftliche Aktivitäten, Verhältnisse und Beschäftigung',md_topic_category_description_en = 'Economic activities, conditions and employment Examples: production, labour, revenue, commerce, industry, tourism and ecotourism, forestry, fisheries, commercial or subsistence hunting, exploration and exploitation of resources such as minerals, oil and gas' WHERE md_topic_category_code_en = 'economy';
+
+--elevation
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_code_de = 'Höhenangaben', md_topic_category_symbol = 'mountain-solid', md_topic_category_description_de= 'Höhenangabe bezogen auf ein Höhenreferenzsystem', md_topic_category_description_en = 'Height above or below sea level Examples: altitude, bathymetry, digital elevation models, slope, derived products' WHERE md_topic_category_code_en = 'elevation';
+
+--environment
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'seedling-solid', md_topic_category_description_de = 'Umweltressourcen, Umweltschutz und Umwelterhaltung',md_topic_category_description_en = 'Environmental resources, protection and conservation Examples: environmental pollution, waste storage and treatment, environmental impact assessment, monitoring environmental risk, nature reserves, landscape' WHERE md_topic_category_code_en = 'environment';
+
+--geoscientificInformation
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_code_de = 'Geowissenschaften', md_topic_category_symbol = 'atlas-solid', md_topic_category_description_de = 'geowissenschaftliche Informationen',md_topic_category_description_en = 'Information pertaining to earth sciences Examples: geophysical features and processes, geology, minerals, sciences dealing with the composition, structure and origin of the earth''s rocks, risks of earthquakes, volcanic activity, landslides, gravity information, soils, permafrost, hydrogeology, erosion' WHERE md_topic_category_code_en = 'geoscientificInformation';
+
+--health
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_code_de = 'Gesundheitswesen', md_topic_category_symbol = 'medkit-solid', md_topic_category_description_de = 'Gesundheit, Gesundheitsdienste, Humanökologie und Betriebssicherheit', md_topic_category_description_en = 'Health, health services, human ecology, and safety Examples: disease and illness, factors affecting health, hygiene, substance abuse, mental and physical health, health services' WHERE md_topic_category_code_en = 'health';
+
+-- geoportal-de: Bilddaten/Basiskarten/Landbedeckung?
+--imageryBaseMapsEarthCover
+--, md_topic_category_code_de = 'Oberflächenbeschreibung'
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'globe-europe-solid', md_topic_category_description_de = 'Basiskarten und  -daten', md_topic_category_description_en = 'Base maps Examples: land cover, topographic maps, imagery, unclassified images, annotations' WHERE md_topic_category_code_en = 'imageryBaseMapsEarthCover';
+
+--intelligenceMilitary
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'fighter-jet-solid', md_topic_category_description_de = 'Militärbasen, militärische Einrichtungen und Aktivitäten', md_topic_category_description_en = 'Military bases, structures, activities Examples: barracks, training grounds, military transportation, information collection' WHERE md_topic_category_code_en = 'intelligenceMilitary';
+
+--inlandWaters
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'water-solid', md_topic_category_description_de = 'Binnengewässerdaten, Gewässernetze und deren Eigenschaften', md_topic_category_description_en = 'Inland water features, drainage systems and their characteristics Examples: rivers and glaciers, salt lakes, water utilization plans, dams, currents, floods, water quality, hydrographic charts' WHERE md_topic_category_code_en = 'inlandWaters';
+
+--location
+--, md_topic_category_code_de = 'Ortsangaben'
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'map-marker-alt-solid', md_topic_category_description_de = 'Positionierungsangaben und -dienste',md_topic_category_description_en = 'Positional information and services Examples: addresses, geodetic networks, control points, postal zones and services, place names' WHERE md_topic_category_code_en = 'location';
+
+--oceans
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'ship-solid', md_topic_category_description_de = 'Merkmale und Charakteristika von salzhaltigen Gewässern (außer Binnengewässern)',md_topic_category_description_en = 'Features and characteristics of salt water bodies (excluding inland waters) Examples: tides, tidal waves, coastal information, reefs' WHERE md_topic_category_code_en = 'oceans';
+
+--planningCadastre
+--, md_topic_category_code_de = 'Planungsunterlagen, Kataster'
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'drafting-compass-solid', md_topic_category_description_de = 'Informationen für die Flächennutzungsplanung',md_topic_category_description_en = 'Information used for appropriate actions for future use of the land Examples: land use maps, zoning maps, cadastral surveys, land ownership' WHERE md_topic_category_code_en = 'planningCadastre';
+
+--society
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'users-solid', md_topic_category_description_de = 'kulturelle und gesellschaftliche Merkmale', md_topic_category_description_en = 'Characteristics of society and cultures Examples: settlements, anthropology, archaeology, education, traditional beliefs, manners and customs, demographic data, recreational areas and activities, social impact assessments, crime and justice, census information' WHERE md_topic_category_code_en = 'society';
+
+--structure
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'building-solid', md_topic_category_description_de = 'anthropogene Bauten',md_topic_category_description_en = 'Man-made construction Examples: buildings, museums, churches, factories, housing, monuments, shops, towers' WHERE md_topic_category_code_en = 'structure';
+
+--transportation
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'bus-solid', md_topic_category_description_de = 'Mittel und Wege zur Beförderung von Personen und/oder Gütern',md_topic_category_description_en = 'Means and aids for conveying persons and/or goods Examples: roads, airports/airstrips, shipping routes, tunnels, nautical charts, vehicle or vessel location, aeronautical charts, railways' WHERE md_topic_category_code_en = 'transportation';
+
+--utilitiesCommunication
+UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'newspaper-solid', md_topic_category_description_de= 'Energie-, Wasser- und Abfallsysteme, Kommunikationsinfrastruktur und -dienste',md_topic_category_description_en = 'Energy, water and waste systems and communications infrastructure and services Examples: hydroelectricity, geothermal, solar and nuclear sources of energy, water purification and distribution, sewage collection and disposal, electricity and gas distribution, data communication, telecommunication, radio, communication networks' WHERE md_topic_category_code_en = 'utilitiesCommunication';
+
+
+
+
+
+
+
 
