@@ -873,9 +873,8 @@ if (($applicationMatrix[$i]['fkey_gui_id'] != false && $applicationMatrix[$i]['f
 } else {
    $this->applicationJSON->application->srv[$i]->internal = false;
 }
-$previewUrl = $admin->getMetadataPreviewUrl($applicationMatrix[$i]['metadata_id']);
 $this->applicationJSON->application->srv[$i]->accessURL = $accessUrl;
-			$this->applicationJSON->application->srv[$i]->previewURL = $previewUrl;
+$this->applicationJSON->application->srv[$i]->previewURL = $this->protocol . "://" . $this->hostName . "/mapbender/geoportal/mod_showPreview.php?resource=metadata&id=" . (int) $applicationMatrix[$i]['metadata_id'];
 			$spatialSource = "";
 			$stateOrProvince = $applicationMatrix[$i]['mb_group_stateorprovince']; 
 			if ($stateOrProvince == "NULL" || $stateOrProvince == "") {
