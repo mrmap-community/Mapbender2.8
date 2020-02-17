@@ -3,7 +3,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_json.php");
 $con = db_connect(DBSERVER,OWNER,PW);
 db_select_db(DB,$con);
-$pathToSearchScript = '/portal/servicebereich/suche.html?cat=dienste&searchfilter=';
+$pathToSearchScript = '/php/mod_callMetadata.php?';
 $languageCode = 'de';
 $maxFontSize = 40;
 $minFontSize = 10;
@@ -109,7 +109,7 @@ if ($outputFormat == 'json'){
 }
 
 if ($languageCode == 'en'){
-	$pathToSearchScript = '/portal/en/service/search.html?cat=dienste&searchfilter=';
+	$pathToSearchScript = '/php/mod_callMetadata.php?languageCode=en&';
 }
 
 
@@ -180,14 +180,14 @@ while($row = db_fetch_array($res)){
 		$maxWeight = (integer)$row['sum'];
 	} 
 	if ($type == 'topicCategories') {
-		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>'http://'.$hostName.$pathToSearchScript.urlencode('searchText=*&resultTarget=file&outputFormat=json&isoCategories='.$row['md_topic_category_id'].'&languageCode='.$languageCode),'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id'], 'symbol'=>$row[$categoryFilter.'_symbol']);
+		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>MAPBENDER_PATH.$pathToSearchScript.'searchText=*&resultTarget=webclient&searchResources=dataset&resolveCoupledResources=true&outputFormat=json&isoCategories='.$row['md_topic_category_id'].'&languageCode='.$languageCode,'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id'], 'symbol'=>$row[$categoryFilter.'_symbol']);
 	}
 	if ($type == 'inspireCategories') {
-		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>'http://'.$hostName.$pathToSearchScript.urlencode('searchText=*&resultTarget=file&outputFormat=json&inspireCategories='.$row[$categoryFilter.'_id'].'&languageCode='.$languageCode), 'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id']);
+		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>MAPBENDER_PATH.$pathToSearchScript.'searchText=*&resultTarget=webclient&searchResources=dataset&resolveCoupledResources=true&outputFormat=json&inspireCategories='.$row[$categoryFilter.'_id'].'&languageCode='.$languageCode, 'description'=>$row[$categoryFilter.'_description_'.$languageCode], 'info'=>$row[$categoryFilter.'_uri'], 'mbId'=>$row[$categoryFilter.'_id']);
 	}
 
 	if ($type == 'keywords') {
-		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>'http://'.$hostName.$pathToSearchScript.urlencode('searchText='.$row[$showName].'&resultTarget=file&outputFormat=json&languageCode='.$languageCode));
+		$tags[$i] = array('weight'  =>$row['sum'], 'tagname' =>$row[$showName], 'url'=>MAPBENDER_PATH.$pathToSearchScript.'searchText='.$row[$showName].'&resultTarget=webclient&searchResources=dataset&resolveCoupledResources=true&outputFormat=json&languageCode='.$languageCode);
 	}
 
 	$i++;
@@ -259,14 +259,20 @@ if ($outputFormat == 'json'){
 			$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId = end(explode('/', $tagCloudJSON->tagCloud->tags[$i]->info));
 			$tagCloudJSON->tagCloud->tags[$i]->description = $tags[$i]['description'];
 			//symbol
-			$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			//$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			$symbolFilePath = dirname(__FILE__)."/../img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			$tagCloudJSON->tagCloud->tags[$i]->inlineSvg = file_get_contents($symbolFilePath);
+			$tagCloudJSON->tagCloud->tags[$i]->keepColor = true;
 			break;
 	 	    case "topicCategories":
 			$tagCloudJSON->tagCloud->tags[$i]->info = $tags[$i]['info'];		
 			//$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId = end(explode('/', $tagCloudJSON->tagCloud->tags[$i]->info));
 			$tagCloudJSON->tagCloud->tags[$i]->description = $tags[$i]['description'];
 			//symbol
-			$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/ISOTopicThemes/". $tags[$i]['symbol'].".svg";
+			//$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/ISOTopicThemes/". $tags[$i]['symbol'].".svg";
+			$symbolFilePath = dirname(__FILE__)."/../img/ISOTopicThemes/". $tags[$i]['symbol'].".svg";
+			$tagCloudJSON->tagCloud->tags[$i]->inlineSvg = file_get_contents($symbolFilePath);
+			$tagCloudJSON->tagCloud->tags[$i]->keepColor = false;
 			break;
 		}
    	 }
