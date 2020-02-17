@@ -260,7 +260,7 @@ if ($outputFormat == 'json'){
 			$tagCloudJSON->tagCloud->tags[$i]->description = $tags[$i]['description'];
 			//symbol
 			//$tagCloudJSON->tagCloud->tags[$i]->symbolUrl = MAPBENDER_PATH."/img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
-			$symbolFilePath = dirname(__FILE__)."/../img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId.".svg";
+			$symbolFilePath = dirname(__FILE__)."/../img/INSPIRE-themes-icons-master/svg/".$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId."_simple.svg";
 			$tagCloudJSON->tagCloud->tags[$i]->inlineSvg = file_get_contents($symbolFilePath);
 			$tagCloudJSON->tagCloud->tags[$i]->keepColor = true;
 			break;
