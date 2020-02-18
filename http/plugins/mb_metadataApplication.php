@@ -185,11 +185,11 @@ $(function() {
 	<div id="tabs-4">
 	    <fieldset id="tempref" name="tempref">
 	        <legend><?php echo _mb("TEMPORAL REFERENCE");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("This metadata element addresses the requirement to have information on the temporal dimension of the data as referred to in Article 8(2)(d) of Directive 2007/2/EC. At least one of the metadata elements referred to in points 5.1 to 5.4 shall be provided. The value domain of the metadata elements referred to in points 5.1 to 5.4 is a set of dates. Each date shall refer to a temporal reference system and shall be expressed in a form compatible with that system. The default reference system shall be the Gregorian calendar, with dates expressed in accordance with ISO 8601.");?>'}" src="../img/questionmark.png" alt="" /></legend>
-	        <!--<fieldset id="timespan" name="timespan">
+	        <fieldset id="timespan" name="timespan">
 	            <legend><?php echo _mb("Temporal extent");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("The temporal extent defines the time period covered by the content of the resource. This time period may be expressed as any of the following: - an individual date, - an interval of dates expressed through the starting date and end date of the interval, - a mix of individual dates and intervals of dates.");?>'}" src="../img/questionmark.png" alt="" /></legend>
 		    <p><?php echo _mb("from");?>:</p><input class="required hasdatepicker" name="tmp_reference_1" id="tmp_reference_1"/><br>
 		    <p><?php echo _mb("to");?>:</p><input class="required hasdatepicker" name="tmp_reference_2" id="tmp_reference_2"/>
-	        </fieldset>-->
+	        </fieldset>
 	        <fieldset id="cyclicupdate" name="cyclicupdate">
 		    <legend><?php echo _mb("Maintenance and update frequency");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("Frequency with which changes and additions are made to the resource after the initial resource is completed. Notice: This value may change the value of the end date of temporal extent. The end date will be computed automatically from the current timestamp if a cyclic update is defined!");?>'}" src="../img/questionmark.png" alt="" /></legend>
 		    <select class="required cyclic_selectbox" id='update_frequency' name='update_frequency'>
