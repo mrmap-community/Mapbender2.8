@@ -6,11 +6,11 @@
 # 2020-02-03
 #
 
-require_once "/../../conf/altitudeProfile.conf";
+require_once dirname(__FILE__)."/../../conf/altitudeProfile.conf";
 
 # Use constants from configuration file
 $imageFile = ALTITUDE_PROFILE_DTM_IMAGE_FILE;
-$left = ALTITUDE_PROFILE_BBOX_MAXX;
+$left = ALTITUDE_PROFILE_BBOX_MINX;
 $right = ALTITUDE_PROFILE_BBOX_MAXX;
 $bottom = ALTITUDE_PROFILE_BBOX_MINY;
 $top = ALTITUDE_PROFILE_BBOX_MAXY;
