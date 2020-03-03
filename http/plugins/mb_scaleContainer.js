@@ -1,3 +1,11 @@
+<?php
+include '../include/dyn_js.php';
+?>
+if(typeof(scaleContainerClosed)==='undefined' || scaleContainerClosed === 'true'){
+        var scaleContainerClosed = true;
+} else {
+        var scaleContainerClosed = false;
+};
 var $toolbar = $(this);
 
 var ToolbarApi = function (o) {
@@ -15,9 +23,12 @@ var ToolbarApi = function (o) {
 $toolbar.mapbender(new ToolbarApi(options));
 
 $(document).ready(function(){
-         $('#scaleDiv').click(function(){
+        $('#scaleDiv').click(function(){
 		$('#scaleContainer').toggle();
 		$('#scaleContainer').click(function(event){event.stopPropagation();});
 		$('#scaleDiv').toggleClass('scaleDivOpened');  
-	 })
+	    })
+        if(scaleContainerClosed===false){
+                $('#scaleDiv').click();
+        }
 });
