@@ -68,7 +68,7 @@ class connector {
 		//an internet connection. It can be that some requests are done thru this class to the urls of
 		//HTTP_AUTH_PROXY or OWSPROXY. If some of those are part of the url they must be exchanged with 127.0.0.1 - 			//which hopefully should work.
 		$testMatch = $url;
-		$localTmpFolder = 'file://'.str_replace('classes',ltrim(TMPDIR,'../'),dirname(__FILE__)).'/';
+		$localTmpFolder = 'file://'.str_replace('classes',ltrim(TMPDIR,'\.\./'),dirname(__FILE__)).'/';
 		$pattern = '/^http:|https:|'.str_replace('/','\/',$localTmpFolder).'/';	
 		//$e = new mb_exception('file://'.str_replace('classes',ltrim(TMPDIR,'../'),dirname(__FILE__)).'/');
  		if (!preg_match($pattern,$testMatch)){ 

@@ -2634,7 +2634,7 @@ SQL;
 		return $getMapUrl;
 	}
 
-	public function insertToDB($resourceType, $resourceId, $inheritContactInfo = false, $inheritLicenceInfo = false){
+	public function insertToDB($resourceType, $resourceId, $inheritContactInfo = false, $inheritLicenceInfo = false, $resolveRemote = true){
 		$result = array(); //value/message
 		
 		switch ($this->origin) {
@@ -2655,7 +2655,12 @@ SQL;
 				
 				if ((($this->type == 'ISO19115:2003' || $this->type == 'ISO 19115:2003') && $this->format =='text/xml') || ($this->type == 'TC211' && $this->format =='text/xml') || (($this->type == 'ISO19115:2003' || $this->type == 'ISO 19115:2003') && ($this->format =='application/vnd.iso.19139+xml' || $this->format =='application/xml')) || $wfs20 == true) {
 					$e = new mb_notice("class_Iso19139:"."try to parse: ".$this->href);
-					$metadata = $this->createFromUrl($this->href); //will alter object itself
+					if ($resolveRemote == true) {
+						$metadata = $this->createFromUrl($this->href); //will alter object itself
+					} else {
+						$metadata == false;
+						$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
+					}
 					$e = new mb_notice("class_Iso19139:"."Metadata found: ".$this->metadata);
 					if ($metadata == false) {
 						//try to insert only MetadataURL elements
