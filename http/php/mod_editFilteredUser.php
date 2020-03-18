@@ -53,6 +53,12 @@ $action = $_POST["action"];
 $is_active = $_POST["is_active"];
 $create_digest = $_POST["create_digest"];
 $fkey_preferred_gui_id = $_POST["fkey_preferred_gui_id"];
+$textsize = $_POST["textsize"];
+$wants_newsletter = $_POST["wants_newsletter"];
+$wants_glossar = $_POST["wants_glossar"];
+$wants_spatial_suggest = $_POST["wants_spatial_suggest"];
+$allows_survey = $_POST["allows_survey"];
+
 require_once(dirname(__FILE__)."/../classes/class_user.php");
 $myUser = true;
 include "../../lib/editUser.php";

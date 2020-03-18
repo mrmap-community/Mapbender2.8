@@ -3734,7 +3734,6 @@ WITH DATA;
 ALTER TABLE search_application_view
   OWNER TO postgres;
 GRANT ALL ON TABLE search_application_view TO postgres;
-GRANT ALL ON TABLE search_application_view TO mapbenderdbuser;
 
 -- Index: gist_wst_application_the_geom
 
@@ -3936,7 +3935,10 @@ UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, 
 UPDATE md_topic_category SET md_topic_category_key = md_topic_category_code_en, md_topic_category_symbol = 'newspaper-solid', md_topic_category_description_de= 'Energie-, Wasser- und Abfallsysteme, Kommunikationsinfrastruktur und -dienste',md_topic_category_description_en = 'Energy, water and waste systems and communications infrastructure and services Examples: hydroelectricity, geothermal, solar and nuclear sources of energy, water purification and distribution, sewage collection and disposal, electricity and gas distribution, data communication, telecommunication, radio, communication networks' WHERE md_topic_category_code_en = 'utilitiesCommunication';
 
 
-
+ALTER TABLE mb_user ADD COLUMN mb_user_glossar_1 boolean;
+ALTER TABLE mb_user ADD COLUMN mb_user_textsize character varying(14);
+ALTER TABLE mb_user ADD COLUMN mb_user_last_login_date date;
+ALTER TABLE mb_user ADD COLUMN mb_user_spatial_suggest_1 boolean;
 
 
 

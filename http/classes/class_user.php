@@ -41,17 +41,26 @@ class User implements RPCObject{
 	var $houseNumber = "";
 	var $reference = "";
 	var $forAttentionOf = "";
-  var $validFrom = null;
-  var $validTo = null;
-  var $passwordTicket = "";
+    var $validFrom = null;
+    var $validTo = null;
+    var $passwordTicket = "";
 	var $firstName = "";
 	var $lastName = "";
 	var $academicTitle = "";
-  var $activationKey = "";
+    var $activationKey = "";
 	var $isActive = 'f';
 	var $createDigest = 'f';
 	var $preferredGui = '';
-
+	
+	//new 2020-03-18 for compatibility to older typo3 based portal systems
+	var $wantsNewsletter = 'f';
+	var $allowsSurvey = 'f';
+	//var $wantsSpatialSuggest = "nein"; //TODO bad model - should be boolean
+	var $wantsSpatialSuggest = 'f';
+	//var $wantsGlossar = "nein"; //TODO bad model - should be boolean
+	var $wantsGlossar = 'f';
+	var $textSize = "textsize3";
+		
   static $displayName = "User";
   static $internalName = "user";
 
@@ -153,7 +162,12 @@ class User implements RPCObject{
 			"activationKey" => $this->activationKey,
 			"isActive" => $this->isActive,
 			"createDigest" => $this->createDigest,
-			"preferredGui" => $this->preferredGui
+			"preferredGui" => $this->preferredGui,
+        	"textSize" => $this->textSize,
+        	"wantsGlossar" => $this->wantsGlossar,
+        	"wantsSpatialSuggest" => $this->wantsSpatialSuggest,
+        	"allowsSurvey" => $this->allowsSurvey,
+        	"wantsNewsletter" => $this->wantsNewsletter	
         );
 		return $result;
 	}
@@ -256,7 +270,12 @@ class User implements RPCObject{
 		$this->isActive = isset($changes->isActive) ? $changes->isActive : $this->isActive;
 		$this->createDigest = isset($changes->createDigest) ? $changes->createDigest : $this->createDigest;
 		$this->preferredGui = isset($changes->preferredGui) ? $changes->preferredGui : $this->preferredGui;
-        return true;
+		$this->textSize= isset($changes->textSize) ? $changes->textSize : $this->textSize;
+		$this->wantsGlossar = isset($changes->wantsGlossar) ? $changes->wantsGlossar : $this->wantsGlossar;
+		$this->wantsSpatialSuggest = isset($changes->wantsSpatialSuggest) ? $changes->wantsSpatialSuggest : $this->wantsSpatialSuggest;
+		$this->allowsSurvey = isset($changes->allowsSurvey) ? $changes->allowsSurvey : $this->allowsSurvey;
+		$this->wantsNewsletter = isset($changes->wantsNewsletter) ? $changes->wantsNewsletter : $this->wantsNewsletter;
+		return true;
 	}
 
 	public function commit() {
@@ -293,12 +312,24 @@ class User implements RPCObject{
 			"activation_key = $29, " .
 			"is_active = $30, " .
 			"create_digest = $31, " .
-			"fkey_preferred_gui_id = $32 " .
-			"WHERE mb_user_id = $33;";
+			"fkey_preferred_gui_id = $32, " .
+			
+			"mb_user_textsize = $33, " .
+			"mb_user_allow_survey = $34, " .
+			"mb_user_glossar_1 = $35, " .
+			"mb_user_newsletter = $36, " .
+			"mb_user_spatial_suggest_1 = $37 " .
+			
+			"WHERE mb_user_id = $38;";
 
 		if ($this->isActive !== 't') {$this->isActive = 'f';}
 		if ($this->createDigest !== 't') {$this->createDigest = 'f';}
-
+		
+		if ($this->wantsNewsletter !== 't') {$this->wantsNewsletter = 'f';}
+		if ($this->wantsSpatialSuggest !== 't') {$this->cwantsSpatialSuggest = 'f';}
+		if ($this->allowsSurvey !== 't') {$this->allowsSurvey = 'f';}
+		if ($this->wantsGlossar !== 't') {$this->wantsGlossar = 'f';}
+		
 		$v = array(
 			$this->name,
 			is_numeric($this->owner) ? intval($this->owner) : null,
@@ -332,6 +363,13 @@ class User implements RPCObject{
 			$this->isActive,
 			$this->createDigest,
 			$this->preferredGui,
+				
+			$this->textSize !== "" ? $this->textSize : null,
+			$this->allowsSurvey,
+			$this->wantsGlossar,
+			$this->wantsNewsletter,
+			$this->wantsSpatialSuggest,	
+				
 			is_numeric($this->id) ? intval($this->id) : null,
 		);
 
@@ -341,7 +379,9 @@ class User implements RPCObject{
 			"s", "s", "s", "i", "s",
 			"s", "s", "s", "s", "s",
 			"s", "s", "s", "s", "s",
-			"s", "s", "i", "s", "b", "b", "s", "i"
+			"s", "s", "i", "s", "b",
+			"b", "s", "s", "b", "b",
+			"b", "b", "i"
 		);
 
 		$update_result = db_prep_query($sql_update,$v,$t);
@@ -423,6 +463,54 @@ class User implements RPCObject{
 			$this->lastName = $row["mb_user_lastname"];
 			$this->academicTitle = $row["mb_user_academictitle"];
 			$this->preferredGui = $row["fkey_preferred_gui_id"];
+			
+			$this->textSize = $row["mb_user_textsize"];
+			
+			switch ($row['mb_user_glossar_1']) {
+				case "t":
+					$this->wantsGlossar = 't';
+					break;
+				case "f":
+					$this->wantsGlossar = 'f';
+					break;
+				default:
+					$this->wantsGlossar = 'f';
+					break;
+			}
+			switch ($row['mb_user_spatial_suggest_1']) {
+				case "t":
+					$this->wantsSpatialSuggest = 't';
+					break;
+				case "f":
+					$this->wantsSpatialSuggest = 'f';
+					break;
+				default:
+					$this->wantsSpatialSuggest = 'f';
+					break;
+			}
+			switch ($row['mb_user_newsletter']) {
+				case "t":
+					$this->wantsNewsletter = 't';
+					break;
+				case "f":
+					$this->wantsNewsletter = 'f';
+					break;
+				default:
+					$this->wantsNewsletter = 'f';
+					break;
+			}
+			switch ($row['mb_user_allow_survey']) {
+				case "t":
+					$this->allowsSurvey = 't';
+					break;
+				case "f":
+					$this->allowsSurvey = 'f';
+					break;
+				default:
+					$this->allowsSurvey = 'f';
+					break;
+			}
+			
 		}
 		else {
 			 throw new Exception("no such User");
