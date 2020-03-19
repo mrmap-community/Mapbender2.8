@@ -54,6 +54,16 @@ if(typeof(featureInfoCollectLayers)==='undefined' || featureInfoCollectLayers ==
 	var featureInfoCollectLayers = false;
 if (typeof(featureInfoShowKmlTreeInfo) === 'undefined' || featureInfoShowKmlTreeInfo === 'false')
 	var featureInfoShowKmlTreeInfo = false;
+if (featureInfoPrint === undefined || featureInfoPrint === 'false') {
+  var featureInfoPrint = false;
+}
+if (featureInfoPrintConfig === undefined) {
+  var featureInfoPrintConfig = '../print/Dummy_A4.json';
+}
+if (featureInfoPrintButton === undefined) {
+  var featureInfoPrintButton = '#printPDF';
+}
+
 
 var mod_featureInfo_elName = "<?php echo $e_id;?>";
 var mod_featureInfo_frameName = "";
@@ -142,7 +152,7 @@ function mod_featureInfo_disable(){
 	}
 }
 
-function makeDialog($content, title, dialogPosition, offset) {
+function makeDialog($content, title, dialogPosition, offset, printInfo) {
     dialogPosition = dialogPosition || featureInfoPopupPosition;
     if(featureInfoPopupPosition.length === 2 && !isNaN(featureInfoPopupPosition[0]) && !isNaN(featureInfoPopupPosition[1])) {
         offset = offset || 0;
@@ -150,49 +160,64 @@ function makeDialog($content, title, dialogPosition, offset) {
         dialogPosition[0] = featureInfoPopupPosition[0] + offset;
         dialogPosition[1] = featureInfoPopupPosition[1] + offset;
     }
-    return $content.dialog({
-        bgiframe: true,
-        autoOpen: true,
-        modal: false,
-        title: title,
-        width: parseInt(featureInfoPopupWidth, 10),
-        height: parseInt(featureInfoPopupHeight, 10),
-        position: dialogPosition,
-        buttons: {
-            "Ok": function() {
-                if (standingHighlightFeatureInfo !== null) { 
-                    standingHighlightFeatureInfo.clean();
-                }
-                $(this).dialog('close').remove();
-            }
+    var dialogConfig = {
+      bgiframe: true,
+      autoOpen: true,
+      modal: false,
+      title: title,
+      width: parseInt(featureInfoPopupWidth, 10),
+      height: parseInt(featureInfoPopupHeight, 10),
+      position: dialogPosition,
+      buttons: {
+        "Ok": function() {
+          if (standingHighlightFeatureInfo !== null) {
+            standingHighlightFeatureInfo.clean();
+          }
+          $(this).dialog('close').remove();
         },
-	open: function(){
-		$('#tree2Container').hide() && $('a.toggleLayerTree').removeClass('activeToggle'),
-		$('#toolsContainer').hide() && $('a.toggleToolsContainer').removeClass('activeToggle');
-	}
-    }).parent().css({ position:"fixed" });
+        "open": function(){
+          $('#tree2Container').hide() && $('a.toggleLayerTree').removeClass('activeToggle'),
+          $('#toolsContainer').hide() && $('a.toggleToolsContainer').removeClass('activeToggle');
+        }
+      }
+    };
+    if (featureInfoPrint) {
+      dialogConfig.buttons['Print'] = function () {
+        $(featureInfoPrintButton).data('printObj').printFeatureInfo(printInfo, $content)
+      }
+    }
+    return $content.dialog(dialogConfig).parent().css({ position:"fixed" });
 }
 
-function featureInfoDialog(request, dialogPosition, offset) {
+function featureInfoDialog(featureInfo, dialogPosition, offset, printInfo) {
     var title = "<?php echo _mb("Information");?>";
+    if (printInfo !== undefined) {
+        printInfo = $.extend({}, printInfo, {
+          urls: [featureInfo]
+        });
+    }
     var $iframe = $("<iframe>")
             .attr("frameborder", 0)
             .attr("height", "100%")
             .attr("width", "100%")
             .attr("id", "featureInfo")
             .attr("title", title)
-            .attr("src", request)
-    return makeDialog($("<div>").append($iframe), title, dialogPosition, offset);
+            .attr("src", featureInfo.request)
+    return makeDialog($("<div>").append($iframe), title, dialogPosition, offset, printInfo);
 }
 
-function ownDataDialog(ownData, dialogPosition, offset) {
+function ownDataDialog(ownData, dialogPosition, offset, printInfo) {
+    if (printInfo !== undefined) {
+      console.error('kml data is not printable');
+      printInfo = undefined
+    }
     var $box = $('<div>').html(ownData.content);
     return makeDialog($box,
-            "<?php echo _mb("Information");?>", dialogPosition, offset);
+            "<?php echo _mb("Information");?>", dialogPosition, offset, printInfo);
 }
 
-function featureInfoWindow(request) {
-    return window.open(request, "" , "width="+featureInfoPopupWidth+",height="+featureInfoPopupHeight+",scrollbars=yes,resizable=yes");
+function featureInfoWindow(featureInfo) {
+    return window.open(featureInfo.request, "" , "width="+featureInfoPopupWidth+",height="+featureInfoPopupHeight+",scrollbars=yes,resizable=yes");
 }
 
 function ownDataWindow(ownData) {
@@ -243,7 +268,7 @@ function makeOwnDataListLine(ownData) {
     });
 }
 
-function featureInfoListDialog(urls, ownDataInfos) {
+function featureInfoListDialog(urls, ownDataInfos, printInfo) {
     var $featureInfoList = $("<table>")
             .attr("border", 1);
     
@@ -280,16 +305,29 @@ function featureInfoListDialog(urls, ownDataInfos) {
         });
     }
 
+    if (printInfo !== undefined) {
+        printInfo = $.extend({}, printInfo, {
+          urls: urls
+        });
+    }
+
     makeDialog($("<div id='featureInfo_preselect'></div>").append($featureInfoList),
-        "<?php echo _mb("Please choose a requestable Layer");?>");
+        "<?php echo _mb("Please choose a requestable Layer");?>", undefined, undefined, printInfo);
 }
 
 function mod_featureInfo_event(e){
-    var urls;
+    var featureInfos;
 	var point = mod_featureInfo_mapObj.getMousePosition(e);
     //calculate realworld position
     var realWorldPoint = Mapbender.modules[options.target].convertPixelToReal(point);
     var ownDataInfos = [];
+    var printInfo;
+    if (featureInfoPrint) {
+      printInfo = {
+        config: featureInfoPrintConfig,
+        point: realWorldPoint
+      };
+    }
     if (featureInfoShowKmlTreeInfo) {
         if (Mapbender.modules.kmlTree === undefined) {
             console.error('kmltree module is needed if element_var \'featureInfoShowKmlTreeInfo\' is set to true')
@@ -311,9 +349,10 @@ function mod_featureInfo_event(e){
 		//get coordinates from point
 		var ga = new GeometryArray();
 		//TODO set current epsg!
+        var srs = Mapbender.modules[options.target].getSRS();
 		ga.importPoint({
 			coordinates:[realWorldPoint.x,realWorldPoint.y,null]
-		}, Mapbender.modules[options.target].getSRS())
+		}, srs)
 		var m = ga.get(-1,-1);
 		standingHighlightFeatureInfo.add(m, featureInfoCircleColor);
 		standingHighlightFeatureInfo.paint();
@@ -336,8 +375,8 @@ function mod_featureInfo_event(e){
 		if (featureInfoLayerPreselect) {
 			$("#featureInfo_preselect").remove();
 			//build list of possible featureInfo requests
-			urls = mod_featureInfo_mapObj.getFeatureInfoRequestsForLayers(point, ignoreWms, Mapbender.modules[options.target].getSRS(), realWorldPoint, featureInfoCollectLayers) || [];
-            var length = urls.length + ownDataInfos.length;
+			featureInfos = mod_featureInfo_mapObj.getFeatureInfoRequestsForLayers(point, ignoreWms, Mapbender.modules[options.target].getSRS(), realWorldPoint, featureInfoCollectLayers) || [];
+            var length = featureInfos.length + ownDataInfos.length;
 			if (length === 0) {
 				alert("<?php echo _mb("Please enable some layer to be requestable");?>!");
 				return false;
@@ -346,44 +385,44 @@ function mod_featureInfo_event(e){
 				//don't show interims window!
 				//open featureInfo directly
 				if (featureInfoLayerPopup){
-                    if (urls.length === 1) {
-                        featureInfoDialog(urls[0].request);
+                    if (featureInfos.length === 1) {
+                        featureInfoDialog(featureInfos[0], undefined, undefined, printInfo);
                     } else {
-                        ownDataDialog(ownDataInfos[0]);
+                        ownDataDialog(ownDataInfos[0], undefined, undefined, printInfo);
                     }
 					return false;
 				} else {
-                    if (urls.length === 1) {
-                        featureInfoWindow(urls[0].request);
+                    if (featureInfos.length === 1) {
+                        featureInfoWindow(featureInfos[0]);
                     } else {
                         ownDataWindow(ownDataInfos[0]);
                     }
 					return false;
 				}
 			}
-			featureInfoListDialog(urls, ownDataInfos);
+			featureInfoListDialog(featureInfos, ownDataInfos, printInfo);
 		} else {
-			urls = mod_featureInfo_mapObj.getFeatureInfoRequests(point, ignoreWms) || [];
-            var length = urls.length + ownDataInfos.length;
+			featureInfos = mod_featureInfo_mapObj.getFeatureInfoRequests(point, ignoreWms) || [];
+            var length = featureInfos.length + ownDataInfos.length;
 			if (length > 0){
-				for (var i=0; i < urls.length; i++){
+				for (var i=0; i < featureInfos.length; i++){
 					//TODO: also rewind the LAYERS parameter for a single WMS FeatureInfo REQUEST if needed?
 					if (reverseInfo) {
-						if (typeof(urls[i]) !== "undefined") {
-							urls[i] = changeURLValueOrder(urls[i], 'LAYERS');
+						if (typeof(featureInfos[i]) !== "undefined") {
+							featureInfos[i] = changeURLValueOrder(featureInfos[i], 'LAYERS');
 						}
 					}
 					if(featureInfoLayerPopup){
-                        featureInfoDialog(urls[i], dialogPosition, i * 25);
+                        featureInfoDialog(featureInfos[i], dialogPosition, i * 25, undefined, printInfo);
 					}
 					else {
-                        featureInfoWindow(urls[i]);
+                        featureInfoWindow(featureInfos[i]);
                     }
 				}
                 
                 for(var i=0; i < ownDataInfos.length; i++){
 					if(featureInfoLayerPopup === 'true'){
-                        ownDataDialog(ownDataInfos[i], dialogPosition, (urls.length + i) * 25);
+                        ownDataDialog(ownDataInfos[i], dialogPosition, (featureInfos.length + i) * 25, printInfo);
 					}
 					else {
                         ownDataWindow(ownDataInfos[i]);

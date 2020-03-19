@@ -31,6 +31,8 @@ if (!preg_match("/^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9]+)$/", $confFile) ||
 
 $pdf = $pf->create($_REQUEST["printPDF_template"]);
 
+new mb_notice("REQUEST:".json_encode($_REQUEST));
+
 //element vars of print
 $pdf->unlinkFiles = $unlink;
 $pdf->logRequests = $logRequests;
@@ -48,6 +50,10 @@ if (isset($legendColumns)){
     $pdf->legendColumns = '1';
 }
 
+if (array_key_exists("featureInfo", $_REQUEST)) {
+	$pdf->featureInfo = json_decode($_REQUEST["featureInfo"]);
+}
+
 $pdf->render();
 try {
 	$pdf->save();
@@ -56,6 +62,7 @@ catch (Exception $e) {
 	new mb_exception($e->message);
 	die;
 }
+
 if ($secureProtocol == "true"){
     print $pdf->returnAbsoluteUrl(true);
 }else{
