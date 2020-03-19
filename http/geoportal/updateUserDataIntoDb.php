@@ -46,7 +46,7 @@
 	//check that the current user is not the anonymous one (guest)
 	//build user object from information in the current session
 	$user = new User(); //if no id is given, object will be instantiated from current session
-	if ($user->isPublic == false) {
+	if ($user->isPublic() == false) {
 		$variableMapping = array(
 				//"mb_user_name" => "name",
 				"mb_user_description" => "description",
