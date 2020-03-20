@@ -54,10 +54,10 @@ require_once(dirname(__FILE__)."/../php/mb_validateSession.php");
 
 ?>
 
-var standingHighlight = null;
+var standingHighlightAdress = null;
 Mapbender.events.afterMapRequest.register( function(){
-	if(standingHighlight){
-		standingHighlight.paint();
+	if(standingHighlightAdress){
+		standingHighlightAdress.paint();
 	}
 });
 
@@ -131,12 +131,12 @@ var JsonAutocompleteGazetteer = function() {
 				}
 				if (options.drawCentrePoint) {
 					//generate layer for visualization of point
-					if(standingHighlight !== null){ 
-						standingHighlight.clean();
+					if(standingHighlightAdress !== null){ 
+						standingHighlightAdress.clean();
 					}else{
-						standingHighlight = new Highlight(
+						standingHighlightAdress = new Highlight(
 							[options.target],
-							"standingHighlight", 
+							"standingHighlightAdress", 
 							{"position":"absolute", "top":"0px", "left":"0px", "z-index":999}, 
 							2);
 					}
@@ -150,9 +150,9 @@ var JsonAutocompleteGazetteer = function() {
 						coordinates:[x,y,null]
 					},Mapbender.modules[targetName].epsg)
 					var m = ga.get(-1,-1);
-					standingHighlight.add(m, "#ff0000");
+					standingHighlightAdress.add(m, "#ff0000");
 					//alert(m);
-					standingHighlight.paint();
+					standingHighlightAdress.paint();
 				}
 				if (obj.points) {
 					if (obj.points.length === 2) {
@@ -216,6 +216,7 @@ var JsonAutocompleteGazetteer = function() {
                 $("#symbolForClearInputId").click(function() {
                         $("#geographicName").val('');
 			$("#geographicName").focus();
+			standingHighlightAdress.clean();
                 });
 
 		this.symbolForInputClose = $(document.createElement('img')).appendTo(this.formContainer);
@@ -224,6 +225,7 @@ var JsonAutocompleteGazetteer = function() {
                 this.symbolForInputClose.attr({'style':'cursor:pointer'});
 		$("#symbolForInputCloseId").click(function() {
                         that.toggleInput();
+						standingHighlightAdress.clean();
                 });
 		
 

@@ -54,7 +54,10 @@ var ConfTree = function(o){
 		height: 390,
 		position: [o.$target.offset().left+20, o.$target.offset().top+80],
 		autoOpen: false,
-		close: function() {$("#menuitem_flst").removeClass("menuitem_flst_on");}
+		close: function() {
+          $("#menuitem_flst").removeClass("menuitem_flst_on");
+          $("#mod_gaz_drawstandingHighlightWFS0").remove();
+        }
 	});
 	$("button.toggle",$confTree).live('click', function(){
 		if($(this).parent().hasClass("open")){
