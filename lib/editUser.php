@@ -748,7 +748,7 @@ echo "</tr>";
 #preferredGui
 if ($preferredGuiCategory != false && count($user->getApplicationsByPermission(false, $preferredGuiCategory)) > 0) {
 echo "<tr>";
-   echo "<td>"._mb("Preferred GUI")." (".implode(",", $user->getApplicationsByPermission(false, $preferredGuiCategory))."): </td>";
+   echo "<td>"._mb("Preferred GUI")." (".implode(", ", $user->getApplicationsByPermission(false, $preferredGuiCategory))."): </td>";
    echo "<td>";
       echo "<input type='text' size='30' name='fkey_preferred_gui_id' value='".htmlentities($fkey_preferred_gui_id, ENT_QUOTES, "UTF-8")."'>";
    echo "</td>";
