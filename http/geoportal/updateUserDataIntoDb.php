@@ -68,6 +68,7 @@
 			}
 		}
 		//save elements
+		$user->createDigest = 't';
 		$result = $user->commit();
 		if ($result == false) {
 			$e = new mb_exception("geoportal/updateUserIntoDb.php: An error occured while try to save user data in database!");
