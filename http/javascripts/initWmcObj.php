@@ -40,7 +40,6 @@ function logit($text,$filename,$how){
 				fclose($h);
 			}
 }
-
 $admin = new administration();
 /*
 Initial declaration of the return object, that handles some control of the distributed services
@@ -72,7 +71,6 @@ $resultObj = array(
 		"wms" => array()
 	),
 );
-
 /*
 Load WMC from session or application (GUI)
 */
@@ -82,17 +80,17 @@ $wmc = new wmc();
 activate for debugging
 */
 $e = new mb_notice("javascript/initWmcObj.php: Current user name from session information: ".Mapbender::session()->get("mb_user_name"));
-
 $app = Mapbender::session()->get("mb_user_gui"); // if gui was set!
-
+//$e = new mb_exception("javascript/initWmcObj.php: GUI from session: ".$app);
 //$wmcDocSession = Mapbender::session()->get("mb_wmc");
 $wmcDocSession = false;
 // check if wmc filename is in session - TODO only if should be loaded from session not else! (Module loadWMC)
-$e = new mb_notice("javascript/initWmcObj.php: Filename of WMC from session: ".Mapbender::session()->get("mb_wmc"));
+//$e = new mb_exception("javascript/initWmcObj.php: Filename of WMC from session: ".Mapbender::session()->get("mb_wmc"));
 /*check if WMC exists in session
 */
 if(Mapbender::session()->get("mb_wmc")) {
     $wmc_filename = Mapbender::session()->get("mb_wmc");
+    //$e = new mb_exception("javascript/initWmcObj.php: wmc_filename: ".$wmc_filename);
     //$time_start = microtime();
     // load it from whereever it has been stored
     $wmcDocSession = $admin->getFromStorage($wmc_filename, TMP_WMC_SAVE_STORAGE);
@@ -106,7 +104,7 @@ try {
 	if ($wmcDocSession && $loadFromSession->value === "1") {
 	// check if session contains a wmc,
 	// otherwise create a new wmc from application
-		$e = new mb_notice("javascript/initWmcObj.php: Trying to load session WMC...");
+		//$e = new mb_exception("javascript/initWmcObj.php: Trying to load session WMC...");
 		if (!$wmc->createFromXml($wmcDocSession)) {
 			$e = new mb_notice("javascript/initWmcObj.php: Loading session WMC failed.");
 			$e = new mb_notice("javascript/initWmcObj.php: Creating WMC from app: ".$app);
@@ -124,6 +122,21 @@ try {
 catch (Exception $e) {
 	$e = new mb_exception("javascript/initWmcObj.php: ERROR while loading WMC from session - test creating WMC from app: " . $app);
 	$wmc->createFromApplication($app);
+}
+//*********************************************************************************************************
+/*
+ Check if savewmc is defined in gui and if element_var saveInSession is set to 0, if it is, delete wmc from session after initializing the client!
+ */
+//*********************************************************************************************************
+$saveInSession = new ElementVar($app, "savewmc", "saveInSession");
+//$e = new mb_exception("javascripts/initWmcObj.php: Value of element_var saveInSession of module savewmc: ".$saveInSession->value);
+
+if ($saveInSession->value === "1") {
+    $saveInSession = true;
+   //$e = new mb_exception("javascripts/initWmcObj.php: wmc doc reference ".$wmc_filename." found in session and GUI: ".$app." will also save its state serverside!");
+} else {
+	    $saveInSession = false;
+	    //$e = new mb_exception("javascripts/initWmcObj.php: wmc doc reference ".$wmc_filename." found in session. And GUI ".$app." will not save its state to session!");
 }
 //*********************************************************************************************************
 /*
@@ -560,41 +573,41 @@ module for showing this metadata is available in the invoked GUI - NEW 2019-11-2
 //
 //if ($startWmcId != false) {
 if (true) {
-    $e = new mb_exception("Initialize GUI from combination of GUI and WMC: gui_id='".$app."' - WMC='".$startWmcId."'");
+    //$e = new mb_exception("Initialize GUI from combination of GUI and WMC: gui_id='".$app."' - WMC='".$startWmcId."'");
     $applicationMetadataResult = $admin->getCombinedApplicationMetadata($app, $startWmcId);
     if ($applicationMetadataResult->success != false) {
-        $e = new mb_exception("Found mapbender application metadata with id ".$applicationMetadataResult->uuid);
+        //$e = new mb_exception("Found mapbender application metadata with id ".$applicationMetadataResult->uuid);
         //If metadata was found - get it via class metadata!
         $metadataFileIdentifier = $applicationMetadataResult->uuid;
         if (true && isset($applicationMetadataResult->orgaId)) {
             $group = new Group($applicationMetadataResult->orgaId);
-	    //$applicationMetadata->createFromDBInternalId($metadataId);
-	    //initialize needed information from XML which will be called via php/mod_dataISOMetadata.php!!!
-	    //connector - ....
+	        //$applicationMetadata->createFromDBInternalId($metadataId);
+	        //initialize needed information from XML which will be called via php/mod_dataISOMetadata.php!!!
+	        //connector - ....
             //$e = new mb_exception("fileIdentifier: ".$metadataFileIdentifier);
             //metadataUrlGenerator
             //http://localhost/mapbender/php/.... maybe better via invoking direct!!
-	    //$e = new mb_exception("url: ".MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$metadataFileIdentifier);
-	    /*$appMetadataRemote = new connector(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$metadataFileIdentifier);
+	        //$e = new mb_exception("url: ".MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$metadataFileIdentifier);
+	        /*$appMetadataRemote = new connector(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$metadataFileIdentifier);
             $applicationMetadata = new Iso19139();
             $applicationMetadata->createMapbenderMetadataFromXML($appMetadataRemote->file);*/
             $applicationMetadata->fileIdentifier = $applicationMetadataResult->uuid;
             $applicationMetadata->title = $applicationMetadataResult->title;
             $applicationMetadata->abstract = $applicationMetadataResult->abstract;
             $applicationMetadata->organization = array();
-	    $applicationMetadata->organization['logo_path'] = $group->logo_path;
-	    $applicationMetadata->organization['title'] = $group->title;
-	    $applicationMetadata->organization['name'] = $group->name;
+	        $applicationMetadata->organization['logo_path'] = $group->logo_path;
+	        $applicationMetadata->organization['title'] = $group->title;
+	        $applicationMetadata->organization['name'] = $group->name;
             $applicationMetadata->organization['address'] = $group->address;
-	    $applicationMetadata->organization['postcode'] = $group->postcode;
+	        $applicationMetadata->organization['postcode'] = $group->postcode;
             $applicationMetadata->organization['city'] = $group->city;
             $applicationMetadata->organization['telephone'] = $group->voicetelephone;
-	    $applicationMetadata->organization['email'] = $group->email;
-	    $applicationMetadata->metadataUrl = MAPBENDER_PATH."/php/mod_iso19139ToHtml.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$applicationMetadata->fileIdentifier);
-	    $applicationMetadataJson = json_encode($applicationMetadata);
-	    //$e = new mb_exception(json_encode($applicationMetadata));
-	    //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
-	}
+	        $applicationMetadata->organization['email'] = $group->email;
+	        $applicationMetadata->metadataUrl = MAPBENDER_PATH."/php/mod_iso19139ToHtml.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$applicationMetadata->fileIdentifier);
+	        $applicationMetadataJson = json_encode($applicationMetadata);
+	        //$e = new mb_exception(json_encode($applicationMetadata));
+	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
+	    }
     } else {
         $e = new mb_exception("Found no mapbender application metadata!");
     }
@@ -988,12 +1001,21 @@ if (isset($applicationMetadataJson) && $applicationMetadataJson != "") {
     $applicationMetadataStr .="}); ";
     $outputString .= $applicationMetadataStr;
 }
-
-
 echo $outputString;
 // logit($outputString,"javascript_old.store","w");
 Mapbender::session()->delete("addwms_showWMS");
 Mapbender::session()->delete("addwms_zoomToExtent");
+if ($saveInSession == false) {
+    //delete wmc in session and session filename
+	//$admin->delFromStorage($wmc_filename);#is not defined til now
+	//$e = new mb_exception('javascripts/initWmcObj.php: delete wmc from session and storage - cause it may be found again ;-)');
+	$admin->delFromStorage($wmc_filename, TMP_WMC_SAVE_STORAGE);
+	Mapbender::session()->delete("mb_wmc");
+	//delete also the current gui - this is handled by revertGui...
+} else {
+    //$e = new mb_exception('javascripts/initWmcObj.php: wmc remain in session');
+}
+//$e = new mb_exception('javascripts/initWmcObj.php: Actual mb_wmc from session: '.Mapbender::session()->get("mb_wmc"));
 unset($output);
 unset($wmc);
 $e = new mb_notice("javascripts/initWmcObj.php: All done!");
