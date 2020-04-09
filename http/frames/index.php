@@ -35,17 +35,17 @@ $withDebugInfo = false;
 $encodingType = "base64";
 $encodeResult = true;
 $minify = true;
-
 //new for geoportal.rlp - some guis has special functions - for normal mapbender installation this doesn't matter
 if (Mapbender::session()->get("mb_user_gui") !== false) {
 	Mapbender::session()->set("previous_gui",Mapbender::session()->get("mb_user_gui"));
 }
 Mapbender::session()->set("mb_user_gui",$gui_id);
-
 //
 // check if user is allowed to access current GUI; 
 // if not, return to login screen
 //
+$e = new mb_notice("GUIs for which user ".Mapbender::session()->get("mb_user_id")." is authorized: ".json_encode(Mapbender::session()->get("mb_user_guis")));
+
 if (!in_array($gui_id, Mapbender::session()->get("mb_user_guis"))) {
 	$e = new mb_exception("mb_validateSession.php: User: " . Mapbender::session()->get("mb_user_id")  . " not allowed to access GUI " . $gui_id);
 	session_write_close();

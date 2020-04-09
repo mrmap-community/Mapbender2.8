@@ -48,41 +48,43 @@ if (!defined("LC_MESSAGES")) define("LC_MESSAGES", LC_CTYPE);
 require_once dirname(__FILE__) . "/../core/i18n.php";
 require_once dirname(__FILE__) . "/../http/classes/class_locale.php";
 $localeObj = new Mb_locale(Mapbender::session()->get("mb_lang"));
-
 //
 // globally used includes (due to PHP Version changes)
 //
 require_once dirname(__FILE__) . "/../http/php/wrappers/includes.php";
-
 //
 // sets a public user session if defined in mapbender.conf
 //
+//$e = new mb_exception("PUBLIC_USER_AUTO_CREATE_SESSION: ".PUBLIC_USER_AUTO_CREATE_SESSION);
+//$e = new mb_exception("PUBLIC_USER: ".PUBLIC_USER);
 if (defined("PUBLIC_USER_AUTO_CREATE_SESSION") && PUBLIC_USER_AUTO_CREATE_SESSION) {
     if (defined("PUBLIC_USER") && is_numeric(PUBLIC_USER)) {
+    $e = new mb_notice("All information for autocreate session found!");
         //try to read a mb_user_name from session
         $mb_user_name = Mapbender::session()->get("mb_user_name");
-	$e = new mb_notice("mb_user_name from session: ".$mb_user_name);
+	    //$e = new mb_exception("mb_user_name from session: ".$mb_user_name);
         if(!isset($mb_user_name) || $mb_user_name == "" || $mb_user_name == false) {
-	    $e = new mb_notice("No mb_user_name found in SESSION - initialize PUBLIC_USER SESSION");
-	    $isAuthenticated = getUserData(PUBLIC_USER);
-	    if($isAuthenticated != false){  
-		    Mapbender::session()->set("mb_user_id", $isAuthenticated["mb_user_id"]);
-		    Mapbender::session()->set("mb_user_name", $isAuthenticated["mb_user_name"]);
-		    Mapbender::session()->set("mb_user_ip", $_SERVER['REMOTE_ADDR']);
+	        $e = new mb_notice("No mb_user_name found in SESSION - initialize PUBLIC_USER SESSION");
+	        $isAuthenticated = getUserData(PUBLIC_USER);
+	        //$e = new mb_exception("infos from getUserData: ".json_encode($isAuthenticated));
+	        if($isAuthenticated != false){  
+		        Mapbender::session()->set("mb_user_id", $isAuthenticated["mb_user_id"]);
+		        Mapbender::session()->set("mb_user_name", $isAuthenticated["mb_user_name"]);
+		        Mapbender::session()->set("mb_user_ip", $_SERVER['REMOTE_ADDR']);
        		    Mapbender::session()->set("HTTP_HOST", $_SERVER["HTTP_HOST"]);
-                    if (defined("PUBLIC_USER_DEFAULT_SRS") && PUBLIC_USER_DEFAULT_SRS !=="") {
-                        Mapbender::session()->set("epsg", PUBLIC_USER_DEFAULT_SRS);
-		    }
-		    Mapbender::session()->set("mb_myBBOX", "");
-                    if (defined("PUBLIC_USER_DEFAULT_GUI") && PUBLIC_USER_DEFAULT_GUI !=="") {
-                        Mapbender::session()->set("mb_user_gui", PUBLIC_USER_DEFAULT_GUI);
-		    }
-		    Mapbender::session()->set("layer_preview", 0);
-		    Mapbender::session()->set("mb_user_spatial_suggest", 'nein');
-	    }
-	    require_once(dirname(__FILE__)."/../http/php/mb_getGUIs.php");
-	    $arrayGUIs = mb_getGUIs($isAuthenticated["mb_user_id"]);
-	    Mapbender::session()->set("mb_user_guis", $arrayGUIs);
+                if (defined("PUBLIC_USER_DEFAULT_SRS") && PUBLIC_USER_DEFAULT_SRS !=="") {
+                    Mapbender::session()->set("epsg", PUBLIC_USER_DEFAULT_SRS);
+		        }
+		        Mapbender::session()->set("mb_myBBOX", "");
+                if (defined("PUBLIC_USER_DEFAULT_GUI") && PUBLIC_USER_DEFAULT_GUI !=="") {
+                    Mapbender::session()->set("mb_user_gui", PUBLIC_USER_DEFAULT_GUI);
+		        }
+		        Mapbender::session()->set("layer_preview", 0);
+		        Mapbender::session()->set("mb_user_spatial_suggest", 'nein');
+	        }
+	        require_once(dirname(__FILE__)."/../http/php/mb_getGUIs.php");
+	        $arrayGUIs = mb_getGUIs($isAuthenticated["mb_user_id"]);
+	        Mapbender::session()->set("mb_user_guis", $arrayGUIs);
         }
     }
 }
@@ -92,7 +94,6 @@ if (defined("PUBLIC_USER_AUTO_CREATE_SESSION") && PUBLIC_USER_AUTO_CREATE_SESSIO
         $e = new mb_exception("core/globalSettinmgs.php: cookie name: ".$key."cookie value: ".$value);
     }
 }*/
-
 function getUserData ($userId){
 	$con = db_connect(DBSERVER,OWNER,PW);
 	db_select_db(DB,$con);
@@ -106,5 +107,4 @@ function getUserData ($userId){
 		return false;
 	}
 }
-
 ?>

@@ -29,20 +29,18 @@ if ($_REQUEST["sessionName"] && $_REQUEST["sessionId"]) { //TODO: the request pa
 //
 // check if user data is valid; if not, return to login screen
 //
-if (!Mapbender::session()->get("mb_user_id") || 
-	!Mapbender::session()->get("mb_user_ip") || 
-	Mapbender::session()->get('mb_user_ip') != $_SERVER['REMOTE_ADDR']) {
-
-		$e = new mb_exception("mb_validateSession.php: Invalid user: " . Mapbender::session()->get("mb_user_id"));
-		session_write_close();
-		header("Location: " . LOGIN);
-		die();
+//$e = new mb_exception("SESSION mb_user_id: ".Mapbender::session()->get("mb_user_id"));
+//$e = new mb_exception("SESSION mb_user_ip: ".Mapbender::session()->get("mb_user_ip"));
+//$e = new mb_exception("SERVER[REMOTE_ADDR]: ".$_SERVER['REMOTE_ADDR']);
+if (!Mapbender::session()->get("mb_user_id") || !Mapbender::session()->get("mb_user_ip") || (Mapbender::session()->get('mb_user_ip') != $_SERVER['REMOTE_ADDR'] && $_SERVER['REMOTE_ADDR'] =! "::1")) {
+	$e = new mb_exception("mb_validateSession.php: Invalid user: " . Mapbender::session()->get("mb_user_id"));
+	session_write_close();
+	header("Location: " . LOGIN);
+	die();
 }
-
 //
 // set the global var gui_id
 //
-
 if (!isset($gui_id)) {
 	$e = new mb_notice("gui id not set");
 	if (isset($_REQUEST["guiID"])) {
@@ -102,7 +100,6 @@ if (!isset($e_id)) {
 		$e = new mb_notice("mb_validateSession.php: e_id not set in script: " . $_SERVER["SCRIPT_NAME"]);
 	}
 }
-
 //
 // set variables used for form targets or links
 //
@@ -114,6 +111,5 @@ if (isset($e_id)) {
 	$urlParameters .= "&elementID=" . $e_id;
 }
 $self = $_SERVER["SCRIPT_NAME"] . "?" . $urlParameters;
-
-$e = new mb_notice("mb_validateSession.php: GUI: " . $gui_id . ", checking file " . $_SERVER["SCRIPT_NAME"] . "...session valid.");
+//$e = new mb_exception("mb_validateSession.php: GUI: " . $gui_id . ", checking file " . $_SERVER["SCRIPT_NAME"] . "...session valid.");
 ?>
