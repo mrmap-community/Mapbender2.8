@@ -137,9 +137,7 @@ class AjaxResponse extends AjaxRequest {
 			$this->send();
 		}
 
-		if (!Mapbender::session()->get("mb_user_id") || 
-			!Mapbender::session()->get("mb_user_ip") || 
-			Mapbender::session()->get("mb_user_ip") != $_SERVER['REMOTE_ADDR']) {
+		if (!Mapbender::session()->get("mb_user_id") || !Mapbender::session()->get("mb_user_ip") || (Mapbender::session()->get("mb_user_ip") != $_SERVER['REMOTE_ADDR'] && $_SERVER['REMOTE_ADDR'] =! "::1")) {
 			$this->setSuccess(false);
 			$this->error = array(
 				"code" => -2,
