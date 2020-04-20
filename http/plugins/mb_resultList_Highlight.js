@@ -62,7 +62,7 @@ Mapbender.events.init.register(function(){
 				"standingHighlightWFS", 
 				{"position":"absolute", "top":"0px", "left":"0px", "z-index":options.resultHighlightZIndex}, 
 				options.resultHighlightLineWidth);
-		standingHighlight.add(feature, options.resultHighlightColor);
+		standingHighlightWFS.add(feature, options.resultHighlightColor);
 		Mapbender.events.afterMapRequest.register( function(){
 			standingHighlightWFS.paint();
 		});
