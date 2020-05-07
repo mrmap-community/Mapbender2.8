@@ -29,3 +29,4 @@ div#preview {max-width:305px;float: left;}
 div#classification {float: left;max-width: 305px;}
 div#buttons {float: left;}
 div#selectbox {margin-left: 280px;padding-top: 60px;}
+html,body{overflow:unset;}
