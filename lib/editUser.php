@@ -204,6 +204,53 @@ if($action == 'save'){
 				break;
 		}
 		$user->preferredGui = $fkey_preferred_gui_id;
+		$user->textSize = $textsize;
+		switch ($wants_newsletter) {
+			case "on":
+				$user->wantsNewsletter = 't';
+				break;
+			case "off":
+				$user->wantsNewsletter = 'f';
+				break;
+			default:
+				$user->wantsNewsletter = 'f';
+				break;
+		}
+		switch ($allows_survey) {
+			case "on":
+				$user->allowsSurvey = 't';
+				break;
+			case "off":
+				$user->allowsSurvey = 'f';
+				break;
+			default:
+				$user->allowsSurvey = 'f';
+				break;
+		}
+		switch ($wants_spatial_suggest) {
+			case "on":
+				$user->wantsSpatialSuggest = 't';
+				break;
+			case "off":
+				$user->wantsSpatialSuggest = 'f';
+				break;
+			default:
+				$user->wantsSpatialSuggest = 'f';
+				break;
+		}
+		switch ($wants_glossar) {
+			case "on":
+				$user->wantsGlossar = 't';
+				break;
+			case "off":
+				$user->wantsGlossar = 'f';
+				break;
+			default:
+				$user->wantsGlossar = 'f';
+				break;
+		}
+		
+		
 		$user->create();
 		$user->setNewUserPasswordTicket();
 		//TODO: check function !
@@ -266,6 +313,51 @@ if ($action == 'update') {
 				break;
 		}
 		$user->preferredGui = $fkey_preferred_gui_id;
+		$user->textSize = $textsize;
+		switch ($wants_newsletter) {
+			case "on":
+				$user->wantsNewsletter = 't';
+				break;
+			case "off":
+				$user->wantsNewsletter = 'f';
+				break;
+			default:
+				$user->wantsNewsletter = 'f';
+				break;
+		}
+		switch ($allows_survey) {
+			case "on":
+				$user->allowsSurvey = 't';
+				break;
+			case "off":
+				$user->allowsSurvey = 'f';
+				break;
+			default:
+				$user->allowsSurvey = 'f';
+				break;
+		}
+		switch ($wants_spatial_suggest) {
+			case "on":
+				$user->wantsSpatialSuggest = 't';
+				break;
+			case "off":
+				$user->wantsSpatialSuggest = 'f';
+				break;
+			default:
+				$user->wantsSpatialSuggest = 'f';
+				break;
+		}
+		switch ($wants_glossar) {
+			case "on":
+				$user->wantsGlossar = 't';
+				break;
+			case "off":
+				$user->wantsGlossar = 'f';
+				break;
+			default:
+				$user->wantsGlossar = 'f';
+				break;
+		}
 		$user->commit();
 
 		$user->setNewUserPasswordTicket();
@@ -309,6 +401,11 @@ if (!isset($name) || $selected_user == 'new'){
   $is_active = 'f';
   $create_digest = 'f';
   $fkey_preferred_gui_id = "";
+  $textsize = "textsize3";
+  $wants_newsletter = 'f';
+  $wants_glossar = 'f';
+  $wants_spatial_suggest = 'f';
+  $allows_survey = 'f';
 }
 
 
@@ -386,6 +483,11 @@ if(isset($selected_user) && $selected_user != 0){
 		$is_active = $data["isActive"];
 		$create_digest = $data["createDigest"];
 		$fkey_preferred_gui_id = $data["preferredGui"];
+		$textsize = $data["textSize"];
+		$wants_newsletter = $data["wantsNewsletter"];
+		$wants_glossar = $data["wantsGlossar"];
+		$wants_spatial_suggest = $data["wantsSpatialSuggest"];
+		$allows_survey = $data["allowsSurvey"];	
 	}
 }
 
@@ -574,6 +676,54 @@ echo "<tr>";
    echo "</td>";
 echo "</tr>";
 
+#textsize
+echo "<tr>";
+echo "<td>"._mb("Textsize").": </td>";
+echo "<td>";
+echo "<input type='text' size='20' name='textsize' value='".htmlentities($textsize, ENT_QUOTES, "UTF-8")."'>";
+echo "</td>";
+echo "</tr>";
+
+#wants_newsletter - boolean
+echo "<tr>";
+echo "<td>"._mb("Newsletter").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='wants_newsletter' name='wants_newsletter' ";
+if($wants_newsletter == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
+#wants_glossar - boolean
+echo "<tr>";
+echo "<td>"._mb("Show glossar").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='wants_glossar' name='wants_glossar' ";
+if($wants_glossar == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
+#wants_spatial_suggest - boolean
+echo "<tr>";
+echo "<td>"._mb("Show spatial suggests").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='wants_spatial_suggest' name='wants_spatial_suggest' ";
+if($wants_spatial_suggest == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
+#allows_survey - boolean
+echo "<tr>";
+echo "<td>"._mb("Allows survey").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='allows_survey' name='allows_survey' ";
+if($allows_survey == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
 #is_active - boolean
 echo "<tr>";
    echo "<td>"._mb("Account active").": </td>";
@@ -598,7 +748,7 @@ echo "</tr>";
 #preferredGui
 if ($preferredGuiCategory != false && count($user->getApplicationsByPermission(false, $preferredGuiCategory)) > 0) {
 echo "<tr>";
-   echo "<td>"._mb("Preferred GUI")." (".implode(",", $user->getApplicationsByPermission(false, $preferredGuiCategory))."): </td>";
+   echo "<td>"._mb("Preferred GUI")." (".implode(", ", $user->getApplicationsByPermission(false, $preferredGuiCategory))."): </td>";
    echo "<td>";
       echo "<input type='text' size='30' name='fkey_preferred_gui_id' value='".htmlentities($fkey_preferred_gui_id, ENT_QUOTES, "UTF-8")."'>";
    echo "</td>";

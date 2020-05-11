@@ -40,6 +40,7 @@
  * perimeters		- Array of perimeters in m, like [50,200,1000,10000]
  * projections		- Array of EPSG names, like ['EPSG:31467','EPSG:31468']
  * useMapcode           - Boolean - option to search for mapcodes (http://www.mapcode.com)
+ * projections_default	- Integer >= 1
  *
  * License:
  * Copyright (c) 2009, Open Source Geospatial Foundation
@@ -71,10 +72,11 @@ for ($i=0; $i < count($projections); $i++){
 	}
 }
 ?>
-var standingHighlight = null;
+var projectionsDefault = <?php if (isset($projections_default) and !empty($projections_default)) {echo $projections_default;} else { echo "undefined";}?>;
+var standingHighlightCoords = null;
 Mapbender.events.afterMapRequest.register( function(){
-	if(standingHighlight){
-		standingHighlight.paint();
+	if(standingHighlightCoords){
+		standingHighlightCoords.paint();
 	}
 });
 var CoordsLookup = function() {
@@ -142,8 +144,12 @@ var CoordsLookup = function() {
 			echo "$(this.projectionSelect).append('<option value=\"".$projectionsValue[$i]."\">".$projectionsName[$i]."</option>');\n";
 		}
 ?>
-		$(this.projectionSelect).prepend('<option value="Projektionssystem" selected=selected><?php echo _mb("Spatial Reference System");?></option>');
-
+		if (typeof projectionsDefault === 'undefined') {
+			$(this.projectionSelect).prepend('<option value="Projektionssystem" selected=selected><?php echo _mb("Spatial Reference System");?></option>');
+		} else {
+			$(this.projectionSelect).prepend('<option value="Projektionssystem"><?php echo _mb("Spatial Reference System");?></option>');
+			<?php echo "$(this.projectionSelect).append('<option value=\"".$projectionsValue[$projections_default -1]."\"selected=selected >".$projectionsName[$projections_default -1]."</option>');\n"; ?>
+		}
 //		Fill perimeter select with options	
 		for(var i = 0; i < options.perimeters.length; i++) {
 			var optionValue = options.perimeters[i] + '';
@@ -172,11 +178,15 @@ var CoordsLookup = function() {
 		$(this.triggerButton).click(function() {
 			Mapbender.modules[options.id].zoomToCoordinates();
 		});
+//		Set action for trigger button new
+		$(this.triggerButtonNew).click(function() {
+			Mapbender.modules[options.id].emptyFieldsAndMarker();
+		});
 	};
 	
 	this.emptyFieldsAndMarker = function() {
-				if(standingHighlight !== null){ 
-					standingHighlight.clean();
+				if(standingHighlightCoords !== null){ 
+					standingHighlightCoords.clean();
 				}
 				this.coordXInput.val('');
 				this.coordYInput.val('');
@@ -324,13 +334,13 @@ var CoordsLookup = function() {
 				
 				var map = Mapbender.modules[options.target];
 				
-				if(standingHighlight !== null){ 
-					standingHighlight.clean();
+				if(standingHighlightCoords !== null){ 
+					standingHighlightCoords.clean();
 				}else{
-					standingHighlight = new Highlight(
+					standingHighlightCoords = new Highlight(
 						[options.target],
-						"standingHighlight", 
-						{"position":"absolute", "top":"0px", "left":"0px", "z-index":100}, 
+						"standingHighlightCoords", 
+						{"position":"absolute", "top":"0px", "left":"0px", "z-index":999}, 
 						2);
 				}
 				if (obj.points) {
@@ -362,8 +372,8 @@ var CoordsLookup = function() {
 						coordinates:[x,y,null]
 					},that.coords.targetProjection)
 					var m = ga.get(-1,-1);
-					standingHighlight.add(m, "#ff0000");
-					standingHighlight.paint();
+					standingHighlightCoords.add(m, "#ff0000");
+					standingHighlightCoords.paint();
 					map.setMapRequest();
 				}
 			} 

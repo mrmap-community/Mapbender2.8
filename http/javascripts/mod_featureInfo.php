@@ -175,6 +175,11 @@ function makeDialog($content, title, dialogPosition, offset, printInfo) {
           }
           $(this).dialog('close').remove();
         },
+        "close": function(){
+                if (standingHighlightFeatureInfo !== null) {
+                    standingHighlightFeatureInfo.clean();
+                }
+          },
         "open": function(){
           $('#tree2Container').hide() && $('a.toggleLayerTree').removeClass('activeToggle'),
           $('#toolsContainer').hide() && $('a.toggleToolsContainer').removeClass('activeToggle');
