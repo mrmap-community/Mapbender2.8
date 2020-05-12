@@ -290,6 +290,7 @@ ALTER TABLE mb_proxy_log ADD PRIMARY KEY (log_id);
 --ALTER TABLE mb_proxy_log SET WITH OIDS;
 
 --neue Anwendung Owsproxy_csv
+ALTER TABLE gui_element ALTER COLUMN e_mb_mod TYPE character varying(500);
 INSERT INTO gui (gui_id, gui_name, gui_description, gui_public) VALUES ('Owsproxy_csv','Owsproxy_csv','GUI combining most of the Mapbender functionality',1);
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Owsproxy_csv','i18n',1,0,'Internationalization module, collects data from all elements and sends them to the server in a single POST request. The strings are translated via gettext only.','Internationalization','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_i18n.js','','','','http://www.mapbender.org/Gettext');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Owsproxy_csv','jq_upload',1,1,'','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../plugins/jq_upload.js','','','');
