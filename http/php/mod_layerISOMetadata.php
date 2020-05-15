@@ -585,22 +585,25 @@ function fillISO19139($iso19139, $recordId) {
 			$SV_ServiceIdentification->appendChild($iso19139->importNode($licenseNodeList->item($i), true));
 		}
 	}
+	
 	/* example
 	<srv:serviceType>
-    		<gco:LocalName>view</gco:LocalName>
-	</srv:serviceType>*/
-
+	<gco:LocalName codeSpace="http://inspire.ec.europa.eu/metadata-codelist/SpatialDataServiceType">view</gco:LocalName>
+	</srv:serviceType>
+	<srv:serviceTypeVersion>
+	<gco:CharacterString>OGC:WMS 1.3.0</gco:CharacterString>
+	</srv:serviceTypeVersion>
+	*/
 	$serviceType=$iso19139->createElement("srv:serviceType");
 	$localName=$iso19139->createElement("gco:LocalName");
+	$localName->setAttribute("codeSpace", "http://inspire.ec.europa.eu/metadata-codelist/SpatialDataServiceType");
 	$serviceTypeText=$iso19139->createTextNode("view");
 	$localName->appendChild($serviceTypeText);
 	$serviceType->appendChild($localName);
 	$SV_ServiceIdentification->appendChild($serviceType);
-
 	$serviceTypeVersion=$iso19139->createElement("srv:serviceTypeVersion");
 	$serviceTypeVersion_cs=$iso19139->createElement("gco:CharacterString");
-	$serviceTypeVersionText=$iso19139->createTextNode("1.1.1");
-
+	$serviceTypeVersionText=$iso19139->createTextNode("OGC:WMS 1.1.1");
 	$serviceTypeVersion_cs->appendChild($serviceTypeVersionText);
 	$serviceTypeVersion->appendChild($serviceTypeVersion_cs);
 	$SV_ServiceIdentification->appendChild($serviceTypeVersion);
