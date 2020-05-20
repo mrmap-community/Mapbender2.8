@@ -321,12 +321,46 @@ switch (strtolower($reqParams['request'])) {
             $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request,
                 $price);
         }
-        if (isset($auth)) {
+        /*if (isset($auth)) {
             getFeatureInfo($log_id, $request, $auth);
         } else {
             getFeatureInfo($log_id, $request);
+        }*/
+        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        	if(isset($auth)){
+        		getFeatureInfo($log_id, $request, $auth);
+        	} else {
+        		getFeatureInfo($log_id, $request);
+        	}
+        } else {
+           	new mb_notice("spatial security: $request");
+        				
+        	$x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
+        	$y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
+        				
+        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        				
+        	if ($mask === null) {
+        		echo "Permission denied";
+        		die();
+        	}
+        					
+        	$color = $mask->getImagePixelColor($x, $y);
+        	$transparency = $color->getColorValue(Imagick::COLOR_ALPHA);
+        					
+        	if ($transparency < 1) {
+        		echo "Permission denied";
+        		die();
+        	}
+        						
+        	if (isset($auth)) {
+        		getFeatureInfo($log_id, $request, $auth);
+        	} else {
+        		getFeatureInfo($log_id, $request);
+        	}
+        								
+        	$mask->destroy();
         }
-
         break;
     case 'getmap':
         $arrayOnlineresources = checkWmsPermission($owsproxyService, $userId);
@@ -351,7 +385,7 @@ switch (strtolower($reqParams['request'])) {
             $request = $query->getRequest();
         }
         // Ergaenzungen secured UMN Requests
-        //log proxy requests
+        /*//log proxy requests
         if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {#do log to db
             #get price out of db
             $price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
@@ -361,6 +395,44 @@ switch (strtolower($reqParams['request'])) {
             getImage($log_id, $request, $auth);
         } else {
             getImage($log_id, $request);
+        }*/
+        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        	new mb_notice("dont restrict spatially!");
+        	#log proxy requests
+        	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db
+        		#get price out of db
+        		$price=intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
+        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0);
+        	}
+        	if(isset($auth)){
+        	    getImage($log_id, $request, $auth);
+        	} else {
+        		getImage($log_id, $request);
+        	}
+        } else {
+        	new mb_notice("wms {$arrayOnlineresources['wms_id']} is spatially secured");
+        	$log_id = false;
+        	if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {#log proxy requests
+        		#do log to db
+        		#get price out of db
+        		$price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
+        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, true);
+        	}
+        						
+        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        						
+        	if ($mask === null) {
+        		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");
+        		die();
+        	}
+        							
+        	if (isset($auth)) {
+        		getImage($log_id, $request, $auth, $mask);
+        	} else {
+        		getImage($log_id, $request, false, $mask);
+        	}
+        									
+        	$mask->destroy();
         }
 
         break;
@@ -614,7 +686,7 @@ function completeURL($url)
  * 
  * @param string the original url of the image to send
  */
-function getImage($log_id, $or, $auth = false)
+function getImage($log_id, $or, $auth = false, $mask = false)
 {
     global $reqParams;
     global $imageformats;
@@ -628,11 +700,11 @@ function getImage($log_id, $or, $auth = false)
     #timestamp,user_id,getmaprequest,amount pixel,price - but do this only for wms to log - therefor first get log tag out of wms!
     #
     #
-    if ($auth !== false) { //new for HTTP Authentiation
-        getDocumentContent($log_id, $or, $header, $auth);
-    } else {
-        getDocumentContent($log_id, $or, $header);
-    }
+    //if ($auth !== false) { //new for HTTP Authentication
+        getDocumentContent($log_id, $or, $header, $auth, $mask);
+    //} else {
+    //    getDocumentContent($log_id, $or, $header, false, );
+    //}
 }
 
 /**
@@ -1069,7 +1141,7 @@ function checkWmsPermission($wmsOws, $userId)
         $service["wms_getmap"] = $row["wms_getmap"];
         $service["wms_getfeatureinfo"] = $row["wms_getfeatureinfo"];
         $service["wms_getcapabilities_doc"] = $row["wms_getcapabilities_doc"];
-        $service["wms_spatialsec"] = $row["wms_spatialsec"];
+        $service["wms_spatial_security"] = $row["wms_spatial_security"];
     }
 
     if (!$row || count($mywms) == 0) {
@@ -1278,7 +1350,7 @@ function checkLayerPermission($wms_id, $l, $userId)
     return $ret;
 }
 
-function getDocumentContent($log_id, $url, $header = false, $auth = false)
+function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask = null)
 {
     global $reqParams, $n, $postData, $query;
     //debug
@@ -1342,8 +1414,14 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false)
             if ($log_id != null && is_integer($log_id)) {
                 $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
+            /*header("Content-Type: " . $reqParams['format']);
+            echo $content;*/
+            if ($mask !== null && $mask != false) {
+            	new mb_notice("spatial security: applying mask");
+            	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
+            }
             header("Content-Type: " . $reqParams['format']);
-            echo $content;
+            echo $source->getImageBlob();
         }
         return true;
     } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") { // getmap

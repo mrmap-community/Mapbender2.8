@@ -21,7 +21,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_RPCEndpoint.php");
 require_once(dirname(__FILE__)."/../classes/class_user.php");
 require_once(dirname(__FILE__)."/../classes/class_Uuid.php");
-
+require_once(dirname(__FILE__)."/../../lib/spatial_security.php");
 /**
  * A Mapbender user as described in the table mb_group.
  */
@@ -43,11 +43,12 @@ class Group implements RPCObject {
 	var $facsimiletelephone;
 	var $email;
 	var $logo_path;	
+	var $spatialSecurity;
 	var $homepage;
 	var $uuid;
 	var $timestamp;
 	var $adminCode;
-        var $ckanId;
+    var $ckanId;
 	var $searchable;
 
     	static $displayName = "Group";
@@ -99,15 +100,16 @@ class Group implements RPCObject {
 			"owner" => $this->owner,
 			"description" => $this->description,
 			"title" => $this->title,
-	        	"address" => $this->address,
-	        	"postcode" => $this->postcode,
-	        	"city" => $this->city,
-	        	"stateorprovince" => $this->stateorprovince,
-	        	"country" => $this->country,
-	        	"voicetelephone" => $this->voicetelephone,
-	        	"facsimiletelephone" => $this->facsimiletelephone,
-	        	"email" => $this->email,
-	       	 	"logo_path" => $this->logo_path,
+	        "address" => $this->address,
+	        "postcode" => $this->postcode,
+	        "city" => $this->city,
+	        "stateorprovince" => $this->stateorprovince,
+	        "country" => $this->country,
+	        "voicetelephone" => $this->voicetelephone,
+	        "facsimiletelephone" => $this->facsimiletelephone,
+	        "email" => $this->email,
+	       	"logo_path" => $this->logo_path,
+			"spatialSecurity" => $this->spatialSecurity,
 			"homepage" => $this->homepage,
 			"adminCode" => $this->adminCode,
 			"uuid" => $this->uuid,
@@ -167,7 +169,7 @@ class Group implements RPCObject {
 		$this->owner = isset($changes->owner) ? $changes->owner : $this->owner;
 		$this->description = isset($changes->description) ? $changes->description : $this->description;
 		$this->id = isset($changes->id) ? $changes->id : $this->id;
-     		$this->title = isset($changes->title) ? $changes->title : $this->title;
+     	$this->title = isset($changes->title) ? $changes->title : $this->title;
 		$this->address = isset($changes->address) ? $changes->address : $this->address;
 		$this->postcode = isset($changes->postcode) ? $changes->postcode : $this->postcode;
 		$this->city = isset($changes->city) ? $changes->city : $this->city;
@@ -177,6 +179,7 @@ class Group implements RPCObject {
 		$this->facsimiletelephone = isset($changes->facsimiletelephone) ? $changes->facsimiletelephone : $this->facsimiletelephone;
 		$this->email = isset($changes->email) ? $changes->email : $this->email;
 		$this->logo_path = isset($changes->logo_path) ? $changes->logo_path : $this->logo_path;
+		$this->spatialSecurity = isset($changes->spatialSecurity) ? $changes->spatialSecurity : $this->spatialSecurity;
 		$this->homepage = isset($changes->homepage) ? $changes->homepage : $this->homepage;
 		$this->adminCode = isset($changes->adminCode) ? $changes->adminCode : $this->adminCode;
 		$this->searchable = isset($changes->searchable) ? $changes->searchable : $this->searchable;
@@ -235,7 +238,7 @@ class Group implements RPCObject {
 				throw new Exception("Database error updating Group");
 				return false;
 			}
-
+			spatial_security\database_write("group", $this->id, $this->spatialSecurity);
 		return true;
 	}
 
@@ -278,29 +281,27 @@ class Group implements RPCObject {
 			}
 			$res_group = db_prep_query($sql_group,$v,$t);
 			if($row = db_fetch_array($res_group)){
-
 				$this->name = $row['mb_group_name'];
-
-            			//FIXME: needs checking
-            			$this->owner = $row['mb_group_owner'];
-           			$this->description = $row['mb_group_description'];
-            			$this->title = $row["mb_group_title"];
-            			$this->address = $row["mb_group_address"];
-            			$this->postcode = $row["mb_group_postcode"];
-            			$this->city = $row["mb_group_city"];
-            			$this->stateorprovince = $row["mb_group_stateorprovince"];
-            			$this->country = $row["mb_group_country"];
-            			$this->voicetelephone = $row["mb_group_voicetelephone"];
-            			$this->facsimiletelephone = $row["mb_group_facsimiletelephone"];
-            			$this->email = $row["mb_group_email"];
-            			$this->logo_path = $row["mb_group_logo_path"];
-	    			$this->homepage = $row["mb_group_homepage"];
+            	//FIXME: needs checking
+            	$this->owner = $row['mb_group_owner'];
+           		$this->description = $row['mb_group_description'];
+            	$this->title = $row["mb_group_title"];
+            	$this->address = $row["mb_group_address"];
+            	$this->postcode = $row["mb_group_postcode"];
+            	$this->city = $row["mb_group_city"];
+            	$this->stateorprovince = $row["mb_group_stateorprovince"];
+            	$this->country = $row["mb_group_country"];
+            	$this->voicetelephone = $row["mb_group_voicetelephone"];
+            	$this->facsimiletelephone = $row["mb_group_facsimiletelephone"];
+            	$this->email = $row["mb_group_email"];
+            	$this->logo_path = $row["mb_group_logo_path"];
+	    		$this->homepage = $row["mb_group_homepage"];
 				$this->uuid = $row["uuid"];
 				$this->adminCode = $row["mb_group_admin_code"];
 				$this->timestamp = $row["timestamp"];
 				$this->ckanId = $row["mb_group_ckan_uuid"];
 				$this->searchable = $row["searchable"];
-				
+				$this->spatialSecurity = spatial_security\database_read("group", $this->id);
 			} else {
 			 	throw new Exception("Group with ID " . $this->id . " does not exist.");
 			 	return false;

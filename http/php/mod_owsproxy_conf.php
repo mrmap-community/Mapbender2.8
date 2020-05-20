@@ -89,6 +89,14 @@ foreach ($_POST as $var => $value) {
 	if ($parts[0] == 'status' && $parts[2] == 'exchange') {
 		$admin->setWmsExchangeUrlTag(intval($parts[1]), $value);
 	}
+	
+	if ($parts[0]== 'status' && $parts[2]=='spatial' && $parts[3]=='security') {
+		/*if ($value == 1) {
+		    $e = new mb_exception("try to set spatial security for wms:".intval($parts[1]). "to value: ".$value);
+		}*/
+        $admin->setWMSSpatialSecurity(intval($parts[1]), $value);
+        //continue;
+    }
 	//changing price information
 	if ($parts[0] != 'status' && $parts[2]=='price'){ //for the pricing in the textfield
 		if($parts[0] == "wms") {
@@ -123,9 +131,9 @@ foreach ($_POST as $var => $value) {
 		//echo ("<br>");
 		//check if proxy should be activated and is not set
 		if ($value==1 && $admin->getWMSOWSstring(intval($parts[1])) == "") {
-		//activate it!
-		$admin->setWMSOWSstring(intval($parts[1]),$value);
-		//echo "Activate Proxy for ".intval($parts[1])."<br>";
+		    //activate it!
+		    $admin->setWMSOWSstring(intval($parts[1]),$value);
+		    $e = new mb_exception("Activate Proxy for ".intval($parts[1]));
 		}
 		//check if active proxy should be deactivated
 		if ($value==0 && $admin->getWMSOWSstring(intval($parts[1])) !== "") {
@@ -151,7 +159,50 @@ body{
 }
 </style>
 <script language="JavaScript" type="text/javascript">
-
+  function toggleProxy(wmsId, that) {
+	  //alert("toogle proxy");
+	  //alert(JSON.stringify(that));
+	    if(that.checked){
+		  //alert("toogle proxy");
+	      document.getElementById("wms_" + wmsId + "_spatial_security").disabled=false;
+	      document.getElementById("wms_" + wmsId + "_log").disabled=false;
+	      document.getElementById("wms_" + wmsId + "_logfi").disabled=false;
+	      document.getElementById("wms_" + wmsId + "_price").disabled=true;
+	      document.getElementById("wmsfi_" + wmsId + "_price").disabled=true;
+	      document.getElementById("status_" + wmsId + "_proxy").value="1";
+	        <?php if (SPATIAL_SECURITY) { ?>
+	      document.getElementById("status_" + wmsId + "_spatial_security").value="1";
+	        <?php } ?>
+	    } else {
+	      document.getElementById("wms_" + wmsId + "_log").checked = false;
+	      document.getElementById("wms_" + wmsId + "_log").disabled = true;
+	      document.getElementById("wms_" + wmsId + "_logfi").checked = false;
+	      document.getElementById("wms_" + wmsId + "_logfi").disabled = true;
+	      document.getElementById("wms_" + wmsId + "_price").disabled = true;
+	      document.getElementById("wms_" + wmsId + "_price").value = "0";
+	      document.getElementById("wmsfi_" + wmsId + "_price").disabled = true;
+	      document.getElementById("wmsfi_" + wmsId + "_price").value = "0";
+	      document.getElementById("status_" + wmsId + "_proxy").value = "0";
+	      document.getElementById("status_" + wmsId + "_log").value = "0";
+	      document.getElementById("status_" + wmsId + "_logfi").value = "0";
+	        <?php if (SPATIAL_SECURITY) { ?>
+	      document.getElementById("wms_" + wmsId + "_spatial_security").checked=false;
+	      document.getElementById("wms_" + wmsId + "_spatial_security").disabled=true;
+	      document.getElementById("status_" + wmsId + "_spatial_security").value="0";
+	        <?php } ?>
+	    }
+	  }
+	 
+	  function toggleSpatialSecurity(wmsId, that) {
+		//alert("toggle spatial security");
+	    if (that.checked){
+		  document.getElementById("wms_" + wmsId + "_spatial_security").checked=true;
+	      document.getElementById("status_" + wmsId + "_spatial_security").value="1";
+	    } else {
+	    	document.getElementById("wms_" + wmsId + "_spatial_security").checked=false;
+	      document.getElementById("status_" + wmsId + "_spatial_security").value="0";
+        }
+	  }
 </script>
   
 </head>
@@ -164,21 +215,38 @@ body{
 #$ownwmsconf['price']=array();
 #TODO Get root layer id for showing metadata! - function should be in admin class
 
-
-echo "<form  method=\"post\" action=\"".$_SERVER["SCRIPT_NAME"]."\">
-    <i>Warning: Toggle proxy changes the url of the secured services!</i><br>
-    <table border='1'>
+if (SPATIAL_SECURITY) {
+	echo "<form  method=\"post\" action=\"".$_SERVER["SCRIPT_NAME"]."\">
+         <i>Warning: Toggle proxy changes the url of the secured services!</i><br>
+         <table border='1'>
         <tr valign = bottom>
             <td>WMS ID</td>
             <td>WMS Title</td>
             <td>Proxy</td>
-	    <td>Exchange URLs</td>
+		    <td>Spatial Security</td>
+	        <td>Exchange URLs</td>
             <td>GetMap Log</td>
             <td>GetMap Price(cent/Mpixel)</td>
             <td>GetFeatureInfo Log</td>
             <td>GetFeatureInfo Price(cent/Aufruf)</td>
             <td>Show detailed Usage</td>
         </tr>";
+} else {
+    echo "<form  method=\"post\" action=\"".$_SERVER["SCRIPT_NAME"]."\">
+    <i>Warning: Toggle proxy changes the url of the secured services!</i><br>
+    <table border='1'>
+        <tr valign = bottom>
+            <td>WMS ID</td>
+            <td>WMS Title</td>
+            <td>Proxy</td>
+	        <td>Exchange URLs</td>
+            <td>GetMap Log</td>
+            <td>GetMap Price(cent/Mpixel)</td>
+            <td>GetFeatureInfo Log</td>
+            <td>GetFeatureInfo Price(cent/Aufruf)</td>
+            <td>Show detailed Usage</td>
+        </tr>";
+}        
 //read out infos from database
 for($i=0; $i<count($ownwms); $i++){
 	if($admin->getWMSOWSstring($ownwms[$i]) == false){ $status_proxy = 0 ;} else {$status_proxy = 1;};
@@ -187,9 +255,11 @@ for($i=0; $i<count($ownwms); $i++){
 
 	if($admin->getWmsLogTag($ownwms[$i]) == 1){$status_log=1;} else {$status_log=0;};
 	if ($admin->getWmsPrice($ownwms[$i]) != 0 ){$status_price=$admin->getWmsPrice($ownwms[$i]);} else {$status_price=0;};
-        if($admin->getWmsfiLogTag($ownwms[$i]) == 1){$status_logfi=1;} else {$status_logfi=0;};
+    if($admin->getWmsfiLogTag($ownwms[$i]) == 1){$status_logfi=1;} else {$status_logfi=0;};
 	if ($admin->getWmsfiPrice($ownwms[$i]) != 0 ){$status_price_fi=$admin->getWmsfiPrice($ownwms[$i]);} else {$status_price_fi=0;};
     
+	$spatial_security = $admin->getWMSSpatialSecurity($ownwms[$i]) == 0 ? 0 : 1;
+	//$e = new mb_exception("read spatial security from admin class for wms: ".$ownwms[$i].": ".$spatial_security);
 	$auth=$admin->getAuthInfoOfWMS($ownwms[$i]);
 	if($auth['auth_type'] == ''){$status_auth = 0;} else {$status_auth = 1;};
 	echo "<tr>";
@@ -199,26 +269,7 @@ for($i=0; $i<count($ownwms); $i++){
 	echo ">".$admin->getWmsTitleByWmsId($ownwms[$i])."</td>";
 	//for owsproxy activation************************************************************************************************
 	echo "<td>";
-	echo "<input type='checkbox' id='wms_".$ownwms[$i]."_proxy' name='wms_".$ownwms[$i]."_proxy' 
-        onclick='if(this.checked){
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_log\").disabled=false;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_logfi\").disabled=false;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_price\").disabled=true;
-            document.getElementById(\"wmsfi_\"+".$ownwms[$i]."+\"_price\").disabled=true;
-            document.getElementById(\"status_\"+".$ownwms[$i]."+\"_proxy\").value=\"1\";
-        }else{
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_log\").checked=false;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_log\").disabled=true;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_logfi\").checked=false;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_logfi\").disabled=true;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_price\").disabled=true;
-            document.getElementById(\"wms_\"+".$ownwms[$i]."+\"_price\").value=\"0\";
-            document.getElementById(\"wmsfi_\"+".$ownwms[$i]."+\"_price\").disabled=true;
-            document.getElementById(\"wmsfi_\"+".$ownwms[$i]."+\"_price\").value=\"0\";
-            document.getElementById(\"status_\"+".$ownwms[$i]."+\"_proxy\").value=\"0\";
-            document.getElementById(\"status_\"+".$ownwms[$i]."+\"_log\").value=\"0\";
-            document.getElementById(\"status_\"+".$ownwms[$i]."+\"_logfi\").value=\"0\";
-        }'";
+	echo "<input type='checkbox' id='wms_".$ownwms[$i]."_proxy' name='wms_".$ownwms[$i]."_proxy' onclick='toggleProxy(".$ownwms[$i].",this)'";
 	#default
 	if($status_proxy == 1){ echo " checked";  } else {echo " unchecked"; };  //if a proxy string is set
 	if($status_auth == 1){ echo " disabled";};
@@ -226,6 +277,15 @@ for($i=0; $i<count($ownwms); $i++){
 	#initialize hidden field for status proxy:
 	echo "<input type=\"hidden\" name=\"status_".$ownwms[$i]."_proxy\" id=\"status_".$ownwms[$i]."_proxy\" value=".$status_proxy.">";
 	echo "</td>";
+	if (SPATIAL_SECURITY) {
+	    $checked = $spatial_security ? "checked=\"checked\"" : "";
+		$disabled = $status_proxy ? "" : "disabled=\"disabled\"";
+		echo "<td>
+		          <input type=\"checkbox\" id=\"wms_{$ownwms[$i]}_spatial_security\" name=\"wms_{$ownwms[$i]}_spatial_security\"
+              $checked $disabled value=\"$spatial_security\" onclick=\"toggleSpatialSecurity({$ownwms[$i]}, this)\">
+		          <input type=\"hidden\" name=\"status_{$ownwms[$i]}_spatial_security\" id=\"status_{$ownwms[$i]}_spatial_security\" value=\"{$spatial_security}\">
+		      </td>";
+    }
 	//for exchange urls************************************************************************************************
 	echo "<td><input type='checkbox' id='wms_".$ownwms[$i]."_exchange_urls' name='wms_".$ownwms[$i]."_exchange_urls'";
 	#default
