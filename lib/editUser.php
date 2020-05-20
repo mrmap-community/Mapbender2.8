@@ -1,3 +1,6 @@
+<?php
+require_once dirname(__file__)."/spatial_security.php";
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -181,6 +184,7 @@ if($action == 'save'){
 		$user->postalCode = $postal_code;
 		$user->city = $city;
 		$user->country = $country;
+		$user->spatialSecurity = $spatialSecurity;
 		switch ($create_digest) {
 			case "on":
 				$user->createDigest = 't';
@@ -289,6 +293,7 @@ if ($action == 'update') {
 		$user->postalCode = $postal_code;
 		$user->city = $city;
 		$user->country = $country;
+		$user->spatialSecurity = $spatialSecurity;
 		$user->loginCount = $login_count;
 		switch ($create_digest) {
 			case "on":
@@ -376,36 +381,36 @@ if($action == 'new_pw_ticket'){
 }
 
 if (!isset($name) || $selected_user == 'new'){
-  $name = "";
-  $password = "";
-  $owner_id = Mapbender::session()->get("mb_user_id");
-  $owner_name = Mapbender::session()->get("mb_user_name");
-  $description = "";
-  $login_count = 0;
-  $email = "";
-  $phone = "";
-  $department = "";
-  $organization = "";
-  $position = "";
-  $resolution = 72;
-  $firstname = "";
-  $lastname = "";
-  $academic_title = "";
-  $facsimile = "";
-  $street = "";
-  $housenumber = "";
-  $delivery_point = "";
-  $postal_code = "";
-  $city = "";
-  $country = "";
-  $is_active = 'f';
-  $create_digest = 'f';
-  $fkey_preferred_gui_id = "";
-  $textsize = "textsize3";
-  $wants_newsletter = 'f';
-  $wants_glossar = 'f';
-  $wants_spatial_suggest = 'f';
-  $allows_survey = 'f';
+    $name = "";
+    $password = "";
+    $owner_id = Mapbender::session()->get("mb_user_id");
+    $owner_name = Mapbender::session()->get("mb_user_name");
+    $description = "";
+    $login_count = 0;
+    $email = "";
+    $phone = "";
+    $department = "";
+    $organization = "";
+    $position = "";
+    $resolution = 72;
+    $firstname = "";
+    $lastname = "";
+    $academic_title = "";
+    $facsimile = "";
+    $street = "";
+    $housenumber = "";
+    $delivery_point = "";
+    $postal_code = "";
+    $city = "";
+    $country = "";
+    $is_active = 'f';
+    $create_digest = 'f';
+    $fkey_preferred_gui_id = "";
+    $textsize = "textsize3";
+    $wants_newsletter = 'f';
+    $wants_glossar = 'f';
+    $wants_spatial_suggest = 'f';
+    $allows_survey = 'f';
 }
 
 
@@ -480,6 +485,7 @@ if(isset($selected_user) && $selected_user != 0){
 		$postal_code = $data["postalCode"];
 		$city = $data["city"];
 		$country = $data["country"];
+		$spatialSecurity = $data["spatialSecurity"];
 		$is_active = $data["isActive"];
 		$create_digest = $data["createDigest"];
 		$fkey_preferred_gui_id = $data["preferredGui"];
@@ -823,6 +829,13 @@ echo "</tr>";
 ?>
 <input type='hidden' name='action' value=''>
 </table>
+
+<?php
+
+spatial_security\show_input($spatialSecurity, "mb_user");
+
+?>
+
 </form>
 <script type="text/javascript">
 <!--

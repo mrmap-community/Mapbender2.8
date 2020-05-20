@@ -9,6 +9,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_RPCEndpoint.php");
 require_once(dirname(__FILE__)."/../classes/class_administration.php");
 require_once(dirname(__FILE__)."/../classes/class_Uuid.php");
+require_once(dirname(__FILE__)."/../../lib/spatial_security.php");
 
 /**
  * A Mapbender user as described in the table mb_user.
@@ -51,7 +52,6 @@ class User implements RPCObject{
 	var $isActive = 'f';
 	var $createDigest = 'f';
 	var $preferredGui = '';
-	
 	//new 2020-03-18 for compatibility to older typo3 based portal systems
 	var $wantsNewsletter = 'f';
 	var $allowsSurvey = 'f';
@@ -60,7 +60,8 @@ class User implements RPCObject{
 	//var $wantsGlossar = "nein"; //TODO bad model - should be boolean
 	var $wantsGlossar = 'f';
 	var $textSize = "textsize3";
-		
+	var $spatialSecurity = "";
+	
   static $displayName = "User";
   static $internalName = "user";
 
@@ -167,7 +168,8 @@ class User implements RPCObject{
         	"wantsGlossar" => $this->wantsGlossar,
         	"wantsSpatialSuggest" => $this->wantsSpatialSuggest,
         	"allowsSurvey" => $this->allowsSurvey,
-        	"wantsNewsletter" => $this->wantsNewsletter	
+        	"wantsNewsletter" => $this->wantsNewsletter,
+        	"spatialSecurity" => $this->spatialSecurity
         );
 		return $result;
 	}
@@ -275,6 +277,7 @@ class User implements RPCObject{
 		$this->wantsSpatialSuggest = isset($changes->wantsSpatialSuggest) ? $changes->wantsSpatialSuggest : $this->wantsSpatialSuggest;
 		$this->allowsSurvey = isset($changes->allowsSurvey) ? $changes->allowsSurvey : $this->allowsSurvey;
 		$this->wantsNewsletter = isset($changes->wantsNewsletter) ? $changes->wantsNewsletter : $this->wantsNewsletter;
+		$this->spatialSecurity = isset($changes->spatialSecurity) ? $changes->spatialSecurity : $this->spatialSecurity;
 		return true;
 	}
 
@@ -389,6 +392,7 @@ class User implements RPCObject{
 			throw new Exception("Database error updating User");
 			return false;
 		}
+		spatial_security\database_write("user", $this->id, $this->spatialSecurity);
 		return true;
 	}
 
@@ -404,7 +408,7 @@ class User implements RPCObject{
 		}
 		return true;
 	}
-
+    //TODO - check spatial security?
 	public function load() {
 		$sql_user = "SELECT * from mb_user WHERE mb_user_id = $1; ";
 		$v = array($this->id);
@@ -510,11 +514,11 @@ class User implements RPCObject{
 					$this->allowsSurvey = 'f';
 					break;
 			}
-			
+			$this->spatialSecurity = spatial_security\database_read("user", $this->id);
 		}
 		else {
 			 throw new Exception("no such User");
-			 return false;
+			 return false; //TODO why this not return false for spatial-security?
 		}
 		return true;
 	}
@@ -602,7 +606,7 @@ class User implements RPCObject{
 		if(!$res){
 			$e= new mb_exception(1);
 			throw new Exception("Error setting new user password ticket");
-			return false;
+			return false; //TODO -check why false from spatial-security?
 		}
 		$this->passwordTicket = $passwordTicket;
 		return true;

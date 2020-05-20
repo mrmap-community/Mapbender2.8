@@ -62,18 +62,18 @@ $layerId = false;
 $wfsId = false;
 //$typenames = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $e = new mb_exception("http_auth/http/index.php: REQUEST METHOD: POST");
+    $e = new mb_notice("http_auth/http/index.php: REQUEST METHOD: POST");
 } else {
-    $e = new mb_exception("http_auth/http/index.php: REQUEST METHOD: ".$_SERVER['REQUEST_METHOD']);
+    $e = new mb_notice("http_auth/http/index.php: REQUEST METHOD: ".$_SERVER['REQUEST_METHOD']);
 }
 //test for existing post data
 $postData = file_get_contents("php://input");
 //debug!
 //$e = new mb_exception("http_auth/http/index.php: postdata: ".$postData);
 if (isset($postData) && $postData !== '') {
-	$e = new mb_exception("http_auth/http/index.php: postdata: ".$postData);
+	$e = new mb_notice("http_auth/http/index.php: postdata: ".$postData);
 } else {
-	$e = new mb_exception("http_auth/http/index.php: postdata (file content) empty!");
+	$e = new mb_notice("http_auth/http/index.php: postdata (file content) empty!");
 	$postData = false;
 }
 
@@ -405,16 +405,50 @@ switch (strtolower($reqParams['request'])) {
             #do log to db
             #get price out of db
             $price = intval($n->getWmsfiPrice($arrayOnlineresources['wms_id']));
-		//TODO - session is not set!!!!!!!!
-            $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request,
-                $price);
+		    //TODO - session is not set!!!!!!!!
+            $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price);
         }
-	
-        if (isset($auth)) {
+        if (!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] =="f") {
+        	if (isset($auth)) {
+        		getFeatureInfo($log_id, $request, $auth);
+        	} else {
+        		getFeatureInfo($log_id, $request);
+        	}
+        } else {
+        	new mb_notice("spatial security: $request");
+        				
+        	$x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
+        	$y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
+        				
+        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        				
+        	if ($mask === null) {
+        		echo "Permission denied";
+        		die();
+        	}
+        					
+        	$color = $mask->getImagePixelColor($x, $y);
+        	$transparency = $color->getColorValue(Imagick::COLOR_ALPHA);
+        					
+        	if ($transparency < 1) {
+        		echo "Permission denied";
+        		die();
+        	}
+        						
+        	if (isset($auth)) {
+        		getFeatureInfo($log_id, $request, $auth);
+        	} else {
+        		getFeatureInfo($log_id, $request);
+        	}
+        								
+        	$mask->destroy();
+        }
+        /*if (isset($auth)) {
             getFeatureInfo($log_id, $request, $auth);
         } else {
             getFeatureInfo($log_id, $request);
-        }
+        }*/
+        
         break;
     case 'getmap':
         $arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
@@ -429,7 +463,7 @@ switch (strtolower($reqParams['request'])) {
         // Ergaenzungen secured UMN Requests
         //log proxy requests
         $log_id = false;     
-        if ($n->getWmsLogTag($wmsId) == 1) {
+        /*if ($n->getWmsLogTag($wmsId) == 1) {
             #do log to db
             #TODO read out size of bbox and calculate price
             #get price out of db
@@ -440,7 +474,46 @@ switch (strtolower($reqParams['request'])) {
             getImage($log_id, $request, $auth);
         } else {
             getImage($log_id, $request);
+        }*/
+        //$e = new mb_exception("wms: ".$arrayOnlineresources['wms_id']);
+        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        	#log proxy requests
+        	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db
+        		#get price out of db
+        		$price=intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
+        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0);
+        	}
+        	if(isset($auth)){
+        	    getImage($log_id, $request, $auth);
+        	} else {
+        		getImage($log_id, $request);
+        	}
+        } else {
+        	new mb_notice("wms {$arrayOnlineresources['wms_id']} is spatially secured");
+        	if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {#log proxy requests
+        		#do log to db
+        		#get price out of db
+        		$price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
+        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, true);
+        	}
+        	
+        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        	
+        	if ($mask === null) {
+        		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");
+        		die();
+        	}
+        	
+        	if (isset($auth)) {
+        		getImage($log_id, $request, $auth, $mask);
+        	} else {
+        		getImage($log_id, $request, false, $mask);
+        	}
+        	
+        	$mask->destroy();
         }
+        
+        
         break;
     case 'getlegendgraphic':
         $url = getLegendUrl($wmsId);
@@ -727,7 +800,7 @@ function completeURL($url)
  * 
  * @param string the original url of the image to send
  */
-function getImage($log_id, $or, $auth = false)
+function getImage($log_id, $or, $auth = false, $mask = false)
 {
     global $reqParams;    
     global $imageformats;
@@ -736,13 +809,8 @@ function getImage($log_id, $or, $auth = false)
     } else {
         $header = "Content-Type: ".$reqParams['format'];
     }
-    if ($auth) { //new for HTTP Authentication
 	//$e = new mb_exception("try to get: ". $or);
-        getDocumentContent($log_id, $or, $header, $auth);
-    } else {
-	//$e = new mb_exception("no auth given");
-        getDocumentContent($log_id, $or, $header);
-    }
+    getDocumentContent($log_id, $or, $header, $auth, $mask);
 }
 
 /**
@@ -1336,7 +1404,7 @@ function checkWmsPermission($wmsOws, $userId)
         $service["wms_getmap"] = $row["wms_getmap"];
         $service["wms_getfeatureinfo"] = $row["wms_getfeatureinfo"];
         $service["wms_getcapabilities_doc"] = $row["wms_getcapabilities_doc"];
-//        $service["wms_spatialsec"] = $row["wms_spatialsec"];
+        $service["wms_spatial_security"] = $row["wms_spatial_security"];
     }
     if (!$row || count($mywms) == 0) {
         throwE(array("No wms data available."));
@@ -1545,7 +1613,7 @@ function checkLayerPermission($wms_id, $l, $userId)
     return $ret;
 }
 
-function getDocumentContent($log_id, $url, $header = false, $auth = false)
+function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask = null)
 {
     global $reqParams, $n, $postData, $query;
     //debug
@@ -1610,8 +1678,14 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false)
             if ($log_id != null && is_integer($log_id)) {
                 $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
+            /*header("Content-Type: " . $reqParams['format']);
+            echo $content;*/
+            if ($mask !== null && $mask != false) {
+            	new mb_notice("spatial security: applying mask");
+            	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
+            }
             header("Content-Type: " . $reqParams['format']);
-            echo $content;
+            echo $source->getImageBlob();
         }
         return true;
     } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") { // getmap
@@ -1647,7 +1721,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false)
 	    //parse featureCollection and get number of objects
 	    //only possible if features should be logged!
 	    if ($log_id !== false) {
-	    	$e = new mb_exception("http_auth/http/index.php: GetFeature invoked - logging activated!");
+	    	$e = new mb_notice("http_auth/http/index.php: GetFeature invoked - logging activated!");
 	        libxml_use_internal_errors(true);
 	        try {
 		        $featureCollectionXml = simplexml_load_string($content);

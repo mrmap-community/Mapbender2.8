@@ -1,3 +1,6 @@
+<?php
+require_once dirname(__file__)."/spatial_security.php";
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -74,6 +77,7 @@ if($action == 'save'){
 		$changes->facsimiletelephone = $facsimiletelephone;
 		$changes->email = $email;
 		$changes->logo_path = $logo_path;
+		$changes->spatialSecurity = $spatialSecurity;
 		$changes->homepage = $homepage;
 		$changes->adminCode = $adminCode;
 		switch ($searchable) {
@@ -117,6 +121,7 @@ if ($action == 'update') {
 		$changes->facsimiletelephone = $facsimiletelephone;
 		$changes->email = $email;
 		$changes->logo_path = $logo_path;
+		$changes->spatialSecurity = $spatialSecurity;
 		$changes->homepage = $homepage;
 		$changes->adminCode = $adminCode;
 		switch ($searchable) {
@@ -152,6 +157,7 @@ if (!isset($name) || $selected_group == 'new'){
 	$facsimiletelephone = "";
 	$email = "";
 	$logo_path = "";
+	$spatialSecurity = "";
 	$homepage = "";
 	$adminCode = "";
 	$searchable = "t";
@@ -207,6 +213,7 @@ if(isset($selected_group) && $selected_group != 0){
 		$facsimiletelephone = $data["facsimiletelephone"];
 		$email = $data["email"];
 		$logo_path = $data["logo_path"];
+		$spatialSecurity = $data["spatialSecurity"];
 		$homepage = $data["homepage"];
 		$adminCode = $data["adminCode"];
 		$searchable = $data["searchable"];
@@ -387,6 +394,9 @@ echo"</table>";
 
 ?>
 <input type='hidden' name='action' value=''>
+
+<?php spatial_security\show_input($spatialSecurity, "mb_group"); ?>
+
 </form>
 </body>
 </html>

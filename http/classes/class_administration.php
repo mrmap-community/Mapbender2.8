@@ -1322,7 +1322,36 @@ SQL;
    			return false;
    		}
    	}	
-
+   	
+   	function getWMSSpatialSecurity($wms_id){
+   		$sql = "SELECT wms_spatial_security FROM wms WHERE wms_id = $1";
+   		$v = array($wms_id);
+   		$t = array("i");
+   		$res = db_prep_query($sql,$v,$t);
+   		if($row = db_fetch_array($res)){
+   			switch ($row["wms_spatial_security"]) {
+   				case "t":
+   					return 1;
+   					break;
+   				case "f":
+   					return 0;
+   					break;
+   				default:
+   					return 0;
+   					break;
+   			}
+   		} else {
+   			return false;
+   		}
+   	}
+   	
+   	function setWMSSpatialSecurity($wms_id, $status){
+   		$sql = "UPDATE wms SET wms_spatial_security = $1 WHERE wms_id = $2 ";
+   		$t = array("s","i");
+   		$v = array($status,$wms_id);
+   		$res = db_prep_query($sql,$v,$t);
+   	}
+   	
 	/*
 	 * set the log tag of the wms
 	 * 
