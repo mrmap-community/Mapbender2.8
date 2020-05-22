@@ -72,6 +72,11 @@ if (defined("PUBLIC_USER_AUTO_CREATE_SESSION") && PUBLIC_USER_AUTO_CREATE_SESSIO
 		        Mapbender::session()->set("mb_user_name", $isAuthenticated["mb_user_name"]);
 		        Mapbender::session()->set("mb_user_ip", $_SERVER['REMOTE_ADDR']);
        		    Mapbender::session()->set("HTTP_HOST", $_SERVER["HTTP_HOST"]);
+              	
+              	if (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true){
+					Mapbender::session()->set("django", "true");
+				}
+
                 if (defined("PUBLIC_USER_DEFAULT_SRS") && PUBLIC_USER_DEFAULT_SRS !=="") {
                     Mapbender::session()->set("epsg", PUBLIC_USER_DEFAULT_SRS);
 		        }
