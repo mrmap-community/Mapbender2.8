@@ -64,6 +64,9 @@ echo "var global_log_levels = '".LOG_LEVEL_LIST."';\n";
 echo "var mb_feature_count = ".MB_FEATURE_COUNT.";\n";
 echo "var mb_resolution = ".MB_RESOLUTION.";\n";
 echo "var mb_security_proxy = '" . MB_SECURITY_PROXY . "';\n";
+echo "Mapbender.gui_id = '".Mapbender::session()->get("mb_user_gui")."';\n";
+echo "var django = '".Mapbender::session()->get("django")."';\n";
+
 
 //
 // Load external JavaScript libraries
