@@ -84,7 +84,7 @@ if (is_array($isAuthenticated) != false) {
 		header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/success.html".$URLAdd);
 	}
 	session_write_close();
-} else if (strpos($isAuthenticated,'Account for user with name') !== false){
+} else if (strpos($isAuthenticated,'Account for user with name') !== false && (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true)){
 
 	$URLAdd="?status=notactive";
 	if($_SERVER["HTTPS"] != "on") {
@@ -93,7 +93,7 @@ if (is_array($isAuthenticated) != false) {
 		header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
 	}
 
-} else if (strpos($isAuthenticated,'Password failed third time for') !== false){
+} else if (strpos($isAuthenticated,'Password failed third time for') !== false && (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true)){
 
 	$URLAdd="?status=fail3&name=".$name;
 	if($_SERVER["HTTPS"] != "on") {
