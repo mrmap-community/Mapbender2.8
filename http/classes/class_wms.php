@@ -225,11 +225,6 @@ class wms {
         }
 
 	public static function getWmsMetadataUrl ($wmsId) {
-		#return preg_replace(
-		#	"/(.*)frames\/login.php/", 
-		#	"$1php/mod_layerMetadata.php?id=", 
-		#	LOGIN
-		#) . $wmsId;
 		//MAPBENDER_PATH maybe something like http://www.geoportal.rlp.de/mapbender !
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
 		    return str_replace("mapbender","",MAPBENDER_PATH)."wms/".$wmsId;
@@ -240,11 +235,6 @@ class wms {
 		#return "http://www.geoportal.rlp.de/wms/".$wmsId;
 	}
 	public static function getLayerMetadataUrl ($layerId) {
-		#return preg_replace(
-		#	"/(.*)frames\/login.php/", 
-		#	"$1php/mod_layerMetadata.php?id=", 
-		#	LOGIN
-		#) . $wmsId;		
 		//MAPBENDER_PATH maybe something like http://www.geoportal.rlp.de/mapbender !
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
 		    return str_replace("mapbender","",MAPBENDER_PATH)."layer/".$layerId;

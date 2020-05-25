@@ -312,11 +312,6 @@ else {
 		if($wmsList)
 		{   
 		    $sql = "SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_pos=0";
-			$v = array($wmsList);
-			$t = array('i');
-			$res = db_prep_query($sql,$v,$t);
-			$row = db_fetch_array($res);
-		    echo "view wms metadata: <a id='metadatalink' href='mod_layerMetadata.php?id=".$row["layer_id"]."' onclick='window.open(this.href,\"Metadaten\",\"width=500,height=600,left=100,top=200,scrollbars=yes ,dependent=yes\"); return false' target='_blank'><span id='metadatatext'>WMS ID: ".$wmsList."</span></a><br><br>";
 		
 			echo "<p class = 'guiList'>";
 			// Show GUIs using chosen WMS
