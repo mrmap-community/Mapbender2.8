@@ -359,10 +359,6 @@ function sel(){
     	document.form1.imrOldAuthType.value = wmsData[3]; 
  	document.form1.imrOldAuthName.value = wmsData[4]; 
  	document.form1.imrOldAuthPassword.value = wmsData[5]; 
-	//new for showing metadata - 30.05.2008 AR
-	document.getElementById("metadatalink").href = "mod_layerMetadata.php?id="+wmsData[2];
-	document.getElementById("metadatatext").firstChild.nodeValue = "WMS-ID: "+wmsData[0];
-	//end ***
 	
 }
 </script>
