@@ -15,10 +15,10 @@ if($_COOKIE[session_name()]=="") {
 
 $isAuthenticated = authenticate($name,$pw);
 
-if($isAuthenticated != false) {
+if (is_array($isAuthenticated) != false) {
 	setSession();
-	Mapbender::session()->set("mb_user_password",$pw); 
-  	Mapbender::session()->set("mb_user_id",$isAuthenticated["mb_user_id"]);
+	Mapbender::session()->set("mb_user_password",$pw);
+  Mapbender::session()->set("mb_user_id",$isAuthenticated["mb_user_id"]);
 	Mapbender::session()->set("mb_user_name",$isAuthenticated["mb_user_name"]);
 	Mapbender::session()->set("mb_user_ip",$_SERVER['REMOTE_ADDR']);
 	Mapbender::session()->set("mb_user_email",$isAuthenticated["mb_user_email"]);
@@ -30,22 +30,29 @@ if($isAuthenticated != false) {
 	Mapbender::session()->set("Glossar",$isAuthenticated["mb_user_glossar"]);
 	Mapbender::session()->set("mb_user_spatial_suggest",$isAuthenticated["mb_user_spatial_suggest"]);
 	$e = new mb_notice('geoportal/authentication.php: mb_user_newsletter: '.$isAuthenticated["mb_user_newsletter"]);
+
 	if ($isAuthenticated["mb_user_newsletter"] == "t") {
 		Mapbender::session()->set("mb_user_newsletter","ja");
 	} else {
 		Mapbender::session()->set("mb_user_newsletter","nein");
 	}
+
 	if ($isAuthenticated["mb_user_allow_survey"] == "t") {
 		Mapbender::session()->set("mb_user_allow_survey","ja");
 	} else {
 		Mapbender::session()->set("mb_user_allow_survey","nein");
 	}
+
 	Mapbender::session()->set("mb_user_description",$isAuthenticated["mb_user_description"]);
 	Mapbender::session()->set("mb_user_city",$isAuthenticated["mb_user_city"]);
 	Mapbender::session()->set("mb_user_postal_code",$isAuthenticated["mb_user_postal_code"]);
 	Mapbender::session()->set("epsg","EPSG:31466");
 	Mapbender::session()->set("HTTP_HOST",$_SERVER["HTTP_HOST"]);
 	Mapbender::session()->set("preferred_gui",$isAuthenticated["fkey_prefered_gui_id"]);
+
+	if (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true){
+		Mapbender::session()->set("django", "true");
+	}
 //INSERT LAST LOGIN DATE AND TIME
 //NEW Filed required "ALTER TABLE mapbender.mb_user ADD COLUMN mb_user_last_login_date date;"
 	$sql = "UPDATE mb_user SET";
@@ -54,25 +61,72 @@ if($isAuthenticated != false) {
 	$T[0] = 'i';
 	$sql .= 'WHERE mb_user_id = $1';
 	$res = db_prep_query($sql, $V, $T);
-	//UPDATE USER LOGIN DATE and TIME	
+	//UPDATE USER LOGIN DATE and TIME
 	require_once(dirname(__FILE__)."/../php/mb_getGUIs.php");
 	$arrayGUIs = mb_getGUIs($isAuthenticated["mb_user_id"]);
 	Mapbender::session()->set("mb_user_guis",$arrayGUIs);
-	header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/success.html".$URLAdd);
+
+	if (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true){
+		$URLAdd="?status=success";
+
+		if($isAuthenticated["timestamp_dsgvo_accepted"] == ""){
+			Mapbender::session()->set("dsgvo","no");
+		}else{
+			Mapbender::session()->set("dsgvo","yes");
+		}
+
+		if($_SERVER["HTTPS"] != "on") {
+			header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+		} else  {
+			header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+		}
+	}else{
+		header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/success.html".$URLAdd);
+	}
 	session_write_close();
+} else if (strpos($isAuthenticated,'Account for user with name') !== false && (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true)){
+
+	$URLAdd="?status=notactive";
+	if($_SERVER["HTTPS"] != "on") {
+		header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+	} else {
+		header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+	}
+
+} else if (strpos($isAuthenticated,'Password failed third time for') !== false && (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true)){
+
+	$URLAdd="?status=fail3&name=".$name;
+	if($_SERVER["HTTPS"] != "on") {
+		header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+	} else {
+		header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+	}
+
 } else {
-	header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/failed.html".$URLAdd);
+	if (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true){
+		$URLAdd="?status=fail";
+		if($_SERVER["HTTPS"] != "on") {
+			header ("Location: http://".$_SERVER['HTTP_HOST'].$URLAdd);
+		} else  {
+			header ("Location: https://".$_SERVER['HTTP_HOST'].$URLAdd);
+		}
+	}else {
+		header ("Location: http://".$_SERVER['HTTP_HOST']."/portal/failed.html".$URLAdd);
+	}
 }
 
-function authenticate ($name, $pw){
+
+function authenticate ($name,$pw){
 	$user = new User();
 	$returnObject = json_decode($user->authenticateUserByName($name, $pw));
 	if ($returnObject->success !== false) {
-		return json_decode(json_encode($returnObject->result), JSON_OBJECT_AS_ARRAY);
+		$returnObject = json_decode(json_encode($returnObject->result), JSON_OBJECT_AS_ARRAY);
 	} else {
-		return false;
+	  $returnObject = $returnObject->error->message;
 	}
+	return $returnObject;
 }
+
 function setSession(){
 	session_start(); //function is ok cause the session will be closed directly after starting it!
 	session_write_close();
