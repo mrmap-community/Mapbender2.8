@@ -102,7 +102,40 @@ LAYER
 		END 
 	END
 END
-
+#-------------------------------------
+LAYER
+	NAME "ows_layer_target"
+	
+	TYPE POINT 
+	LABELMAXSCALE 5000000000
+	LABELMINSCALE 0
+	CONNECTIONTYPE postgis
+	CONNECTION   "dbname=mapbender user=postgres port=5432 host=localhost"
+	DATA "the_geom from (select centroid(GeomFromText('POLYGON((%minx% %miny%,%minx% %maxy%,%maxx% %maxy%,%maxx% %miny%, %minx% %miny%))',4326)) as the_geom,area2d(GeomFromText('POLYGON((%minx% %miny%,%minx% %maxy%,%maxx% %maxy%,%maxx% %miny%, %minx% %miny%))',4326)) as area, 1 as oid ) as foo USING UNIQUE oid USING SRID=4326"
+	LABELCACHE ON
+	METADATA
+		WMS_TITLE "RLP Geo-Services Annotations"
+		WMS_SRS "epsg:4326"
+		WMS_ABSTRACT "Bounding Box Rectangles of OWS Services registered with thte Geoportal Rhineland Palatinate"
+		wms_dataurl_format "text/html"
+		wms_dataurl_href "http://www.mapbender.org/"
+		wms_keywordlist "Geoportal, RLP, Rheinland Pfalz, Umgebungsrechteck, Kartensuche, Dienst,OGC WMS, Open Source Geospatial Foundation. OSGeo"
+		wms_metadataurl_format "text/html"
+		wms_metadataurl_href "http://wiki.osgeo.org/"
+		wms_metadataurl_type "TC211"
+		wms_extent "2508083.25 5427840 2681976 5646759.5"
+	END
+	PROJECTION
+		"init=epsg:4326"
+	END
+	CLASS
+		EXPRESSION ([area] <= 0.005)
+		NAME "bbox"
+		STYLE
+			SYMBOL 'target'
+		END
+	END
+END
 #-------------------------------------
 LAYER
 	NAME "metadata_polygon"
