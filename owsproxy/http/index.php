@@ -326,7 +326,7 @@ switch (strtolower($reqParams['request'])) {
         } else {
             getFeatureInfo($log_id, $request);
         }*/
-        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	if(isset($auth)){
         		getFeatureInfo($log_id, $request, $auth);
         	} else {
@@ -396,7 +396,7 @@ switch (strtolower($reqParams['request'])) {
         } else {
             getImage($log_id, $request);
         }*/
-        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	new mb_notice("dont restrict spatially!");
         	#log proxy requests
         	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db

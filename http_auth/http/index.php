@@ -408,7 +408,7 @@ switch (strtolower($reqParams['request'])) {
 		    //TODO - session is not set!!!!!!!!
             $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price);
         }
-        if (!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] =="f") {
+        if (!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] =="f") {
         	if (isset($auth)) {
         		getFeatureInfo($log_id, $request, $auth);
         	} else {
@@ -476,7 +476,7 @@ switch (strtolower($reqParams['request'])) {
             getImage($log_id, $request);
         }*/
         //$e = new mb_exception("wms: ".$arrayOnlineresources['wms_id']);
-        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	#log proxy requests
         	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db
         		#get price out of db
