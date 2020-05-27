@@ -132,6 +132,7 @@ class searchMetadata
 		$this->resourceClassifications[0]['id_wfs'] = 'featuretype_id';
 		$this->resourceClassifications[0]['id_wmc'] = 'wmc_serial_id';
 		$this->resourceClassifications[0]['id_dataset'] = 'metadata_id';
+		$this->resourceClassifications[0]['id_application'] = 'metadata_id';
 		$this->resourceClassifications[0]['relation_wms'] = 'layer_md_topic_category';
 		$this->resourceClassifications[0]['relation_wfs'] = 'wfs_featuretype_md_topic_category';
 		$this->resourceClassifications[0]['relation_wmc'] = 'wmc_md_topic_category';
@@ -146,6 +147,7 @@ class searchMetadata
 		$this->resourceClassifications[1]['id_wfs'] = 'featuretype_id';
 		$this->resourceClassifications[1]['id_wmc'] = 'wmc_serial_id';
 		$this->resourceClassifications[1]['id_dataset'] = 'metadata_id';
+		$this->resourceClassifications[1]['id_application'] = 'metadata_id';
 		$this->resourceClassifications[1]['relation_wms'] = 'layer_inspire_category';
 		$this->resourceClassifications[1]['relation_wfs'] = 'wfs_featuretype_inspire_category';
 		$this->resourceClassifications[1]['relation_wmc'] = 'wmc_inspire_category';
@@ -172,6 +174,7 @@ class searchMetadata
 		$this->resourceClassifications[2]['id_wfs'] = 'featuretype_id';
 		$this->resourceClassifications[2]['id_wmc'] = 'wmc_serial_id';
 		$this->resourceClassifications[2]['id_dataset'] = 'metadata_id';
+		$this->resourceClassifications[2]['id_application'] = 'metadata_id';
 		$this->resourceClassifications[2]['relation_wms'] = 'layer_custom_category';
 		$this->resourceClassifications[2]['relation_wfs'] = 'wfs_featuretype_custom_category';
 		$this->resourceClassifications[2]['relation_wmc'] = 'wmc_custom_category';
