@@ -1287,7 +1287,7 @@ class searchMetadata
 		//check for postgis version
 		//sql for get version string
 		//get version number
-		if ((strtolower($this->searchResources) === "wms" or strtolower($this->searchResources) === "wmc" or strtolower($this->searchResources) === "dataset" or strtolower($this->searchResources) === "wfs") or strtolower($this->searchResources) === "application" & $this->searchBbox != NULL) {
+		if ((strtolower($this->searchResources) === "wms" or strtolower($this->searchResources) === "wmc" or strtolower($this->searchResources) === "dataset" or strtolower($this->searchResources) === "wfs" or strtolower($this->searchResources) === "application") & $this->searchBbox != NULL) {
 			//decide which type of search should be done
 			//check for postgis version cause postgis versions < 1.4 have problems when doing disjoint and inside
 			$sqlPostgisVersion = "SELECT postgis_version();";
