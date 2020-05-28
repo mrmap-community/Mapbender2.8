@@ -1802,6 +1802,12 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
 	    		//$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
 	    		if ($reqParams['outputformat'] != false) {
 	    	        header("Content-Type: ".$reqParams['outputformat']);
+	    	        switch($reqParams['outputformat']) {
+	    	        	case "application/zip":
+	    	        		$dateTime = date("Y-m-d");
+	    	        		header("Content-Disposition: attachment; filename=\"".$dateTime."_mapbender_featuretype_".$reqParams['typename'].".zip\"");
+	    	        		break;
+	    	        }
 	    		} else {
 	    			header("Content-Type: application/xml");
 	    		}
