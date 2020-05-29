@@ -399,7 +399,7 @@ switch (strtolower($reqParams['request'])) {
             throwE("GetFeatureInfo permission denied on layer with id" . $layerId);
             die();
         }
-	//Ergaenzungen secured UMN Requests
+	    //mask
         $log_id = false;
         if ($n->getWmsfiLogTag($arrayOnlineresources['wms_id']) == 1) {
             #do log to db
@@ -408,7 +408,7 @@ switch (strtolower($reqParams['request'])) {
 		    //TODO - session is not set!!!!!!!!
             $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price);
         }
-        if (!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] =="f") {
+        if (!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] =="f") {
         	if (isset($auth)) {
         		getFeatureInfo($log_id, $request, $auth);
         	} else {
@@ -476,7 +476,7 @@ switch (strtolower($reqParams['request'])) {
             getImage($log_id, $request);
         }*/
         //$e = new mb_exception("wms: ".$arrayOnlineresources['wms_id']);
-        if(!SPATIAL_SECURITY || $arrayOnlineresources["wms_spatial_security"] == "f") {
+        if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	#log proxy requests
         	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db
         		#get price out of db
@@ -494,33 +494,29 @@ switch (strtolower($reqParams['request'])) {
         		#do log to db
         		#get price out of db
         		$price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
-        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, true);
+        		//initially create log record with number of all pixels - if image has only one color, the pixel count
+        		//will be reset later in function getImage
+        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
         	}
-        	
         	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
-        	
         	if ($mask === null) {
         		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");
         		die();
-        	}
-        	
+        	}	
         	if (isset($auth)) {
         		getImage($log_id, $request, $auth, $mask);
         	} else {
         		getImage($log_id, $request, false, $mask);
-        	}
-        	
+        	}	
         	$mask->destroy();
-        }
-        
-        
+        }      
         break;
     case 'getlegendgraphic':
         $url = getLegendUrl($wmsId);
-	if (isset($reqParams['sld']) && $reqParams['sld'] != "") {
+		if (isset($reqParams['sld']) && $reqParams['sld'] != "") {
             $url = $url . getConjunctionCharacter($url) . "SLD=" . $reqParams['sld'];
         }
-	//$e = new mb_exception("invoked legend url: ".$url);
+		//$e = new mb_exception("invoked legend url: ".$url);
         if (isset($auth)) {
             getImage(false, $url, $auth);
         } else {
@@ -528,39 +524,39 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'getfeature':
-//$e = new mb_exception("http_auth/http/index.php - getfeature - requested features: ".$typeNameParameter.": ".json_encode($reqParams[$typeNameParameter]));
-	if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
-        	$storedQueryId = $reqParams['storedquery_id'];
-        	$arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
-	} else {
-		$arrayFeatures = array($reqParams[$typeNameParameter]);
-//$e = new mb_exception("http_auth/http/index.php - getfeature - check permission: ".json_encode($arrayFeatures));
-		//$e = new mb_exception("".$typeNameParameter.": ".$reqParams[$typeNameParameter]);
-        $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
-	}
-    $query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
-    $request = $query->getRequest();
-    $request = stripslashes($request);
-	//TODO - what if storedquery are used ? log storedquery_id?
-	if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
-        //get price out of db
-        $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
-	    if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
-		$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
-                $price, 0, $reqParams['storedquery_id']);
+		//$e = new mb_exception("http_auth/http/index.php - getfeature - requested features: ".$typeNameParameter.": ".json_encode($reqParams[$typeNameParameter]));
+		if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
+	        	$storedQueryId = $reqParams['storedquery_id'];
+	        	$arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
+		} else {
+			$arrayFeatures = array($reqParams[$typeNameParameter]);
+			//$e = new mb_exception("http_auth/http/index.php - getfeature - check permission: ".json_encode($arrayFeatures));
+			//$e = new mb_exception("".$typeNameParameter.": ".$reqParams[$typeNameParameter]);
+	        $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
+		}
+	    $query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
+	    $request = $query->getRequest();
+	    $request = stripslashes($request);
+		//TODO - what if storedquery are used ? log storedquery_id?
+		if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
+	        //get price out of db
+	        $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
+		    if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
+			$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
+	                $price, 0, $reqParams['storedquery_id']);
+		    } else {
+	            	$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
+	                $price, 0, $reqParams[$typeNameParameter]);
+		    }
 	    } else {
-            	$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
-                $price, 0, $reqParams[$typeNameParameter]);
-	    }
-    } else {
-		$log_id = false;
-	}
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $arrayOnlineresources['wfs_getfeature'];
-	}
+			$log_id = false;
+		}
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $arrayOnlineresources['wfs_getfeature'];
+		}
         if (isset($auth)) {
             getFeature($log_id, $request, $auth);
         } else {
@@ -569,18 +565,18 @@ switch (strtolower($reqParams['request'])) {
         break;
     case 'describefeaturetype':
         $arrayFeatures = array($reqParams[$typeNameParameter]);
-//$e = new mb_exception("http_auth/http/index.php - describefeaturetype - requested features: ".$typeNameParameter.": ".json_encode($reqParams[$typeNameParameter]));
-//really crazy: https://github.com/qgis/QGIS/commit/ccb4c80f8a6d2bb179258f1ffec0dc9a447ca465
+        //$e = new mb_exception("http_auth/http/index.php - describefeaturetype - requested features: ".$typeNameParameter.": ".json_encode($reqParams[$typeNameParameter]));
+        //really crazy: https://github.com/qgis/QGIS/commit/ccb4c80f8a6d2bb179258f1ffec0dc9a447ca465
         $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
         $query->setOnlineResource($arrayOnlineresources['wfs_describefeaturetype']);
         $request = $query->getRequest();
         $request = stripslashes($request);
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $arrayOnlineresources['wfs_describefeaturetype'];
-	}
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $arrayOnlineresources['wfs_describefeaturetype'];
+		}
         if (isset($auth)) {
             describeFeaturetype($request, $auth);
         } else {
@@ -588,21 +584,21 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'liststoredqueries':
-	if ($postData !== false) {
-		$operationMethod = "Post";
-	} else {
-		$operationMethod = "Get";
-	}
-	$listStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "ListStoredQueries", $operationMethod);
-        $query->setOnlineResource($listStoredQueriesUrl);
-        $request = $query->getRequest();
-        $request = stripslashes($request);
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $listStoredQueriesUrl;
-	}
+		if ($postData !== false) {
+			$operationMethod = "Post";
+		} else {
+			$operationMethod = "Get";
+		}
+		$listStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "ListStoredQueries", $operationMethod);
+	        $query->setOnlineResource($listStoredQueriesUrl);
+	        $request = $query->getRequest();
+	        $request = stripslashes($request);
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $listStoredQueriesUrl;
+		}
         if (isset($auth)) {
             listStoredQueries($request, $auth);
         } else {
@@ -610,21 +606,21 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'describestoredqueries':
-	if ($postData !== false) {
-		$operationMethod = "Post";
-	} else {
-		$operationMethod = "Get";
-	}
-	$describeStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "DescribeStoredQueries", $operationMethod);
-        $query->setOnlineResource($describeStoredQueriesUrl);
-        $request = $query->getRequest();
-        $request = stripslashes($request);
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $describeStoredQueriesUrl;
-	}
+		if ($postData !== false) {
+			$operationMethod = "Post";
+		} else {
+			$operationMethod = "Get";
+		}
+		$describeStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "DescribeStoredQueries", $operationMethod);
+	        $query->setOnlineResource($describeStoredQueriesUrl);
+	        $request = $query->getRequest();
+	        $request = stripslashes($request);
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $describeStoredQueriesUrl;
+		}
         if (isset($auth)) {
             describeStoredQueries($request, $auth);
         } else {
@@ -642,8 +638,8 @@ switch (strtolower($reqParams['request'])) {
         $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
         $query->setOnlineResource($arrayOnlineresources['wfs_transaction']);
         $request = $query->getRequest();
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
         if (version_compare(PHP_VERSION, '7.0.0', '<')) {
             doTransaction($request, $HTTP_RAW_POST_DATA);
         }
@@ -1674,15 +1670,15 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         } else {
             $source = new Imagick();
             $source->readImageBlob($content);
-            $numColors = $source->getImageColors();
-            if ($log_id != null && is_integer($log_id)) {
-                $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
-            }
             /*header("Content-Type: " . $reqParams['format']);
             echo $content;*/
             if ($mask !== null && $mask != false) {
             	new mb_notice("spatial security: applying mask");
             	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
+            }
+            $numColors = $source->getImageColors();
+            if ($log_id != null && is_integer($log_id)) {
+            	$n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
             header("Content-Type: " . $reqParams['format']);
             echo $source->getImageBlob();
@@ -1802,6 +1798,12 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
 	    		//$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
 	    		if ($reqParams['outputformat'] != false) {
 	    	        header("Content-Type: ".$reqParams['outputformat']);
+	    	        switch($reqParams['outputformat']) {
+	    	        	case "application/zip":
+	    	        		$dateTime = date("Y-m-d");
+	    	        		header("Content-Disposition: attachment; filename=\"".$dateTime."_mapbender_featuretype_".$reqParams['typename'].".zip\"");
+	    	        		break;
+	    	        }
 	    		} else {
 	    			header("Content-Type: application/xml");
 	    		}

@@ -215,7 +215,7 @@ body{
 #$ownwmsconf['price']=array();
 #TODO Get root layer id for showing metadata! - function should be in admin class
 
-if (SPATIAL_SECURITY) {
+if (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == true) {
 	echo "<form  method=\"post\" action=\"".$_SERVER["SCRIPT_NAME"]."\">
          <i>Warning: Toggle proxy changes the url of the secured services!</i><br>
          <table border='1'>
@@ -277,7 +277,7 @@ for($i=0; $i<count($ownwms); $i++){
 	#initialize hidden field for status proxy:
 	echo "<input type=\"hidden\" name=\"status_".$ownwms[$i]."_proxy\" id=\"status_".$ownwms[$i]."_proxy\" value=".$status_proxy.">";
 	echo "</td>";
-	if (SPATIAL_SECURITY) {
+	if (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == true) {
 	    $checked = $spatial_security ? "checked=\"checked\"" : "";
 		$disabled = $status_proxy ? "" : "disabled=\"disabled\"";
 		echo "<td>

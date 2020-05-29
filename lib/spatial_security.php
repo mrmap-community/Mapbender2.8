@@ -24,7 +24,7 @@ namespace spatial_security {
 
     function database_write($type, $id, $value)
     {
-        if (SPATIAL_SECURITY) {
+        if (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == true) {
             switch ($type) {
                 case 'gui':
                     $sql = "UPDATE gui SET spatial_security = ST_GeomFromText($1) WHERE gui_id = $2";
@@ -45,7 +45,7 @@ namespace spatial_security {
     }
 
     function database_read($type, $id) {
-        if (!SPATIAL_SECURITY) {
+        if (!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false)) {
             return '';
         } else {
             switch ($type) {
@@ -70,10 +70,10 @@ namespace spatial_security {
 
     function show_input($currentValue, $table)
     {
-        if (SPATIAL_SECURITY) {
+        if (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == true) {
             echo '<div style="float:right;width:250px;height:400px;">';
-            echo "Räumliche Absicherung<br/>";
-            if (SPATIAL_SECURITY_ROLETYPE === "user_group") {
+            echo _mb("Spatial Filter")."<br/>";
+            if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "user_group") {
                 echo "<select name=\"spatial_security[]\" multiple style=\"width:250px;height:400px;background-color:white;\">";
 
                 $conn = db_connect();
@@ -90,7 +90,7 @@ namespace spatial_security {
                 }
 
                 echo "</select>";
-            } else if (SPATIAL_SECURITY_ROLETYPE === "gui") {
+            } else if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "gui") {
                 echo '<input type="text" name="spatial_security">';
             }
             echo "</div>";
@@ -98,7 +98,7 @@ namespace spatial_security {
     }
 
     function get_mapserver_keys($session) {
-        if (SPATIAL_SECURITY_ROLETYPE === "user_group") {
+        if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "user_group") {
             $user = new User($session->get('mb_user_id'));
             $user->load();
 
@@ -112,7 +112,7 @@ namespace spatial_security {
             }
 
             return join(",", array_unique($keys));
-        } else if (SPATIAL_SECURITY_ROLETYPE === "gui") {
+        } else if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "gui") {
             new mb_notice('spatial: gui_id: ' . $session->get("mb_user_gui"));
             return $session->get("mb_user_gui");
         } else {
@@ -129,11 +129,11 @@ namespace spatial_security {
         $server = MAPSERVER;
         $map = realpath(__DIR__ . "/../mapserver/spatial_security.map");
 
-        if (SPATIAL_SECURITY_ROLETYPE === "user_group") {
+        if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "user_group") {
             $table = 'spatial_security';
             $key_column = 'id';
             $geom_column = 'geom';
-        } else if (SPATIAL_SECURITY_ROLETYPE === "gui") {
+        } else if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "gui") {
             $table = 'gui';
             $key_column = 'gui_id';
             $geom_column = 'spatial_security';
