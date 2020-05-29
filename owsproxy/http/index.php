@@ -306,9 +306,9 @@ switch (strtolower($reqParams['request'])) {
         break;
     case 'getfeatureinfo':
         $arrayOnlineresources = checkWmsPermission($query->getOwsproxyServiceId(), $userId);
-	//define following global to use it in matchUrls function**************
-	$featureInfoUrl = $arrayOnlineresources['wms_getfeatureinfo'];
-	//*********************************************************************
+	    //define following global to use it in matchUrls function**************
+	    $featureInfoUrl = $arrayOnlineresources['wms_getfeatureinfo'];
+	    //*********************************************************************
         $query->setOnlineResource($arrayOnlineresources['wms_getfeatureinfo']);
         $request = $query->getRequest();
         //Ergaenzungen secured UMN Requests
@@ -398,9 +398,9 @@ switch (strtolower($reqParams['request'])) {
         }*/
         if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
         	new mb_notice("dont restrict spatially!");
-        	#log proxy requests
-        	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db
-        		#get price out of db
+        	//log proxy requests
+        	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {//do log to db
+        		//get price out of db
         		$price=intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
         		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0);
         	}
@@ -412,11 +412,13 @@ switch (strtolower($reqParams['request'])) {
         } else {
         	new mb_notice("wms {$arrayOnlineresources['wms_id']} is spatially secured");
         	$log_id = false;
-        	if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {#log proxy requests
-        		#do log to db
-        		#get price out of db
+        	if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {//log proxy requests
+        		//do log to db
+        		//get price out of db
         		$price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
-        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, true);
+        		//initially create log record with number of all pixels - if image has only one color, the pixel count
+        		//will be reset later in function getImage
+        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
         	}
         						
         	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
@@ -468,39 +470,39 @@ switch (strtolower($reqParams['request'])) {
         getExternalRequest($query->getOwsproxyServiceId());
         break;
     case 'getfeature':
-	if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
-        	$storedQueryId = $reqParams['storedquery_id'];
-        	$arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
-	} else {
-		$arrayFeatures = array($reqParams[$typeNameParameter]);
-        	$arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
-	}
-	$query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
-        $request = $query->getRequest();
-        $request = stripslashes($request);
-	//TODO - what if storedquery are used ? log storedquery_id?
-	if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
-            //get price out of db
-            $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
-	    if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
-		$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
-                $price, 0, $reqParams['storedquery_id']);
+		if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
+	        	$storedQueryId = $reqParams['storedquery_id'];
+	        	$arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
+		} else {
+			$arrayFeatures = array($reqParams[$typeNameParameter]);
+	        	$arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
+		}
+		$query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
+	    $request = $query->getRequest();
+	    $request = stripslashes($request);
+		//TODO - what if storedquery are used ? log storedquery_id?
+		if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
+	            //get price out of db
+	            $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
+		    if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
+			$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
+	                $price, 0, $reqParams['storedquery_id']);
+		    } else {
+	            	$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
+	                $price, 0, $reqParams[$typeNameParameter]);
+		    }
+	        } else {
+			$log_id = false;
+		}
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $arrayOnlineresources['wfs_getfeature'];
+		}
+	    if (isset($auth)) {
+	        getFeature($log_id, $request, $auth);
 	    } else {
-            	$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
-                $price, 0, $reqParams[$typeNameParameter]);
+	        getFeature($log_id, $request);
 	    }
-        } else {
-		$log_id = false;
-	}
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $arrayOnlineresources['wfs_getfeature'];
-	}
-        if (isset($auth)) {
-            getFeature($log_id, $request, $auth);
-        } else {
-            getFeature($log_id, $request);
-        }
         break;
     case 'describefeaturetype':
         $arrayFeatures = array($reqParams[$typeNameParameter]);
@@ -508,10 +510,10 @@ switch (strtolower($reqParams['request'])) {
         $query->setOnlineResource($arrayOnlineresources['wfs_describefeaturetype']);
         $request = $query->getRequest();
         $request = stripslashes($request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $arrayOnlineresources['wfs_describefeaturetype'];
-	}
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $arrayOnlineresources['wfs_describefeaturetype'];
+		}
         if (isset($auth)) {
             describeFeaturetype($request, $auth);
         } else {
@@ -519,43 +521,43 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'liststoredqueries':
-	if ($postData !== false) {
-		$operationMethod = "Post";
-	} else {
-		$operationMethod = "Get";
-	}
-	$listStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "ListStoredQueries", $operationMethod);
-        $query->setOnlineResource($listStoredQueriesUrl);
-        $request = $query->getRequest();
-        $request = stripslashes($request);
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $listStoredQueriesUrl;
-	}
-        if (isset($auth)) {
-            listStoredQueries($request, $auth);
-        } else {
-            listStoredQueries($request);
-        }
-        break;
+		if ($postData !== false) {
+			$operationMethod = "Post";
+		} else {
+			$operationMethod = "Get";
+		}
+		$listStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "ListStoredQueries", $operationMethod);
+	        $query->setOnlineResource($listStoredQueriesUrl);
+	        $request = $query->getRequest();
+	        $request = stripslashes($request);
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $listStoredQueriesUrl;
+		}
+	    if (isset($auth)) {
+	        listStoredQueries($request, $auth);
+	    } else {
+	        listStoredQueries($request);
+	    }
+	    break;
     case 'describestoredqueries':
-	if ($postData !== false) {
-		$operationMethod = "Post";
-	} else {
-		$operationMethod = "Get";
-	}
-	$describeStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "DescribeStoredQueries", $operationMethod);
-        $query->setOnlineResource($describeStoredQueriesUrl);
-        $request = $query->getRequest();
-        $request = stripslashes($request);
-	//TODO: following is not the standard way because ows has not to handle vsp!!!
-	$request = delTotalFromQuery("wfs_id",$request);
-	//don't allow get parameters in conjunction with post!
-	if ($postData !== false) {
-		$request = $describeStoredQueriesUrl;
-	}
+		if ($postData !== false) {
+			$operationMethod = "Post";
+		} else {
+			$operationMethod = "Get";
+		}
+		$describeStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "DescribeStoredQueries", $operationMethod);
+	    $query->setOnlineResource($describeStoredQueriesUrl);
+	    $request = $query->getRequest();
+	    $request = stripslashes($request);
+		//TODO: following is not the standard way because ows has not to handle vsp!!!
+		$request = delTotalFromQuery("wfs_id",$request);
+		//don't allow get parameters in conjunction with post!
+		if ($postData !== false) {
+			$request = $describeStoredQueriesUrl;
+		}
         if (isset($auth)) {
             describeStoredQueries($request, $auth);
         } else {
@@ -583,9 +585,10 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     default:
-	throwText(array("Request parameter not known to mapbender security proxy!"));
-	break;
+		throwText(array("Request parameter not known to mapbender security proxy!"));
+		break;
 }
+
 //why delete session here - only if it was temporary?
 if (isset($tmpSession) && Mapbender::session()->storageExists($tmpSession)) {
     $e = new mb_notice("Following temporary session will be deleted: " . $tmpSession);
@@ -695,16 +698,12 @@ function getImage($log_id, $or, $auth = false, $mask = false)
     } else {
         $header = "Content-Type: ".$reqParams['format'];
     }
-    #log the image_requests to database
-    #log the following to table mb_proxy_log
-    #timestamp,user_id,getmaprequest,amount pixel,price - but do this only for wms to log - therefor first get log tag out of wms!
-    #
-    #
-    //if ($auth !== false) { //new for HTTP Authentication
-        getDocumentContent($log_id, $or, $header, $auth, $mask);
-    //} else {
-    //    getDocumentContent($log_id, $or, $header, false, );
-    //}
+    //log the image_requests to database
+    //log the following to table mb_proxy_log
+    //timestamp,user_id,getmaprequest,amount pixel,price - but do this only for wms to log - therefor first get log tag out of wms!
+    //
+    //
+    getDocumentContent($log_id, $or, $header, $auth, $mask);
 }
 
 /**
@@ -886,7 +885,6 @@ function matchUrls($content)
 	global $urlsToExclude;
 	global $featureInfoUrl;
 	global $exchangeUrlsWmsFi;
-
 	//check if isset owsproxyUrls else create
 	$owsproxyUrls = Mapbender::session()->get('owsproxyUrls');
 	if ($owsproxyUrls == false) {
@@ -896,38 +894,38 @@ function matchUrls($content)
 		$owsproxyUrls['url'] = array();
 		Mapbender::session()->set('owsproxyUrls',$owsproxyUrls);
 	}
-    	$pattern = "/[\"|\'](https*:\/\/[^\"|^\']*)[\"|\']/";
-    	preg_match_all($pattern, $content, $matches);
-    	for ($i = 0; $i < count($matches[1]); $i++) {
-        	$req = $matches[1][$i];
-        	$notice = new mb_notice("owsproxy found URL " . $i . ": " . $req);
-		//only register and exchange urls, that should not be excluded!
-		if (in_array($req,$urlsToExclude)) {
-       	 		continue;
+	$pattern = "/[\"|\'](https*:\/\/[^\"|^\']*)[\"|\']/";
+	preg_match_all ( $pattern, $content, $matches );
+	for($i = 0; $i < count ( $matches [1] ); $i ++) {
+		$req = $matches [1] [$i];
+		$notice = new mb_notice ( "owsproxy found URL " . $i . ": " . $req );
+		// only register and exchange urls, that should not be excluded!
+		if (in_array ( $req, $urlsToExclude )) {
+			continue;
 		}
-		//Generaly urls should not be exchanged. It must be controlled, if it directly come from the same server as the fi request. Those urls have always to be exchanged!  
+		// Generaly urls should not be exchanged. It must be controlled, if it directly come from the same server as the fi request. Those urls have always to be exchanged!
 		if ($exchangeUrlsWmsFi === "0") {
-			//get servername for featureinfo request
-			$url_array = parse_url($featureInfoUrl);
-			$servername = $url_array['scheme']."://".$url_array['host'];
-			//test if url came from same server - if not use original urls!
-			//switch for localhost/127.0.0.1 - they are the same!
-			if ($url_array['host'] == 'localhost' || $url_array['host'] == '127.0.0.1') {
-				if (strpos($req, $url_array['scheme']."://"."localhost") !== 0 && strpos($req, $url_array['scheme']."://"."127.0.0.1") !== 0) {
-						continue;
+			// get servername for featureinfo request
+			$url_array = parse_url ( $featureInfoUrl );
+			$servername = $url_array ['scheme'] . "://" . $url_array ['host'];
+			// test if url came from same server - if not use original urls!
+			// switch for localhost/127.0.0.1 - they are the same!
+			if ($url_array ['host'] == 'localhost' || $url_array ['host'] == '127.0.0.1') {
+				if (strpos ( $req, $url_array ['scheme'] . "://" . "localhost" ) !== 0 && strpos ( $req, $url_array ['scheme'] . "://" . "127.0.0.1" ) !== 0) {
+					continue;
 				}
 			} else {
-				if (strpos($req, $servername) !== 0) {
+				if (strpos ( $req, $servername ) !== 0) {
 					continue;
 				}
 			}
 		}
-        	$id = registerURL($req);
-        	$extReq = setExternalRequest($id);
-        	$notice = new mb_notice("MD5 URL " . $id . " - external link: " . $extReq);
-        	$content = str_replace($req, $extReq, $content);
-    	}
-    	return $content;
+		$id = registerURL ( $req );
+		$extReq = setExternalRequest ( $id );
+		$notice = new mb_notice ( "MD5 URL " . $id . " - external link: " . $extReq );
+		$content = str_replace ( $req, $extReq, $content );
+	}
+	return $content;
 }
 
 function setExternalRequest($id)
@@ -1410,15 +1408,15 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         } else {
             $source = new Imagick();
             $source->readImageBlob($content);
-            $numColors = $source->getImageColors();
-            if ($log_id != null && is_integer($log_id)) {
-                $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
-            }
             /*header("Content-Type: " . $reqParams['format']);
             echo $content;*/
             if ($mask !== null && $mask != false) {
             	new mb_notice("spatial security: applying mask");
             	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
+            }
+            $numColors = $source->getImageColors();
+            if ($log_id != null && is_integer($log_id)) {
+            	$n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
             header("Content-Type: " . $reqParams['format']);
             echo $source->getImageBlob();

@@ -72,7 +72,7 @@ namespace spatial_security {
     {
         if (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == true) {
             echo '<div style="float:right;width:250px;height:400px;">';
-            echo "Räumliche Absicherung<br/>";
+            echo _mb("Spatial Filter")."<br/>";
             if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "user_group") {
                 echo "<select name=\"spatial_security[]\" multiple style=\"width:250px;height:400px;background-color:white;\">";
 
