@@ -43,14 +43,13 @@
 	width: 146px;
 }
 
-#printPDF_working {
+#printPDF_working, .printPDF_working {
 	position:absolute;
 	z-index: 4;
 	display: none;
 	visibility: visible;
-	padding: 50px 0 0 20px;
 }
-#printPDF_working_bg {
+#printPDF_working_bg, .printPDF_working_bg {
 	position:absolute;
 	z-index: 3;
 	display: none;
@@ -59,6 +58,8 @@
 	opacity: 0.75;
 	width:100%;
 	height:100%;
+	left: 0;
+	top: 0;
 }
 
 #printPDF textarea {
@@ -69,4 +70,30 @@
         cursor: pointer;
         float: left;
         display: block;
+}
+
+.pfi-abfragen {
+	/*display: table;*/
+	display: grid;
+	grid-template-columns: 60% 40%;
+}
+.pfi-abfragen h3 {
+	grid-column-start: 1;
+	grid-column-end: 2;
+}
+
+.pfi-abfragen-check {
+	grid-column-start: 1;
+	grid-column-end: 1;
+	display: inline-block;
+}
+
+.pfi-abfragen-radio:nth-of-type(2n) {
+	display: inline-block;
+}
+
+.pfi-abfragen-radio {
+	grid-column-start: 2;
+	grid-column-end: 2;
+	float: right;
 }

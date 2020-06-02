@@ -29,6 +29,8 @@ require_once(dirname(__FILE__)."/class_connector.php");
 
 class weldMaps2PNG{
 
+	private static $cache = array();
+
 	function __construct($urls,$filename, $encode = true, $opacities=""){
 		if(!$urls || $urls == ""){
 			$e = new mb_exception("weldMaps2PNG: no maprequests delivered");
@@ -83,19 +85,21 @@ class weldMaps2PNG{
 	}
 	
 	function loadpng ($imgurl) {
-		$obj = new stripRequest($imgurl);
-		$x = new connector($imgurl);
-		
-		//
-		$f = $obj->get("format");
-		
-		$im = @imagecreatefromstring($x->file);
+		if (array_key_exists($imgurl, weldMaps2PNG::$cache)) {
+			new mb_notice("weldMaps2PNG: using cache");
+			$file =  weldMaps2PNG::$cache[$imgurl];
+		} else {
+			$file = (new connector($imgurl))->file;
+			weldMaps2PNG::$cache[$imgurl] = $file;
+		}
+
+		$im = @imagecreatefromstring($file);
 		if(!$im){
-			$im = false;
-			$e = new mb_exception("weldMaps2PNG: unable to load image: ".$imgurl);
-		}  
+			new mb_exception("weldMaps2PNG: unable to load image: ".$imgurl);
+			return false;
+		}
+
 		return $im;
-		
 	}
 	
 	function filter_opacity( &$img, $opacity ) //params: image resource id, opacity in percentage (eg. 80)
