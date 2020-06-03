@@ -69,7 +69,7 @@
     ],
     "pages" : [
         {
-            "tpl" : "Hochformat_A4_FeatureInfo.pdf",
+            "tpl" : "./Hochformat_A4_FeatureInfo.pdf",
             "useTplPage" : 1,
             "elements" : {
                 "karte" : {
