@@ -950,8 +950,8 @@ var PrintPDF = function (options) {
       printInfo.urls = printInfo.originalUrls.slice();
     }
 
-    var $dialogDiv = $("<div>");
-    var $backgroundDiv = $("<div>");
+    var $dialogDiv = $("<div class='pfi-maindiv'>");
+    var $backgroundDiv = $("<div class='pfi-selectbackground'>");
     var $abfragenDiv = $("<div class='pfi-abfragen'>");
     $dialogDiv.append($backgroundDiv).append($abfragenDiv);
 
