@@ -81,6 +81,10 @@
 	grid-column-start: 1;
 	grid-column-end: 2;
 }
+.pfi-abfragen label:nth-child(3n-1) {
+    display: inline-block;
+    margin-bottom: 5px;
+}
 
 .pfi-abfragen-check {
 	grid-column-start: 1;
