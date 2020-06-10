@@ -1,7 +1,7 @@
 /*
  * NetGIS WebGIS Client
  * 
- * (c) Sebastian Pauli, NetGIS, 2017-2019
+ * (c) Sebastian Pauli, NetGIS, 2017-2020
  */
 
 /**
@@ -19,7 +19,9 @@ netgis.map =
 		var container;
 		var map;
 		var view;
-		var geolocation;
+		
+		var geolocationHandler;
+		var geolocationCoords;
 		
 		var interaction; //TODO: rename to current/active interaction
 		var history;
@@ -174,16 +176,6 @@ netgis.map =
 			//createBackgroundLayers();
 	
 			// Geolocation
-			geolocation = new ol.Geolocation
-			(
-				{
-					projection: view.getProjection()
-				}
-			);
-	
-			geolocation.on( "change", onGeolocationChange );
-			geolocation.on( "error", onGeolocationError );
-			
 			positionOverlay = new ol.Overlay
 			(
 				{
@@ -328,7 +320,7 @@ netgis.map =
 			
 			map.on( "moveend", onMapMoveEnd );
 			if ( netgis.params.getInt( "withDigitize" ) === 1 ) map.on( "click", onDigitizeClick );
-
+			
 			// History
 			history = [];
 			historyIndex = -1;
@@ -481,14 +473,13 @@ netgis.map =
 		};
 		
 		var viewGeolocation = function()
+		{			
+			if ( geolocationCoords && positionActive ) view.setCenter( geolocationCoords );
+		};
+		
+		var updateGeolocation = function()
 		{
-			var pos = geolocation.getPosition();
-			
-			if ( pos && positionActive )
-			{
-				positionOverlay.setPosition( pos );
-				view.setCenter( pos );
-			}
+			if ( geolocationCoords && positionActive ) positionOverlay.setPosition( geolocationCoords );
 		};
 		
 		/**
@@ -1106,7 +1097,7 @@ netgis.map =
 			// Go back to pan mode
 			//if ( ! netgis.sidebar.isVisible() ) pan();
 		};
-
+		
 		var onDigitizeClick = function( evt )
 		{
 			var coords = evt.coordinate;
@@ -1161,7 +1152,7 @@ netgis.map =
 			{
 				// Background Layers
 				createBackgroundLayers();
-
+				
 				// GeoRSS Layers
 				var georssEntities = netgis.entities.get( [ netgis.component.Layer, netgis.component.GeoRSS ] );
 				
@@ -1511,7 +1502,19 @@ netgis.map =
 			else
 				map.removeOverlay( positionOverlay );
 			
-			geolocation.setTracking( positionActive );
+			//geolocation.setTracking( positionActive );
+			
+			if ( positionActive )
+			{
+				if ( ! navigator.geolocation )
+					netgis.events.call( netgis.events.POSITION_ERROR, {} );
+				else
+					geolocationHandler = navigator.geolocation.watchPosition( onGeolocationChange, onGeolocationError, { timeout: 10 * 1000 } );
+			}
+			else
+			{
+				navigator.geolocation.clearWatch( geolocationHandler );
+			}
 		};
 		
 		var onPositionCenter = function( params )
@@ -1521,15 +1524,14 @@ netgis.map =
 		
 		var onGeolocationChange = function( event )
 		{
+			geolocationCoords = proj4( "EPSG:4326", netgis.config.MAP_PROJECTION, [ event.coords.longitude, event.coords.latitude ] );
+			
+			if ( positionActive ) updateGeolocation();
 			if ( positionCenter ) viewGeolocation();
 		};
 		
 		var onGeolocationError = function( event )
 		{
-			//console.info( "GEOLOCATION ERROR:", event );
-			
-			//TODO: call error event, handle in menu (position checkbox)
-			
 			netgis.events.call( netgis.events.POSITION_ERROR, event );
 		}
 		
