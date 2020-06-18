@@ -507,12 +507,12 @@ SQL;
     $url = '';
     switch ($serviceType) {
         case "wfs":
-	    $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-	    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
+	        $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
+	        $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
             break;
 	case "ogcapifeatures":
             $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."/collections/".$mbMeta['featuretype_name'];
-	    $protocol = "OGC:API:Features";
+	        $protocol = "OGC:API:Features";
             break;
     }   
 	//GetCapabilities is always available
