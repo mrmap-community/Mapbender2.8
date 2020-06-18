@@ -152,6 +152,7 @@ $anonymousAccess = false;
 if ($layerId !== false) {
 	$user = new user(PUBLIC_USER);
 	$anonymousAccess = $user->isLayerAccessible($layerId);
+	//$e = new mb_exception("http_auth/http/index.php: anonymous access possible: ".$anonymousAccess);
 }
 //$e = new mb_exception("http_auth/index.php: ".$typeNameParameter.": ".(string)$reqParams[$typeNameParameter]);
 if ($wfsId !== false) {
@@ -420,7 +421,7 @@ switch (strtolower($reqParams['request'])) {
         	$x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
         	$y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
         				
-        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        	$mask = spatial_security\get_mask($reqParams, $userId);
         				
         	if ($mask === null) {
         		echo "Permission denied";
@@ -451,6 +452,7 @@ switch (strtolower($reqParams['request'])) {
         
         break;
     case 'getmap':
+    	//$e = new mb_exception("http_auth/http/index.php: userId: ".$userId);
         $arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
         $query->setOnlineResource($arrayOnlineresources['wms_getmap']);
         $layers = checkLayerPermission($wmsId, $reqParams['layers'], $userId);
@@ -498,7 +500,7 @@ switch (strtolower($reqParams['request'])) {
         		//will be reset later in function getImage
         		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
         	}
-        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        	$mask = spatial_security\get_mask($reqParams, $userId);
         	if ($mask === null) {
         		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");
         		die();

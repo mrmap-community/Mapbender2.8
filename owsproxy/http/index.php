@@ -338,7 +338,7 @@ switch (strtolower($reqParams['request'])) {
         	$x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
         	$y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
         				
-        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        	$mask = spatial_security\get_mask($reqParams, Mapbender::session()->get("mb_user_id"));
         				
         	if ($mask === null) {
         		echo "Permission denied";
@@ -421,7 +421,7 @@ switch (strtolower($reqParams['request'])) {
         		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
         	}
         						
-        	$mask = spatial_security\get_mask($reqParams, Mapbender::session());
+        	$mask = spatial_security\get_mask($reqParams, Mapbender::session()->get("mb_user_id"));
         						
         	if ($mask === null) {
         		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");

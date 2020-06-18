@@ -97,9 +97,9 @@ namespace spatial_security {
         }
     }
 
-    function get_mapserver_keys($session) {
+    function get_mapserver_keys($userId) {
         if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "user_group") {
-            $user = new User($session->get('mb_user_id'));
+            $user = new User($userId);
             $user->load();
 
             $keys = empty($user->spatialSecurity) ? array() : explode(",", $user->spatialSecurity);
@@ -113,8 +113,11 @@ namespace spatial_security {
 
             return join(",", array_unique($keys));
         } else if (defined("SPATIAL_SECURITY_ROLETYPE") && SPATIAL_SECURITY_ROLETYPE === "gui") {
-            new mb_notice('spatial: gui_id: ' . $session->get("mb_user_gui"));
-            return $session->get("mb_user_gui");
+            //new mb_notice('spatial: gui_id: ' . $session->get("mb_user_gui"));
+            //return $session->get("mb_user_gui");
+            //TODO: wrong implemented - we need a list of guis which are accessable by the user that have spatial restrictions
+            //for this resource!
+            return false;
         } else {
             return '';
         }
@@ -152,8 +155,8 @@ namespace spatial_security {
         return $url;
     }
 
-    function get_mask($reqParams, $session) {
-        $keys = get_mapserver_keys($session);
+    function get_mask($reqParams, $userId) {
+        $keys = get_mapserver_keys($userId);
 
         if ($keys === '') {
             return null;
