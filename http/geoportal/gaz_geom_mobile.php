@@ -121,7 +121,7 @@ if ($bundesland != false) {
 }
 //$e = new mb_exception($invokeUrl);
 $invokeUrl = $basUrl1.$key.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&count=".$maxResults;
-$e = new mb_exception($invokeUrl);
+//$e = new mb_exception($invokeUrl);
 $searchConnector = new connector($invokeUrl);
 $searchResult = $searchConnector->file;
 $gazetteerObject = json_decode($searchResult);
