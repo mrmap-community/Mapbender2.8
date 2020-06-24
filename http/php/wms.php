@@ -1173,7 +1173,7 @@ function createLayerElement ($doc, $wmsId, $layerRow, $wmsRow, $AuthorityName, $
 		$boundingBox->setAttribute('maxy', $bbox['maxy']);
 	}
 	//switch wms version
-	$e = new mb_exception($wmsRow['wms_version']);
+	#$e = new mb_exception($wmsRow['wms_version']);
 	switch ($wmsRow['wms_version']) {
 		case "1.1.1":
 			$metadataUrlType = "TC211";
