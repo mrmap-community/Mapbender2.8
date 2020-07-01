@@ -1172,8 +1172,41 @@ function createLayerElement ($doc, $wmsId, $layerRow, $wmsRow, $AuthorityName, $
 		$boundingBox->setAttribute('maxx', $bbox['maxx']);
 		$boundingBox->setAttribute('maxy', $bbox['maxy']);
 	}
+	// create dimension elements for wms 1.1.1
+	// select from database
+	$layer_dimension_sql = "SELECT * FROM layer_dimension " . "WHERE fkey_layer_id = " . $layerRow ['layer_id'];
+	$res_layer_dimension_sql = db_query ( $layer_dimension_sql );
+	// store dimension into array
+	$layerDimension = array ();
+	while ( $layer_dimension_row = db_fetch_array ( $res_layer_dimension_sql ) ) {
+		if ($layer_dimension_row ['name'] == "time" && $layer_dimension_row ['units'] == "ISO8601") {
+			// create entry
+			$dimension = $doc->createElement ( "Dimension" );
+			$dimension->setAttribute ( 'name', "time" );
+			$dimension->setAttribute ( 'units', "ISO8601" );
+			$extent = $doc->createElement ( "Extent" );
+			$extent->setAttribute ( 'name', $layer_dimension_row ['name'] );
+			if ($layer_dimension_row ['nearestvalue'] != '') {
+				$extent->setAttribute ( 'nearestValue', $layer_dimension_row ['nearestvalue'] );
+			}
+			if ($layer_dimension_row ['default'] != '') {
+				$extent->setAttribute ( 'default', $layer_dimension_row ['default'] );
+			}
+				
+			if ($layer_dimension_row ['extent'] != '') {
+				$dimensionText = $doc->createTextNode ( $layer_dimension_row ['extent'] );
+				$extent->appendChild ( $dimensionText );
+			}
+			$dimensionNode = $layer->appendChild ( $dimension );
+			$extentNode = $layer->appendChild ( $extent );
+			// default
+			// multiplevalues
+			// nearestvalue
+			// current
+			// extent
+		}
+	}
 	//switch wms version
-	#$e = new mb_exception($wmsRow['wms_version']);
 	switch ($wmsRow['wms_version']) {
 		case "1.1.1":
 			$metadataUrlType = "TC211";
