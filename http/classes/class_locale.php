@@ -42,7 +42,7 @@ class Mb_locale {
 		$e = new Mb_notice("class_locale: setting locale to " . $languageId);
 		if (USE_I18N) {
 			if (!$this->setCurrentLocale($languageId)) {
-				$e = new Mb_exception("Locale could not be set. Language ID: '" . $languageId . "'");
+				$e = new Mb_notice("Locale could not be set. Language ID: '" . $languageId . "'");
 			}
 		}
 		else {
