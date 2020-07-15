@@ -217,7 +217,7 @@ function createJsonFromWmc($wmcId, $crs){
 	*/
 	//geometryfromtext(((((((((((((((((((('POLYGON(('::text || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || '))'::text, 4326) AS the_geom, (((((layer_epsg.minx::text || ','::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.maxx::text) || ','::text) || layer_epsg.maxy::text AS bbox
 	if ($wmcId !== "current") {
-$e = new mb_exception("wmc_id: ".$wmcId);
+#$e = new mb_exception("wmc_id: ".$wmcId);
 		$sql = "SELECT wmc_title, wmc_serial_id, wmc, wmc_timestamp, abstract, srs, minx, miny, maxx, maxy, srs, wmc_has_local_data, wmc_local_data_public from mb_user_wmc WHERE wmc_serial_id = $1;";
 		$v = array($wmcId);
 		$t = array('i');
