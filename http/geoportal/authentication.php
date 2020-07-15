@@ -5,7 +5,7 @@ require_once(dirname(__FILE__)."/../classes/class_user.php");
 $pw = $_REQUEST['password'];
 $name = $_REQUEST['name'];
 
-$e = new mb_exception('SESSION[mb_user_name]: '.Mapbender::session()->get("mb_user_name"));
+#$e = new mb_exception('SESSION[mb_user_name]: '.Mapbender::session()->get("mb_user_name"));
 
 # Q4U - Michael Spitz - 16.08.2006 - Falls Cookies deaktiviert sind, muss die Session-ID an die Folgeseiten weitergereicht werden
 $URLAdd="";

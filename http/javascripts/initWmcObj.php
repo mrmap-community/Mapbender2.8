@@ -605,7 +605,7 @@ if (true) {
 	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
 	    }
     } else {
-        $e = new mb_exception("Found no mapbender application metadata!");
+        $e = new mb_notice("Found no mapbender application metadata!");
     }
 }
 //*******************************************************************************************************
