@@ -355,7 +355,7 @@ $e = new mb_exception(json_encode($csw->cat_op_values[$operationNameCsw]));
 			} else {
 				$this->operationUrl = $csw->cat_op_values[$operationNameCsw]['post']['dflt'];
 			}
-$e = new mb_exception($this->operationUrl);
+#$e = new mb_exception($this->operationUrl);
 		} else {
 			$this->operationResult = $this->getResult($csw->cat_op_values["transaction"]['post'], $postRequest);
 			//$this->operationUrl = $csw->cat_op_values[$operationNameCsw]['post'];
