@@ -62,7 +62,7 @@ function logit($text){
 function logDlsUsage ($link, $s_title, $datasetid) {
 	$logId = isLinkAlreadyInDB($link);
 	if ($logId != false) {
-		$e = new mb_exception("logId: ".$logId);
+		#$e = new mb_exception("logId: ".$logId);
 		//update the load_count for this log entry 
 		$e = new mb_notice("existing inspire_dls_log link found - load count will be incremented");
 		$sql = <<<SQL
@@ -173,7 +173,7 @@ switch ($_REQUEST['method']) {
 	case "getServiceFeedObjectFromUrl" :
 		$serviceFeedUrl = htmlspecialchars_decode($_REQUEST['url']);//htmlspecialchars_decode is done to prohibit xss vulnerability of the client, which allows url as a get parameter
 		$logUrl = date("F j, Y, g:i a",time())." - ".$serviceFeedUrl;
-		$e = new mb_exception("inspire: ".$logUrl);
+		#$e = new mb_exception("inspire: ".$logUrl);
 		logit($logUrl);
 		//get feed from remote server
 		$feedConnector = new connector($serviceFeedUrl);
