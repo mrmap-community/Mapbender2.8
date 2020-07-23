@@ -161,6 +161,13 @@ function fillISO19139($iso19139, $recordId) {
 	$MD_Metadata->setAttribute("xmlns:gco", "http://www.isotc211.org/2005/gco");
 	$MD_Metadata->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 	$MD_Metadata->setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+		switch(INSPIRE_METADATA_SPEC) {
+			case "2.0.1":
+				$MD_Metadata->setAttribute("xmlns:gmx", "http://www.isotc211.org/2005/gmx");
+				break;
+		}
+	}
 	//$MD_Metadata->setAttribute("xsi:schemaLocation", "http://www.isotc211.org/2005/gmd ./xsd/gmd/gmd.xsd http://www.isotc211.org/2005/srv ./xsd/srv/srv.xsd");
 	$MD_Metadata->setAttribute("xsi:schemaLocation", "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd");
 
@@ -857,11 +864,33 @@ SQL;
 	$gmd_level=$iso19139->createElement("gmd:level");
 	$MD_ScopeCode=$iso19139->createElement("gmd:MD_ScopeCode");
 	$MD_ScopeCodeText=$iso19139->createTextNode("service");
+	/*
+	 * https://github.com/inspire-eu-validation/community/issues/189
+	 * gmd:levelDescription/gmd:MD_ScopeDescription/gmd:other/gco:CharacterString>Dienst...
+	 */
+	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+		switch(INSPIRE_METADATA_SPEC) {
+			case "2.0.1":
+				$gmd_levelDescription = $iso19139->createElement("gmd:levelDescription");
+				$gmd_MD_ScopeDescription = $iso19139->createElement("gmd:MD_ScopeDescription");
+				$gmd_other = $iso19139->createElement("gmd:other");
+				$gmd_other_cs = $iso19139->createElement("gco:CharacterString");
+				$gmd_otherText=$iso19139->createTextNode("Dienst");
+				$gmd_other_cs->appendChild($gmd_otherText);
+				$gmd_other->appendChild($gmd_other_cs);
+				$gmd_MD_ScopeDescription->appendChild($gmd_other);
+				$gmd_levelDescription->appendChild($gmd_MD_ScopeDescription);
+				break;
+		}
+	}
 	$MD_ScopeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode");
 	$MD_ScopeCode->setAttribute("codeListValue", "service");
 	$MD_ScopeCode->appendChild($MD_ScopeCodeText);
 	$gmd_level->appendChild($MD_ScopeCode);
 	$DQ_Scope->appendChild($gmd_level);
+	if (isset($gmd_levelDescription)) {
+		$DQ_Scope->appendChild($gmd_levelDescription);
+	}
 	$gmd_scope->appendChild($DQ_Scope);
 	$DQ_DataQuality->appendChild($gmd_scope);
 
