@@ -62,7 +62,8 @@ if ($handle = opendir($metadataDir)) {
 		$metadataObject = $metadataClass->createMapbenderMetadataFromXML($metadataXml);
 		logMessages("fileIdentifier: ".$metadataObject->fileIdentifier);
 		logMessages("type: ".$metadataObject->hierarchyLevel);
-		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
+		
+		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
 		    //echo $metadataObject->title."<br>";
                     //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
 		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional";
@@ -74,8 +75,13 @@ if ($handle = opendir($metadataDir)) {
 		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
                     $e = new mb_exception("test3");*/
 		}
+		if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
+			$keywordsArray[$newKeywordsIndex]->keyword = "Local";
+			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
+			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
+		}
 		//logMessages("Actual keywords: ".json_encode($metadataObject->keywords));
-                if ($injectRegistryUuid && !in_array($uuid, $metadataObject->keywords)) {  //add mapbender registry keyword
+        if ($injectRegistryUuid && !in_array($uuid, $metadataObject->keywords)) {  //add mapbender registry keyword
 		    $newKeywordsIndex++;
 		    $keywordsArray[$newKeywordsIndex]->keyword = $uuid;
 		    $keywordsArray[$newKeywordsIndex]->thesaurusTitle = "mapbender.2.registryId";

@@ -289,6 +289,7 @@ function xml2html($iso19139xml) {
 }
 
 function exchangeLicenceAndContact($metadataXml, $metadata_id, $fkeyGroupId, $licenseSourceNote) {
+	$e = new mb_exception("exchange ..");
 	//parse XML part
 	//echo $metadataXml;
 	//die();
@@ -312,13 +313,17 @@ function exchangeLicenceAndContact($metadataXml, $metadata_id, $fkeyGroupId, $li
 		$xpath = new DOMXPath($metadataDomObject);
 		$rootNamespace = $metadataDomObject->lookupNamespaceUri($metadataDomObject->namespaceURI);
 		$xpath->registerNamespace('defaultns', $rootNamespace); 
+		$e = new mb_exception($rootNamespace);
 		//$xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace("csw", "http://www.opengis.net/cat/csw/2.0.2");
 		$xpath->registerNamespace("gml", "http://www.opengis.net/gml");
 		$xpath->registerNamespace("gco", "http://www.isotc211.org/2005/gco");
 		$xpath->registerNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 		$xpath->registerNamespace("gts", "http://www.isotc211.org/2005/gts");
+		$xpath->registerNamespace("gmx", "http://www.isotc211.org/2005/gmx");
 		//$xpath->registerNamespace("srv", "http://www.isotc211.org/2005/srv");
+		$xpath->registerNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		
 		$xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
 		//
 		if (isset($fkeyGroupId) && (integer)$fkeyGroupId > 0) {
@@ -353,6 +358,7 @@ function exchangeLicenceAndContact($metadataXml, $metadata_id, $fkeyGroupId, $li
 		}
 		//licenses
 		//pull licence information
+		$e = new mb_exception("metadata_id".$metadata_id);
 		$constraints = new OwsConstraints();
 		$constraints->languageCode = "de";
 		$constraints->asTable = false;
@@ -361,20 +367,21 @@ function exchangeLicenceAndContact($metadataXml, $metadata_id, $fkeyGroupId, $li
 		$constraints->returnDirect = false;
 		$constraints->outputFormat='iso19139';
 		$tou = $constraints->getDisclaimer();
+		$e = new mb_exception("tou".json_encode($tou));
 		//constraints - after descriptive keywords
 		if (isset($tou) && $tou !== '' && $tou !== false) {
-			//count old resourceConstraints elements
 			$resourceConstraintsNodeList = $xpath->query('/gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints');
-			$arrayResourceConstraintsNodeList = (array)$resourceConstraintsNodeList;
+			$e = new mb_exception($resourceConstraintsNodeList->length);
+		    $arrayResourceConstraintsNodeList = (array)$resourceConstraintsNodeList;
 			//TODO - if this is empty - create a new entry
-			//if (!empty($arrayResourceConstraintsNodeList)) {	
-			if (count($resourceConstraintsNodeList) > 0 && !empty($arrayResourceConstraintsNodeList)) {
-				//$e = new mb_exception("list is not empty!");
+			if ($resourceConstraintsNodeList->length > 0) {
+				$e = new mb_exception("list is not empty!");
 				//load xml from constraint generator
 				$licenseDomObject = new DOMDocument();
 				$licenseDomObject->loadXML($tou);
 				$xpathLicense = new DOMXpath($licenseDomObject);
-				$licenseNodeList = $xpathLicense->query('/mb:constraints/gmd:resourceConstraints');
+				$licenseNodeList = $xpathLicense->query("/mb:constraints/gmd:resourceConstraints");
+				$e = new mb_exception(count($licenseNodeList));
 				//insert new constraints before first old constraints node
 				for ($i = ($licenseNodeList->length)-1; $i >= 0; $i--) {
 					$resourceConstraintsNodeList->item(0)->parentNode->insertBefore($metadataDomObject->importNode($licenseNodeList->item($i), true), $resourceConstraintsNodeList->item(0));
@@ -384,6 +391,8 @@ function exchangeLicenceAndContact($metadataXml, $metadata_id, $fkeyGroupId, $li
     						$temp = $resourceConstraintsNodeList->item($i); //avoid calling a function twice
     						$temp->parentNode->removeChild($temp);
 				}			
+			} else {
+				$e = new mb_exception("constraints list is empty - please check!");
 			}
 		}
 		//test http://localhost/mb_trunk/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=0da11651-aa61-d75a-446c-ea4ea073bc48
@@ -451,8 +460,19 @@ function fillISO19139($iso19139, $recordId) {
 	//generate language part B 10.3 (if available) of the inspire metadata regulation
 	$language = $iso19139->createElement("gmd:language");
 	$languagecode = $iso19139->createElement("gmd:LanguageCode");
-	$languagecode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
-	if (isset($mb_metadata['metadata_language'])) {
+	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+		switch(INSPIRE_METADATA_SPEC) {
+			case "2.0.1":
+				$languagecode->setAttribute("codeList", "http://www.loc.gov/standards/iso639-2/");
+				break;
+			case "1.3":
+				$languagecode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+				break;
+		}
+	} else {
+		$languagecode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+	}
+    if (isset($mb_metadata['metadata_language'])) {
 		$languageText = $iso19139->createTextNode($mb_metadata['metadata_language']);
 		$languagecode->setAttribute("codeListValue", $mb_metadata['metadata_language']);
 	}
@@ -1228,7 +1248,7 @@ SQL;
 	#do this only if an INSPIRE keyword (Annex I-III) is set
 	#Resource Constraints B 8
 	//check for predefined license for datasets / or for service if available
-	$sql = "SELECT * FROM termsofuse WHERE termsofuse_id IN (SELECT fkey_termsofuse_id FROM md_termsofuse WHERE fkey_metadata_id = $1)";
+	/*$sql = "SELECT * FROM termsofuse WHERE termsofuse_id IN (SELECT fkey_termsofuse_id FROM md_termsofuse WHERE fkey_metadata_id = $1)";
 	$v = array((integer)$mb_metadata['metadata_id']);
 	$t = array('i');
 	$predefinedLicenseFound = false;
@@ -1255,8 +1275,30 @@ SQL;
 				$license_source = false;
 			}
 		}
+	}*/
+	//New 2020 - use class to get license information
+	//Resource Constraints B 8 - to be handled with xml snippets from constraints class
+	//pull licence information
+	$constraints = new OwsConstraints();
+	$constraints->languageCode = "de";
+	$constraints->asTable = false;
+	$constraints->id = (integer)$mb_metadata['metadata_id'];
+	$constraints->type = "metadata";
+	$constraints->returnDirect = false;
+	$constraints->outputFormat='iso19139';
+	$tou = $constraints->getDisclaimer();
+	//constraints - after descriptive keywords
+	if (isset($tou) && $tou !== '' && $tou !== false) {
+		//load xml from constraint generator
+		$licenseDomObject = new DOMDocument();
+		$licenseDomObject->loadXML($tou);
+		$xpathLicense = new DOMXpath($licenseDomObject);
+		$licenseNodeList = $xpathLicense->query('/mb:constraints/gmd:resourceConstraints');
+		for ($i = ($licenseNodeList->length)-1; $i >= 0; $i--) {
+			$MD_DataIdentification->appendChild($iso19139->importNode($licenseNodeList->item($i), true));
+		}
 	}
-	$predefinedLicenseText = "";
+	/*$predefinedLicenseText = "";
 	if ($predefinedLicenseFound == true) {
 		//generate json string (id, name , url, quelle) - see german standard gdi-de
 		$jsonLicense = new stdClass();
@@ -1364,6 +1406,8 @@ SQL;
 	$resourceConstraints->appendChild($MD_LegalConstraints);
 		
 	$MD_DataIdentification->appendChild($resourceConstraints);
+	
+	*/
 
 	$MD_DataIdentification->appendChild($spatialRepresentationType);
 	//Spatial Resolution
@@ -1412,7 +1456,18 @@ SQL;
 	$LanguageCode=$iso19139->createElement("gmd:LanguageCode");
 	$LanguageCodeText=$iso19139->createTextNode('ger');
 	$LanguageCode->setAttribute("codeListValue", "ger");
-	$LanguageCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+		switch(INSPIRE_METADATA_SPEC) {
+			case "2.0.1":
+				$LanguageCode->setAttribute("codeList", "http://www.loc.gov/standards/iso639-2/");
+				break;
+			case "1.3":
+				$LanguageCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+				break;
+		}
+	} else {
+		$LanguageCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+	}
 	$LanguageCode->appendChild($LanguageCodeText);
 
 	$language->appendChild($LanguageCode);
@@ -1710,9 +1765,32 @@ Guidelines) if conformant datasets are published TBD*/
 	$MD_ScopeCodeText=$iso19139->createTextNode("dataset");
 	$MD_ScopeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ScopeCode");
 	$MD_ScopeCode->setAttribute("codeListValue", "dataset");
+	/*
+	 * https://github.com/inspire-eu-validation/community/issues/189
+	 * gmd:levelDescription/gmd:MD_ScopeDescription/gmd:other/gco:CharacterString>Dienst...
+	 */
+	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+		switch(INSPIRE_METADATA_SPEC) {
+			case "2.0.1":
+				$gmd_levelDescription = $iso19139->createElement("gmd:levelDescription");
+				$gmd_MD_ScopeDescription = $iso19139->createElement("gmd:MD_ScopeDescription");
+				$gmd_other = $iso19139->createElement("gmd:other");
+				$gmd_other_cs = $iso19139->createElement("gco:CharacterString");
+				$gmd_otherText=$iso19139->createTextNode("Datensatz");
+				
+				$gmd_other_cs->appendChild($gmd_otherText);
+				$gmd_other->appendChild($gmd_other_cs);
+				$gmd_MD_ScopeDescription->appendChild($gmd_other);
+				$gmd_levelDescription->appendChild($gmd_MD_ScopeDescription);
+				break;
+		}
+	} 
 	$MD_ScopeCode->appendChild($MD_ScopeCodeText);
 	$gmd_level->appendChild($MD_ScopeCode);
 	$DQ_Scope->appendChild($gmd_level);
+	if (isset($gmd_levelDescription)) {
+		$DQ_Scope->appendChild($gmd_levelDescription);
+	}
 	$gmd_scope->appendChild($DQ_Scope);
 	$DQ_DataQuality->appendChild($gmd_scope);
 /*
