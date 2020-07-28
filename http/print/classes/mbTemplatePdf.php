@@ -1,6 +1,7 @@
 <?php
 require_once(dirname(__FILE__) . "/../../extensions/fpdf/mb_fpdi.php");
 require_once(dirname(__FILE__) . "/../../php/log_error_exec.php");
+require_once(dirname(__FILE__) . "/../../classes/class_connector.php");
 
 class mbTemplatePdf extends mbPdf
 {
@@ -278,16 +279,10 @@ class mbTemplatePdf extends mbPdf
 
             require_once(dirname(__FILE__) . "/../../extensions/dompdf/autoload.inc.php");
 
-            $ch = curl_init();
-            curl_setopt_array($ch, array(
-                CURLOPT_URL => $url->request,
-                CURLOPT_RETURNTRANSFER => true
-            ));
-
-            $result = curl_exec($ch);
-            $errors = curl_error($ch);
-
-            curl_close($ch);
+            $featureInfoConnector = new connector();
+            $featureInfoConnector->set("timeOut", "10");
+            $featureInfoConnector->load($url->request);
+            $result = $featureInfoConnector->file;
 
             if ($errors) {
                 new mb_exception("Error getting feature info request: " . $errors);
