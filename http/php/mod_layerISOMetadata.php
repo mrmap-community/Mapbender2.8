@@ -187,7 +187,18 @@ function fillISO19139($iso19139, $recordId) {
 	//generate language part B 10.3 (if available) of the inspire metadata regulation
 	$language = $iso19139->createElement("gmd:language");
 	$languagecode = $iso19139->createElement("gmd:LanguageCode");
-	$languagecode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+	if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+		switch(INSPIRE_METADATA_SPEC) {
+			case "2.0.1":
+				$languagecode->setAttribute("codeList", "http://www.loc.gov/standards/iso639-2/");
+				break;
+			case "1.3":
+				$languagecode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+				break;
+		}
+	} else {
+		$languagecode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#LanguageCode");
+	}
 	if (isset($mapbenderMetadata['metadata_language'])) {
 		$languageText = $iso19139->createTextNode($mapbenderMetadata['metadata_language']);
 		$languagecode->setAttribute("codeListValue", $mapbenderMetadata['metadata_language']);
