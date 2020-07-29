@@ -770,6 +770,7 @@ SQL;
 		//check codespace for trailing slash - if not there - add it ;-)
 		//unique resource identifier
 		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
+		if (isset($row_metadata['uuid']) && $row_metadata['uuid'] != "") {
 		switch ($row_metadata['origin']) {
 			case 'capabilities':
 				$operatesOn=$iso19139->createElement("srv:operatesOn");
@@ -791,6 +792,7 @@ SQL;
 			break;
 			default:
 			break;
+		}
 		}
 	}
 	

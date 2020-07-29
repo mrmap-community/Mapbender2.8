@@ -141,7 +141,27 @@ var ShowMetadataAddonApi = function() {
 		});
 		req.send();	
 	}	
-
+    /*
+     * 
+     */
+	this.selectPredefinedAccessConstraints = function(selectedIndex) {
+		//set value of textfield accessconstraints_md to selected value of inspire constraints dropdown list
+		//alert("mb_metadata_showMetadataAddon.js - selectPredefinedAccessConstraints invoked: "+selectedIndex);
+		//alert("Access constraints");
+		//get selected index and write it to textfield
+		
+		if (selectedIndex != '0') {
+			if ($("#accessconstraints").length > 0) {
+				$("#accessconstraints").val(selectedIndex);
+			}
+			$("#accessconstraints_md").val(selectedIndex);
+		} else {
+			if ($("#accessconstraints").length > 0) {
+				$("#accessconstraints").val("NONE");
+			}
+			$("#accessconstraints_md").val("NONE");
+		}
+	}
 	//Show more information about the licences of the metadata 
 	this.fillLicence = function(obj) {
 		// get licence information from server per termsofuse_id
@@ -173,12 +193,18 @@ var ShowMetadataAddonApi = function() {
 						$('#license_source_md').css("display","none");
 					}
 					$('#license_info_md').css('display', 'block');
+					if (obj.termsofuse_id == '0') {
+						$('#license_info_md').css('display', 'none');
+					}
 				} else {
 					$('#licence_symbol_md').attr('src', '');
 					$('#licence_descriptionlink_md').attr('href', '');
 					$('#licence_descriptionlink_md').text('');
 					$('#open_symbol_md').attr('src', '');
-					$('#license_info_md').css('display', 'none');
+					/*$('#license_info_md').css('display', 'none');
+					$('#licence_symbol_md').css('display', 'none');
+					$('#open_symbol_md').css('display', 'none');
+					$('#licence_descriptionlink_md').css('display', 'none');*/
 				}
 			}
 		});

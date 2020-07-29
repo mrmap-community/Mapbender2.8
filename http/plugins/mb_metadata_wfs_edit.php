@@ -37,6 +37,30 @@
 		<input name="accessconstraints" id="accessconstraints"/>
     	<img class="metadata_img" title="<?php echo _mb("INSPIRE 8.2: limitations on public access");?>" src="../img/misc/inspire_eu_klein.png" alt="" />
 	</p>
+		<?php
+            //read inspire_LimitationsOnPublicAccess.json as key value pair 
+			if (file_exists(dirname(__FILE__)."/../../conf/inspire_LimitationsOnPublicAccess.json")) {
+				$languageCode = Mapbender::session()->get("mb_lang");
+				$languageCode = "de"; //test
+				$configObject = json_decode(file_get_contents("../../conf/inspire_LimitationsOnPublicAccess.json"));
+				echo '<p>';
+				echo '        <label for="accessconstraints_md_inspire">'._mb("Predefined options (e.g. INSPIRE)").'</label>';
+			    echo '        <select class="accessconstraints_md_inspire_selectbox" name="md_accessconstraints_inspire" id="md_accessconstraints_inspire" onChange="var chosenoption=this.options[this.selectedIndex];$(\'#mb_md_showMetadataAddon\').mapbender().selectPredefinedAccessConstraints(chosenoption.value);">';
+				echo '            <option value="0">...</option>';
+				foreach ($configObject->codelist as $accessconstraintsCodelist) {
+					echo "            <option value='" . $accessconstraintsCodelist->code . "'>" . htmlentities($accessconstraintsCodelist->title->{$languageCode}, ENT_QUOTES, CHARSET) . "</option>";
+				}
+				echo '        </select>';
+				$helptext = "";
+				foreach ($configObject->codelist as $accessconstraintsCodelist) {
+					$helptext .= "<b>".$accessconstraintsCodelist->title->{$languageCode} ."</b>: ".$accessconstraintsCodelist->description->{$languageCode}."<br>";
+				}
+				//echo '        <img class="help-dialog" title="'._mb("Help").'" help="{text:\''._mb("Selection of predefined INSPIRE access constraints.").'\'}" src="../img/questionmark.png" alt="" />';
+				echo '        <img class="help-dialog" title="'._mb("Help").'" help="{text:\''.$helptext.'\'}" src="../img/questionmark.png" alt="" />';
+				
+				echo '        </p>';				
+			}
+?>
 <?php
 	$sql = "SELECT termsofuse_id, name FROM termsofuse";
 	$res = db_query($sql);
