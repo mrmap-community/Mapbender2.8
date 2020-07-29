@@ -1,0 +1,67 @@
+{
+  "id": "http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess",
+  "date": "2020-07-28",
+  "helptext": {
+    "de": "Beschränkungen des öffentlichen Zugangs",
+    "en": "Limitations on public access"
+  },
+  "codelist": [
+    {
+      "code": "noLimitations",
+      "title": {
+        "de": "INSPIRE: Keine Beschränkungen des öffentlichen Zugangs",
+        "en": "no limitations to public access."
+      },
+      "description": {
+        "de": "Es existieren keine Beschränkungen des öffentlichen Zugangs zu Daten und Diensten",
+        "en": "There are no limitations on public access to spatial data sets and services."
+      }
+    },
+    {
+      "code": "INSPIRE_Directive_Article13_1a",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1a",
+        "en": ""
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf die Vertraulichkeit der Verfahren von Behörden, sofern eine derartige Vertraulichkeit gesetzlich vorgesehen ist",
+        "en": ""
+      }
+    },
+    {
+      "code": "INSPIRE_Directive_Article13_1b",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1b",
+        "en": ""
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf internationale Beziehungen, die öffentliche Sicherheit oder die Landesverteidigung",
+        "en": ""
+      }
+    },
+    {
+      "code": "INSPIRE_Directive_Article13_1c",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1c",
+        "en": ""
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf laufende Gerichtsverfahren, die Möglichkeiten einer Person, ein faires Verfahren zu erhalten oder die Möglichkeiten einer Behörde, Untersuchungen strafrechtlicher oder disziplinarischer Art durchzuführen",
+        "en": ""
+      }
+    }
+    ,
+    {
+      "code": "INSPIRE_Directive_Article13_1d",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1d",
+        "en": ""
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf die Vertraulichkeit von Geschäfts- oder Betriebsinformationen, sofern das innerstaatliche Recht oder das Gemeinschaftsrecht diese Vertraulichkeit vorsieht, um berechtigte wirtschaftliche Interessen, einschließlich des öffentlichen Interesses an der Wahrung der statistischen Geheimhaltung und des Steuergeheimnisses, zu schützen",
+        "en": ""
+      }
+    }
+  ]
+ 
+}
