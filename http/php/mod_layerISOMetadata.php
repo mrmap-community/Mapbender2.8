@@ -589,7 +589,7 @@ function fillISO19139($iso19139, $recordId) {
 			$keyword->appendChild ( $keyword_cs );
 			$MD_Keywords->appendChild ( $keyword );
 			$countCustom ++;
-		}
+		}//test
 	}
 	$descriptiveKeywords->appendChild ( $MD_Keywords );
 	$SV_ServiceIdentification->appendChild ( $descriptiveKeywords );
