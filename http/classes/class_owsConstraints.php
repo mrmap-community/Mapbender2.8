@@ -671,9 +671,9 @@ No conditions apply to access and use
 					} else {
 						//add anchor
 						$accessLimitationAnchor = $iso19139->createElement("gmx:Anchor");
-						$accessLimitationAnchor->setAttribute("xlink:href","http://inspire.ec.europa.eu/metadata-
-codelist/LimitationsOnPublicAccess/noLimitations");
-						$accessLimitationText = $iso19139->createTextNode("No limitations on public access");
+						$accessLimitationAnchor->setAttribute("xlink:href","http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/noLimitations");
+						//$accessLimitationText = $iso19139->createTextNode("No limitations on public access");
+						$accessLimitationText = $iso19139->createTextNode("Es gelten keine Zugriffsbeschränkungen");
 						$accessLimitationAnchor->appendChild($accessLimitationText);
 						$otherConstraints->appendChild($accessLimitationAnchor);
 						if (isset($MD_RestrictionCodeText)) {
