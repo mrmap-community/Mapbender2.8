@@ -1032,26 +1032,26 @@ XML;
 							break;
 						case "OGC:WMS 1.1.1":
 							//invoke geoportal viewer
-							$accessUrl = str_replace(MAPBENDER_PATH, "mapbender", "map?WMS=");
+							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
 							$accessUrl .= urlencode($service->accessUrl);
 							$accessUrl .= "&DATASETID=";
 							//resource identifier
 							if ($iso19139Hash[37]['value'] != "") {
-								$accessUrl .= $iso19139Hash[37]; //MD Identifier
+								$accessUrl .= $iso19139Hash[37]['value']; //MD Identifier
 							} else {
-								$accessUrl .= $iso19139Hash[5]."".$iso19139Hash[6];
+								$accessUrl .= $iso19139Hash[5]['value']."".$iso19139Hash[6]['value'];
 							}
 							break;
 						case "OGC:WMS 1.3.0":
 							//invoke geoportal viewer test
-							$accessUrl = str_replace(MAPBENDER_PATH, "mapbender", "map?WMS=");
+							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
 							$accessUrl .= urlencode($service->accessUrl);
 							$accessUrl .= "&DATASETID=";
 							//resource identifier
 							if ($iso19139Hash[37]['value'] != "") {
-								$accessUrl .= $iso19139Hash[37]; //MD Identifier
+								$accessUrl .= $iso19139Hash[37]['value']; //MD Identifier
 							} else {
-								$accessUrl .= $iso19139Hash[5]."".$iso19139Hash[6];
+								$accessUrl .= $iso19139Hash[5]['value']."".$iso19139Hash[6]['value'];
 							}
 							break;
 						default:
