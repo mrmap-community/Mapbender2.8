@@ -189,15 +189,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
         '<li><div class="digitize-image digitize-close"></div><?php echo _mb("Close");?></li>' +
         '</ul>';
 
-    // var exportHtml = '<div id="export-dialog" title="<?php echo _mb("Export my features");?>">'
-        // + '<form>'
-        // + '<label class="export-format-kml">KML<input type="radio" name="export-format" value="kml" checked="checked"></input></label>'
-        // + '<label class="export-format-gpx">GPX<input type="radio" name="export-format" value="gpx"></input></label>'
-        // + '<label class="export-format-geojson">geoJSON<input type="radio" name="export-format" value="geojson"></input></label><br></br>'
-        // + '<a download="myfeatures.kml" href="#" class="digitize-image digitize-export" style="float: left;"></a>'
-        // + '</form>'
-        // + '</div>';
-
     var exportHtml = '<div id="export-dialog"><table><tbody>' +
         '<tr><td>KML:</td><td><label class="export-format-kml exportDatasetIcon" style="padding-top:11px;"></label></td><td class="exportDataLink kml" '+
          'outputFormat="kml"><img src="../img/gnome/document-save.png"/></td></tr>' +
@@ -645,7 +636,6 @@ var editAttributes = function(feature, kml, url) {
 
     return function() {
         if ($(this).hasClass('editFeatureCollection')) {
-                    // kml = $('#mapframe1').data('kml');
                     var oldCollectionName;
                     if (feature.hasOwnProperty('@context')) {
 
@@ -722,8 +712,6 @@ var editAttributes = function(feature, kml, url) {
                             kml.refresh(url);
 
                         }
-                // var preview = attributesDialog.find('.digitize-preview').html('').get(0);
-                // kml.renderPreview(feature, preview);
             });
 
                 // add row
@@ -737,9 +725,6 @@ var editAttributes = function(feature, kml, url) {
                         newRow.find('input').last().attr('name', $(this).val());
                     });
                 });
-
-
-
             }else{
                 // instantiate the geometry objects from the defined schema in config
                 var featureCategoriesSchemaInstance = instantiate( options.featureCategoriesSchema );
@@ -822,21 +807,16 @@ var editAttributes = function(feature, kml, url) {
                     editDialog.dialog('close');
                     kml.refresh(url);
                 });
-
                 // remove custom attributes
                 attributesDialog.find('.removeCustomFeatAttr').bind('click',function(){
-
                     var attrName = $(this).parent().parent().children(':first').html();
                     delete feature.properties[attrName];
                     $(this).parent().parent().remove();
-
                 });
 
                 var preview = attributesDialog.find('.digitize-preview').html('').get(0);
                 kml.renderPreview(feature, preview);
             }
-
-
         };
     };
 
@@ -1233,42 +1213,26 @@ var featureModified = function() {
                             //TODO: use attributes area and length - not complex strings!
                             editedFeature.properties['area'] = data[0];
                             editedFeature.properties['boundary-length'] = data[1];
-
                         }   else {
-
                             editedFeature.properties['track-length'] = data[0];
                         }
-
                     },
                     complete: function() {
-
-
                         editedFeature.properties.updated = new Date().toISOString();
                         kml.refresh(digitizingFor);
-
                     }
                 });
-
             }else{
-
                 editedFeature.properties.updated = new Date().toISOString();
                 kml.refresh(digitizingFor);
-
             }
-
         }
     });
-    // Proj4js.transform(kml.targetProj, kml.wgs84, v.pos);
-    // geom.addPoint(newPoint);
-// });
-
 };
 
 this.activate = function () {
     $('#kml-digitizer-pseudo').click();
-
     var mode = status.match(/(new|edit)-.+/);
-
     if(!mode) {
         return;
     };
@@ -1317,7 +1281,6 @@ this.destroy = function () {
         if (digitizeDialog.dialog("isOpen")) {
             digitizeDialog.dialog("close");
         }
-
         //remove digitized x and y values from print dialog
         $('input[name="digitized_x_values"]').val("");
         $('input[name="digitized_y_values"]').val("");
@@ -1352,17 +1315,14 @@ this.destroy = function () {
                 var featureCategory = mappingSchema[geomType][propertyKey]["category"];
                 // if property is part of Fix-Data, disable the input
                 if (featureCategory == "Fix-Data") {
-
                     categories[featureCategory] += '<tr><td>' + propertyKey + '</td><td><input disabled type="text" name="' + propertyKey + '" value="' + propertyValue + '"></input></td></tr>';
                 // else allow to edit the input
             } else {
-
                 categories[featureCategory] += '<tr><td>' + propertyKey + '</td><td><input type="text" name="' + propertyKey + '" value="' + propertyValue + '"></input></td></tr>';
             }
         } else {
                 // put property in custom-data because it doesn't belong to any category
                 categories["Custom-Data"] += '<tr><td>' + propertyKey + '</td><td><input type="text" name="' + propertyKey + '" value="' + propertyValue + '"></input></td></tr>';
-
             }
         } else {
             var header;
