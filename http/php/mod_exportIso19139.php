@@ -135,7 +135,9 @@ if ($mbMetadata->hierarchyLevel == 'dataset' || $mbMetadata->hierarchyLevel == '
 				$mdAccessUrl = (string)$mdAccessUrl[0];
 
 				//get service type - view / download
-
+                //get service version subtype atom / wfs / ogcapi ....
+				$mdServiceTypeVersion = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/srv:SV_ServiceIdentification/srv:serviceTypeVersion/gco:CharacterString');
+				$mdServiceTypeVersion = (string)$mdServiceTypeVersion[0];
 				//get service title
 
 				/*$datasetIdentifier = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/gmd:MD_DataIdentification/@uuid');
@@ -150,6 +152,7 @@ if ($mbMetadata->hierarchyLevel == 'dataset' || $mbMetadata->hierarchyLevel == '
 				}*/
 				//$e = new mb_exception("found service with fileIdentifier: ".$fileIdentifier." - date - ".$mdDateStamp);
 				$serviceMetadata->service[$k]->serviceType = $mdServiceType;
+				$serviceMetadata->service[$k]->serviceTypeVersion = $mdServiceTypeVersion;
 				$serviceMetadata->service[$k]->serviceTitle = $mdTitle;
 				$serviceMetadata->service[$k]->serviceDate = $mdDateStamp;
 				$serviceMetadata->service[$k]->metadataUrl = $urlWithoutRequest."?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecordById&ElementSetName=full&&outputSchema=".urlencode('http://www.isotc211.org/2005/gmd')."&id=".$fileIdentifier;

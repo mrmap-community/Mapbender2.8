@@ -715,14 +715,18 @@ SQL;
 				$coupledDatasetMetadataExists = true;
 			}
 		}
-		if ($coupledDatasetMetadataExists) {
+		//if ($coupledDatasetMetadataExists) {
 			$couplingType = $iso19139->createElement ( "srv:couplingType" );
 			$SV_CouplingType = $iso19139->createElement ( "srv:SV_CouplingType" );
 			$SV_CouplingType->setAttribute ( "codeList", "SV_CouplingType" );
-			$SV_CouplingType->setAttribute ( "codeListValue", "tight" );
+			if ($coupledDatasetMetadataExists){
+				$SV_CouplingType->setAttribute ( "codeListValue", "tight" );
+			} else {
+				$SV_CouplingType->setAttribute ( "codeListValue", "loose" );
+			}
 			$couplingType->appendChild ( $SV_CouplingType );
 			$SV_ServiceIdentification->appendChild ( $couplingType );
-		}
+		//}
 	}
 	
 	// declare coupling type:
