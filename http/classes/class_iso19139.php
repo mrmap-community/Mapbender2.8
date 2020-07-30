@@ -1037,9 +1037,9 @@ XML;
 							$accessUrl .= "&DATASETID=";
 							//resource identifier
 							if ($iso19139Hash[37]['value'] != "") {
-								$accessUrl .= $iso19139Hash[37]['value']; //MD Identifier
+								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
 							} else {
-								$accessUrl .= $iso19139Hash[5]['value']."".$iso19139Hash[6]['value'];
+								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
 							}
 							break;
 						case "OGC:WMS 1.3.0":
@@ -1049,9 +1049,9 @@ XML;
 							$accessUrl .= "&DATASETID=";
 							//resource identifier
 							if ($iso19139Hash[37]['value'] != "") {
-								$accessUrl .= $iso19139Hash[37]['value']; //MD Identifier
+								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
 							} else {
-								$accessUrl .= $iso19139Hash[5]['value']."".$iso19139Hash[6]['value'];
+								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
 							}
 							break;
 						default:
