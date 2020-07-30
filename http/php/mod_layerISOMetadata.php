@@ -801,7 +801,7 @@ SQL;
 		// unique resource identifier
 		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry ( $departmentMetadata, $row_metadata );
 		if (isset ( $row_metadata ['uuid'] ) && $row_metadata ['uuid'] != "") {
-		$e = new mb_exception($row_metadata ['origin']);
+		//$e = new mb_exception($row_metadata ['origin']);
 			switch ($row_metadata ['origin']) {
 				case 'capabilities' :
 					$operatesOn = $iso19139->createElement ( "srv:operatesOn" );
