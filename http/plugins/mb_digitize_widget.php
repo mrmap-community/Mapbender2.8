@@ -255,8 +255,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                 dataType: 'json',
                 success: function(data) {
                     icons = data;
-                    //workaround for loading with metadataCarousel
-                    setTimeout("var kml = $('#mapframe1').data('kml')", 2000);
+                    var kml = $('#mapframe1').data('kml');
                     kml.icons = icons;
                 }
             });
