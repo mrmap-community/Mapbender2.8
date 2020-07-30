@@ -1018,6 +1018,56 @@ XML;
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
+			if (count($serviceInformation->service) > 0) {
+				//new for coupled services if they exists:
+				$html .= '<fieldset><legend>'._mb("Access via services").'</legend>';
+				$html .= $tableBegin;
+				foreach ($serviceInformation->service as $service) {
+					switch ($service->serviceTypeVersion) {
+						case "predefined ATOM":
+							//use atom feed client
+							//$accessUrl = $service->accessUrl;
+							//$accessUrl = "https://www.google.de";
+							$accessUrl = MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($service->accessUrl);
+							break;
+						case "OGC:WMS 1.1.1":
+							//invoke geoportal viewer
+							$accessUrl = str_replace(MAPBENDER_PATH, "mapbender", "map?WMS=");
+							$accessUrl .= urlencode($service->accessUrl);
+							$accessUrl .= "&DATASETID=";
+							//resource identifier
+							if ($iso19139Hash[37]['value'] != "") {
+								$accessUrl .= $iso19139Hash[37]; //MD Identifier
+							} else {
+								$accessUrl .= $iso19139Hash[5]."".$iso19139Hash[6];
+							}
+							break;
+						case "OGC:WMS 1.3.0":
+							//invoke geoportal viewer
+							$accessUrl = str_replace(MAPBENDER_PATH, "mapbender", "map?WMS=");
+							$accessUrl .= urlencode($service->accessUrl);
+							$accessUrl .= "&DATASETID=";
+							//resource identifier
+							if ($iso19139Hash[37]['value'] != "") {
+								$accessUrl .= $iso19139Hash[37]; //MD Identifier
+							} else {
+								$accessUrl .= $iso19139Hash[5]."".$iso19139Hash[6];
+							}
+							break;
+						default:
+							$accesUrl = $service->accessUrl;
+							break;
+					}
+					if (in_array($service->serviceType, array("view", "download"))) {
+					    $html .= $t_a."<img src='../img/dj_".$service->serviceType.".png'/> ".$t_b."<a href='".$accessUrl."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
+					} else {
+						$html .= $t_a."<b>".$service->serviceType."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."?url=".urlencode($service->metadataUrl)."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
+						
+					}
+				}
+				$html .= $tableEnd;
+				$html .= '</fieldset>';
+			}
 			//$html .= '</p>';
 			$html .= '</div>';//element
 			//***************************************************************************
