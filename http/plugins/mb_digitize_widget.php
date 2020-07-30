@@ -18,7 +18,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
             '<span>my polygon</span><br></br>' +
             '<div title="<?php echo _mb("Edit style"); ?>" class="digitize-image digitize-style"></div>' +
             '<div title="<?php echo _mb("Edit attributes"); ?>" class="digitize-image digitize-attributes"></div>' +
-            // '<div class="digitize-image digitize-add"></div>' +
             '<div title="<?php echo _mb("Delete feature"); ?>" class="digitize-image digitize-remove"></div>' +
             '<div title="<?php echo _mb("Edit geometry"); ?>" class="digitize-image digitize-pencil"></div>' +
             '<fieldset class="fieldset-auto-width digitize-hidden">' +
@@ -28,11 +27,13 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
             '<div title="<?php echo _mb("Delete vertex"); ?>" class="digitize-image digitize-delete-vertex"></div></fieldset>' +
             '<div title="<?php echo _mb("Export geometry"); ?>" class="digitize-image digitize-export digitize-export-edit-dialog"></div>' +
             '</div>';
+
         var copyHtml = '<div title="<?php echo _mb("Copy feature"); ?>">' +
             '<div class="digitize-preview"></div>' +
             '<span>my polygon</span><br></br>' +
             '<div title="<?php echo _mb("Paste"); ?>" class="digitize-image digitize-paste bottom-right-20"></div>' +
             '</div>';
+
         var labelHtml = '<div title="<?php echo _mb("Feature\'s labelling"); ?>">' +
             '<div class="digitize-preview selfFeature"></div>' +
             '<span>my polygon</span><br></br><form>' +
@@ -53,7 +54,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
         var editAttributesHtml = '<div title="<?php echo _mb("Feature attributes"); ?>">' +
             '<div class="digitize-image digitize-style"></div>' +
             '<div class="digitize-preview"></div><br></br>' +
-            // '<div class="attrAccordion">' +
             '<table><tr><td><?php echo _mb("Name"); ?></td><td><input type="text" name="name" value="<?php echo _mb("Name"); ?>"></input></td></tr>' +
             '<tr><td><?php echo _mb("Description"); ?></td><td><input type="text" name="description" value="<?php echo _mb("Description CDATA"); ?>"></input></td></tr>' +
             '</table><br></br>' +
@@ -130,7 +130,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
             '<tr><td>GeoJson:</td><td><label class="export-format-geojson exportDatasetIcon" style="padding-top:11px;"></label></td><td class="exportDataLink geojson" ' +
             'outputFormat="geojson"><img src="../img/gnome/document-save.png"/></td></tr>' +
             '</tbody></table></div>';
-
 
         var digitizeDialog,
             editDialog,
