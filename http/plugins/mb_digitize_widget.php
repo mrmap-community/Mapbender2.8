@@ -180,7 +180,8 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     icons = data;
                     var kml = $('#mapframe1').data('kml');
                     kml.icons = icons;
-                }
+                },
+                timeout: 2000
             });
 
             //
