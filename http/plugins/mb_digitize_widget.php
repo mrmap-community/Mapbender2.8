@@ -106,7 +106,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
         var geomMenu = '<ul class="digitize-contextmenu">' +
             '<li><div class="digitize-image digitize-pencil"></div><?php echo _mb("Edit"); ?></li>' +
             '<li><div class="digitize-image digitize-zoomto"></div><?php echo _mb("Zoom to"); ?></li>' +
-            // '<li><div class="digitize-image digitize-add"></div><?php echo _mb("New"); ?></li>' +
             '<li><div class="digitize-image digitize-copy"></div><?php echo _mb("Kopieren"); ?></li>' +
             '<li><div class="digitize-image digitize-label"></div><?php echo _mb("Labelling"); ?></li>' +
             '<li><div class="digitize-image digitize-export"></div><?php echo _mb("Export"); ?></li>' +
@@ -244,7 +243,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     status = 'none';
                     $('#mapframe1').data('mb_digitize').destroy();
                 }
-                // digit.modeOff();
             });
 
             editStyleDialog = $(editStyleHtml);
@@ -616,9 +614,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     }
                     var featureCollAttrDlg = $('<div id="featureCollAttrDlg"></div>').dialog({
                         title: "<?php echo _mb("Featurecollection attributes"); ?> ", // of "+ url,
-                        // title: "<?php echo _mb("Featurecollection attributes"); ?> ",// of "+ url,
                         width: 500,
-                        // height: 212,
                         position: {
                             my: "center",
                             at: "top",
@@ -640,17 +636,12 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     $('#featureCollAttrDlg').append(featureCollectionContent);
                     $.each(feature, function(index, val) {
                         if (index == 'uuid' || index == 'created' || index == 'updated') {
-
                             $('#featureCollTbl').append("<tr><td>" + index + "</td><td><input style='width:230px;' type='text' name='" + index + "' value='" + val + "' disabled /></td></tr>");
-
                         } else {
-
                             if (index == "features" || index == "type") {
-
                                 return;
                             };
                             $('#featureCollTbl').append("<tr><td>" + index + "</td><td><input  style='width:230px;' type='text' name='" + index + "' value='" + val + "'/></td></tr>");
-
                         }
                     });
                     featureCollAttrDlg.find('.digitize-save').bind('click', function() {
@@ -664,7 +655,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                         feature.updated = new Date().toISOString();
                         // save the changed feature in a new object
                         if ($('#mapframe1').data('kml')._kmls[oldCollectionName].url != $('#mapframe1').data('kml')._kmls[oldCollectionName].data.title) {
-
                             $('#mapframe1').data('kml')._kmls[feature.title] = $('#mapframe1').data('kml')._kmls[oldCollectionName];
                             $('#mapframe1').data('kml')._kmls[feature.title].url = $('#mapframe1').data('kml')._kmls[feature.title].data.title;
                             kml.remove(url);
@@ -674,11 +664,9 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                             editDialog.dialog('close');
                             kml.refresh(url);
                         } else {
-
                             featureCollAttrDlg.dialog('close');
                             editDialog.dialog('close');
                             kml.refresh(url);
-
                         }
                     });
 
@@ -767,7 +755,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                         feature.properties.updated = new Date().toISOString();
                         //get parent and change updated
                         if ($('#mapframe1').data('kml')._kmls[url].data.hasOwnProperty('updated')) {
-
                             $('#mapframe1').data('kml')._kmls[url].data.updated = new Date().toISOString();
                         }
 
@@ -1105,7 +1092,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     kml.addGeometry(pts, digitizingFor, attributes);
                     attributesDialog.find('.digitize-save').unbind('click');
                     attributesDialog.dialog('close');
-                    // digit.modeOff()
                 });
             }
         };
@@ -1122,7 +1108,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
             var digit = o.$target.data('mb_digitize');
             var geom = new Geometry();
             var geomType = editedFeature.geometry.type.toLowerCase();
-            //digit.modeOff();
             var pts = $.extend(true, {}, digit._digitizePoints);
             $.ajax({
                 url: '../php/transformPoint.php',
@@ -1179,13 +1164,10 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     if (geomType == 'polygon') {
                         modifiedGeom.addPoint(geom.list[0]); // add first point as last point
                         modifiedData.add(modifiedGeom);
-
                     } else {
-
                         modifiedData.add(modifiedGeom);
                     }
                     if (status != 'edit-point') {
-
                         // calculate current area (polygon) or length(linestring)
                         $.ajax({
                             url: '../php/mod_CalculateAreaAndLength.php',
@@ -1196,7 +1178,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                                 wkt_geom: modifiedData.toText()
                             },
                             success: function(data) {
-
                                 if (geom.geomType == 'polygon') {
                                     //TODO: use attributes area and length - not complex strings!
                                     editedFeature.properties['area'] = data[0];
@@ -1262,7 +1243,6 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
         this.destroy = function() {
             if (o.$target.size() > 0) {
                 o.$target.mb_digitize("destroy")
-                    //              .unbind("mb_digitizepointadded", newPoint)
                     .unbind("mb_digitizelastpointadded", finishDigitize)
                     .unbind("mb_digitizereinitialize", reinitializeDigitize);
             }
