@@ -1043,7 +1043,7 @@ XML;
 							}
 							break;
 						case "OGC:WMS 1.3.0":
-							//invoke geoportal viewer
+							//invoke geoportal viewer test
 							$accessUrl = str_replace(MAPBENDER_PATH, "mapbender", "map?WMS=");
 							$accessUrl .= urlencode($service->accessUrl);
 							$accessUrl .= "&DATASETID=";
