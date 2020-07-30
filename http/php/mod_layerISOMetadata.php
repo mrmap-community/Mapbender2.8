@@ -706,6 +706,8 @@ mb_metadata.metadata_id = relation.fkey_metadata_id WHERE mb_metadata.origin IN 
 
 SQL;
 	$res_metadataurl = db_query ( $sql );
+	//copy
+	//$res_metadataurl2 = $res_metadataurl;
 	if ($res_metadataurl != false) {
 		$coupledDatasetMetadataExists = false;
 		while ( $row_metadata = db_fetch_array ( $res_metadataurl ) ) {
@@ -792,12 +794,14 @@ SQL;
 	/* INSPIRE example: <srv:operatesOn xlink:href="http://image2000.jrc.it#image2000_1_nl2_multi"/> */
 	/* INSPIRE demands a href for the metadata record! */
 	/* TODO: Exchange HTTP_HOST with other baseurl */
+	$res_metadataurl = db_query ( $sql );
 	while ( $row_metadata = db_fetch_array ( $res_metadataurl ) ) {
 		// $row_metadata['datasetid_codespace']
 		// check codespace for trailing slash - if not there - add it ;-)
 		// unique resource identifier
 		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry ( $departmentMetadata, $row_metadata );
 		if (isset ( $row_metadata ['uuid'] ) && $row_metadata ['uuid'] != "") {
+		$e = new mb_exception($row_metadata ['origin']);
 			switch ($row_metadata ['origin']) {
 				case 'capabilities' :
 					$operatesOn = $iso19139->createElement ( "srv:operatesOn" );
