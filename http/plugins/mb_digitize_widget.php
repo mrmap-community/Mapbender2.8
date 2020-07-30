@@ -1,72 +1,7 @@
 <?php
 require_once dirname(__FILE__) . "/../../core/globalSettings.php";
 ?>
-/**
- * Package: digitize_widget
- *
- * Description:
- * Digitize module with jQuery UI widget factory and RaphaelJS
- *
- * Files:
- *  - http/plugins/mb_digitize_widget.js
- *  - http/widgets/w_digitize.js
- *
- * SQL:
- * > INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment,
- * > e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height,
- * > e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target,
- * > e_requires, e_url) VALUES('<appId>','digitize_widget',2,1,'Digitize',
- * > 'Digitize distance','img','../img/button_blue_red/digitize_off.png','',
- * > NULL ,NULL ,NULL ,NULL ,1,'','','','../plugins/mb_digitize_widget.php',
- * > '../widgets/w_digitize.js,../extensions/RaphaelJS/raphael-1.4.7.min.js',
- * > 'mapframe1','jq_ui_dialog,jq_ui_widget','http://www.mapbender.org/index.php/Digitize');
- * >
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'lineStrokeDefault', '#808080', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'lineStrokeSnapped', '#F30', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'lineStrokeWidthDefault', '2', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'lineStrokeWidthSnapped', '2', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'digitizePointDiameter', '7', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'opacity', '0.5', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'pointFillDefault', '#B2DFEE', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'pointFillSnapped', '#FF0000', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'pointStrokeDefault', '#FF0000', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'pointStrokeSnapped', '#FF0000', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'pointStrokeWidthDefault', '2', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'polygonFillDefault', '#B2DFEE', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'polygonFillSnapped', '#FC3', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'polygonStrokeWidthDefault', '1', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'polygonStrokeWidthSnapped', '3', '' ,'var');
- * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
- * > VALUES('<app_id>', 'digitize_widget', 'featureAttributeCategories', 'test', '' ,'var');
- *
- * Help:
- * http://www.mapbender.org/Digitize_widget
- *
- * Maintainer:
- * http://www.mapbender.org/User:Christoph_Baudson
- *
- * License:
- * Copyright (c) 2009, Open Source Geospatial Foundation
- * This program is dual licensed under the GNU General Public License
- * and Simplified BSD license.
- * http://svn.osgeo.org/mapbender/trunk/mapbender/license/license.txt
- */
- // <script language="JavaScript">
+// <script language="JavaScript">
 
  var $digitize = $(this);
 
