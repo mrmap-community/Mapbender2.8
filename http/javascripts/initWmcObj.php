@@ -226,7 +226,7 @@ WMS
 $e = new mb_notice("javascripts/initWmcObj.php: check WMS API");
 //private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven 
 if ($getParams['WMS']) {
-// WMS param given as array
+	// WMS param given as array
 	if (is_array($getParams['WMS'])) {
 		$inputWmsArray = $getParams['WMS'];
 	}
@@ -276,7 +276,7 @@ if ($getParams['WMS']) {
 					);	
 			}
 		} else {
-			//one single WMS capabilities url is given - check it
+			//one single WMS capabilities url is given - normal case!
 			$currentWms = new wms();
 			if(is_numeric($key)) {
 				// get WMS by ID
@@ -287,7 +287,48 @@ if ($getParams['WMS']) {
 				else if (is_string($val)) {
 					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);		
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
-					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));	
+					//Set zoom to extent of wms 
+					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
+					//$e = new mb_exception("javascripts/initWmcObj.php: first layer layer_epsg: ".json_encode($currentWms->objLayer[0]->layer_epsg[0]));
+					//find layer epsg of service where epsg=EPSG:4326
+					foreach ($currentWms->objLayer[0]->layer_epsg as $layerExtent) {
+						//$e = new mb_exception("leayer_epsg: ".$layerExtent["epsg"]);
+						if ($layerExtent["epsg"] == "EPSG:4326") {
+							// overwrite extend from getApi
+							//$e = new mb_exception("overwrite extent");
+							$bbox = new Mapbender_bbox($layerExtent["minx"],$layerExtent["miny"],$layerExtent["maxx"],$layerExtent["maxy"],"EPSG:4326");
+							// check for current epsg and transform if needed
+							if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
+								$bbox->transform($wmcGetApi->mainMap->getEpsg());
+							}
+							$wmcGetApi->mainMap->setExtent($bbox);
+							//overwrite zoom to parameter 
+							break;	
+						}
+					}
+					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
+					if (isset($getParams['DATASETID']) && $getParams['DATASETID'] != "") {
+						foreach ($currentWms->objLayer as $layerObj) {
+							if ($layerObj->layer_identifier == $getParams['DATASETID']) {
+								foreach ($layerObj->layer_epsg as $subLayerExtent){
+									if ($subLayerExtent["epsg"] == "EPSG:4326") {
+										// overwrite extend from getApi
+										//$e = new mb_exception("overwrite extent");
+										$bbox = new Mapbender_bbox($subLayerExtent["minx"],$subLayerExtent["miny"],$subLayerExtent["maxx"],$subLayerExtent["maxy"],"EPSG:4326");
+										// check for current epsg and transform if needed
+										if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
+											$bbox->transform($wmcGetApi->mainMap->getEpsg());
+										}
+										$wmcGetApi->mainMap->setExtent($bbox);
+										//overwrite zoom to parameter
+										break;
+									}
+								}
+								break;
+							}
+						
+						}
+					}
 				}
 				if ($resultOfWmsParsing['success'] == true) {
 					array_push($wmsArray, $currentWms);

@@ -956,6 +956,84 @@ XML;
 					break;
 			}
 			//$html .= '<p>';
+			if (count($serviceInformation->service) > 0) {
+				//new for coupled services if they exists:
+				$html .= '<fieldset><legend>'._mb("Access via services").'</legend>';
+				$html .= $tableBegin;
+				foreach ($serviceInformation->service as $service) {
+					//$e = new mb_exception("accessurl: ".$service->accessUrl);
+					//qualify service urls from other sources - maybe serviceTypeVersion was not set by other providers
+					if (!in_array($service->serviceTypeVersion, array("predefined ATOM","OGC:WMS 1.1.1","OGC:WMS 1.3.0"))) {
+						$serviceUrl = parse_url($service->accessUrl);
+						//$e = new mb_exception(json_encode($serviceUrl["query"]));
+						if (isset($serviceUrl["query"]) && $serviceUrl["query"] != "") {
+							parse_str($serviceUrl["query"], $requestParams);
+							//$e = new mb_exception(json_encode($requestParams));
+							$upperRequestParams = array_change_key_case($requestParams, CASE_UPPER);
+							if (array_key_exists("SERVICE", $upperRequestParams) && array_key_exists("REQUEST", $upperRequestParams)) {
+								if (strtoupper($upperRequestParams["SERVICE"]) == "WMS" && strtoupper($upperRequestParams["REQUEST"]) == "GETCAPABILITIES") {
+									$service->serviceTypeVersion = "OGC:WMS 1.1.1";
+									if (!array_key_exists("VERSION", $upperRequestParams)) {
+										$service->accessUrl .= $service->accessUrl."&VERSION=1.1.1";
+									}
+								}
+							}
+							//some super ugly services don't have the parameter service itself -very ugly - austria
+							//https://inspire.lfrz.gv.at/000802/wms?request=GetCapabilities&version=1.3.0
+							//$e = new mb_exception("upperRequestParams: ".json_encode($upperRequestParams));
+							if (array_key_exists("REQUEST", $upperRequestParams) && strtoupper($upperRequestParams["REQUEST"]) == "GETCAPABILITIES" && array_key_exists("VERSION", $upperRequestParams) && $upperRequestParams["VERSION"] == "1.3.0") {
+								//$e = new mb_exception("Set serviceTypeVersion to OGC:WMS 1.3.0");
+								$service->serviceTypeVersion = "OGC:WMS 1.3.0";
+							}
+						}
+					}
+					//$e = new mb_exception("accessurl: ".$service->accessUrl);
+					//$e = new mb_exception("serviceTypeVersion: ".$service->serviceTypeVersion);
+					switch ($service->serviceTypeVersion) {
+						case "predefined ATOM":
+							//use atom feed client
+							//$accessUrl = $service->accessUrl;
+							//$accessUrl = "https://www.google.de";
+							$accessUrl = MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($service->accessUrl);
+							break;
+						case "OGC:WMS 1.1.1":
+							//invoke geoportal viewer
+							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
+							$accessUrl .= urlencode($service->accessUrl);
+							$accessUrl .= "&DATASETID=";
+							//resource identifier
+							if ($iso19139Hash[37]['value'] != "") {
+								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
+							} else {
+								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
+							}
+							break;
+						case "OGC:WMS 1.3.0":
+							//invoke geoportal viewer test
+							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
+							$accessUrl .= urlencode($service->accessUrl);
+							$accessUrl .= "&DATASETID=";
+							//resource identifier
+							if ($iso19139Hash[37]['value'] != "") {
+								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
+							} else {
+								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
+							}
+							break;
+						default:
+							$accessUrl = $service->accessUrl;
+							break;
+					}
+					if (in_array($service->serviceType, array("view", "download"))) {
+						$html .= $t_a."<img src='../img/dj_".$service->serviceType.".png'/> ".$t_b."<a href='".$accessUrl."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
+					} else {
+						$html .= $t_a."<b>".$service->serviceType."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."?url=".urlencode($service->metadataUrl)."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
+			
+					}
+				}
+				$html .= $tableEnd;
+				$html .= '</fieldset>';
+			}
 			$html .= '<fieldset><legend>'._mb("Metadata").'</legend>';
 			$html .= $tableBegin;
 			#$html .= $t_a."<b>".$iso19139Hash[0]['html']."</b>: ".$t_b.'<p property="'.$iso19139Hash[0]['property'].'" datatype="'.$iso19139Hash[0]['datatype'].'" content="'.$iso19139Hash[0]['value'].'">'.$iso19139Hash[0]['value']."</p>".$t_c;
@@ -1018,56 +1096,6 @@ XML;
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
-			if (count($serviceInformation->service) > 0) {
-				//new for coupled services if they exists:
-				$html .= '<fieldset><legend>'._mb("Access via services").'</legend>';
-				$html .= $tableBegin;
-				foreach ($serviceInformation->service as $service) {
-					switch ($service->serviceTypeVersion) {
-						case "predefined ATOM":
-							//use atom feed client
-							//$accessUrl = $service->accessUrl;
-							//$accessUrl = "https://www.google.de";
-							$accessUrl = MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($service->accessUrl);
-							break;
-						case "OGC:WMS 1.1.1":
-							//invoke geoportal viewer
-							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
-							$accessUrl .= urlencode($service->accessUrl);
-							$accessUrl .= "&DATASETID=";
-							//resource identifier
-							if ($iso19139Hash[37]['value'] != "") {
-								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
-							} else {
-								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
-							}
-							break;
-						case "OGC:WMS 1.3.0":
-							//invoke geoportal viewer test
-							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
-							$accessUrl .= urlencode($service->accessUrl);
-							$accessUrl .= "&DATASETID=";
-							//resource identifier
-							if ($iso19139Hash[37]['value'] != "") {
-								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
-							} else {
-								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
-							}
-							break;
-						default:
-							$accesUrl = $service->accessUrl;
-							break;
-					}
-					if (in_array($service->serviceType, array("view", "download"))) {
-					    $html .= $t_a."<img src='../img/dj_".$service->serviceType.".png'/> ".$t_b."<a href='".$accessUrl."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
-					} else {
-						$html .= $t_a."<b>".$service->serviceType."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."?url=".urlencode($service->metadataUrl)."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
-						
-					}
-				}
-				$html .= $tableEnd;
-				$html .= '</fieldset>';
-			}
 			//$html .= '</p>';
 			$html .= '</div>';//element
 			//***************************************************************************
