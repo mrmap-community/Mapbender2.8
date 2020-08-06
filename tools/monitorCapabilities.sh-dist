@@ -1,3 +1,3 @@
+#!/bin/bash
 . /etc/profile
-cd /data/mapbender/tools/
-[ -f /tmp/wmsmonitorlock ] && : || /usr/bin/php /data/mapbender/tools/mod_monitorCapabilities_main.php group:36 > /dev/null
+[ -f /tmp/wmsmonitorlock ] && : || /usr/bin/php %%MAPBENDER_ROOT_DIRECTORY%%tools/mod_monitorCapabilities_main.php group:%%ADMINISTRATORS_GROUP_ID%% > /dev/null

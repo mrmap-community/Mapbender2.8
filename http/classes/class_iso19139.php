@@ -1,6 +1,6 @@
 <?php
 # http://www.mapbender.org/index.php/class_iso19139.php
-# Copyright (C) 2002 CCGIS 
+# Copyright (C) 2002 CCGIS
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ class Iso19139 {
 	var $lineage;
 	var $inspireTopConsistence; //db bool, 't' or 'f'
 	var $inspireInteroperability; //db bool, 't' or 'f' - declaration if the provided data should be compliant with the interoperablity implementing rule
-	var $inspireResulations; //array of actual inspire regulations which are relevant for this metadata representation (dataset/service) 
+	var $inspireResulations; //array of actual inspire regulations which are relevant for this metadata representation (dataset/service)
 	var $spatialResType;
 	var $spatialResValue;
 	var $export2Csw; //db bool, 't' or 'f'
@@ -77,18 +77,20 @@ class Iso19139 {
 	//Following two attributes are needed for generating the inspire monitoring information. They are normally not part of the iso19139!
 	var $inspireWholeArea;
 	var $inspireActualCoverage;
-	//following parameter is specific to mapbender registry and steers the automatic generation of an INSPIRE Downloadservice for the given metadata 
+	//following parameter is specific to mapbender registry and steers the automatic generation of an INSPIRE Downloadservice for the given metadata
 	var $inspireDownload;
 	var $linkAlreadyInDB; //bool
 	var $fileIdentifierAlreadyInDB; //bool
 	var $resourceResponsibleParty; //char
 	var $resourceContactEmail; //char
-        var $codeListUpdateFrequencyArray;
+    var $codeListUpdateFrequencyArray;
 	var $searchable;
 	//Following attributes are only for application metadata editor and they are used for managing/publishing metadata for internal applications !
 	var $fkeyGuiId;
 	var $fkeyWmcSerialId;
 	var $fkeyMapviewerId;
+	//Following attribute classifies if a minimum of given attributes are set to identify it as metadata
+	var $xmlHasMinimalAttributes; //title, description, bbox are good values to be checked
 
 	function __construct() {
 		//initialize empty iso19139 object
@@ -101,7 +103,7 @@ class Iso19139 {
 		$this->wgs84Bbox = array(-180.0,-90.0,180.0,90.0); //minx, miny, maxx, maxy in EPSG:4326
 		$this->polygonalExtentExterior = null; //initialize as null, cause it may be empty
 		$this->datasetId = "";
-		$this->datasetIdCodeSpace = "";	
+		$this->datasetIdCodeSpace = "";
 		$this->keywords = array();
 		$this->keywordsThesaurusName = array();
 		$this->isoCategoryKeys = array();
@@ -159,8 +161,9 @@ class Iso19139 {
 		$this->fkeyGuiId = null;
 		$this->fkeyWmcSerialId = null;
 		$this->fkeyMapviewerId = null;
+		$this->xmlHasMinimalAttributes = false;
 	}
-	
+
    //TODO: Following function is only needed til php 5.5 - after upgrade to debian 8 it is obsolet - see also class_syncCkan.php!
    public function array_column(array $input, $columnKey, $indexKey = null) {
         $array = array();
@@ -200,7 +203,7 @@ class Iso19139 {
 		}
 		//iterate over object and array !
 		foreach ($this->inspireLegislation as $inspire_rules) {
-			foreach ($inspire_rules as $regulation) { 
+			foreach ($inspire_rules as $regulation) {
 				if (in_array($regulation->type, $legislationTypeArray) && in_array($regulation->group, array("data_specifications","metadata","network_services"))) {
 					if (in_array($this->hierarchyLevel, $regulation->subject)) {
 						//check if already a regulation with this name exists in the array - if it is already there, check if the date is newer or older!
@@ -236,19 +239,28 @@ class Iso19139 {
 		$xml = preg_replace($regex,"",$xml);
 		return $xml;
 	}
-	
+
 	public function createMapbenderMetadataFromXML($xml){
-		$this->metadata = $xml;
+		//$this->metadata = $xml;
 		//$this->metadata = $this->removeGetRecordTag($this->metadata);
 		//$e = new mb_exception($this->metadata);
 		libxml_use_internal_errors(true);
 		try {
-			$iso19139Xml = simplexml_load_string($this->metadata);
+			$iso19139Xml = simplexml_load_string($xml);
 			if ($iso19139Xml === false) {
 				foreach(libxml_get_errors() as $error) {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
+				$this->metadata = <<<XML
+				<mb:ExceptionReport xmlns:mb="http://www.mapbender.org/metadata/exceptionreport">
+					<mb:Exception exceptionCode="NoApplicableCode">
+						<mb:ExceptionText>ISO Metadata XML could not be parsed!</mb:ExceptionText>
+				    </mb:Exception>
+				</mb:ExceptionReport>
+XML;
+				$this->harvestResult = 0;
+				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -263,7 +275,7 @@ class Iso19139 {
 			$res = db_query($sql);
 			while ($row = db_fetch_array($res)){
 				$topicCatHash[$row['md_topic_category_code_en']] = (integer)$row['md_topic_category_id'];
-				//$e = new mb_exception("topicCatHash: ".$row['md_topic_category_code_en'] ." : ". $topicCatHash[$row['md_topic_category_code_en']] );	
+				//$e = new mb_exception("topicCatHash: ".$row['md_topic_category_code_en'] ." : ". $topicCatHash[$row['md_topic_category_code_en']] );
 			}
 			//inspire
 			$inspireCatHash = array();
@@ -271,7 +283,7 @@ class Iso19139 {
 			$res = db_query($sql);
 			while ($row = db_fetch_array($res)){
 				$inspireCatHash[$row['inspire_category_code_en']] = (integer)$row['inspire_category_id'];
-				//$e = new mb_exception("inspireCatHash: ".$row['inspire_category_code_en'] ." : ". $row['inspire_category_id'] );	
+				//$e = new mb_exception("inspireCatHash: ".$row['inspire_category_code_en'] ." : ". $row['inspire_category_id'] );
 			}
 			//custom
 			//keywords - as text i custom category - special keywords of geoportal instance defined as keys!
@@ -280,7 +292,7 @@ class Iso19139 {
 			$res = db_query($sql);
 			while ($row = db_fetch_array($res)){
 				$customCatHash[$row['custom_category_key']] = (integer)$row['custom_category_id'];
-				//$e = new mb_exception("customCatHash: ".$row['custom_category_key'] ." : ". $row['custom_category_id'] );	
+				//$e = new mb_exception("customCatHash: ".$row['custom_category_key'] ." : ". $row['custom_category_id'] );
 			}
 			//add namespaces to xml if not given - how? - it is to late now - maybe they were given in the csw tag!
 			//only parse the MD_Metadata part ;-)
@@ -293,7 +305,7 @@ class Iso19139 {
 			$iso19139Xml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
 			$iso19139Xml->registerXPathNamespace("default", "");
 			//TODO: use md_metadata element before xpath
-			$e = new mb_notice("Parsing of xml metadata file was successfull"); 
+			$e = new mb_notice("Parsing of xml metadata file was successfull");
 			$this->fileIdentifier = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:fileIdentifier/gco:CharacterString');
 			$this->fileIdentifier = $this->fileIdentifier[0];
 			$this->createDate = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:dateStamp/gco:Date');
@@ -302,8 +314,8 @@ class Iso19139 {
 			$this->changeDate = $this->changeDate[0];
 			$this->hierarchyLevel = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue');
 			$this->hierarchyLevel = $this->hierarchyLevel[0];
-			if ($this->hierarchyLevel == 'service') {				
-				$identifikationXPath = "srv:SV_ServiceIdentification";	
+			if ($this->hierarchyLevel == 'service') {
+				$identifikationXPath = "srv:SV_ServiceIdentification";
 			} else {
 				$identifikationXPath = "gmd:MD_DataIdentification";
 			}
@@ -319,14 +331,14 @@ class Iso19139 {
 			if (isset($code[0]) && $code[0] != '') {
 				//new implementation:
 				//http://inspire.ec.europa.eu/file/1705/download?token=iSTwpRWd&usg=AOvVaw18y1aTdkoMCBxpIz7tOOgu
-				//from 2017-03-02 - the MD_Identifier - see C.2.5 Unique resource identifier - it is separated with a slash - the codespace should be everything after the last slash 
+				//from 2017-03-02 - the MD_Identifier - see C.2.5 Unique resource identifier - it is separated with a slash - the codespace should be everything after the last slash
 				//now try to check if a single slash is available and if the md_identifier is a url
 				$parsedUrl = parse_url($code[0]);
 
 				if (($parsedUrl['scheme'] == 'http' || $parsedUrl['scheme'] == 'https') && strpos($parsedUrl['path'],'/') !== false) {
 					$explodedUrl = explode('/', $code[0]);
 					$this->datasetId = $explodedUrl[count($explodedUrl) - 1];
-					$this->datasetIdCodeSpace = rtrim($code[0], $this->datasetId);	
+					$this->datasetIdCodeSpace = rtrim($code[0], $this->datasetId);
 
 //$e = new mb_exception("datasetId: ".$this->datasetId." - datasetIdCodeSpace: ".$this->datasetIdCodeSpace);
 				} else {
@@ -337,10 +349,10 @@ class Iso19139 {
 						$this->datasetIdCodeSpace = $explodedUrl[0];
 					} else {
 						$this->datasetId = $code[0];
-						$this->datasetIdCodeSpace = "";	
+						$this->datasetIdCodeSpace = "";
 					}
 				}
-			} else { //try to read code from RS_Identifier 		
+			} else { //try to read code from RS_Identifier
 				$code = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
 				$codeSpace = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:codeSpace/gco:CharacterString');
 				if (isset($codeSpace[0]) && isset($code[0]) && $codeSpace[0] != '' && $code[0] != '') {
@@ -353,7 +365,7 @@ class Iso19139 {
 			}
 			//try another approach - if datasetId == undefined
 			//swiss model
-			
+
 			//abstract
 			$this->abstract = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:abstract/gco:CharacterString');
 			$this->abstract = $this->abstract[0];
@@ -444,14 +456,14 @@ class Iso19139 {
 				$this->transferSize = $this->transferSize[0];
 			} else {
 				$this->transferSize = null;
-			}	
+			}
 			//preview image
 			$this->previewImage = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
 			if (is_array($this->previewImage) && $this->previewImage[0] !== '') {
 				$this->previewImage = $this->previewImage[0];
 			} else {
 				$this->previewImage = null;
-			}	
+			}
 			//$e = new mb_exception("class_iso19139.php: count of downloadlinks: ".count($this->downloadLinks));
 			//$this->downloadLinks = array_values($this->downloadLinks);
 			//$dump = var_export($this->downloadLinks, true);
@@ -471,7 +483,7 @@ class Iso19139 {
 			$maxx = $maxx[0];
 			$maxy = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:northBoundLatitude/gco:Decimal');
 			$maxy = $maxy[0];
-			$this->wgs84Bbox = array($minx,$miny,$maxx,$maxy); 
+			$this->wgs84Bbox = array($minx,$miny,$maxx,$maxy);
 			//more info: https://geo-ide.noaa.gov/wiki/index.php?title=ISO_Extents
 			//look for GML3 polygon as exterior ring in two alternative encodings (see: http://www.galdosinc.com/archives/191 - all coords are interpreted as given in EPSG:4326 for the moment!!!):
 			//allow multipolygons - multisurface objects
@@ -484,7 +496,7 @@ class Iso19139 {
 				for ($k = 0; $k < $numberOfSurfaces; $k++) {
 					$this->polygonalExtentExterior[] = $this->parsePolygon($iso19139Xml, '//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/gml:MultiSurface/gml:surfaceMember['. (string)($k + 1) .']/');
 				}
-			} else { 
+			} else {
 				if ($iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/gml:Polygon')) {
 					$this->polygonalExtentExterior = array();
 					$this->polygonalExtentExterior[0] = $this->parsePolygon($iso19139Xml, '//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/');
@@ -495,7 +507,7 @@ class Iso19139 {
 			if ($this->tmpExtentBegin == "") {
 				$this->tmpExtentBegin = "1900-01-01";
 			}
-			$this->tmpExtentEnd = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition');		
+			$this->tmpExtentEnd = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition');
 			$this->tmpExtentEnd = $this->tmpExtentEnd[0];
 			if ($this->tmpExtentEnd == "") {
 				$this->tmpExtentEnd = "1900-01-01";
@@ -530,13 +542,23 @@ class Iso19139 {
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
 			//get last part of string separated by the colon symbol
 			if ($this->hierarchyLevel != 'service' && $this->hierarchyLevel != '') {
-			    $crsObject = new Crs($this->refSystem);
-			    $epsgId = $crsObject->identifierCode;
-			    $this->refSystem = "EPSG:".$epsgId;
+				$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
+				try {
+			        $crsObject = new Crs($this->refSystem);
+				} catch (Exception $e) {
+    			    $err = new mb_exception("classes/class_Iso19139.php: - tried to resolve crs via class_crs: ".$e->getMessage());
+			        //return "error";
+			        $crsObject = false;
+				}
+				if ($crsObject != false) {
+					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
+			        $epsgId = $crsObject->identifierCode;
+			        $this->refSystem = "EPSG:".$epsgId;
+				}
 			}
 			//debug output of keywords:
 			/*$iKeyword = 0;
-			foreach($this->keywords as $keyword) {  
+			foreach($this->keywords as $keyword) {
 				$e = new mb_exception("Keyword: ".$keyword." - Thesaurus: ".$this->keywordsThesaurusName[$iKeyword]);
 				$iKeyword++;
 			}
@@ -551,7 +573,7 @@ class Iso19139 {
 			//$e = new mb_exception(json_encode($this->inspireLegislation));
 			//$e = new mb_exception($this->inspireLegislation[0]->label->de);
 			//if dataset and ir is defined in the conformance declaration!
-			
+
 			//responsible_party
 			//fees
 			//"constraints"
@@ -575,10 +597,10 @@ class Iso19139 {
 					} else {
 						$otherConstraintsFreeText .= $otherConstraint.";";
 					}
-				} 
+				}
 				$this->fees = rtrim($otherConstraintsFreeText, ';');
 			}
-			$e = new mb_notice("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote." - fees: ".$this->fees);		
+			$e = new mb_notice("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote." - fees: ".$this->fees);
 			$accessConstraints = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo//gmd:resourceConstraints/gmd:MD_LegalConstraints[gmd:accessConstraints/gmd:MD_RestrictionCode/@codeListValue="otherRestrictions"]/gmd:otherConstraints/gco:CharacterString');
 			$this->accessConstraints = $accessConstraints[0];
 			//$e = new mb_exception("accessConstraints: ".$accessConstraints[0]);
@@ -606,7 +628,7 @@ class Iso19139 {
 				//get boolean from metadata
 				//string(//gmd:MD_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult[gmd:specification/gmd:CI_Citation/gmd:title/gco:CharacterString="Verordnung (EG) Nr. 1205/2008 der Kommission vom 3. Dezember 2008 zur Durchführung der Richtlinie 2007/2/EG des Europäischen Parlaments und des Rates hinsichtlich Metadaten" and gmd:specification/gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:date/gco:Date="2008-12-03"]/gmd:pass/gco:Boolean)
 				$conformanceStatement = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult[gmd:specification/gmd:CI_Citation/gmd:title/gco:CharacterString="'.$regulation['name'].'" and gmd:specification/gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:date/gco:Date="'.$regulation['date']->format('Y-m-d').'"]/gmd:pass/gco:Boolean');
-				//problem: xpath extract this element strange - the first entry is a string object 
+				//problem: xpath extract this element strange - the first entry is a string object
 				$conformanceStatement = (string)$conformanceStatement[0];
 				switch ($conformanceStatement) {
 					case "true":
@@ -625,9 +647,19 @@ class Iso19139 {
 			//for debugging purposes
 			foreach ($interoperabilityArray as $declaredSpec) {
 				$e = new mb_notice("classes/class_iso19139.php: check conformance declaration: name: ".$declaredSpec['name']. " - date: ".$declaredSpec['date']." - pass: ".$declaredSpec['pass']);
-				
 			}
 			$e = new mb_notice("classes/class_iso19139.php: sufficient declared inspire conformity: ".$this->inspireInteroperability);
+            if (isset($this->fileIdentifier) && $this->fileIdentifier != "" && isset($this->title) && $this->title != "" && isset($this->abstract) && $this->abstract != "") {
+            	$this->metadata = $xml;
+            } else {
+            	$this->metadata = <<<XML
+				<mb:ExceptionReport xmlns:mb="http://www.mapbender.org/metadata/exceptionreport">
+					<mb:Exception exceptionCode="NoApplicableCode">
+						<mb:ExceptionText>ISO Metadata XML has neither a fileIdentifier nor title or abstract</mb:ExceptionText>
+				    </mb:Exception>
+				</mb:ExceptionReport>
+XML;
+            }
 			$this->qualifyMetadata();
 			$this->harvestResult = 1;
 			return $this;
@@ -635,7 +667,7 @@ class Iso19139 {
 			return false;
 		}
 	}
-	
+
 	public function qualifyMetadata() {
 		//delete 0 entries from integer categories values
 		//all categories
@@ -650,7 +682,7 @@ class Iso19139 {
 				break;
 			}
 		}
-		//qualify keywords 
+		//qualify keywords
 		$this->keywords = array_unique($this->keywords);
 		/*if (count($this->{$objectPrefix."Categories"}) && $this->{$objectPrefix."Categories"}[0] == 0) {
 			$this->{$objectPrefix."Categories"} = array();
@@ -661,17 +693,17 @@ class Iso19139 {
 			$valueToCheck = $this->{$dateField};
 			//validate to iso date format YYYY-MM-DD
 			$testMatch = $valueToCheck;
-			$pattern = '/^(19|20)[0-9]{2}[-](0[1-9]|1[012])[-](0[1-9]|[12][0-9]|3[01])$/';		
- 			if (!preg_match($pattern,$testMatch)){ 
+			$pattern = '/^(19|20)[0-9]{2}[-](0[1-9]|1[012])[-](0[1-9]|[12][0-9]|3[01])$/';
+ 			if (!preg_match($pattern,$testMatch)){
 				$e = new mb_exception("classes/class_iso19139.php: invalid date format for attribute ".$dateField." - found: ".$valueToCheck.". Set it to 1900-01-01!");
 				$this->{$dateField} = "1900-01-01";
-				$this->harvestException = $this->harvestException."\nInvalid date format for attribute ".$dateField." - found: ".$valueToCheck.". Set it to 1900-01-01!";	
+				$this->harvestException = $this->harvestException."\nInvalid date format for attribute ".$dateField." - found: ".$valueToCheck.". Set it to 1900-01-01!";
  			}
 		}
 	}
 
 	public function parsePolygon($iso19139Xml, $pathToPolygon) {
-		$polygonalExtentExterior = array();		
+		$polygonalExtentExterior = array();
 		// //gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/
 		// or //gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon/gml:MultiSurface/surfaceMember[1]/
 		if ($iso19139Xml->xpath($pathToPolygon.'gml:Polygon/gml:exterior/gml:LinearRing/gml:posList')) {
@@ -700,7 +732,7 @@ class Iso19139 {
 				}
 			}
 		}
-		return $polygonalExtentExterior; 
+		return $polygonalExtentExterior;
 	}
 
 	public function createFromUrl($url){
@@ -743,7 +775,7 @@ class Iso19139 {
         			$e = new mb_exception("Libxml error: {$error->message}\n");
     			}
 		}
-   		return $proc->transformToXML($xmlDoc);	
+   		return $proc->transformToXML($xmlDoc);
 	}
 
 	public function transformToHtml2() {
@@ -760,7 +792,7 @@ class Iso19139 {
         			$e = new mb_exception("Libxml error: {$error->message}\n");
     			}
 		}
-   		return $proc->transformToXML($xmlDoc);	
+   		return $proc->transformToXML($xmlDoc);
 	}
 
 	public function transformToHtml3($layout,$languageCode){
@@ -776,7 +808,8 @@ class Iso19139 {
 				foreach(libxml_get_errors() as $error) {
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
-				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
+				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML (transformToHtml)!');
+				return "error";
 			}
 		}
 		catch (Exception $e) {
@@ -815,18 +848,18 @@ class Iso19139 {
 			//generate html
 			$html = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dctype="http://purl.org/dc/dcmitype/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:vcard="http://www.w3.org/2006/vcard/ns#" xml:lang="'.$languageCode.'">';
 
-			$metadataStr .= '<head>' . 
-				'<title>'._mb("Metadata").'</title>' . 
+			$metadataStr .= '<head>' .
+				'<title>'._mb("Metadata").'</title>' .
 				'<meta name="description" content="'._mb("Metadata").'" xml:lang="'.$languageCode.'" />'.
 				'<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0;">' .
-				'<meta name="keywords" content="'._mb("Metadata").'" xml:lang="'.$languageCode.'" />'	.	
+				'<meta name="keywords" content="'._mb("Metadata").'" xml:lang="'.$languageCode.'" />'	.
 				'<meta http-equiv="cache-control" content="no-cache">'.
 				'<meta http-equiv="pragma" content="no-cache">'.
 				'<meta http-equiv="expires" content="0">'.
 				'<meta http-equiv="content-language" content="'.$languageCode.'" />'.
 				'<meta http-equiv="content-style-type" content="text/css" />'.
-				'<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">' . 	
-				'<meta http-equiv="X-UA-Compatible" content="IE=edge" />' . 
+				'<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">' .
+				'<meta http-equiv="X-UA-Compatible" content="IE=edge" />' .
 				'</head>';
 			$html .= $metadataStr;
 			$html .= '<body>';
@@ -848,7 +881,7 @@ class Iso19139 {
 
 			switch ($layout) {
 				case "tabs":
-					$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.5.custom.css" rel="Stylesheet" />';	
+					$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.5.custom.css" rel="Stylesheet" />';
 					$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-1.4.2.min.js"></script>';
 					$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-ui-1.8.1.custom.min.js"></script>';
 					//initialize tabs
@@ -872,7 +905,7 @@ class Iso19139 {
 					$html .= '</ul>';
 					break;
 				case "accordion":
-					$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.4.custom.css" rel="Stylesheet" />';	
+					$html .= '<link type="text/css" href="../extensions/jquery-ui-1.8.1.custom/css/custom-theme/jquery-ui-1.8.4.custom.css" rel="Stylesheet" />';
 					$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-1.4.2.min.js"></script>';
 					$html .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-ui-1.8.1.custom.min.js"></script>';
 					//define the javascript functions
@@ -923,6 +956,84 @@ class Iso19139 {
 					break;
 			}
 			//$html .= '<p>';
+			if (count($serviceInformation->service) > 0) {
+				//new for coupled services if they exists:
+				$html .= '<fieldset><legend>'._mb("Access via services").'</legend>';
+				$html .= $tableBegin;
+				foreach ($serviceInformation->service as $service) {
+					//$e = new mb_exception("accessurl: ".$service->accessUrl);
+					//qualify service urls from other sources - maybe serviceTypeVersion was not set by other providers
+					if (!in_array($service->serviceTypeVersion, array("predefined ATOM","OGC:WMS 1.1.1","OGC:WMS 1.3.0"))) {
+						$serviceUrl = parse_url($service->accessUrl);
+						//$e = new mb_exception(json_encode($serviceUrl["query"]));
+						if (isset($serviceUrl["query"]) && $serviceUrl["query"] != "") {
+							parse_str($serviceUrl["query"], $requestParams);
+							//$e = new mb_exception(json_encode($requestParams));
+							$upperRequestParams = array_change_key_case($requestParams, CASE_UPPER);
+							if (array_key_exists("SERVICE", $upperRequestParams) && array_key_exists("REQUEST", $upperRequestParams)) {
+								if (strtoupper($upperRequestParams["SERVICE"]) == "WMS" && strtoupper($upperRequestParams["REQUEST"]) == "GETCAPABILITIES") {
+									$service->serviceTypeVersion = "OGC:WMS 1.1.1";
+									if (!array_key_exists("VERSION", $upperRequestParams)) {
+										$service->accessUrl .= $service->accessUrl."&VERSION=1.1.1";
+									}
+								}
+							}
+							//some super ugly services don't have the parameter service itself -very ugly - austria
+							//https://inspire.lfrz.gv.at/000802/wms?request=GetCapabilities&version=1.3.0
+							//$e = new mb_exception("upperRequestParams: ".json_encode($upperRequestParams));
+							if (array_key_exists("REQUEST", $upperRequestParams) && strtoupper($upperRequestParams["REQUEST"]) == "GETCAPABILITIES" && array_key_exists("VERSION", $upperRequestParams) && $upperRequestParams["VERSION"] == "1.3.0") {
+								//$e = new mb_exception("Set serviceTypeVersion to OGC:WMS 1.3.0");
+								$service->serviceTypeVersion = "OGC:WMS 1.3.0";
+							}
+						}
+					}
+					//$e = new mb_exception("accessurl: ".$service->accessUrl);
+					//$e = new mb_exception("serviceTypeVersion: ".$service->serviceTypeVersion);
+					switch ($service->serviceTypeVersion) {
+						case "predefined ATOM":
+							//use atom feed client
+							//$accessUrl = $service->accessUrl;
+							//$accessUrl = "https://www.google.de";
+							$accessUrl = MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($service->accessUrl);
+							break;
+						case "OGC:WMS 1.1.1":
+							//invoke geoportal viewer
+							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
+							$accessUrl .= urlencode($service->accessUrl);
+							$accessUrl .= "&DATASETID=";
+							//resource identifier
+							if ($iso19139Hash[37]['value'] != "") {
+								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
+							} else {
+								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
+							}
+							break;
+						case "OGC:WMS 1.3.0":
+							//invoke geoportal viewer test
+							$accessUrl = str_replace("mapbender", "map?WMS=", MAPBENDER_PATH);
+							$accessUrl .= urlencode($service->accessUrl);
+							$accessUrl .= "&DATASETID=";
+							//resource identifier
+							if ($iso19139Hash[37]['value'] != "") {
+								$accessUrl .= urlencode($iso19139Hash[37]['value']); //MD Identifier
+							} else {
+								$accessUrl .= urlencode($iso19139Hash[5]['value']."".$iso19139Hash[6]['value']);
+							}
+							break;
+						default:
+							$accessUrl = $service->accessUrl;
+							break;
+					}
+					if (in_array($service->serviceType, array("view", "download"))) {
+						$html .= $t_a."<img src='../img/dj_".$service->serviceType.".png'/> ".$t_b."<a href='".$accessUrl."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
+					} else {
+						$html .= $t_a."<b>".$service->serviceType."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."?url=".urlencode($service->metadataUrl)."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
+
+					}
+				}
+				$html .= $tableEnd;
+				$html .= '</fieldset>';
+			}
 			$html .= '<fieldset><legend>'._mb("Metadata").'</legend>';
 			$html .= $tableBegin;
 			#$html .= $t_a."<b>".$iso19139Hash[0]['html']."</b>: ".$t_b.'<p property="'.$iso19139Hash[0]['property'].'" datatype="'.$iso19139Hash[0]['datatype'].'" content="'.$iso19139Hash[0]['value'].'">'.$iso19139Hash[0]['value']."</p>".$t_c;
@@ -963,7 +1074,7 @@ class Iso19139 {
 			}*/
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
-		
+
 			$bbox = explode(',',$iso19139Hash[12]['value']);
 
 			if (count($bbox) == 4) {
@@ -975,7 +1086,7 @@ class Iso19139 {
 				} else {
 					$html .= _mb('Graphic unavailable');
 				}
-				$html .= '</fieldset>';	
+				$html .= '</fieldset>';
 			}
 			$html .= '<fieldset '.$producerOrganizationCategory.'><legend>'._mb("Contact").'</legend>';
 			$html .= $tableBegin;
@@ -1196,11 +1307,11 @@ class Iso19139 {
 			$html .= $t_a."<b>".$iso19139Hash[4]['html']."</b>: ".$t_b."<a property=\"url\" href='".$iso19139Hash[4]['value']."' target='_blank'>".$iso19139Hash[4]['value']."</a>".$t_c;
 			if ($iso19139Hash[3]['value'] == 'service' && $iso19139Hash[10]['value'] == 'download') {
 					//show link to own atom feed download client
-					//push ATOM Service feed url to client	
-					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '' && parse_url($iso19139Hash[4]['value'])) {	
+					//push ATOM Service feed url to client
+					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '' && parse_url($iso19139Hash[4]['value'])) {
 						$html .= $t_a."<b>"._mb("ATOM Feed client")."</b>: ".$t_b."<a href='".MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($iso19139Hash[4]['value'])."' target='_blank'>"._mb("Download")."</a>".$t_c;
 					}
-					
+
 			}
 			$html .= $tableEnd;
 			$html .= '</fieldset>';
@@ -1243,7 +1354,7 @@ class Iso19139 {
 			return $html;
 		}
 	}
-	
+
 	private function getHtmlRow($t_a, $t_b, $t_c, $iso19139Hash, $isoHashIndex){
 		$stringToReturn = $t_a."<b>".$iso19139Hash[$isoHashIndex]['html']."</b>: ".$t_b."<span ";
 		if (isset($iso19139Hash[$isoHashIndex]['schemaorg_processor'])) {
@@ -1253,7 +1364,7 @@ class Iso19139 {
 					$iso19139Hash[$isoHashIndex]['value'] = $bboxArray[0]." ".$bboxArray[2]." ".$bboxArray[1]." ".$bboxArray[3];
 					break;
 				case "licenseJson":
-					//test and parse json from array 
+					//test and parse json from array
 					$otherConstraints = $iso19139Hash[$isoHashIndex]['value'];
 					$licenseFound = false;
 					foreach($otherConstraints as $otherConstraint) {
@@ -1270,11 +1381,11 @@ class Iso19139 {
 								$URL = "No license url found or json not valid!";
 							}
 						}
-					} 
+					}
 					$iso19139Hash[$isoHashIndex]['value'] = $URL;
 					break;
 				default:
-					break;	
+					break;
 			}
 		}
 		if (isset($iso19139Hash[$isoHashIndex]['rdfa_content'])){
@@ -1300,7 +1411,7 @@ class Iso19139 {
 		$stringToReturn .= ">".$iso19139Hash[$isoHashIndex]['value']."</span>".$t_c;
 		return $stringToReturn;
 	}
-	
+
 	private function parseExteriorPolygon($gml3Polygon) {
 		//cause postgis gives back polygons without namspace, we have to add a namespace before parsing the xml again :-(
 		$gml3Polygon = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>".$gml3Polygon;
@@ -1317,7 +1428,7 @@ class Iso19139 {
 		catch (Exception $e) {
     			$err = new mb_exception("class_Iso19139:".$e->getMessage());
 			return false;
-		}			
+		}
 		//if parsing was successful
 		if ($iso19139Xml !== false) {
 			//add ns as attribute
@@ -1345,7 +1456,7 @@ class Iso19139 {
 			}
 		}
 		return array();
-	} 
+	}
 
 	public function createFromDBInternalId($metadataId){
 		$sql = "SELECT * , st_xmin(the_geom) || ',' || st_ymin(the_geom) || ',' || st_xmax(the_geom) || ',' || st_ymax(the_geom)  as bbox2d, st_asgml(3,bounding_geom) as bounding_polygon from mb_metadata WHERE metadata_id = $1";
@@ -1376,7 +1487,7 @@ class Iso19139 {
 				//store them in object
 				//$bbox = str_replace(' ',',',str_replace(')','',str_replace('BOX(','',$row['bbox2d'])));
 				//$e = new mb_exception("class_iso19139.php: got bbox for metadata: ".$bbox);
-				
+
 				$gml3FromPostgis = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>".$row['bounding_polygon'];
 				libxml_use_internal_errors(true);
 				try {
@@ -1391,9 +1502,9 @@ class Iso19139 {
 				catch (Exception $e) {
     					$err = new mb_exception("class_Iso19139:".$e->getMessage());
 					return false;
-				}			
+				}
 				//if parsing was successful
-				
+
 				if ($gml3 !== false) {
 					$gml3->addAttribute('xmlns:xmlns:gml', 'http://www.opengis.net/gml');
 					$gml3->registerXPathNamespace("gml", "http://www.opengis.net/gml");
@@ -1407,7 +1518,7 @@ class Iso19139 {
 						for ($k = 0; $k < $numberOfSurfaces; $k++) {
 							$this->polygonalExtentExterior[] = $this->parsePolygon($gml3, '//gml:MultiSurface/gml:surfaceMember/');
 						}
-					} else { 
+					} else {
 						$e = new mb_notice("class_Iso19139: no MultiSurface found!");
 						if($gml3->xpath('//gml:Polygon')) {
 							$e = new mb_notice("class_Iso19139: number of polygons: 1");
@@ -1491,7 +1602,7 @@ SQL;
 			$res = db_prep_query($sql,$v,$t);
 			while ($row = db_fetch_assoc($res)) {
 				$this->customCategories[]  = (string)$row['custom_category_id'];
-				//generate one keyword entry with special thesaurus 
+				//generate one keyword entry with special thesaurus
 				$this->keywords[] = $row['fkey_custom_category_id'];
 				if (defined("METADATA_DEFAULT_CODESPACE") && METADATA_DEFAULT_CODESPACE != '') {
 					$this->keywordsThesaurusName[] = METADATA_DEFAULT_CODESPACE;
@@ -1549,9 +1660,9 @@ SQL;
 
 	//the following functions are only for the simple metadata editor
 	public function createMetadataAddonFromDB() {
-		
+
 	}
-	
+
 	public function updateMetadataAddonInDB() {
 
 	}
@@ -1595,11 +1706,11 @@ SQL;
 			$t = array('i','i','s');
 			$res = db_prep_query($sql,$v,$t);
 			while ($row = db_fetch_array($res)){
-				$numberOfRelations = $row['count'];	
+				$numberOfRelations = $row['count'];
 			}
 			if ($numberOfRelations > 0) {
 				return true;
-			} else {	
+			} else {
 				return false;
 			}
 		} else {
@@ -1625,14 +1736,14 @@ SQL;
 		catch (Exception $E){
 			$returnObject['success'] = false;
 			$returnObject['message'] = _mb("Could not insert internal metadatalink into database!");
-			return $returnObject;	
+			return $returnObject;
 		}
 		//bequeath categories from coupled resources
 		$this->bequeathCategoriesToCoupledResource($metadataId,$resourceType,$resourceId);
 		//$e = new mb_exception("iso19139.php: bequeathed categories to ".$resourceType." : ".$resourceId);
 		$returnObject['success'] = true;
 		$returnObject['message'] = _mb("Internal metadata linkage inserted!");
-		return $returnObject;	
+		return $returnObject;
 		}
 	}
 
@@ -1647,20 +1758,20 @@ SQL;
 		catch (Exception $E){
 			$returnObject['success'] = false;
 			$returnObject['message'] = _mb("Could not delete internal metadata linkage from database!");
-			return $returnObject;	
+			return $returnObject;
 		}
 		//delete categories from coupled resources
 		$this->deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId);
 		$returnObject['success'] = true;
 		$returnObject['message'] = _mb("Internal metadata linkage deleted!");
-		return $returnObject;	
+		return $returnObject;
 	}
 
-	
+
 
 	public function deleteMetadataAddon($resourceType, $resourceId, $metadataId){
 		$returnObject = array();
-		$sql = "SELECT count(*) as count FROM ows_relation_metadata WHERE fkey_metadata_id = $1";		
+		$sql = "SELECT count(*) as count FROM ows_relation_metadata WHERE fkey_metadata_id = $1";
 		$v = array($metadataId);
 		$t = array('i');
 		try {
@@ -1669,14 +1780,14 @@ SQL;
 		catch (Exception $e){
 			$returnObject['success'] = false;
 			$returnObject['message'] = _mb("Could not determine a count of metadata relations!");
-			return $returnObject;	
+			return $returnObject;
 		}
 		while ($row = db_fetch_assoc($res)) {
 			$countMetadataLinkage = (integer)$row['count']; //integer
 		}
 		if ($countMetadataLinkage == 1) {
 			$e = new mb_exception("Metadata has only one reference and will be deleted from database if it was created by upload or link!");
-			//delete the metadata itself cause it has no other reference - really - not right for metador files !!! 
+			//delete the metadata itself cause it has no other reference - really - not right for metador files !!!
 			$sql = <<<SQL
 
 DELETE FROM mb_metadata WHERE metadata_id = $1 and origin NOT IN ('metador')
@@ -1690,7 +1801,7 @@ SQL;
 			catch (Exception $e){
 				$returnObject['success'] = false;
 				$returnObject['message'] = _mb("Could not delete metadata from database!");
-				return $returnObject;	
+				return $returnObject;
 			}
 			//delete link if metadata was not deleted cause it has been created by editor!
 			$sql = "DELETE FROM ows_relation_metadata WHERE fkey_metadata_id = $1 and fkey_".$resourceType."_id = $2";
@@ -1702,13 +1813,13 @@ SQL;
 			catch (Exception $E){
 				$returnObject['success'] = false;
 				$returnObject['message'] = _mb("Could not delete internal metadata linkage from database!");
-				return $returnObject;	
+				return $returnObject;
 			}
 			//delete categories from coupled resources
 			$this->deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId);
 			$returnObject['success'] = true;
 			$returnObject['message'] = _mb("Metadata and/or linkage was deleted from database!");
-			return $returnObject;	
+			return $returnObject;
 		} else {
 			//delete only linkage
 			$sql = "DELETE FROM ows_relation_metadata WHERE fkey_metadata_id = $1 and fkey_".$resourceType."_id = $2";
@@ -1740,15 +1851,15 @@ SQL;
 		$t = array('s');
 		$res = db_prep_query($sql,$v,$t);
 		while ($row = db_fetch_array($res)){
-			$metadataId[] = $row['metadata_id'];	
+			$metadataId[] = $row['metadata_id'];
 		}
 		if (count($metadataId) > 0 && count($metadataId) < 2) {
 			return $metadataId[0];
-		} else {	
+		} else {
 			return false;
 		}
 	}
-	
+
 	public function isFileIdentifierAlreadyInDB(){
 		$sql = <<<SQL
 SELECT metadata_id, createdate FROM mb_metadata WHERE uuid = $1 AND uuid <> '' AND uuid IS NOT NULL ORDER BY lastchanged DESC LIMIT 1
@@ -1764,16 +1875,16 @@ SQL;
 		$res = db_prep_query($sql,$v,$t);
 		$metadataId = array();
 		while ($row = db_fetch_array($res)){
-			$metadataId[] = $row['metadata_id'];	
+			$metadataId[] = $row['metadata_id'];
 		}
 		if (count($metadataId) > 0 && count($metadataId) < 2) {
 			return $metadataId[0];
-		} else {	
+		} else {
 			return false;
 		}
 	}
-	
-	private function createWktBboxFromArray($bboxArray) { //-180 -90 180 90 
+
+	private function createWktBboxFromArray($bboxArray) { //-180 -90 180 90
 		$postGisBbox = "";
 		if (count($bboxArray) != 4 || $bboxArray[0] == '') {
 			//create dummy bbox
@@ -1784,7 +1895,7 @@ SQL;
 		return $postGisBbox;
 	}
 
-	public function createWktPolygonFromPointArray($pointArray) { //-180 -90 180 90 
+	public function createWktPolygonFromPointArray($pointArray) { //-180 -90 180 90
 		if ($pointArray == null) {
 			return null;
 		}
@@ -1795,7 +1906,7 @@ SQL;
 					foreach($polygon as $point) {
 						$postGisPolygon .= trim($point['x'])." ".trim($point['y']).",";
 					}
-					$postGisPolygon = rtrim($postGisPolygon,',')."),(";	
+					$postGisPolygon = rtrim($postGisPolygon,',')."),(";
 			}
 			$postGisPolygon = rtrim($postGisPolygon,'(,')."))";
 		} else {
@@ -1851,7 +1962,7 @@ SQL;
 				$res = db_query($sqlDeleteTouRelation);
 				//insert service termsofuse relation
 				$sqlInsertTouRelation = "INSERT INTO md_termsofuse (fkey_termsofuse_id, fkey_metadata_id) VALUES ($fkey_termsofuse_id,$metadataId)";
-				$res = db_query($sqlInsertTouRelation); 
+				$res = db_query($sqlInsertTouRelation);
 				//fill in source note from service
 				$sqlUpdateSourceNote = "UPDATE mb_metadata SET md_license_source_note = $1 WHERE metadata_id = $2";
 				$t = array('s', 'i');
@@ -1867,7 +1978,7 @@ SQL;
 
 	public function insertKeywordsAndCategoriesIntoDB($metadataId,$resourceType,$resourceId){
 		//first delete old classifications - after that create new ones
-		//$e = new mb_exception($metadataId." - ".$resourceType." - ".$resourceId);	
+		//$e = new mb_exception($metadataId." - ".$resourceType." - ".$resourceId);
 		$this->deleteKeywordsAndCategoriesFromDB($metadataId,$resourceType,$resourceId);
 		//insert keywords and categories into tables!
 		//parse keywords and isoCategories
@@ -1948,7 +2059,7 @@ SQL;
 				foreach ($this->customCategories as $customCategory) {
 					$sqlInsert .= "(".(integer)$metadataId.",".(integer)$customCategory."),";
 				}
-			}	
+			}
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO mb_metadata_custom_category (fkey_metadata_id, fkey_custom_category_id) VALUES ".$sqlInsert;
 			//$e = new mb_exception("class_Iso19139: insert custom categories: ".$sqlInsert);
@@ -1958,7 +2069,7 @@ SQL;
 			}
 		}
 		if ($resourceType == 'layer' || $resourceType == 'featuretype') {
-			$this->bequeathCategoriesToCoupledResource($metadataId,$resourceType,$resourceId);	
+			$this->bequeathCategoriesToCoupledResource($metadataId,$resourceType,$resourceId);
 		}
 		$sqlInsert = "";
 		//insert keywords into keyword table
@@ -1992,7 +2103,7 @@ SQL;
 				foreach ($existingKeywords as $existingKeyword) {
 					$sqlInsert .= "(".(integer)$metadataId.",".(integer)$existingKeyword['id']."),";
 				}
-			}	
+			}
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO mb_metadata_keyword (fkey_metadata_id, fkey_keyword_id) VALUES ".$sqlInsert;
 			//$e = new mb_exception("class_Iso19139.php: sql for keywords: ".$sql);
@@ -2019,7 +2130,7 @@ SQL;
 			$otherKeywords = array_values(array_diff($this->keywords,$existingKeywordsArray));
 		} else {
 			$otherKeywords = $this->keywords;
-		} 
+		}
 		//debug
 		/*foreach ($otherKeywords as $test) {
 			$e = new mb_exception("otherKeywords: ".$test);
@@ -2034,7 +2145,7 @@ SQL;
 				foreach ($otherKeywords as $otherKeyword) {
 					$sqlInsert .= "('".$otherKeyword."'),";
 				}
-			}	
+			}
 			$sqlInsert = rtrim($sqlInsert,",");
 			$sql = "INSERT INTO keyword (keyword) VALUES ".$sqlInsert." RETURNING keyword_id" ;
 			//$e = new mb_exception("class_Iso19139.php: sql for keywords: ".$sql);
@@ -2055,7 +2166,7 @@ SQL;
 					foreach ($insertedKeywordIds as $insertedKeywordId) {
 						$sqlInsert .= "(".(integer)$metadataId.",".(integer)$insertedKeywordId."),";
 					}
-				}	
+				}
 				$sqlInsert = rtrim($sqlInsert,",");
 				$sql = "INSERT INTO mb_metadata_keyword (fkey_metadata_id, fkey_keyword_id) VALUES ".$sqlInsert;
 				//$e = new mb_notice("class_Iso19139.php: sql for keyword relation: ".$sql);
@@ -2115,7 +2226,7 @@ SQL;
 					}
 
 				}
-			}	
+			}
 		}
 		//$e = new mb_exception("iso19139 license id: ".$this->termsOfUseRef);
 		if ($licenseId !== null) {
@@ -2131,7 +2242,7 @@ SQL;
 		} else {
 			$e = new mb_notice("classes/class_Iso19139.php: license id is null!");
 		}
-		
+
 	}
 
 	public function deleteCategoriesFromCoupledResource($metadataId,$resourceType,$resourceId) {
@@ -2171,7 +2282,7 @@ SQL;
 		}
 		//all categories
 		$types = array("md_topic", "inspire", "custom");
-		
+
 		foreach ($types as $cat) {
 			switch ($cat) {
 				case "md_topic":
@@ -2188,9 +2299,9 @@ SQL;
 				} else {
 					foreach ($this->{$objectPrefix."Categories"} as ${$objectPrefix."Category"}) {
 						$sqlInsertCoupledResource .= "(".(integer)$metadataId.",".(integer)${$objectPrefix."Category"}.",".$resourceId."),";
-					
+
 					}
-				}	
+				}
 				$sqlInsertCoupledResource = rtrim($sqlInsertCoupledResource,",");
 				$sqlCoupledResource = "INSERT INTO ".$tablePrefix."_{$cat}_category (fkey_metadata_id, fkey_{$cat}_category_id, fkey_".$resourceType."_id) VALUES ".$sqlInsertCoupledResource;
 				//$e = new mb_exception("class_Iso19139: sql to bequeath categories: ".$sqlCoupledResource);
@@ -2278,7 +2389,7 @@ SQL;
 			$this->datasetIdCodeSpace,
 			$this->randomId,
 			$this->origin,
-			$this->owner,				
+			$this->owner,
 			$this->harvestResult,
 			$this->harvestException,
 			$this->lineage,
@@ -2486,7 +2597,7 @@ SQL;
 			$this->previewImage,
 			$this->mdProxy,
 			$this->inspireInteroperability,
-			$this->searchable,			
+			$this->searchable,
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId
@@ -2532,7 +2643,7 @@ SQL;
 				$this->harvestException
 			);
 			$t = array('s','s','s','s','b','s','i','i','s');
-		}	
+		}
 		$res = db_prep_query($sql,$v,$t);
 		if(!$res){
 			db_rollback();
@@ -2563,7 +2674,7 @@ SQL;
 				$metadataId = $row['metadata_id'];
 				if ($resourceType !== 'metadata') {
 					//insert relation to layer/featuretype
-					$sql = "INSERT INTO ows_relation_metadata (fkey_".$resourceType."_id, fkey_metadata_id, relation_type) values ($1, $2, $3);";	
+					$sql = "INSERT INTO ows_relation_metadata (fkey_".$resourceType."_id, fkey_metadata_id, relation_type) values ($1, $2, $3);";
 					$v = array($resourceId, $metadataId, $this->origin);
 					$t = array('i','i', 's');
 					$res = db_prep_query($sql,$v,$t);
@@ -2584,7 +2695,7 @@ SQL;
 						$e = new mb_exception("class_Iso19139:"._mb("Cannot update mb_metadata table!"));
 						return false;
 					}
-				}		
+				}
 			}
 			return true;
 		}
@@ -2594,21 +2705,21 @@ SQL;
 		$area_4326_box = explode(',',EXTENTSERVICEBBOX);
 		if ($layer_4326_box[0] <= $area_4326_box[0] || $layer_4326_box[2] >= $area_4326_box[2] || $layer_4326_box[1] <= $area_4326_box[1] || $layer_4326_box[3] >= $area_4326_box[3]) {
 			if ($layer_4326_box[0] < $area_4326_box[0]) {
-				$area_4326_box[0] = $layer_4326_box[0]; 
+				$area_4326_box[0] = $layer_4326_box[0];
 			}
 			if ($layer_4326_box[2] > $area_4326_box[2]) {
-				$area_4326_box[2] = $layer_4326_box[2]; 
+				$area_4326_box[2] = $layer_4326_box[2];
 			}
 			if ($layer_4326_box[1] < $area_4326_box[1]) {
-				$area_4326_box[1] = $layer_4326_box[1]; 
+				$area_4326_box[1] = $layer_4326_box[1];
 			}
 			if ($layer_4326_box[3] > $area_4326_box[3]) {
-				$area_4326_box[3] = $layer_4326_box[3]; 
+				$area_4326_box[3] = $layer_4326_box[3];
 			}
 
-			$d_x = $area_4326_box[2] - $area_4326_box[0]; 
+			$d_x = $area_4326_box[2] - $area_4326_box[0];
 			$d_y = $area_4326_box[3] - $area_4326_box[1];
-			
+
 			$new_minx = $area_4326_box[0] - 0.05*($d_x);
 			$new_maxx = $area_4326_box[2] + 0.05*($d_x);
 			$new_miny = $area_4326_box[1] - 0.05*($d_y);
@@ -2623,9 +2734,9 @@ SQL;
 		return $getMapUrl;
 	}
 
-	public function insertToDB($resourceType, $resourceId, $inheritContactInfo = false, $inheritLicenceInfo = false){
+	public function insertToDB($resourceType, $resourceId, $inheritContactInfo = false, $inheritLicenceInfo = false, $resolveRemote = true){
 		$result = array(); //value/message
-		
+
 		switch ($this->origin) {
 			case "capabilities":
 				//check if href is given and resource can be parsed
@@ -2641,10 +2752,15 @@ SQL;
 						//$e = new mb_exception("wfs 2.0.0 found!");
 					}
 				}
-				
+
 				if ((($this->type == 'ISO19115:2003' || $this->type == 'ISO 19115:2003') && $this->format =='text/xml') || ($this->type == 'TC211' && $this->format =='text/xml') || (($this->type == 'ISO19115:2003' || $this->type == 'ISO 19115:2003') && ($this->format =='application/vnd.iso.19139+xml' || $this->format =='application/xml')) || $wfs20 == true) {
 					$e = new mb_notice("class_Iso19139:"."try to parse: ".$this->href);
-					$metadata = $this->createFromUrl($this->href); //will alter object itself
+					if ($resolveRemote == true) {
+						$metadata = $this->createFromUrl($this->href); //will alter object itself
+					} else {
+						$metadata == false;
+						$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
+					}
 					$e = new mb_notice("class_Iso19139:"."Metadata found: ".$this->metadata);
 					if ($metadata == false) {
 						//try to insert only MetadataURL elements
@@ -2654,13 +2770,13 @@ SQL;
 							$result['message'] = "Problem while storing MetadataURL entry from wms capabilities to mb_metadata table!";
 							return $result;
 						} else {
-							
+
 							$e = new mb_exception("class_Iso19139:"."Storing only MetadataURL ".$metadata->href." from capabilities to mb database cause the target could not be accessed or parsed!");
 							$result['value'] = true;
 							$result['message'] = "Storing only MetadataURL ".$metadata->href." from capabilities to mb database cause the target could not be accessed or parsed!";
 							return $result;
 						}
-					} 
+					}
 					$this->harvestResult = 1;
 				} else {
 					$e = new mb_exception("class_Iso19139:"."MetadataURL format or type of following url is not supported: Format: ".$this->format." | type: ".$this->type);
@@ -2685,7 +2801,7 @@ SQL;
 						$result['message'] = "Storing only MetadataURL ".$metadata->href." from external source to mb database cause the target could not be accessed or parsed!";
 						return $result;
 					}
-				} 
+				}
 				$this->harvestResult = 1;
 				break;
 			case "metador":
@@ -2696,7 +2812,7 @@ SQL;
 				$e = new mb_notice("class_Iso19139:"."upload found");
 				//$e = new mb_exception($this->metadata);
 				$metadata = $this->createMapbenderMetadataFromXML($this->metadata);
-				
+
 				if ($metadata == false) {
 					//xml could not be parsed
 					$result['value'] = false;
@@ -2708,7 +2824,7 @@ SQL;
 				break;
 			case "internal":
 				//only set relation to existing record - return true;
-				//is actually handled thru plugins/mb_metadata_server* 
+				//is actually handled thru plugins/mb_metadata_server*
 				break;
 			default:
        				$e = new mb_exception("class_Iso19139:"."Metadata origin is not known - please set it before storing values to DB!");
@@ -2820,7 +2936,7 @@ SQL;
 					$v = array($metadataId);
 					$t = array('i');
 					$res = db_prep_query($sql,$v,$t);
-					
+
 					//
 					$sql = "UPDATE mb_metadata SET harvestresult = 1 where metadata_id = $1";
 					$v = array($metadataId);
@@ -2833,17 +2949,17 @@ SQL;
 						$result['message'] = "Cannot update mb_metadata table to fill in harvest result!";
 						return $result;
 					} else {
-						$this->insertKeywordsAndCategoriesIntoDB($metadataId,$resourceType,$resourceId);	
-						//inherit licence info and contact info from coupled service if this is wished so - that will override and/or extent the original metadata!!! 
+						$this->insertKeywordsAndCategoriesIntoDB($metadataId,$resourceType,$resourceId);
+						//inherit licence info and contact info from coupled service if this is wished so - that will override and/or extent the original metadata!!!
 						$this->inheritContactAndLicenceInformation($metadataId,$resourceType,$resourceId,$inheritContactInfo,$inheritLicenceInfo);
 						//TODO: if this was ok, let the resource (layer/featuretype) inherit the classification from the coupled metadata to support better catalogue search
 					}
-				} 
+				}
 			}
 			$result['value'] = true;
 			$result['message'] = "Insert metadata successfully into database!";
 			return $result;
-		}	
+		}
 	}
 
 }

@@ -148,6 +148,9 @@ var MetadataEditApi = function (o) {
 						$('#license_source').css("display","none");
 					}
 					$('#license_info').css('display', 'block');
+					if (obj.termsofuse_id == '0') {
+						$('#license_info').css('display', 'none');
+					}
 				} else {
 					$('#licence_symbol').attr('src', '');
 					$('#licence_descriptionlink').attr('href', '');

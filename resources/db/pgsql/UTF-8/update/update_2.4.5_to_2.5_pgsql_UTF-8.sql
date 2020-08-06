@@ -541,7 +541,7 @@ ALTER TABLE gui_wms ADD COLUMN gui_wms_opacity INT DEFAULT 100;
 UPDATE gui_element SET e_mb_mod = 'mod_addWMSgeneralFunctions.js' WHERE e_id = 'addWMS';
 
 ALTER TABLE gui_element ALTER COLUMN e_js_file TYPE character varying(255);
-ALTER TABLE gui_element ALTER COLUMN e_mb_mod TYPE character varying(255);
+ALTER TABLE gui_element ALTER COLUMN e_mb_mod TYPE character varying(500);
 ALTER TABLE wms ALTER COLUMN fees TYPE text;
 ALTER TABLE wms RENAME COLUMN wms_mb_getcapabilies_doc TO wms_mb_getcapabilities_doc;
 

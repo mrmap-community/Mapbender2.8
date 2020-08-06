@@ -18,99 +18,89 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #Script which is included by a typo3 script to register the users
-
 	require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 	require_once(dirname(__FILE__)."/../classes/class_administration.php");
-	$adm = new administration();
-	$con = db_connect(DBSERVER,OWNER,PW);
-	db_select_db(DB,$con);
-	// fields which should be updated
-	$fields = array();
-	// entries
-        $v = array();
-        // types
-        $t = array();
-	//Check mapbender.conf for central portal admin user id
+	//alter handling of script to use the mapbenders user class
+	/*
+	 * begin of refactoring
+	 */
+	require_once(dirname(__FILE__)."/../classes/class_user.php");
 	if (defined("PORTAL_ADMIN_USER_ID") && PORTAL_ADMIN_USER_ID != "" ) {
 		$mb_user_owner = PORTAL_ADMIN_USER_ID;
 	} else {
 		$mb_user_owner = "1"; //default to mapbenders root user
 	}
-	// start sql statement
-	$sql = "UPDATE mb_user SET";
-        $sql .= " mb_user_owner = ".$mb_user_owner; #all users belong to the central administrator
-        //$sql .= " mb_user_owner = 5299"; #all users belong to the central administrator
-        //change username if field is not empty - the variables are from the calling script
-        if ($mb_user_name != '') {
-            $fields[] = array('mb_user_name', $mb_user_name, 's');
-        }
-	else
-	{
-		$mb_user_name = $_SESSION['mb_user_name'];
-	}
-        // change password if it was set
-        if ($mb_user_password != '') {
-            $fields[] = array('mb_user_password', md5($mb_user_password), 's');
-	    #$fields[] = array('mb_user_digest', md5($mb_user_name.";".$mb_user_email.":".REALM.":".$mb_user_password), 's');
-        }
-	#else
-	#{
-	#	$mb_user_password = $_SESSION['mb_user_password']; # Don't update the password for a guest user - cause no one can get a anonymous user any more - this is done with password guest!
-	#}
-  
-        //update other fields
-        $fields[] = array('mb_user_description', $mb_user_description, 's');
-        $fields[] = array('mb_user_email', $mb_user_email, 's');
-        $fields[] = array('mb_user_phone', $mb_user_phone, 's');
-        #$fields[] = array('mb_user_department', $mb_user_department, 's'); # don't update department cause it is used for some relation - TODO uncomment it when relation is obsolet
-        $fields[] = array('mb_user_organisation_name', $mb_user_organisation_name, 's');
-        $fields[] = array('mb_user_position_name', $mb_user_position_name, 's');
-        $fields[] = array('mb_user_city', $mb_user_city, 's');
-	#$e = new mb_exception("geoportal/updateUserIntoDb.php: digest new: ".md5($mb_user_name.";".$mb_user_email.":".REALM.":".$mb_user_password));
-	$fields[] = array('mb_user_digest', md5($mb_user_name.";".$mb_user_email.":".REALM.":".$mb_user_password), 's');
-        if(is_int($mb_user_postal_code) && $mb_user_postal_code >= 0){
-        	$fields[] = array('mb_user_postal_code', $mb_user_postal_code, 'i'); //postal_code als integer?
-	}
-        $fields[] = array('mb_user_textsize', $Textsize, 's');
-        $fields[] = array('mb_user_glossar', $Glossar, 's');
-        $fields[] = array('mb_user_spatial_suggest', $mb_user_spatial_suggest, 's');
+	//test for running the script directly from browser 
+	//$mb_user_description = "testdescription 1";
+	//$mb_user_password = "test23";
+	//list of variables from calling application typo3s portal.php script
+	/*
+	 * $mb_user_name, $mb_user_password, $mb_user_description, $mb_user_email, $mb_user_phone, 
+	 * $mb_user_organisation_name, $mb_user_position_name, $mb_user_city, $mb_user_postal_code,
+	 * $Textsize, $Glossar, $mb_user_spatial_suggest, $mb_user_allow_survey, $mb_user_newsletter,
+	 * 
+	 */
+	//mapping of values 
 	if ($mb_user_newsletter == "ja") {$mb_user_newsletter = "t";} else {$mb_user_newsletter = "f";}
 	if ($mb_user_allow_survey == "ja") {$mb_user_allow_survey = "t";} else {$mb_user_allow_survey = "f";}
-        $fields[] = array('mb_user_newsletter', $mb_user_newsletter, 'b');
-	$fields[] = array('mb_user_allow_survey', $mb_user_allow_survey, 'b');
-	$fields[] = array('mb_user_aldigest', md5($mb_user_name.":".REALM.":".$mb_user_password), 's');
-	
-        // build sql statement
-        foreach ($fields as $idx => $field) {
-            $sql .= ', '.$field[0].' = $'.($idx + 1);
-            $v[] = $field[1];
-            $t[] = $field[2];
-        }
-        // + where condition
-        $v[] = $_SESSION["mb_user_id"];
-        $t[] = 'i';
-        $sql .= 'WHERE mb_user_id = $'.count($v);//.' AND mb_user_name != \'guest\'';
-	if  ($_SESSION["mb_user_id"] != ANONYMOUS_USER) {   	
-		$res = db_prep_query($sql, $v, $t);
+	//check that the current user is not the anonymous one (guest)
+	//build user object from information in the current session
+	$user = new User(); //if no id is given, object will be instantiated from current session
+	if ($user->isPublic() == false) {
+		$variableMapping = array(
+				//"mb_user_name" => "name",
+				"mb_user_description" => "description",
+				"mb_user_email" => "email",
+				"mb_user_phone" => "phone",
+				"mb_user_organisation_name" => "organization",
+				"mb_user_position_name" => "position",
+				"mb_user_city" => "city",
+				"mb_user_postal_code" => "postalCode",
+				//"Textsize" => "textSize",
+				//"Glossar" => "wantsGlossar",
+				//"mb_user_spatial_suggest" => "wantsSpatialSuggest",
+				"mb_user_allow_survey" => "allowsSurvey",
+				"mb_user_newsletter" => "wantsNewsletter"
+		);
+		foreach ($variableMapping as $key => $value) {
+			if (isset(${$key}) && ${$key} != '') {
+				$user->{$value} = ${$key};
+			}
+		}
+		//save elements
+		$user->createDigest = 't';
+		$result = $user->commit();
+		if ($result == false) {
+			$e = new mb_exception("geoportal/updateUserIntoDb.php: An error occured while try to save user data in database!");
+		} else {
+			$e = new mb_exception("geoportal/updateUserIntoDb.php: The user alter his password via the html form!");
+			//alter password if new one is given
+			$user->createDigest = 't';
+			if (isset($mb_user_password) && $mb_user_password != '') {
+				$user->setPasswordWithoutTicket($mb_user_password);
+			}
+			//UPDATE of the SESSION VARS
+			if ($mb_user_newsletter == "t") {$mb_user_newsletter = "ja";} else {$mb_user_newsletter = "nein";}
+			if ($mb_user_allow_survey == "t") {$mb_user_allow_survey = "ja";} else {$mb_user_allow_survey = "nein";}
+			$_SESSION["mb_user_email"] = $mb_user_email;
+			$_SESSION["mb_user_department"] = $mb_user_department;
+			$_SESSION["mb_user_organisation_name"] = $mb_user_organisation_name;
+			$_SESSION["mb_user_position_name"] = $mb_user_position_name;
+			$_SESSION["mb_user_phone"] = $mb_user_phone;
+			//$_SESSION["Textsize"] = $Textsize;
+			//$_SESSION["Glossar"] = $Glossar;
+			//$_SESSION["mb_user_spatial_suggest"] = $mb_user_spatial_suggest;
+			$_SESSION["mb_user_newsletter"] = $mb_user_newsletter;
+			$_SESSION["mb_user_allow_survey"] = $mb_user_allow_survey;
+			$_SESSION["mb_user_description"]= $mb_user_description;
+			$_SESSION["mb_user_city"]= $mb_user_city;
+			$_SESSION["mb_user_postal_code"]= $mb_user_postal_code;
+		}
+	} else {
+	    //send error message
+		$e = new mb_exception("geoportal/updateUserIntoDb.php: The public user is not allowed to alter his attributes!");
 	}
-	if(!$res)
-	{
-		$e = new mb_exception("db_query($qstring)=$ret db_error=".db_error());	
-	}
-	//UPDATE of the SESSION VARS
-	if ($mb_user_newsletter == "t") {$mb_user_newsletter = "ja";} else {$mb_user_newsletter = "nein";}
-	if ($mb_user_allow_survey == "t") {$mb_user_allow_survey = "ja";} else {$mb_user_allow_survey = "nein";}
-	$_SESSION["mb_user_email"] = $mb_user_email; 
-	$_SESSION["mb_user_department"] = $mb_user_department; 
-	$_SESSION["mb_user_organisation_name"] = $mb_user_organisation_name; 
-	$_SESSION["mb_user_position_name"] = $mb_user_position_name; 
-	$_SESSION["mb_user_phone"] = $mb_user_phone; 
-	$_SESSION["Textsize"] = $Textsize;
-	$_SESSION["Glossar"] = $Glossar;	
-	$_SESSION["mb_user_spatial_suggest"] = $mb_user_spatial_suggest;
-	$_SESSION["mb_user_newsletter"] = $mb_user_newsletter;
-	$_SESSION["mb_user_allow_survey"] = $mb_user_allow_survey;
-	$_SESSION["mb_user_description"]= $mb_user_description;
-	$_SESSION["mb_user_city"]= $mb_user_city;
-	$_SESSION["mb_user_postal_code"]= $mb_user_postal_code;
+	/*
+	 * end of refactoring
+	 */
 ?>

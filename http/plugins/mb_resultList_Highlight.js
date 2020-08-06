@@ -50,21 +50,21 @@ options.resultHighlightLineWidth  = options.resultHighlightLineWidth || 2;
 options.resultHighlightZIndex  = options.resultHighlightZIndex || 100;
 
 Mapbender.events.init.register(function(){
-	var standingHighlight = null;
+	var standingHighlightWFS = null;
 	Mapbender.modules[options.target[0]].rowclick.register(function(row){
 		var me = Mapbender.modules[options.target[0]];
 		var modelIndex = $(row).data("modelindex");
 		var feature = me.model.getFeature(modelIndex);
 
-		if(standingHighlight !== null){ standingHighlight.clean();}
-		standingHighlight = new Highlight(
+		if(standingHighlightWFS !== null){ standingHighlightWFS.clean();}
+		standingHighlightWFS = new Highlight(
 				[options.target[1],options.target[2]],
-				"standingHighlight", 
+				"standingHighlightWFS", 
 				{"position":"absolute", "top":"0px", "left":"0px", "z-index":options.resultHighlightZIndex}, 
 				options.resultHighlightLineWidth);
-		standingHighlight.add(feature, options.resultHighlightColor);
+		standingHighlightWFS.add(feature, options.resultHighlightColor);
 		Mapbender.events.afterMapRequest.register( function(){
-			standingHighlight.paint();
+			standingHighlightWFS.paint();
 		});
 
 	});

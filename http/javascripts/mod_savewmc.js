@@ -103,7 +103,7 @@ if (typeof originalI18nObj !== "object") {
 if (typeof translatedI18nObj !== "object") {
 	var translatedI18nObj = {};
 }
-
+//alert("javascripts/mod_savewmc.js: saveInSession: "+saveInSession);
 //
 // button behaviour
 //
@@ -151,7 +151,7 @@ var SaveWmcApi = function () {
 			return this;
 		}
 		if (obj.session === true) {
-			sendMapDataToServer("session", 1, function(result, status) {Mapbender.lastStoredMapsetHash = result.mapHash;}, lzwCompressed);
+			sendMapDataToServer("session", this.saveInSession, function(result, status) {Mapbender.lastStoredMapsetHash = result.mapHash;}, lzwCompressed);
 			return this;
 		}
 		if (typeof obj.attributes === "object" && typeof obj.callback === "function") {

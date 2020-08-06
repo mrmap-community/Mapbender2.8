@@ -19,6 +19,19 @@ class OwsConstraints {
 		$this->asTable = false;
 		$this->outputFormat = "html";
 		$this->returnDirect = true;
+		$this->accessLimitationCodes = array();
+		$this->accessLimitationDescription = array();
+		if (file_exists(dirname(__FILE__)."/../../conf/inspire_LimitationsOnPublicAccess.json")) {
+			$configObject = json_decode(file_get_contents("../../conf/inspire_LimitationsOnPublicAccess.json"));
+            $arrayLimitationOnPublicAccessCodes = array();
+            $arrayLimitationOnPublicAccessDescriptions = array();
+			foreach ($configObject->codelist as $accessconstraintsCodelist) {
+				$arrayLimitationOnPublicAccessCodes[] = $accessconstraintsCodelist->code;
+				$arrayLimitationOnPublicAccessDescriptions[$accessconstraintsCodelist->code] = $accessconstraintsCodelist->title->de.": ".$accessconstraintsCodelist->description->de;
+			}
+			$this->accessLimitationCodes = $arrayLimitationOnPublicAccessCodes;
+			$this->accessLimitationDescription = $arrayLimitationOnPublicAccessDescriptions;
+		}
 	}
 	
 	function getRequestParameters() {
@@ -361,12 +374,15 @@ class OwsConstraints {
 			}
 		}
 	}
-
+    /*
+    * function to build the iso xml snippet for metadata about access and licensing 
+    */
 	function generateXmlOutputGdiDe($fees, $accessConstraints, $sourceNote, $licenseName, $licenseUrl, $licenseSymbolUrl, $licenseDescription, $licenseRequireSource) {
 		$predefinedLicenseFound = false;
-		
+		//$e = new mb_exception("name of license: ".$licenseName);
 		if (isset($licenseName) && $licenseName !== "" && $licenseName !== false) {
 			$predefinedLicenseFound = true;
+			//$e = new mb_exception("license found");
 			$license_id = $licenseName;
 			$license_name = $licenseDescription;
 			$license_link = $licenseUrl;
@@ -404,44 +420,166 @@ class OwsConstraints {
 		//define namespaces for possible elements in resourceConstraints
 		$constraints->setAttribute("xmlns:gmd", "http://www.isotc211.org/2005/gmd");
 		$constraints->setAttribute("xmlns:gco", "http://www.isotc211.org/2005/gco");
+		if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+			switch(INSPIRE_METADATA_SPEC) {
+				case "2.0.1":
+					$constraints->setAttribute("xmlns:gmx", "http://www.isotc211.org/2005/gmx");
+					$constraints->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+					break;
+			}
+		}
 		//define resourceConstraints field
 		$resourceConstraints=$iso19139->createElement("gmd:resourceConstraints");
 		$MD_LegalConstraints=$iso19139->createElement("gmd:MD_LegalConstraints");
-		$useLimitation=$iso19139->createElement("gmd:useLimitation");
+		/*
+		 * 2.3.7 Conditions applying to access and use
+		 */
+		//$e = new mb_exception("class_owsConstraints.php: INSPIRE_METADATA_SPEC:".INSPIRE_METADATA_SPEC);
+		if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+			switch(INSPIRE_METADATA_SPEC) {
+				case "2.0.1":
+					$conditionsElementName = "otherConstraints";
+					break;
+				case "1.3":
+						$conditionsElementName = "useLimitation"; 
+						break;
+			}
+		} else {
+			$conditionsElementName = "useLimitation";
+		}
+		$useLimitation=$iso19139->createElement("gmd:".$conditionsElementName);
 		$useLimitation_cs=$iso19139->createElement("gco:CharacterString");
 		//check if useLimitations are stored at mb_metadata table level (maybe they are inherited from services)
 		//for more information see http://www.geoportal.de/SharedDocs/Downloads/DE/GDI-DE/Dokumente/Architektur_GDI_DE_Konventionen_Metadaten_v1_1_1.pdf?__blob=publicationFile - part 3
 		//if so, give them (fees from capabilities should be included in useLimitations, accessconstraints from capabilities should be included in a separate accessConstraints element!
 		//if some fees are given and a predefined license is selected, give a combination of both!
-		
+		//$e = new mb_exception("fees:".$fees);
 		if (isset($fees) && $fees !== '' && $fees !== false && strtoupper($fees) !== "NONE") {
+			if ($predefinedLicenseText != "") {
 				$useLimitationTextString = $fees." - ".$predefinedLicenseText;
+			} else {
+				$useLimitationTextString = $fees;
+			}
 		} else {
+			if ($predefinedLicenseText != "") {
 				$useLimitationTextString = $predefinedLicenseText;
+			} else {
+				$useLimitationTextString = $fees;
+			}
 		}
-		if ($useLimitationTextString == "") {
-			$useLimitationTextString = "no conditions apply"; //INSPIRE
-			//$useLimitationTextString = "Es gelten keine Bedingungen"; //GDI-DE
-			//$useLimitationTextString = "Bedingungen unbekannt"; //GDI-DE
+		//All information about the license and costs, ... are now concatenated in the freetextfield 
+		//$e = new mb_exception($useLimitationTextString);
+		switch(strtolower($useLimitationTextString)) {
+			case "none":
+				$useLimitationTextString = "no conditions to access and use";
+				$useLimitationTextString_de = "Es gelten keine Bedingungen";
+				break;
+			case "":
+				$useLimitationTextString = "conditions to access and use unknown";
+				$useLimitationTextString_de = "Bedingungen unbekannt";
+				break;
 		}
-		$useLimitationText = $iso19139->createTextNode($useLimitationTextString);
+		if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+			switch(INSPIRE_METADATA_SPEC) {
+				case "2.0.1":
+					//if ($useLimitationTextString != "") {
+						/*
+						 * <gmx:Anchor
+xlink:href="http://inspire.ec.europa.eu/metadata-codelist/
+ConditionsApplyingToAccessAndUse/noConditionsApply">
+No conditions apply to access and use
+</gmx:Anchor>
+						 */
+						$useConstraints=$iso19139->createElement("gmd:useConstraints");
+						$MD_RestrictionCode=$iso19139->createElement("gmd:MD_RestrictionCode");
+						$MD_RestrictionCode->setAttribute("codeList","http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode");
+						$MD_RestrictionCode->setAttribute("codeListValue","otherRestrictions");
+						$useConstraints->appendChild($MD_RestrictionCode);
+						$MD_LegalConstraints->appendChild($useConstraints);
+					//} else {
+						
+					//}
+					break;
+			}
+		}
+		if (in_array($useLimitationTextString, array("conditions to access and use unknown", "no conditions to access and use"))) {
+			$useLimitationText = $iso19139->createTextNode($useLimitationTextString_de);
+		} else {
+			$useLimitationText = $iso19139->createTextNode($useLimitationTextString);
+		}
  		//TODO: Mapping of constraints between OWS/registry and INSPIRE 
-		$useLimitation_cs->appendChild($useLimitationText);
-		$useLimitation->appendChild($useLimitation_cs);
+		if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC == "2.0.1") {
+			switch ($useLimitationTextString) {
+				case "conditions to access and use unknown":
+					$otherConstraintsAnchor = $iso19139->createElement("gmx:Anchor");
+					$otherConstraintsAnchor->setAttribute("xlink:href","http://inspire.ec.europa.eu/metadata-codelist/ConditionsApplyingToAccessAndUse/conditionsUnknown");
+					$otherConstraintsAnchor->appendChild($useLimitationText);
+					$useLimitation->appendChild($otherConstraintsAnchor);
+					break;
+				case "no conditions to access and use":
+					$otherConstraintsAnchor = $iso19139->createElement("gmx:Anchor");
+					$otherConstraintsAnchor->setAttribute("xlink:href","http://inspire.ec.europa.eu/metadata-codelist/ConditionsApplyingToAccessAndUse/noConditionsApply");
+					$otherConstraintsAnchor->appendChild($useLimitationText);
+					$useLimitation->appendChild($otherConstraintsAnchor);
+					break;
+				default:
+					
+					$useLimitation_cs->appendChild($useLimitationText);
+					$useLimitation->appendChild($useLimitation_cs);
+					break;
+			}
+			if ($predefinedLicenseFound == true) {
+				//$e = new mb_exception("predefined license found");
+				$useLimitation2=$iso19139->createElement("gmd:".$conditionsElementName);
+				$otherConstraints_cs=$iso19139->createElement("gco:CharacterString");
+				//copy from above
+				$otherConstraintsText = $iso19139->createTextNode(json_encode($jsonLicense));
+				$otherConstraints_cs->appendChild($otherConstraintsText);
+				$useLimitation2->appendChild($otherConstraints_cs);
+			
+			}
+		} else {
+			$useLimitation_cs->appendChild($useLimitationText);
+			$useLimitation->appendChild($useLimitation_cs);
+			if ($predefinedLicenseFound == true) {
+				//$e = new mb_exception("predefined license found");
+				$useLimitation2=$iso19139->createElement("gmd:".$conditionsElementName);
+				$otherConstraints_cs=$iso19139->createElement("gco:CharacterString");
+				//copy from above
+				$otherConstraintsText = $iso19139->createTextNode(json_encode($jsonLicense));
+				$otherConstraints_cs->appendChild($otherConstraintsText);
+				$useLimitation2->appendChild($otherConstraints_cs);
+				
+			}
+		}
 		$MD_LegalConstraints->appendChild($useLimitation);
+		if (isset($useLimitation2)) {
+			$MD_LegalConstraints->appendChild($useLimitation2);
+		}
 		$resourceConstraints->appendChild($MD_LegalConstraints);
 		$constraints->appendChild($resourceConstraints);
 	
 		//Also add useConstraints field with same content for compatibility with ISO19115 and GDI-DE
-		if ($predefinedLicenseFound == true) {
+		/*if ($predefinedLicenseFound == true) {
 			//TODO useConstraints for license/otherConstraints
-	
+			if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+				switch(INSPIRE_METADATA_SPEC) {
+					case "2.0.1":
+						$restrictionCodelist = "http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode";
+						break;
+					case "1.3":
+						$restrictionCodelist = "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/gmxCodelists.xml#MD_RestrictionCode";
+						break;
+				}
+			} else {
+				$restrictionCodelist = "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/gmxCodelists.xml#MD_RestrictionCode";
+			}
 			$resourceConstraints=$iso19139->createElement("gmd:resourceConstraints");
 			$MD_LegalConstraints=$iso19139->createElement("gmd:MD_LegalConstraints");
 
 			$useConstraints=$iso19139->createElement("gmd:useConstraints");
 			$MD_RestrictionCode=$iso19139->createElement("gmd:MD_RestrictionCode");
-			$MD_RestrictionCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/gmxCodelists.xml#MD_RestrictionCode");
+			$MD_RestrictionCode->setAttribute("codeList", $restrictionCodelist);
 			$MD_RestrictionCode->setAttribute("codeListValue", "license");
 			$useConstraints->appendChild($MD_RestrictionCode);
 			$MD_LegalConstraints->appendChild($useConstraints);
@@ -449,7 +587,7 @@ class OwsConstraints {
 			//and otherConstraints for text
 			$useConstraints=$iso19139->createElement("gmd:useConstraints");
 			$MD_RestrictionCode=$iso19139->createElement("gmd:MD_RestrictionCode");
-			$MD_RestrictionCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/gmxCodelists.xml#MD_RestrictionCode");
+			$MD_RestrictionCode->setAttribute("codeList", $restrictionCodelist);
 			$MD_RestrictionCode->setAttribute("codeListValue", "otherRestrictions");
 			$useConstraints->appendChild($MD_RestrictionCode);
 			$MD_LegalConstraints->appendChild($useConstraints);
@@ -470,32 +608,109 @@ class OwsConstraints {
 			$otherConstraints_cs->appendChild($otherConstraintsText);
 			$otherConstraints->appendChild($otherConstraints_cs);
 			$MD_LegalConstraints->appendChild($otherConstraints);
-		}
-		$resourceConstraints->appendChild($MD_LegalConstraints);
-		$constraints->appendChild($resourceConstraints);
-
+			$resourceConstraints->appendChild($MD_LegalConstraints);
+			$constraints->appendChild($resourceConstraints);
+		}*/
+        //2.3.6 Limitations on public access
+		//$this->accessLimitationCodes
 		$resourceConstraints=$iso19139->createElement("gmd:resourceConstraints");
 		$MD_LegalConstraints=$iso19139->createElement("gmd:MD_LegalConstraints");
 		$accessConstraintsXml=$iso19139->createElement("gmd:accessConstraints");
 		$MD_RestrictionCode=$iso19139->createElement("gmd:MD_RestrictionCode");
-		$MD_RestrictionCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_RestrictionCode");
-		$MD_RestrictionCode->setAttribute("codeListValue", "otherRestrictions");
-		$MD_RestrictionCodeText=$iso19139->createTextNode("otherRestrictions");
+		$accessConstraintExists = isset($accessConstraints) && $accessConstraints !== '' && strtoupper($accessConstraints) !== 'NONE' && $accessConstraints !== false;
+		if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+			switch(INSPIRE_METADATA_SPEC) {
+				case "2.0.1":
+					$accessLimitationCodeList = "http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_RestrictionCode";
+					/*
+					 * Maybe there is an error in the TG Metadata 2.0.1? - TODO: check the right way to implement noLimitations
+					 */
+					//if ($accessConstraintExists) {
+						$limitationOnPublicAccess = "otherRestrictions";
+					//} else {
+					//	$limitationOnPublicAccess = "noLimitations";
+					//}
+					break;
+				case "1.3":
+					$accessLimitationCodeList = "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_RestrictionCode";		
+					$limitationOnPublicAccess = "otherRestrictions";
+					$MD_RestrictionCodeText=$iso19139->createTextNode($limitationOnPublicAccess);
+					break;
+			}
+		} else {
+			$accessLimitationCodeList = "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_RestrictionCode";
+			$limitationOnPublicAccess = "otherRestrictions";
+			$MD_RestrictionCodeText=$iso19139->createTextNode($limitationOnPublicAccess);
+		}
+		$MD_RestrictionCode->setAttribute("codeList", $accessLimitationCodeList);
+		$MD_RestrictionCode->setAttribute("codeListValue", $limitationOnPublicAccess);
+		
 		$otherConstraints=$iso19139->createElement("gmd:otherConstraints");
 		$otherConstraints_cs=$iso19139->createElement("gco:CharacterString");
-		if (isset($accessConstraints) && $accessConstraints !== '' && strtoupper($accessConstraints) !== 'NONE' && $accessConstraints !== false) {
-			$otherConstraintsText=$iso19139->createTextNode($accessConstraints);
-			//$e = new mb_exception(gettype($accessConstraints));
+		if (defined("INSPIRE_METADATA_SPEC") && INSPIRE_METADATA_SPEC != "") {
+			switch(INSPIRE_METADATA_SPEC) {
+				case "2.0.1":
+					if ($accessConstraintExists) {
+						//$e = new mb_exception(json_encode($this->accessLimitationCodes));
+						//$e = new mb_exception($accessConstraints);
+						if (in_array($accessConstraints, $this->accessLimitationCodes)) {
+							//$e = new mb_exception(json_encode($this->accessLimitationCodes));
+							$accessLimitationAnchor = $iso19139->createElement("gmx:Anchor");
+							$accessLimitationAnchor->setAttribute("xlink:href","http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/".$accessConstraints);
+							$accessLimitationAnchorText=$iso19139->createTextNode($this->accessLimitationDescription[$accessConstraints]);
+							$accessLimitationAnchor->appendChild($accessLimitationAnchorText);
+							$otherConstraints->appendChild($accessLimitationAnchor);
+						} else {
+							$otherConstraintsText = $iso19139->createTextNode($accessConstraints);
+							$otherConstraints_cs->appendChild($otherConstraintsText);
+							$otherConstraints->appendChild($otherConstraints_cs);
+						}
+						if (isset($MD_RestrictionCodeText)) {
+							$MD_RestrictionCode->appendChild($MD_RestrictionCodeText);
+						}
+					} else {
+						//add anchor
+						$accessLimitationAnchor = $iso19139->createElement("gmx:Anchor");
+						$accessLimitationAnchor->setAttribute("xlink:href","http://inspire.ec.europa.eu/metadata-codelist/LimitationsOnPublicAccess/noLimitations");
+						//$accessLimitationText = $iso19139->createTextNode("No limitations on public access");
+						$accessLimitationText = $iso19139->createTextNode("Es gelten keine Zugriffsbeschränkungen");
+						$accessLimitationAnchor->appendChild($accessLimitationText);
+						$otherConstraints->appendChild($accessLimitationAnchor);
+						if (isset($MD_RestrictionCodeText)) {
+							$MD_RestrictionCode->appendChild($MD_RestrictionCodeText);
+						}
+					}
+					break;
+				case "1.3":
+					if ($accessConstraintExists) {
+						$otherConstraintsText=$iso19139->createTextNode($accessConstraints);
+					} else {
+						$otherConstraintsTextString = "no constraints"; //INSPIRE
+						$otherConstraintsText=$iso19139->createTextNode($otherConstraintsTextString);
+					
+					}
+					$otherConstraints_cs->appendChild($otherConstraintsText);
+					$otherConstraints->appendChild($otherConstraints_cs);
+					if (isset($MD_RestrictionCodeText)) {
+						$MD_RestrictionCode->appendChild($MD_RestrictionCodeText);
+					}
+					break;
+			}
 		} else {
-			$otherConstraintsTextString = "no constraints"; //INSPIRE
-			//$otherConstraintsTextString = "Es gelten keine Bedingungen"; //GDI-DE
-			//$otherConstraintsTextString = "Bedingungen unbekannt"; //GDI-DE
-			$otherConstraintsText=$iso19139->createTextNode($otherConstraintsTextString);			
+			if ($accessConstraintExists) {
+				$otherConstraintsText=$iso19139->createTextNode($accessConstraints);
+			} else {
+				$otherConstraintsTextString = "no constraints"; //INSPIRE
+				$otherConstraintsText=$iso19139->createTextNode($otherConstraintsTextString);
+				
+			}
+			$otherConstraints_cs->appendChild($otherConstraintsText);
+			$otherConstraints->appendChild($otherConstraints_cs);
+			if (isset($MD_RestrictionCodeText)) {
+				$MD_RestrictionCode->appendChild($MD_RestrictionCodeText);
+			}
 		}
-		$otherConstraints_cs->appendChild($otherConstraintsText);
-		$otherConstraints->appendChild($otherConstraints_cs);
-
-		$MD_RestrictionCode->appendChild($MD_RestrictionCodeText);
+			
 		$accessConstraintsXml->appendChild($MD_RestrictionCode);
 		
 		$MD_LegalConstraints->appendChild($accessConstraintsXml);

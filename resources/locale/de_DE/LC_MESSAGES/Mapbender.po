@@ -4392,3 +4392,10 @@ msgstr "Die Registrierungsdaten wurden erfolgreich versendet."
 msgid "Load theme"
 msgstr "Lade Kartenthema"
 
+msgid "Spatial Filter"
+msgstr "Räumlicher Filter"
+
+msgid "Access via services"
+msgstr "Zugriff über Dienste"
+
+

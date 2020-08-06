@@ -67,7 +67,7 @@ $(function() {
 			<li><a href="#tabs-4"><?php echo _mb("Quality");?></a></li>
 			<li><a href="#tabs-5"><?php echo _mb("Spatial Extent");?></a></li>
 			<li><a href="#tabs-6"><?php echo _mb("Download");?></a></li>
-			<li><a href="#tabs-7"><?php echo _mb("Covering Area");?></a></li>
+			<!--<li><a href="#tabs-7"><?php echo _mb("Covering Area");?></a></li>-->
 			<li><a href="#tabs-8"><?php echo _mb("Licenses/Constraints");?></a></li>
 			<li><a href="#tabs-9"><?php echo _mb("Responsible Party");?></a></li>
 			<li><a href="#tabs-10"><?php echo _mb("Preview");?></a></li>
@@ -255,7 +255,7 @@ $(function() {
 		</p>
 		</fieldset>
 	</div>
-	<div id="tabs-7">
+	<!-- <div id="tabs-7">
 		<fieldset>
 			<legend><?php echo _mb("Relevant area (km<sup>2</sup> - integer)");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("INSPIRE Monitoring: Area which is to be covered by the spatial dataset expressed in km<sup>2</sup>.");?>'}" src="../img/questionmark.png" alt="" /></legend>
 			<input name="inspire_whole_area" id="inspire_whole_area"/>
@@ -264,7 +264,7 @@ $(function() {
 			<legend><?php echo _mb("Actual area (km<sup>2</sup> - integer)");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("INSPIRE Monitoring: Area which is covered by the spatial dataset expressed in km<sup>2</sup>.");?>'}" src="../img/questionmark.png" alt="" /></legend>
 			<input name="inspire_actual_coverage" id="inspire_actual_coverage"/>
 		</fieldset>
-	</div>
+	</div>-->
 	<div id="tabs-8">
 	<p>
 		<label for="fees_md"><?php echo _mb("Conditions applying to access and use");?>:</label>
@@ -273,7 +273,33 @@ $(function() {
 	<p>
 		<label for="accessconstraints_md"><?php echo _mb("Limitations on public access");?>:</label>
 		<input name="accessconstraints_md" id="accessconstraints_md"/><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("INSPIRE 8.2: limitations on public access");?>'}" src="../img/questionmark.png" alt="" />
+
+<?php
+            //read inspire_LimitationsOnPublicAccess.json as key value pair 
+			if (file_exists(dirname(__FILE__)."/../../conf/inspire_LimitationsOnPublicAccess.json")) {
+				$languageCode = Mapbender::session()->get("mb_lang");
+				$languageCode = "de"; //test
+				$configObject = json_decode(file_get_contents("../../conf/inspire_LimitationsOnPublicAccess.json"));
+				echo '<p>';
+				echo '        <label for="accessconstraints_md_inspire">'._mb("Predefined options (e.g. INSPIRE)").'</label>';
+			    echo '        <select class="accessconstraints_md_inspire_selectbox" name="md_accessconstraints_inspire" id="md_accessconstraints_inspire" onChange="var chosenoption=this.options[this.selectedIndex];$(\'#mb_md_showMetadataAddon\').mapbender().selectPredefinedAccessConstraints(chosenoption.value);">';
+				echo '            <option value="0">...</option>';
+				foreach ($configObject->codelist as $accessconstraintsCodelist) {
+					echo "            <option value='" . $accessconstraintsCodelist->code . "'>" . htmlentities($accessconstraintsCodelist->title->{$languageCode}, ENT_QUOTES, CHARSET) . "</option>";
+				}
+				echo '        </select>';
+				$helptext = "";
+				foreach ($configObject->codelist as $accessconstraintsCodelist) {
+					$helptext .= "<b>".$accessconstraintsCodelist->title->{$languageCode} ."</b>: ".$accessconstraintsCodelist->description->{$languageCode}."<br>";
+				}
+				//echo '        <img class="help-dialog" title="'._mb("Help").'" help="{text:\''._mb("Selection of predefined INSPIRE access constraints.").'\'}" src="../img/questionmark.png" alt="" />';
+				echo '        <img class="help-dialog" title="'._mb("Help").'" help="{text:\''.$helptext.'\'}" src="../img/questionmark.png" alt="" />';
+				
+				echo '        </p>';				
+			}
+?>
 	</p>
+	
 <?php
 		$sql = "SELECT termsofuse_id, name FROM termsofuse";
 		$res = db_query($sql);

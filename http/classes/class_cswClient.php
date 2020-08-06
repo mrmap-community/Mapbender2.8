@@ -316,7 +316,7 @@ class cswClient {
 				$this->operationResult = $this->getResult($csw->cat_op_values[$operationNameCsw]['post'], $postRequest);
 				//csw not from database but from capabilities!
 			} else {
-$e = new mb_exception(json_encode($csw->cat_op_values[$operationNameCsw]));
+//$e = new mb_exception(json_encode($csw->cat_op_values[$operationNameCsw]));
 				$this->operationResult = $this->getResult($csw->cat_op_values[$operationNameCsw]['post']['dflt'], $postRequest);
 			}
 			//Also give back url of operation
@@ -325,7 +325,7 @@ $e = new mb_exception(json_encode($csw->cat_op_values[$operationNameCsw]));
 			} else {
 				$this->operationUrl = $csw->cat_op_values[$operationNameCsw]['post']['dflt'];
 			}
-$e = new mb_exception($this->operationUrl);
+#$e = new mb_exception($this->operationUrl);
 		} else {
 			$this->operationResult = $this->getResult($csw->cat_op_values["transaction"]['post'], $postRequest);
 			//$this->operationUrl = $csw->cat_op_values[$operationNameCsw]['post'];

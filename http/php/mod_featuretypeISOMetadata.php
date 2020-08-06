@@ -139,11 +139,11 @@ if (isset($_REQUEST['VALIDATE']) and $_REQUEST['VALIDATE'] != "true") {
 }
 
 if ($serviceType == "ogcapifeatures") {
-    if ($behindRewrite) {
-	$ogcApiFeaturesUrl = $schema."://".$_SERVER['HTTP_HOST']."/".$rewritePath;
-    } else {
-	$ogcApiFeaturesUrl = MAPBENDER_PATH."/php/mod_linkedDataProxy.php?";
-    }
+	if ($behindRewrite) {
+		$ogcApiFeaturesUrl = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . $rewritePath;
+	} else {
+		$ogcApiFeaturesUrl = MAPBENDER_PATH . "/php/mod_linkedDataProxy.php?";
+	}
 }
 //some needfull functions to pull metadata out of the database!
 function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
@@ -462,7 +462,8 @@ SQL;
 	/*TODO: Exchange HTTP_HOST with other baseurl*/
     $pos = 0;
     while ($row_metadata = db_fetch_array($res_metadataurl)) {
-	$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
+		$uniqueResourceIdentifierCodespace = $admin->getIdentifierCodespaceFromRegistry($departmentMetadata, $row_metadata);
+    	if (isset($row_metadata['uuid']) && $row_metadata['uuid'] != "") {
         switch ($row_metadata['origin']) {
 			case 'external':
 			case 'capabilities':
@@ -487,6 +488,7 @@ SQL;
                 break;
         }
     }
+    }
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:name/@gco:nilReason',
             'missing');
@@ -499,12 +501,12 @@ SQL;
     $url = '';
     switch ($serviceType) {
         case "wfs":
-	    $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-	    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
+	        $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
+	        $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
             break;
 	case "ogcapifeatures":
             $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."/collections/".$mbMeta['featuretype_name'];
-	    $protocol = "OGC:API:Features";
+	        $protocol = "OGC:API:Features";
             break;
     }   
 	//GetCapabilities is always available

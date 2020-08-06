@@ -1,8 +1,11 @@
+<?php
+require_once dirname(__file__)."/spatial_security.php";
+?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
 <?php
-echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';	
+echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';
 ?>
 <title></title>
 <?php
@@ -11,10 +14,10 @@ $myPW = "**********";
 echo "<script language='JavaScript'>var myPW = '".$myPW."';</script>";
 ?>
 <script type="text/javascript">
-<?php 
+<?php
 	include '../include/dyn_js.php';
 	include '../include/dyn_php.php';
-	
+
 	$myPW = "**********";
 	echo "var myPW = '".$myPW."';";
 	if(!$withPasswordInsertion) {
@@ -119,7 +122,7 @@ function filterUser(list, all, str){
 			selection[selection.length] = list.options[i].value;
 		}
 	}
-	
+
 	list.options.length = 1;
 	for(i=0; i<all.length; i++){
 		if (all[i].name.toLowerCase().indexOf(str) == -1) {
@@ -135,7 +138,7 @@ function filterUser(list, all, str){
 		var newOption = new Option(all[i].name, all[i].id,false,selected);
 		newOption.setAttribute("title", all[i].email);
 		list.options[list.options.length] = newOption;
-	}	
+	}
 }
 </script>
 </head>
@@ -181,23 +184,83 @@ if($action == 'save'){
 		$user->postalCode = $postal_code;
 		$user->city = $city;
 		$user->country = $country;
-        if ($create_digest == "on") {
-            $user->createDigest = 't';
-        } else {
-            $user->createDigest = 'f';
-        }
-        if ($is_active == "on") {
-            $user->isActive = 't';
-        } else {
-            $user->isActive = 'f';
-        }
+		$user->spatialSecurity = $spatialSecurity;
+		switch ($create_digest) {
+			case "on":
+				$user->createDigest = 't';
+				break;
+			case "off":
+				$user->createDigest = 'f';
+				break;
+			default:
+				$user->createDigest = 'f';
+				break;
+		}
+		switch ($is_active) {
+			case "on":
+				$user->isActive = 't';
+				break;
+			case "off":
+				$user->isActive = 'f';
+				break;
+			default:
+				$user->isActive = 'f';
+				break;
+		}
 		$user->preferredGui = $fkey_preferred_gui_id;
+		$user->textSize = $textsize;
+		switch ($wants_newsletter) {
+			case "on":
+				$user->wantsNewsletter = 't';
+				break;
+			case "off":
+				$user->wantsNewsletter = 'f';
+				break;
+			default:
+				$user->wantsNewsletter = 'f';
+				break;
+		}
+		switch ($allows_survey) {
+			case "on":
+				$user->allowsSurvey = 't';
+				break;
+			case "off":
+				$user->allowsSurvey = 'f';
+				break;
+			default:
+				$user->allowsSurvey = 'f';
+				break;
+		}
+		switch ($wants_spatial_suggest) {
+			case "on":
+				$user->wantsSpatialSuggest = 't';
+				break;
+			case "off":
+				$user->wantsSpatialSuggest = 'f';
+				break;
+			default:
+				$user->wantsSpatialSuggest = 'f';
+				break;
+		}
+		switch ($wants_glossar) {
+			case "on":
+				$user->wantsGlossar = 't';
+				break;
+			case "off":
+				$user->wantsGlossar = 'f';
+				break;
+			default:
+				$user->wantsGlossar = 'f';
+				break;
+		}
+
+
 		$user->create();
 		$user->setNewUserPasswordTicket();
 		//TODO: check function !
 		if($withPasswordInsertion == 'true' && $password !== '' && $user->validUserPasswordTicket($user->passwordTicket)) {
 			$user->setPassword($password, $user->passwordTicket);
-		}		
+		}
 // TODO: uuid() ???? - insert it by default in class_user.php!
 	}
 }
@@ -230,6 +293,7 @@ if ($action == 'update') {
 		$user->postalCode = $postal_code;
 		$user->city = $city;
 		$user->country = $country;
+		$user->spatialSecurity = $spatialSecurity;
 		$user->loginCount = $login_count;
         if ($create_digest == "on") {
             $user->createDigest = 't';
@@ -242,6 +306,51 @@ if ($action == 'update') {
             $user->isActive = 'f';
         }
 		$user->preferredGui = $fkey_preferred_gui_id;
+		$user->textSize = $textsize;
+		switch ($wants_newsletter) {
+			case "on":
+				$user->wantsNewsletter = 't';
+				break;
+			case "off":
+				$user->wantsNewsletter = 'f';
+				break;
+			default:
+				$user->wantsNewsletter = 'f';
+				break;
+		}
+		switch ($allows_survey) {
+			case "on":
+				$user->allowsSurvey = 't';
+				break;
+			case "off":
+				$user->allowsSurvey = 'f';
+				break;
+			default:
+				$user->allowsSurvey = 'f';
+				break;
+		}
+		switch ($wants_spatial_suggest) {
+			case "on":
+				$user->wantsSpatialSuggest = 't';
+				break;
+			case "off":
+				$user->wantsSpatialSuggest = 'f';
+				break;
+			default:
+				$user->wantsSpatialSuggest = 'f';
+				break;
+		}
+		switch ($wants_glossar) {
+			case "on":
+				$user->wantsGlossar = 't';
+				break;
+			case "off":
+				$user->wantsGlossar = 'f';
+				break;
+			default:
+				$user->wantsGlossar = 'f';
+				break;
+		}
 		$user->commit();
 
 		$user->setNewUserPasswordTicket();
@@ -260,31 +369,36 @@ if($action == 'new_pw_ticket'){
 }
 
 if (!isset($name) || $selected_user == 'new'){
-  $name = "";
-  $password = "";
-  $owner_id = Mapbender::session()->get("mb_user_id");
-  $owner_name = Mapbender::session()->get("mb_user_name");
-  $description = "";
-  $login_count = 0;
-  $email = "";
-  $phone = "";
-  $department = "";
-  $organization = "";
-  $position = "";
-  $resolution = 72;
-  $firstname = "";
-  $lastname = "";
-  $academic_title = "";
-  $facsimile = "";
-  $street = "";
-  $housenumber = "";
-  $delivery_point = "";
-  $postal_code = "";
-  $city = "";
-  $country = "";
-  $is_active = 'f';
-  $create_digest = 'f';
-  $fkey_preferred_gui_id = "";
+    $name = "";
+    $password = "";
+    $owner_id = Mapbender::session()->get("mb_user_id");
+    $owner_name = Mapbender::session()->get("mb_user_name");
+    $description = "";
+    $login_count = 0;
+    $email = "";
+    $phone = "";
+    $department = "";
+    $organization = "";
+    $position = "";
+    $resolution = 72;
+    $firstname = "";
+    $lastname = "";
+    $academic_title = "";
+    $facsimile = "";
+    $street = "";
+    $housenumber = "";
+    $delivery_point = "";
+    $postal_code = "";
+    $city = "";
+    $country = "";
+    $is_active = 'f';
+    $create_digest = 'f';
+    $fkey_preferred_gui_id = "";
+    $textsize = "textsize3";
+    $wants_newsletter = 'f';
+    $wants_glossar = 'f';
+    $wants_spatial_suggest = 'f';
+    $allows_survey = 'f';
 }
 
 
@@ -302,7 +416,7 @@ if ((!isset($editSelf) || !$editSelf)) {
 //	   echo "<input type='text' value='' onkeyup='filterUser(document.getElementById(\"selecteduser\"),user,this.value);'/>";
 	   echo "<br /><select id='selecteduser' name='selected_user' onchange='submit()'>";
 	   echo "<option value='new'>"._mb("NEW")."...</option>";
-	
+
 		$filter = new stdClass();
 		if (isset($myUser) && $myUser) {
 			$filter->owner = Mapbender::session()->get("mb_user_id");
@@ -310,8 +424,8 @@ if ((!isset($editSelf) || !$editSelf)) {
 		/*
 		$userArray = User::getList($filter);
 		foreach ($userArray as $user) {
-			echo "<option value='".htmlentities($user->id, ENT_QUOTES, "UTF-8") . 
-				"' title='".htmlentities($user->email, ENT_QUOTES, "UTF-8") . 
+			echo "<option value='".htmlentities($user->id, ENT_QUOTES, "UTF-8") .
+				"' title='".htmlentities($user->email, ENT_QUOTES, "UTF-8") .
 				"'";
 			if ($selected_user && intval($selected_user) === $user->id) {
 				echo "selected";
@@ -326,7 +440,7 @@ if ((!isset($editSelf) || !$editSelf)) {
 		if ($selected_user && intval($selected_user) === $user->id) {
 			echo '<option value="'.htmlentities($user->id, ENT_QUOTES, 'UTF-8').'" title="'.htmlentities($user->email, ENT_QUOTES, 'UTF-8').'" selected="selected">'.htmlentities($user->name, ENT_QUOTES, "UTF-8").'</option>';
 		}
-		
+
 		$cnt_user = count($userArray);
 		echo "</select>";
 		echo "</td>";
@@ -359,9 +473,15 @@ if(isset($selected_user) && $selected_user != 0){
 		$postal_code = $data["postalCode"];
 		$city = $data["city"];
 		$country = $data["country"];
+		$spatialSecurity = $data["spatialSecurity"];
 		$is_active = $data["isActive"];
 		$create_digest = $data["createDigest"];
 		$fkey_preferred_gui_id = $data["preferredGui"];
+		$textsize = $data["textSize"];
+		$wants_newsletter = $data["wantsNewsletter"];
+		$wants_glossar = $data["wantsGlossar"];
+		$wants_spatial_suggest = $data["wantsSpatialSuggest"];
+		$allows_survey = $data["allowsSurvey"];
 	}
 }
 
@@ -424,7 +544,7 @@ if($withPasswordInsertion == 'true') {
 	      echo "<input type='hidden' name='password_plain' value='".htmlentities($password, ENT_QUOTES, "UTF-8")."'>";
 	   echo "</td>";
 	echo "</tr>";
-	
+
 	#confirm password
 	echo "<tr>";
    echo "<td>"._mb("Confirm password").": </td>";
@@ -550,11 +670,59 @@ echo "<tr>";
    echo "</td>";
 echo "</tr>";
 
+#textsize
+echo "<tr>";
+echo "<td>"._mb("Textsize").": </td>";
+echo "<td>";
+echo "<input type='text' size='20' name='textsize' value='".htmlentities($textsize, ENT_QUOTES, "UTF-8")."'>";
+echo "</td>";
+echo "</tr>";
+
+#wants_newsletter - boolean
+echo "<tr>";
+echo "<td>"._mb("Newsletter").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='wants_newsletter' name='wants_newsletter' ";
+if($wants_newsletter == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
+#wants_glossar - boolean
+echo "<tr>";
+echo "<td>"._mb("Show glossar").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='wants_glossar' name='wants_glossar' ";
+if($wants_glossar == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
+#wants_spatial_suggest - boolean
+echo "<tr>";
+echo "<td>"._mb("Show spatial suggests").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='wants_spatial_suggest' name='wants_spatial_suggest' ";
+if($wants_spatial_suggest == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
+#allows_survey - boolean
+echo "<tr>";
+echo "<td>"._mb("Allows survey").": </td>";
+echo "<td>";
+echo "<input type='checkbox' id='allows_survey' name='allows_survey' ";
+if($allows_survey == 't'){ echo " checked ";  };
+echo ">";
+echo "</td>";
+echo "</tr>";
+
 #is_active - boolean
 echo "<tr>";
    echo "<td>"._mb("Account active").": </td>";
    echo "<td>";
-   echo "<input type='checkbox' id='is_active' name='is_active' ";	
+   echo "<input type='checkbox' id='is_active' name='is_active' ";
    if($is_active == 't'){ echo " checked ";  };
    echo ">";
    echo "</td>";
@@ -563,7 +731,7 @@ echo "</tr>";
 #create_digest - boolean
 echo "<tr>";
    echo "<td>"._mb("Activate digest authentication for secured services.")."<br>(****"._mb("Personal passwords are not stored secure")."****): </td>";
-		
+
    echo "<td>";
    echo "<input type='checkbox' id='create_digest' name='create_digest' ";
    if($create_digest == 't'){ echo " checked ";  };
@@ -574,7 +742,7 @@ echo "</tr>";
 #preferredGui
 if ($preferredGuiCategory != false && count($user->getApplicationsByPermission(false, $preferredGuiCategory)) > 0) {
 echo "<tr>";
-   echo "<td>"._mb("Preferred GUI")." (".implode(",", $user->getApplicationsByPermission(false, $preferredGuiCategory))."): </td>";
+   echo "<td>"._mb("Preferred GUI")." (".implode(", ", $user->getApplicationsByPermission(false, $preferredGuiCategory))."): </td>";
    echo "<td>";
       echo "<input type='text' size='30' name='fkey_preferred_gui_id' value='".htmlentities($fkey_preferred_gui_id, ENT_QUOTES, "UTF-8")."'>";
    echo "</td>";
@@ -645,10 +813,17 @@ echo "<tr>";
            }
         }
    echo "</td>";
-echo "</tr>";    
+echo "</tr>";
 ?>
 <input type='hidden' name='action' value=''>
 </table>
+
+<?php
+
+spatial_security\show_input($spatialSecurity, "mb_user");
+
+?>
+
 </form>
 <script type="text/javascript">
 <!--

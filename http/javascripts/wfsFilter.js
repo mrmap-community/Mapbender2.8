@@ -256,6 +256,8 @@ function WfsFilter () {
 		var str = "";
 		str += "<ogc:Filter xmlns:ogc='http://www.opengis.net/ogc' ";
 		str += "xmlns:gml='http://www.opengis.net/gml'>";
+		//remove empty array entries from condition string
+		conditionArray = conditionArray.filter(Boolean);
 		if (conditionArray.length > 1) {
 			str += "<And>" + conditionArray.join("") + "</And>";	
 		}

@@ -4,7 +4,7 @@
 //20648
 // $Id: mod_inspireDownloadFeed.php 235
 // http://www.mapbender.org/index.php/
-// Copyright (C) 2002 CCGIS 
+// Copyright (C) 2002 CCGIS
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-//Script to generate a feed for a predefined dataset download as it is demanded in the INSPIRE Download Service guidance 3.0 from 04.05.2012. It will be generated from given wms layers dataurl attributs which are registrated in the mapbender database. The other possibility is, that the wms are used to built the download links. Therefore the wms must support the generation of image/tiff output format with geotiff tags. Many wms do this. These wms must also support a minimum of 1000x1000 pixel for a single getmap request. It works as a webservice. The requested id is the mapbender layers serial id. 
+//Script to generate a feed for a predefined dataset download as it is demanded in the INSPIRE Download Service guidance 3.0 from 04.05.2012. It will be generated from given wms layers dataurl attributs which are registrated in the mapbender database. The other possibility is, that the wms are used to built the download links. Therefore the wms must support the generation of image/tiff output format with geotiff tags. Many wms do this. These wms must also support a minimum of 1000x1000 pixel for a single getmap request. It works as a webservice. The requested id is the mapbender layers serial id.
 
 require_once(dirname(__FILE__) . "/../../core/globalSettings.php");
 require_once(dirname(__FILE__) . "/../classes/class_connector.php");
@@ -119,10 +119,10 @@ if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 	//validate integer
 	$testMatch = $_REQUEST["ID"];
-	$pattern = '/^[\d]*$/';		
- 	if (!preg_match($pattern,$testMatch)){ 
-		echo 'Id: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		die(); 		
+	$pattern = '/^[\d]*$/';
+ 	if (!preg_match($pattern,$testMatch)){
+		echo 'Id: <b>'.$testMatch.'</b> is not valid.<br/>';
+		die();
  	}
 	$recordId = $testMatch;
 	$testMatch = NULL;
@@ -297,7 +297,7 @@ $feedDoc->formatOutput = true;
 	//TODO: the strings come from json and so they are urlencoded! maybe we have to decode them to find the commata
 	$queryListComma = urldecode($queryList);
 	$queryListC = ",".$queryListComma.",";
-	$pattern = ','.$string.',';	
+	$pattern = ','.$string.',';
  	if (!preg_match($pattern, $queryListC)){
 		//append the new element
 		$queryListNew = $queryListC.$string;
@@ -312,7 +312,7 @@ $feedDoc->formatOutput = true;
 	}
 }*/
 
-// function to delete one GET parameter totally from a query url 
+// function to delete one GET parameter totally from a query url
 function delTotalFromQuery($paramName, $queryString)
 {
     $queryString = "&" . $queryString;
@@ -585,14 +585,14 @@ function readInfoFromDatabase($recordId, $generateFrom)
     switch ($generateFrom) {
         case "dataurl":
             $sql = <<<SQL
-select *, 'dataurl' as origin from (select * from (select * from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name,layer_relation.inspire_download, layer_relation.fkey_wms_id, layer_relation.layer_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as layer_metadata inner join ows_relation_data on ows_relation_data.fkey_layer_id = layer_metadata.layer_id) as layer_relation_data inner join datalink on layer_relation_data.fkey_datalink_id = datalink.datalink_id) as layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326';  
+select *, 'dataurl' as origin from (select * from (select * from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name,layer_relation.inspire_download, layer_relation.fkey_wms_id, layer_relation.layer_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as layer_metadata inner join ows_relation_data on ows_relation_data.fkey_layer_id = layer_metadata.layer_id) as layer_relation_data inner join datalink on layer_relation_data.fkey_datalink_id = datalink.datalink_id) as layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326';
 SQL;
             $generateFromDataurl = true;
             break;
 
         case "wmslayer":
             $sql = <<<SQL
-select *, 'wmslayer' as origin from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name, layer_relation.fkey_wms_id, layer_relation.layer_id,layer_relation.inspire_download, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326' and layer_wms.layer_id = $2;  
+select *, 'wmslayer' as origin from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name, layer_relation.fkey_wms_id, layer_relation.layer_id,layer_relation.inspire_download, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326' and layer_wms.layer_id = $2;
 SQL;
             break;
 
@@ -609,14 +609,14 @@ SQL;
         case "all":
             $sql = array();
             $sql[0] = <<<SQL
-select *, 'dataurl' as origin from (select * from (select * from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name, layer_relation.fkey_wms_id, layer_relation.layer_id,layer_relation.inspire_download, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, box2d(mb_metadata.the_geom) as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as layer_metadata inner join ows_relation_data on ows_relation_data.fkey_layer_id = layer_metadata.layer_id) as layer_relation_data inner join datalink on layer_relation_data.fkey_datalink_id = datalink.datalink_id) as layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326'				
+select *, 'dataurl' as origin from (select * from (select * from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name, layer_relation.fkey_wms_id, layer_relation.layer_id,layer_relation.inspire_download, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, box2d(mb_metadata.the_geom) as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as layer_metadata inner join ows_relation_data on ows_relation_data.fkey_layer_id = layer_metadata.layer_id) as layer_relation_data inner join datalink on layer_relation_data.fkey_datalink_id = datalink.datalink_id) as layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326'
 SQL;
             $sql[1] = <<<SQL
-select *, 'wmslayer' as origin from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name,layer_relation.inspire_download, layer_relation.fkey_wms_id, layer_relation.layer_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, box2d(mb_metadata.the_geom) as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326';		
-		
+select *, 'wmslayer' as origin from (select * from (select mb_metadata.metadata_id, layer_relation.layer_name,layer_relation.inspire_download, layer_relation.fkey_wms_id, layer_relation.layer_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, box2d(mb_metadata.the_geom) as metadata_bbox, mb_metadata.bounding_geom as polygon, layer_relation.layer_title, layer_relation.layer_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.lastchanged as md_timestamp   from (select * from layer inner join ows_relation_metadata on layer.layer_id = ows_relation_metadata.fkey_layer_id) as layer_relation inner join mb_metadata on layer_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) layer_data inner join wms on layer_data.fkey_wms_id = wms.wms_id)  as layer_wms, layer_epsg where layer_wms.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326';
+
 SQL;
             $sql[2] = <<<SQL
-select *, 'wfs' as origin from (select mb_metadata.metadata_id, featuretype_relation.featuretype_name, featuretype_relation.fkey_wfs_id, featuretype_relation.inspire_download, featuretype_relation.featuretype_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, box2d(mb_metadata.the_geom) as metadata_bbox, mb_metadata.bounding_geom as polygon, featuretype_relation.featuretype_title, featuretype_relation.featuretype_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, featuretype_relation.featuretype_latlon_bbox as latlonbbox, featuretype_relation.featuretype_srs, mb_metadata.lastchanged as md_timestamp from (select * from wfs_featuretype inner join ows_relation_metadata on wfs_featuretype.featuretype_id = ows_relation_metadata.fkey_featuretype_id) as featuretype_relation inner join mb_metadata on featuretype_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as featuretype_data inner join wfs on featuretype_data.fkey_wfs_id = wfs.wfs_id;		
+select *, 'wfs' as origin from (select mb_metadata.metadata_id, featuretype_relation.featuretype_name, featuretype_relation.fkey_wfs_id, featuretype_relation.inspire_download, featuretype_relation.featuretype_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, box2d(mb_metadata.the_geom) as metadata_bbox, mb_metadata.bounding_geom as polygon, featuretype_relation.featuretype_title, featuretype_relation.featuretype_abstract, mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, featuretype_relation.featuretype_latlon_bbox as latlonbbox, featuretype_relation.featuretype_srs, mb_metadata.lastchanged as md_timestamp from (select * from wfs_featuretype inner join ows_relation_metadata on wfs_featuretype.featuretype_id = ows_relation_metadata.fkey_featuretype_id) as featuretype_relation inner join mb_metadata on featuretype_relation.fkey_metadata_id = mb_metadata.metadata_id where mb_metadata.uuid = $1) as featuretype_data inner join wfs on featuretype_data.fkey_wfs_id = wfs.wfs_id;
 SQL;
             break;
     }
@@ -785,7 +785,7 @@ SQL;
 // - link to the dataset feed - invoked by layer id as this is done before
 // - summary -  Generated by some infomation: mb_metadata.format, mb_metadata.ref_sytem, ...., datalink.datalink_format
 // - updated - timestamp of wms as done before
-// - 
+// -
 
 function generateFeed($feedDoc, $recordId, $generateFrom)
 {
@@ -830,16 +830,16 @@ function generateFeed($feedDoc, $recordId, $generateFrom)
                     $typeParameterName = "typeNames";
                     break;
 				default:
-                    $typeParameterName = "typeName";
-                    break;
-            }
-            break;
-    }
-    //$e = new mb_exception("mod_inspireDownloadFeed.php: cachedVariableTimestamp: ".date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)));
-    if ($cache->isActive && $cache->cachedVariableExists($atomFeedKey) && (date("Y-m-d H:i:s", $cache->cachedVariableCreationTime($atomFeedKey)) > $maxDate)) {
-        $e = new mb_exception("class_map.php: read " . $atomFeedKey . " from " . $cache->cacheType . " cache!");
-        return $cache->cachedVariableFetch($atomFeedKey);
-    } else {
+					$typeParameterName = "typeName";
+					break;
+			}
+		break;
+	}
+	//$e = new mb_exception("mod_inspireDownloadFeed.php: cachedVariableTimestamp: ".date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)));
+	if ($cache->isActive && $cache->cachedVariableExists($atomFeedKey) && (date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)) > $maxDate)) {
+		#$e = new mb_exception("class_map.php: read ".$atomFeedKey." from ".$cache->cacheType." cache!");
+		return $cache->cachedVariableFetch($atomFeedKey);
+	} else {
 //*****************************************************************
         //compare highestDate with timestamp of cache
 
@@ -1882,8 +1882,8 @@ function transformBbox($oldBbox, $fromCRS, $toCRS, $metadataUuid = false, $polyg
     //Transform the given BBOX to $toCRS
     $arrayBbox = explode(',', $oldBbox);
     if ($metadataUuid != false && $polygonFilter != false) {
-        $sql = "select asewkt(transform(GeometryFromText ( 'LINESTRING ( " . $arrayBbox[0] . " " . $arrayBbox[1] . "," . $arrayBbox[2] . " " . $arrayBbox[3] . " )', $fromCRS )," . intval($toCRS) . ")) as bbox, 
-CASE 
+        $sql = "select asewkt(transform(GeometryFromText ( 'LINESTRING ( " . $arrayBbox[0] . " " . $arrayBbox[1] . "," . $arrayBbox[2] . " " . $arrayBbox[3] . " )', $fromCRS )," . intval($toCRS) . ")) as bbox,
+CASE
 WHEN st_intersects((select geography(bounding_geom) from mb_metadata where uuid = '" . $metadataUuid . "'),transform(GeometryFromText ( 'POLYGON (( " . $arrayBbox[0] . " " . $arrayBbox[1] . "," . $arrayBbox[2] . " " . $arrayBbox[1] . "," . $arrayBbox[2] . " " . $arrayBbox[3] . "," . $arrayBbox[0] . " " . $arrayBbox[3] . "," . $arrayBbox[0] . " " . $arrayBbox[1] . "))', $fromCRS )," . intval($toCRS) . " )) = true THEN true
 ELSE false
 END as inside;";
@@ -2132,4 +2132,3 @@ if ($openSearch) {
 }
 
 ?>
-

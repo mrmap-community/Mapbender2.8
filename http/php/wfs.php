@@ -403,13 +403,13 @@ while ($row_metadata = db_fetch_array($res_metadata)) {
 }
 $k = 0;
 if (is_array($metadataUrl) && count($metadataUrl) > 0) {
-$e = new mb_exception(gettype($metadataUrl)." - count - ".count($metadataUrl)." url[0]: ".$metadataUrl[0]);
-$e = new mb_exception($version);
-$e = new mb_exception($service);
+#$e = new mb_exception(gettype($metadataUrl)." - count - ".count($metadataUrl)." url[0]: ".$metadataUrl[0]);
+#$e = new mb_exception($version);
+#$e = new mb_exception($service);
 	$metadataUrlObject = new OwsMetadataUrl();
 	//$e = new mb_exception('version: '.$version);
 	$metadata_part = $metadataUrlObject->getOwsRepresentation($metadataUrl, $linkType, $format, 'wfs', $version);
-$e = new mb_exception($metadata_part);
+#$e = new mb_exception($metadata_part);
 }
 
 //insert metadata url elements into capabilities - either delete existing entries and recreate them or put them after ows:WGS84BoundingBox (WFS 2.0), wfs .....

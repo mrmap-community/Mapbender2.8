@@ -28,6 +28,15 @@ require_once dirname(__FILE__) . "/class_iso19139.php";
 class WfsToDb {
 	//check if metadata should be overwritten completly by caps or not. Default to overwrite all (keywords, categories, ...)
 	var $overwrite = true;
+	var $urlsToExclude = array();
+
+	function __construct() {
+		$this->urlsToExclude = $urlsToExclude;
+		if (is_file(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.conf")) {
+			require_once(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.conf");
+			$this->urlsToExclude = $urlsToExclude;
+		}
+	}
 	/**
 	 * Inserts a new or updates an existing WFS. Replaces the old wfs2db function.
 	 * 
@@ -671,8 +680,22 @@ if (!$updateMetadataOnly) {
 		$mbMetadata->type = $metadataUrl->type;
 		$mbMetadata->origin = "capabilities";
 		$mbMetadata->owner = $mdOwner;
-		
-		$result = $mbMetadata->insertToDB("featuretype",$aWfsFeatureTypeId);	
+		//following is not a good idea, but the call to $this->... makes problems?
+		if (is_file(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.json")) {
+			$configObject = json_decode(file_get_contents("../../conf/excludeHarvestMetadataUrls.json"));
+			//$e = new mb_exception("classes/class_WfsToDb.php: urlstoexclude from conf: ".json_encode($configObject->urls));
+			$urlsToExclude = $configObject->urls;
+		} else {
+			$urlsToExclude = array();
+		}
+		$harvestMetadataUrl = true;
+		foreach($urlsToExclude as $urlToExclude) {
+			if (strpos($mbMetadata->href, $urlToExclude) === 0) {
+				$harvestMetadataUrl = false;
+				break;
+			}
+		}
+		$result = $mbMetadata->insertToDB("featuretype",$aWfsFeatureTypeId, false, false, $harvestMetadataUrl);	
 
 		if ($result['value'] == false){
 			$e = new mb_exception("Problem while storing metadata url from wfs to db");

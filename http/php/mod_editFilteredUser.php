@@ -19,6 +19,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 $e_id="editFilteredUser";
 require_once(dirname(__FILE__)."/../php/mb_validatePermission.php");
+require_once(dirname(__FILE__)."/../../lib/spatial_security.php");
+
 /*  
  * @security_patch irv done
  */ 
@@ -53,6 +55,13 @@ $action = $_POST["action"];
 $is_active = $_POST["is_active"];
 $create_digest = $_POST["create_digest"];
 $fkey_preferred_gui_id = $_POST["fkey_preferred_gui_id"];
+$textsize = $_POST["textsize"];
+$wants_newsletter = $_POST["wants_newsletter"];
+$wants_glossar = $_POST["wants_glossar"];
+$wants_spatial_suggest = $_POST["wants_spatial_suggest"];
+$allows_survey = $_POST["allows_survey"];
+$spatialSecurity = spatial_security\read_post();
+
 require_once(dirname(__FILE__)."/../classes/class_user.php");
 $myUser = true;
 include "../../lib/editUser.php";

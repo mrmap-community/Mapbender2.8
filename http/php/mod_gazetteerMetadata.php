@@ -237,22 +237,6 @@ function openKeywordPopup () {
 	}).parent().css({position:"absolute"});
 }
 
-function openMetadataPopup (layerId) {
-	if(parent.$('.metadataIframe').size() > 0) {
-		parent.$('.metadataIframe').dialog('destroy');
-	}
-	var $metadataPopup = parent.$('<div class="metadataIframe"><iframe style="width:100%;height:98%;" src="../php/mod_layerMetadata.php?id=' + layerId + '"></iframe></div>');
-	$metadataPopup.dialog({
-		title : "<?php echo _mb("Metadata"); ?>",
-		bgiframe: true,
-		autoOpen: true,
-		modal: false,
-		width: 450,
-		height: 600,
-		pos: [400,100]
-	}).parent().css({position:"absolute"});
-}
-
 function validate(){
 
    if(document.form1.search.value.length < 1){

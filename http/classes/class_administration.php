@@ -24,7 +24,7 @@ require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 $phpversion = phpversion();
 if (strpos($phpversion, "7.") === 0) {
     //use new mailer
-$e = new mb_exception($phpversion);
+//$e = new mb_exception($phpversion);
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/PHPMailer.php");
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/SMTP.php");
     require(dirname(__FILE__) . "/phpmailer-6.0.2/src/Exception.php");
@@ -1322,7 +1322,36 @@ SQL;
    			return false;
    		}
    	}	
-
+   	
+   	function getWMSSpatialSecurity($wms_id){
+   		$sql = "SELECT wms_spatial_security FROM wms WHERE wms_id = $1";
+   		$v = array($wms_id);
+   		$t = array("i");
+   		$res = db_prep_query($sql,$v,$t);
+   		if($row = db_fetch_array($res)){
+   			switch ($row["wms_spatial_security"]) {
+   				case "t":
+   					return 1;
+   					break;
+   				case "f":
+   					return 0;
+   					break;
+   				default:
+   					return 0;
+   					break;
+   			}
+   		} else {
+   			return false;
+   		}
+   	}
+   	
+   	function setWMSSpatialSecurity($wms_id, $status){
+   		$sql = "UPDATE wms SET wms_spatial_security = $1 WHERE wms_id = $2 ";
+   		$t = array("s","i");
+   		$v = array($status,$wms_id);
+   		$res = db_prep_query($sql,$v,$t);
+   	}
+   	
 	/*
 	 * set the log tag of the wms
 	 * 
@@ -2028,6 +2057,53 @@ SQL;
 		}
 	}
 
+	function delFromStorage($filename, $cacheType) {
+		switch ($cacheType) {
+			case "memcache":
+				$filename = md5($filename);
+				$memcache_obj = new Memcache;
+				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
+					$memcache_obj->connect(MEMCACHED_IP, MEMCACHED_PORT);
+				} else {
+					//use standard options
+					$memcache_obj->connect('localhost', 11211);
+				}
+				$result = $memcache_obj->delete($filename);
+				$memcache_obj->close();
+				return $result;
+				break;
+			case "memcached":
+				$filename = md5($filename);
+				$memcached_obj = new Memcached;
+				if (defined("MEMCACHED_IP") && MEMCACHED_IP != "" && defined("MEMCACHED_PORT") && MEMCACHED_PORT != "") {
+					$memcached_obj->addServer(MEMCACHED_IP, MEMCACHED_PORT);
+				} else {
+					//use standard options
+					$memcached_obj->addServer('localhost', 11211);
+				}
+				new mb_notice("delete content from memcacheD storage");
+				$result = $memcached_obj->delete($filename);
+				//$memcached_obj->quit();
+				return $result;
+				break;
+			case "cache":
+				$filename = md5($filename);
+				$cache = new Cache();
+				if ($cache->isActive && $cache->cachedVariableExists($filename)) {
+					$result = $cache->cachedVariableDelete($filename);
+					return $result;
+				} else {
+					return false;
+				}
+				break;
+			case "file":
+				return unlink($filename);
+				break;
+			default:
+				return unlink($filename);
+				break;
+		}
+	}
 	function putToStorage($filename, $content, $cacheType, $maxAge) {
 		switch ($cacheType) {
 			case "memcache":

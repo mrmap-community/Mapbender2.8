@@ -948,7 +948,7 @@ if (!isset($wfsid) || $wfsid == "") {
 	$returnObject->success = false;
     	$returnObject->message = "Wfs object could not be created from db!";
     } else {
-$e = new mb_exception($wfs->providerName." - ".$wfs->summary." - ".$wfs->electronicMailAddress." - ".$wfs->fees);
+#$e = new mb_exception($wfs->providerName." - ".$wfs->summary." - ".$wfs->electronicMailAddress." - ".$wfs->fees);
 	//repair some missing wfs data
 	if (!isset($wfs->summary) || $wfs->summary == null || $wfs->summary == "") {
 		$wfs->summary = "WFS description is missing!";

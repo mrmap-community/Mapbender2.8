@@ -16,6 +16,7 @@ require_once dirname(__FILE__) . "/class_mb_exception.php";
 require_once dirname(__FILE__) . "/class_iso19139.php";
 require_once(dirname(__FILE__) . "/class_propagateMetadata.php");
 require_once dirname(__FILE__) . "/../classes/class_universal_wms_factory.php";
+
 class wms {
 	var $lastURL;
 	var $wms_id;
@@ -86,6 +87,7 @@ class wms {
        
 	var $geoRss;
 	var $geoRssFactory; // = new GeoRssFactory();
+	var $urlsToExclude = array(); //urls to exclude from MetadataURL harvest
 	const GEORSS = true;
 	// append items to the feed when a new WMS is inserted?
 	const GEORSS_APPEND_ON_INSERT = true;
@@ -100,10 +102,14 @@ class wms {
     	    		$this->twitterNews = true;
     	    		require_once dirname(__FILE__) . "/class_twitter.php";
     		}
-    	
     		if(defined("GEO_RSS_FILE") && GEO_RSS_FILE != "") {
         		//GeoRSS feed
     	    		$this->setGeoRss = true;
+    		}
+    		if (is_file(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.json")) {
+    			//require_once(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.conf");
+    			$configObject = json_decode(file_get_contents("../../conf/excludeHarvestMetadataUrls.json"));
+    			$this->urlsToExclude = $configObject->urls;
     		}
 	} 
 
@@ -219,11 +225,6 @@ class wms {
         }
 
 	public static function getWmsMetadataUrl ($wmsId) {
-		#return preg_replace(
-		#	"/(.*)frames\/login.php/", 
-		#	"$1php/mod_layerMetadata.php?id=", 
-		#	LOGIN
-		#) . $wmsId;
 		//MAPBENDER_PATH maybe something like http://www.geoportal.rlp.de/mapbender !
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
 		    return str_replace("mapbender","",MAPBENDER_PATH)."wms/".$wmsId;
@@ -234,11 +235,6 @@ class wms {
 		#return "http://www.geoportal.rlp.de/wms/".$wmsId;
 	}
 	public static function getLayerMetadataUrl ($layerId) {
-		#return preg_replace(
-		#	"/(.*)frames\/login.php/", 
-		#	"$1php/mod_layerMetadata.php?id=", 
-		#	LOGIN
-		#) . $wmsId;		
 		//MAPBENDER_PATH maybe something like http://www.geoportal.rlp.de/mapbender !
 		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
 		    return str_replace("mapbender","",MAPBENDER_PATH)."layer/".$layerId;
@@ -2910,7 +2906,15 @@ SQL;
 			} else {
 				$bequeathContact = false;
 			}
-                        if ($this->harvestCoupledDatasetMetadata == true) {
+			$harvestMetadataUrl = true;
+			foreach($this->urlsToExclude as $urlToExclude) {
+				if (strpos($mbMetadata->href, $urlToExclude) === 0) {
+					$harvestMetadataUrl = false;
+					$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
+					break;
+				}
+			}
+            if ($this->harvestCoupledDatasetMetadata == true && $harvestMetadataUrl == true) {
 				try {
 					$result = $mbMetadata->insertToDB("layer",$this->objLayer[$i]->db_id, $bequeathContact, $bequeathLicence);
 					if ($result['value'] == false){
