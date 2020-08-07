@@ -202,6 +202,16 @@ class mbTemplatePdf extends mbPdf
             if (!$url->inBbox) {
                 continue;
             }
+
+            $featureInfoConnector = new connector();
+            $featureInfoConnector->set("timeOut", "10");
+            $featureInfoConnector->load($url->request);
+            $featureInfoResult = $featureInfoConnector->file;
+
+            if (!$featureInfoResult) {
+                continue;
+            }
+
             $this->objPdf->addPage();
             $this->objPdf->useTemplate($tplidx);
 
@@ -279,39 +289,28 @@ class mbTemplatePdf extends mbPdf
 
             require_once(dirname(__FILE__) . "/../../extensions/dompdf/autoload.inc.php");
 
-            $featureInfoConnector = new connector();
-            $featureInfoConnector->set("timeOut", "10");
-            $featureInfoConnector->load($url->request);
-            $result = $featureInfoConnector->file;
+            $dompdf = new Dompdf\Dompdf();
 
-            if ($errors) {
-                new mb_exception("Error getting feature info request: " . $errors);
+            $format = strtoupper($this->confPdf->format);
+            $orientationMap = array(
+                "P" => "portrait",
+                "L" => "landscape"
+            );
+            $orientation = $orientationMap[$this->confPdf->orientation];
+
+            $dompdf->setPaper($format, $orientation);
+
+            if (preg_match("/[?&]INFO_FORMAT=text\/plain/i", $url->request)) {
+                $featureInfoResult = nl2br(wordwrap($featureInfoResult, 75, "\n", true));
             }
 
-            if ($result) {
-                $dompdf = new Dompdf\Dompdf();
+            $dompdf->loadHtml("$featureInfoResult");
+            $dompdf->render();
 
-                $format = strtoupper($this->confPdf->format);
-                $orientationMap = array(
-                    "P" => "portrait",
-                    "L" => "landscape"
-                );
-                $orientation = $orientationMap[$this->confPdf->orientation];
-
-                $dompdf->setPaper($format, $orientation);
-
-                if (preg_match("/[?&]INFO_FORMAT=text\/plain/i", $url->request)) {
-                    $result = nl2br(wordwrap($result, 75, "\n", true));
-                }
-
-                $dompdf->loadHtml("$result");
-                $dompdf->render();
-
-                $pageNo = $this->objPdf->PageNo();
-                $fileName = TMPDIR . "/" . $this->baseOutputFileName() . "-$pageNo-fi.pdf";
-                file_put_contents($fileName, $dompdf->output());
-                $this->insertPages[$pageNo] = $fileName;
-            }
+            $pageNo = $this->objPdf->PageNo();
+            $fileName = TMPDIR . "/" . $this->baseOutputFileName() . "-$pageNo-fi.pdf";
+            file_put_contents($fileName, $dompdf->output());
+            $this->insertPages[$pageNo] = $fileName;
         }
     }
 }
