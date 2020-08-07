@@ -962,17 +962,19 @@ var PrintPDF = function (options) {
     var ind = getMapObjIndexByName(myTarget);
     var mapObj = mb_mapObj[ind];
 
-    for (var i = 0; i < mapObj.wms.length; i++) {
-      var currentWms = mapObj.wms[i];
-      if (currentWms.gui_wms_visible > 0 && currentWms.mapURL && currentWms.mapURL !== 'false') {
-        $backgroundSelect.append(new Option(currentWms.wms_title, i.toString(), false, i === 0));
-      }
-    }
+    var visCount = 0;
 
-    printInfo.backgroundWMS = $backgroundSelect.val().map(function(v) { return parseInt(v) });
+    mapObj.wms.forEach(function (wms) {
+      if (wms.gui_wms_visible > 0 && wms.mapURL && wms.mapURL !== 'false') {
+        $backgroundSelect.append(new Option(wms.wms_title, visCount.toString(), false, visCount === 0));
+        visCount++;
+      }
+    });
+
+    printInfo.backgroundWMS = $backgroundSelect.val().map(parseInt);
 
     $backgroundSelect.bind('change', function () {
-      printInfo.backgroundWMS = $backgroundSelect.val().map(function(v) { return parseInt(v) });
+      printInfo.backgroundWMS = $backgroundSelect.val().map(parseInt);
     });
 
     $backgroundDiv.append("<h3>Hintergrundkarte:</h3>").append($backgroundSelect);
