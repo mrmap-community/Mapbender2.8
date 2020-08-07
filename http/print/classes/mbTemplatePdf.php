@@ -208,7 +208,7 @@ class mbTemplatePdf extends mbPdf
             $featureInfoConnector->load($url->request);
             $featureInfoResult = $featureInfoConnector->file;
 
-            if (!$featureInfoResult) {
+            if (!trim($featureInfoResult)) {
                 continue;
             }
 
