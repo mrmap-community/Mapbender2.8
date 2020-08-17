@@ -208,7 +208,7 @@ class mbTemplatePdf extends mbPdf
             $featureInfoConnector->load($url->request);
             $featureInfoResult = $featureInfoConnector->file;
 
-            if (!trim($featureInfoResult)) {
+            if (!trim($featureInfoResult) || preg_match("/<body>\s*<\/body>/i", $featureInfoResult)) {
                 continue;
             }
 
@@ -289,7 +289,9 @@ class mbTemplatePdf extends mbPdf
 
             require_once(dirname(__FILE__) . "/../../extensions/dompdf/autoload.inc.php");
 
-            $dompdf = new Dompdf\Dompdf();
+            $dompdf = new Dompdf\Dompdf(array(
+              "isRemoteEnabled" => true
+            ));
 
             $format = strtoupper($this->confPdf->format);
             $orientationMap = array(
