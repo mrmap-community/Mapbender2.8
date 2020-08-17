@@ -212,6 +212,10 @@ class mbTemplatePdf extends mbPdf
                 continue;
             }
 
+            if (intval($featureInfoConnector->getHttpCode()) >= 400) {
+                continue;
+            }
+
             $this->objPdf->addPage();
             $this->objPdf->useTemplate($tplidx);
 
