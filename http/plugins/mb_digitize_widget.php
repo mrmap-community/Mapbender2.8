@@ -355,6 +355,196 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
             });
         };
 
+      function editCollectionStyles (collectionName, menu) {
+        var classPrefix = icons.preferences.fontPref.prefix,
+          iconList = [];
+
+        $.each(icons.icons, function(i, v) {
+          iconList.push(classPrefix + v.properties.name);
+        });
+
+        editStyleDialog.find('.digitize-style-predefined input[name="marker-symbol"]').fontIconPicker({
+          source: iconList,
+          hasSearch: false,
+          emptyIcon: false
+        });
+
+        return function (featureType) {
+          editStyleDialog.dialog('open');
+
+          var kml = $('#mapframe1').data('kml');
+
+          var features = kml._kmls[collectionName].data.features;
+          var isline = false;
+          var ispoint = false;
+
+          if (featureType === 'Point') {
+            ispoint = true;
+            features = features.filter(function (f) {
+              return f.geometry.type.match(/point/i);
+            });
+            editStyleDialog.find('input[name*="fill"],input[name*="stroke"],.opacity-slider').parent().parent().css('display', 'none');
+            editStyleDialog.find('input[name*="marker"]').parent().parent().css('display', 'table-row');
+            editStyleDialog.find('.digitize-style-predefined,form').css('display', 'block');
+            editStyleDialog.find('.digitize-style-custom').css('display', 'none');
+            editStyleDialog.find('input[value="predefined"]').attr('checked', 'checked');
+          }
+          if (featureType === 'Line') {
+            isline = true;
+            features = features.filter(function (f) {
+              return f.geometry.type.match(/line/i);
+            });
+            editStyleDialog.find('input[name*="fill"],input[name*="marker"],.opacity-slider[data-name="fill-opacity"]').parent().parent().css('display', 'none');
+            editStyleDialog.find('input[name*="stroke"],.opacity-slider[data-name="stroke-opacity"]').parent().parent().css('display', 'table-row');
+            editStyleDialog.find('.digitize-style-custom').css('display', 'block');
+            editStyleDialog.find('.digitize-style-predefined,form').css('display', 'none');
+          }
+          if (featureType === 'Polygon') {
+            features = features.filter(function (f) {
+              return f.geometry.type.match(/polygon/i);
+            });
+            editStyleDialog.find('input[name*="fill"],input[name*="stroke"],.opacity-slider').parent().parent().css('display', 'table-row');
+            editStyleDialog.find('input[name*="marker"]').parent().parent().css('display', 'none');
+            editStyleDialog.find('.digitize-style-custom').css('display', 'block');
+            editStyleDialog.find('.digitize-style-predefined,form').css('display', 'none');
+          }
+
+          $('input[value="predefined"]').bind('click', function () {
+            if ($(this).val() == 'predefined') {
+              var cls = $('.digitize-style-predefined .selected-icon i').attr('class');
+              $('.digitize-style-predefined input[name="marker-symbol"]').val(cls);
+              $('.digitize-style-predefined input[name="marker-symbol"]').change();
+            }
+          });
+
+          var preview = editStyleDialog.find('.digitize-preview');
+          preview.html('');
+          preview = preview.get(0);
+          kml.renderPreview(features[0], preview);
+          // $.each(feature.properties, function(k, v) {
+          //   if (editStyleDialog.find('input[name="' + k + '"]').is(':radio')) {
+          //     editStyleDialog.find('input[value="' + k + '"]').attr('checked', 'checked');
+          //     return;
+          //   }
+          //   editStyleDialog.find('input[name="' + k + '"],select[name="' + k + '"]').val(v);
+          //   if (k === 'stroke-opacity') {
+          //     editStyleDialog.find('.opacity-slider[data-name="stroke-opacity"]').slider('value', v * 100);
+          //   }
+          //   if (k === 'fill-opacity') {
+          //     editStyleDialog.find('.opacity-slider[data-name="fill-opacity"]').slider('value', v * 100);
+          //   }
+          //   if (k === 'marker-symbol' && feature.properties['marker-type'] === 'predefined') {
+          //
+          //   }
+          // });
+          editStyleDialog.find('input[name="marker-symbol"]').val('icon--24');
+          var cls = $('.digitize-style-predefined .selected-icon i').attr('class');
+          $('.digitize-style-predefined input[name="marker-symbol"]').val(cls);
+          editStyleDialog.find('input').change();
+
+          editStyleDialog.find('form input').bind('click', function () {
+            editStyleDialog.find('.digitize-style-' + $(this).val()).css('display', 'block').siblings('table').css('display', 'none');
+          });
+
+          editStyleDialog.find('button[name="digitize-reset-style"]').bind('click', function () {
+            if (ispoint) {
+              editStyleDialog.find('form').css('display', 'block');
+              editStyleDialog.find('.digitize-style-custom').css('display', 'none');
+              editStyleDialog.find('.digitize-style-predefined').css('display', 'block');
+              editStyleDialog.find('.digitize-style-custom input[name="marker-symbol"]').val('../img/marker/red.png');
+              editStyleDialog.find('.digitize-style-custom input[name="marker-size"]').val(20);
+              editStyleDialog.find('.digitize-style-predefined input[name="marker-symbol"]').val('icon-airfield-24');
+              $('.digitize-style-predefined .selected-icon i').attr('class', 'icon-airfield-24');
+              editStyleDialog.find('.digitize-style-predefined input[name="marker-size"]').val('medium');
+              editStyleDialog.find('.digitize-style-predefined input[name="marker-color"]').spectrum('set', 'white');
+              editStyleDialog.find('input').change();
+            }
+            editStyleDialog.find('input[name="stroke"]').spectrum('set', '#555555');
+            editStyleDialog.find('.opacity-slider').slider('value', 100);
+            editStyleDialog.find('input[name="stroke-width"]').val(1);
+            editStyleDialog.find('input[name="fill"]').spectrum('set', '#555555');
+          });
+
+          editStyleDialog.find('input,select').bind('change', function () {
+            if (isline && $(this).attr('name').match(/fill/)) {
+              return;
+            }
+
+            if (!ispoint && $(this).attr('name').match(/marker/)) {
+              return;
+            }
+
+            if ($(this).attr('name').match(/marker-type/) && !$(this).get(0).checked) {
+              return;
+            }
+
+            if ($(this).attr('name') === 'stroke-width') {
+              var val = $(this).val();
+              if (isNaN(parseFloat(val)) || !isFinite(val) || $(this).val() <= 0) {
+                $(this).css('background-color', 'red');
+                $(this).val(1);
+              } else {
+                $(this).css('background-color', '');
+              }
+            }
+
+            features.forEach(function (feature) {
+              feature.properties[$(this).attr('name')] = $(this).val();
+            }.bind(this));
+
+            if ($(this).attr('name') === 'marker-symbol' && editStyleDialog.find('input[name="marker-type"]').val() == 'predefined') {
+              var m = $(this).val().match(/^icon-(.+)-24$/);
+              if (m) {
+                features.forEach(function (feature) {
+                  feature.properties['marker-symbol'] = m[1];
+                }.bind(this));
+              }
+            }
+
+            kml.render();
+            var preview = editStyleDialog.find('.digitize-preview').html('').get(0);
+            kml.renderPreview(features[0], preview);
+            preview = editDialog.find('.digitize-preview').html('').get(0);
+            kml.renderPreview(features[0], preview);
+            preview = attributesDialog.find('.digitize-preview').html('').get(0);
+            kml.renderPreview(features[0], preview);
+          });
+          $('.opacity-slider').slider('option', 'change', function () {
+            if (isline && $(this).attr('data-name') === 'fill-opacity') {
+              return;
+            }
+            features.forEach(function (feature) {
+              feature.properties[$(this).attr('data-name')] = $(this).slider('value') / 100;
+            }.bind(this));
+            kml.render();
+            var preview = editStyleDialog.find('.digitize-preview').html('').get(0);
+            kml.renderPreview(features[0], preview);
+          });
+          editStyleDialog.find('.digitize-save').bind('click', function () {
+            editStyleDialog.dialog('close');
+            features.forEach(function (feature) {
+              feature.properties.updated = new Date().toISOString();
+            });
+            kml.refresh(collectionName);
+          });
+          editStyleDialog.find('input[name="fill"]').spectrum({
+            showInput: true,
+            showInitial: true
+          });
+          editStyleDialog.find('input[name="stroke"]').spectrum({
+            showInput: true,
+            showInitial: true
+          });
+          editStyleDialog.find('input[name="marker-color"]').spectrum({
+            showInput: true,
+            showInitial: true
+          });
+          editStyleDialog.find('input').change();
+          if (menu)
+            menu.menu('destroy').remove();
+        }
+      }
+
         var editStyle = function($link, menu) {
             var classPrefix = icons.preferences.fontPref.prefix,
                 iconList = [],
@@ -626,7 +816,44 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                         }
                     });
 
+                    var features = $('#mapframe1').data('kml')._kmls[oldCollectionName].data.features;
+                    var hasPoints = false;
+                    var hasLines = false;
+                    var hasPolygons = false;
+                    features.forEach(function (f) {
+                      hasPoints = hasPoints || f.geometry.type.match(/point/i);
+                      hasLines = hasLines || f.geometry.type.match(/line/i);
+                      hasPolygons = hasPolygons || f.geometry.type.match(/polygon/i);
+                    });
+
+                    var pointAttr = "";
+                    var lineAttr = "";
+                    var polyAttr ="";
+
+                    if (hasPoints) {
+                      pointAttr = " checked";
+                    } else if (hasLines) {
+                      lineAttr = " checked";
+                    } else if (hasPolygons) {
+                      polyAttr = " checked";
+                    }
+
+                    if (!hasPoints) {
+                      pointAttr += " disabled";
+                    }
+                    if (!hasLines) {
+                      lineAttr += " disabled";
+                    }
+                    if (!hasPolygons) {
+                      polyAttr += " disabled";
+                    }
+
+
+
                     var featureCollectionContent = "<div class='digitize-image digitize-style'></div>" +
+                        "<label><input type='radio' name='digitize-style-feature-type' value='Point'" + pointAttr + ">Punkte</label>" +
+                        "<label><input type='radio' name='digitize-style-feature-type' value='Line'" + lineAttr + ">Linien</label>" +
+                        "<label><input type='radio' name='digitize-style-feature-type' value='Polygon'" + polyAttr + ">Polygone</label>" +
                         "<br><br>" +
                         "<div><table id='featureCollTbl'>" +
                         "</table></div>" +
@@ -643,6 +870,13 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                             };
                             $('#featureCollTbl').append("<tr><td>" + index + "</td><td><input  style='width:230px;' type='text' name='" + index + "' value='" + val + "'/></td></tr>");
                         }
+                    });
+                    var editCollectionStylesFunction = editCollectionStyles(oldCollectionName, $('#featureCollAttrDlg'));
+                    featureCollAttrDlg.find('.digitize-style').bind('click', function () {
+                      if (hasPoints || hasLines || hasPolygons) {
+                        var featureType = featureCollAttrDlg.find("input[name=digitize-style-feature-type]:checked").val();
+                        editCollectionStylesFunction(featureType);
+                      }
                     });
                     featureCollAttrDlg.find('.digitize-save').bind('click', function() {
                         featureCollAttrDlg.find('table input').each(function() {
