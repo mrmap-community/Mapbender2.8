@@ -125,6 +125,7 @@
         {
             "tpl" : "Hochformat_A4_FeatureInfo.pdf",
             "featureInfo": true,
+            "titleHTML": "<h4 style=\"color:red;\">FeatureInfo</h4>",
             "useTplPage" : 2,
             "elements" : {
                 "titel": {

@@ -311,6 +311,14 @@ class mbTemplatePdf extends mbPdf
                 $featureInfoResult = nl2br(wordwrap($featureInfoResult, 75, "\n", true));
             }
 
+            if (!empty($pageConf->titleHTML)) {
+                if (preg_match("/<body>/i", $featureInfoResult)) {
+                    $featureInfoResult = preg_replace("/<body>/i", "$0".$pageConf->titleHTML, $featureInfoResult);
+                } else {
+                    $featureInfoResult = $pageConf->titleHTML . $featureInfoResult;
+                }
+            }
+
             $dompdf->loadHtml("$featureInfoResult");
             $dompdf->render();
 
