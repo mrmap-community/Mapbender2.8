@@ -294,7 +294,8 @@ class mbTemplatePdf extends mbPdf
             require_once(dirname(__FILE__) . "/../../extensions/dompdf/autoload.inc.php");
 
             $dompdf = new Dompdf\Dompdf(array(
-              "isRemoteEnabled" => true
+              "isRemoteEnabled" => true,
+              "tempDir" => TMPDIR
             ));
 
             $format = strtoupper($this->confPdf->format);
