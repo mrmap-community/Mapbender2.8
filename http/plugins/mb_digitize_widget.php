@@ -661,7 +661,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                         }
                     });
 
-                    var features = $('#mapframe1').data('kml')._kmls[oldCollectionName].data.features;
+                    var features = $('#mapframe1').data('kml')._kmls[url].data.features;
                     var hasPoints = false;
                     var hasLines = false;
                     var hasPolygons = false;
@@ -719,7 +719,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                     featureCollAttrDlg.find('.digitize-style').bind('click', function () {
                       if (hasPoints || hasLines || hasPolygons) {
                         var featureType = featureCollAttrDlg.find("input[name=digitize-style-feature-type]:checked").val();
-                        editCollectionStyles(featureType, oldCollectionName, null);
+                        editCollectionStyles(featureType, url, null);
                       }
                     });
                     featureCollAttrDlg.find('.digitize-save').bind('click', function() {
