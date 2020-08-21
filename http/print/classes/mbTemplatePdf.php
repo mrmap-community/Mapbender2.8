@@ -295,7 +295,7 @@ class mbTemplatePdf extends mbPdf
 
             $dompdf = new Dompdf\Dompdf(array(
               "isRemoteEnabled" => true,
-              "tempDir" => TMPDIR
+              "tempDir" => ABSOLUTE_TMPDIR
             ));
 
             $format = strtoupper($this->confPdf->format);
