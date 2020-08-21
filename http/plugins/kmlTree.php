@@ -702,6 +702,8 @@ var KmlTree = function(o) {
             			title = 'linestring_'+linestringCount;
                 		linestringCount += 1;
             			break;
+                    case 'GeometryCollection':
+                        continue;
             	}
                 // title = 'Title undefined';
 
