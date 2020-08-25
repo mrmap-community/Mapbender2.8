@@ -570,7 +570,7 @@ var KmlTree = function(o) {
                 if (title == '') {
                     return;
                 } else if (!title.match(/^[a-zA-Z0-9äöüÄÖÜß_\- .\"]+$/)){
-			alert("Allowed characters for title are: A-Z, a-z, 0-9, -, _, äA, öO, üU, ß, \"");
+			alert("Allowed characters for title are: A-Z, a-z, 0-9, -, _, äÄ, öÖ, üÜ, ß, \"");
 			return;
 		}
                 kml.addLayer(title, {
