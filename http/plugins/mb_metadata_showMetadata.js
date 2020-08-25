@@ -130,23 +130,23 @@ var ShowMetadataApi = function() {
 		 <input type="radio" id="app_type_gui_wmc"*/
 				if (obj.fkey_gui_id != null) {
 				    if (obj.fkey_wmc_serial_id != null) {
-					//generate link
-					$("#app_type_gui_wmc").attr('checked', true);
-					that.fillMapviewerPreviewUrl($('#fkey_mapviewer_id').val(), $('#fkey_gui_id').val(), $('#fkey_wmc_serial_id').val());
-					//hide other forms
-					$('#gui_select_fieldset').css('display', 'block');
+				    	//generate link
+						$("#app_type_gui_wmc").attr('checked', true);
+						that.fillMapviewerPreviewUrl($('#fkey_mapviewer_id').val(), $('#fkey_gui_id').val(), $('#fkey_wmc_serial_id').val());
+						//hide other forms
+						$('#gui_select_fieldset').css('display', 'block');
 				        $('#wmc_select_fieldset').css('display', 'block');
-					$('#default_viewer_fieldset').css('display', 'block');
-                                        $('#address_link_fieldset').css('display', 'none');
+				        $('#default_viewer_fieldset').css('display', 'block');
+                        $('#address_link_fieldset').css('display', 'none');
 				        $('#link').removeClass("required");
 				        $('#fkey_wmc_serial_id').addClass("required");
 				        $('#fkey_gui_id').addClass("required");
 				    } else {
-					$("#app_type_gui").attr('checked', true);
-					that.fillMapviewerPreviewUrl($('#fkey_mapviewer_id').val(), $('#fkey_gui_id').val(), false);
-					//hide other forms
-					$('#gui_select_fieldset').css('display', 'block');
-					$('#default_viewer_fieldset').css('display', 'block');
+						$("#app_type_gui").attr('checked', true);
+						that.fillMapviewerPreviewUrl($('#fkey_mapviewer_id').val(), $('#fkey_gui_id').val(), false);
+						//hide other forms
+						$('#gui_select_fieldset').css('display', 'block');
+						$('#default_viewer_fieldset').css('display', 'block');
 				        $('#wmc_select_fieldset').css('display', 'none');
                                         $('#address_link_fieldset').css('display', 'none');
 				        $('#link').removeClass("required");
@@ -156,8 +156,8 @@ var ShowMetadataApi = function() {
 				} else {
 					$("#app_type_external").attr('checked', true);
 					$('#gui_select_fieldset').css('display', 'none');
-				        $('#wmc_select_fieldset').css('display', 'none');
-                                        $('#address_link_fieldset').css('display', 'block');
+				    $('#wmc_select_fieldset').css('display', 'none');
+                    $('#address_link_fieldset').css('display', 'block');
 					//if (obj.link != '') {
 					    $("#link").val(obj.link);
 					//} else {			
@@ -244,6 +244,15 @@ var ShowMetadataApi = function() {
 
             $('#fkey_mb_group_id option[value="'+obj+'"]').attr('selected', 'selected');
         }
+        
+    /*
+     * 
+     */
+    this.selectPredefinedAccessConstraints = function(obj) {
+    	//set value of textfield accessconstraints_md to selected value of inspire constraints dropdown list
+    	alert("mb_metadata_showMetadata.js - selectPredefinedAccessConstraints invoked");
+    }        
+        
 	//Show more information about the licences of the metadata 
 	this.fillLicence = function(obj) {
 		// get licence information from server per termsofuse_id

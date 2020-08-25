@@ -75,7 +75,7 @@ if ($handle = opendir($metadataDir)) {
 		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
                     $e = new mb_exception("test3");*/
 		}
-		if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
+		if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
 			$keywordsArray[$newKeywordsIndex]->keyword = "Local";
 			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
