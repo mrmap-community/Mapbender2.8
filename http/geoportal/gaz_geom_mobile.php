@@ -12,9 +12,11 @@ if ($_REQUEST['resultTarget'] != 'web') {
 	 * we need to handle maxRows, name_startsWith as parameters
 	 * http://api.geonames.org/searchJSON?username=eden_test&maxRows=20&lang=en&continentCode=&adminCode1=&adminCode2=&adminCode3=&tag=&charset=UTF8&name_startsWith=wald&_dc=1585640351799&callback=stcCallback1001
 	 */
-	$maxResults = 15; //set default
-	$maxRows = 15; //set default
-	$outputFormat = 'json'; //set default
+
+	 /* setting default values */
+	$maxResults = 15;
+	$maxRows = 15;
+	$outputFormat = 'json';
 	$searchEPSG = 4326;
 	$bundesland = false;
 	$forcePoint = false;
@@ -33,7 +35,6 @@ if ($_REQUEST['resultTarget'] != 'web') {
  		}
 		$map_height = $testMatch;
 		$testMatch = NULL;
-	
 	}
 
 	if (isset($_REQUEST["map_width"]) & $_REQUEST["map_width"] != "") {
@@ -47,7 +48,6 @@ if ($_REQUEST['resultTarget'] != 'web') {
  		}
 		$map_width = $testMatch;
 		$testMatch = NULL;
-		
 	}
      
 
@@ -63,6 +63,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		$maxResults = $testMatch;
 		$testMatch = NULL;
 	}
+
 	if (isset($_REQUEST["maxRows"]) & $_REQUEST["maxRows"] != "") {
 		//validate integer to 100 - not more
 		$testMatch = $_REQUEST["maxRows"];
@@ -75,6 +76,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		$maxRows = $testMatch;
 		$testMatch = NULL;
 	}
+
 	if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
 		$testMatch = $_REQUEST["outputFormat"];	
  		if (!($testMatch == 'json')){ 
@@ -93,6 +95,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		$bundesland = $testMatch;
 		$testMatch = NULL;
 	}
+
 	if (isset($_REQUEST["forcePoint"]) & $_REQUEST["forcePoint"] != "") {
 		$testMatch = $_REQUEST["forcePoint"];
 		if ($testMatch == 'true'){
@@ -100,6 +103,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		}
 		$testMatch = NULL;
 	}
+
 	if (isset($_REQUEST["forceGeonames"]) & $_REQUEST["forceGeonames"] != "") {
 		$testMatch = $_REQUEST["forceGeonames"];
 		if ($testMatch == 'true'){
@@ -107,6 +111,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		}
 		$testMatch = NULL;
 	}
+
 	if (isset($_REQUEST["searchEPSG"]) & $_REQUEST["searchEPSG"] != "") {
 		$testMatch = $_REQUEST["searchEPSG"];	
  		if (!($testMatch == '31467' or $testMatch == '31466' or $testMatch == '31468' or $testMatch == '25832' or $testMatch == '4326')){ 
@@ -116,17 +121,7 @@ if ($_REQUEST['resultTarget'] != 'web') {
 		$searchEPSG = $testMatch;
 		$testMatch = NULL;
 	}
-	/*if (isset($_REQUEST["callback"]) & $_REQUEST["callback"] != "") {
-		$testMatch = $_REQUEST["callback"];	
-		$pattern = '/^jQuery\d+_\d+$/';
-		if (!preg_match($pattern,$testMatch)){ 
- 		//if (!($testMatch == '31467' or $testMatch == '31468' or $testMatch == '25832' or $testMatch == '4326')){ 
-			echo 'callback: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-			die(); 		
- 		}
-		$callback = $testMatch;
-		$testMatch = NULL;
-	}*/
+
 	//for debugging
 	$callback = $_REQUEST["callback"];
 	//get searchText as a parameter
@@ -140,40 +135,10 @@ if ($_REQUEST['resultTarget'] != 'web') {
 	$searchThruWeb = true;
 }
 
-	//public function getBboxFromPoiScale($point, $scale, $pointEpsg = false, $mapResolutionDpi = MB_RESOLUTION){
-		//$geographicEpsgArray = array("EPSG:4326","EPSG:3857","EPSG:900913");
-		//$mapSetEpsg = $searchEPSG;
-                //$bbox =  array();
-/*
-        	if ($pointEpsg == false) { // point is interpreted as given in epsg of gui/wmc
-		    if (in_array($mapSetEpsg, $geographicEpsgArray)) {
-			$distanceInDeegree = $map_height * 0.00028 * (double)$scale * 360.0 / (2.0 * M_PI * 6378137.0);
-
-			//$e = new mb_exception("distance in deegree: ".$distanceInDeegree. " - scale: ".$scale. " - height: ".$this->getHeight());			
-			$bbox[0] = $point[0] - ($distanceInDeegree / 2);
-		        $bbox[1] = $point[1] - ($distanceInDeegree / 2);
-		        $bbox[2] = $point[0] + ($distanceInDeegree / 2);
-		        $bbox[3] = $point[1] + ($distanceInDeegree / 2);
-		    } else {
-		        $xtenty = $scale / ($mapResolutionDpi * 100) * $map_width; //x width in m
-		        $ytenty = $scale / ($mapResolutionDpi * 100) * $map_height;
-		        $bbox[0] = $point[0] - ($xtenty / 2);
-		        $bbox[1] = $point[1] - ($ytenty / 2);
-		        $bbox[2] = $point[0] + ($xtenty / 2);
-		        $bbox[3] = $point[1] + ($ytenty / 2);
-		    }
-		    return $bbox;
-		}
-*/
-	//}
-
-
-
 $basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung";
 $basUrl2 = "/geosearch?query=";
 $maxFeatures = $maxResult;
 //exchange some letters
-//$e = new mb_exception("searchText1: ".$searchText);
 $searchText= str_replace('ß', 'SS', str_replace('Ü', 'UE', str_replace('Ä', 'AE', str_replace('Ö', 'OE', mb_strtoupper($searchText)))));
 $invokeUrl = $basUrl1.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&count=".$maxResults;
 $searchConnector = new connector($invokeUrl);
@@ -211,26 +176,15 @@ foreach ($gazetteerObject->features as $feature) {
 	$returnObject->geonames[$countGeonames]->maxy = str_replace(',', '.',$feature->bbox[3]);
     if ($forcePoint){
 	    $returnObject->geonames[$countGeonames]->centerPoint = "POINT(".(double)(($feature->bbox[2] + $feature->bbox[0])/2).",".(double)(($feature->bbox[3] + $feature->bbox[1])/2).")";
-    }
+	}
+	
 	//slight adoption of zoombox for addresses - +/- 
-
-
 	if ((($feature->properties->typ == "Strasse") ||($feature->properties->typ == "Haus")) && ($searchEPSG == "4326" || $searchEPSG == "3857")) {
-
             $distanceInDeegree = $map_height * 0.00028 * (double)3300.0 * 360.0 / (2.0 * M_PI * 6378137.0);
-            
-            /*
-	    $returnObject->geonames[$countGeonames]->minx = (string)((double)(($feature->bbox[2] + $feature->bbox[0])/2)   - ($distanceInDeegree / 2));
-	    $returnObject->geonames[$countGeonames]->miny = (string)((double)(($feature->bbox[3] + $feature->bbox[1])/2)   - ($distanceInDeegree / 2));
-	    $returnObject->geonames[$countGeonames]->maxx = (string)((double)(($feature->bbox[2] + $feature->bbox[0])/2)   + ($distanceInDeegree / 2));
-	    $returnObject->geonames[$countGeonames]->maxy = (string)((double)(($feature->bbox[3] + $feature->bbox[1])/2)   + ($distanceInDeegree / 2));
-            */
             $returnObject->geonames[$countGeonames]->minx = (string)($returnObject->geonames[$countGeonames]->minx - ($distanceInDeegree / 2));
 	    $returnObject->geonames[$countGeonames]->miny = (string)($returnObject->geonames[$countGeonames]->miny - ($distanceInDeegree / 2));
 	    $returnObject->geonames[$countGeonames]->maxx = (string)($returnObject->geonames[$countGeonames]->maxx + ($distanceInDeegree / 2));
 	    $returnObject->geonames[$countGeonames]->maxy = (string)($returnObject->geonames[$countGeonames]->maxy + ($distanceInDeegree / 2));
-
-
 	}
         else
 	if ($searchEPSG == "4326" || $searchEPSG == "3857") {
