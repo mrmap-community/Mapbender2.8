@@ -2771,7 +2771,7 @@ switch ($f) {
 				$js3 .= "		}";
 				$js3 .= "		for (var key in feature.properties){";
 				$js3 .= "		    	var value = feature.properties[key];";
-				$js3 .= "				if (feature_schema.properties[key] && feature_schema.properties[key].title != '') {key = feature_schema.properties[key].title;}";
+				$js3 .= "				if (!!feature_schema && feature_schema.properties[key] && feature_schema.properties[key].title != '') {key = feature_schema.properties[key].title;}";
 				$js3 .= "		   	popupContent += \"<br><b>\"+key+\"</b>: \"+value;";
 				$js3 .= "		}";
 				$js3 .= "		layer.bindPopup(popupContent);";
