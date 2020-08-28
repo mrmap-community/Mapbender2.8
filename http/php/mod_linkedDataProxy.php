@@ -2471,7 +2471,12 @@ switch ($f) {
 									$ftAllowedAttributeDescription .= " - Attribute: ".$ftAllowedAttribute." - type: [".$schemaObject->properties->{$ftAllowedAttribute}->type."]";
 								} else {
 									$ftAllowedAttributeTitle = $ftAllowedAttribute;
+									$ftAllowedAttributeDescription = $ftAllowedAttribute;
 								}
+								
+							} else {
+								$ftAllowedAttributeTitle = $ftAllowedAttribute;
+								$ftAllowedAttributeDescription = $ftAllowedAttribute;
 							}
 							$html .= '                    <option title="'.$ftAllowedAttributeDescription.'" value="' . $ftAllowedAttribute . '">' . $ftAllowedAttributeTitle . '</option>' . $newline;
 						}
@@ -2653,7 +2658,8 @@ switch ($f) {
 					$html .= '                        <span class="d-none" itemprop="url">' . $_SERVER ['REQUEST_URI'] . '</span>' . $newline;
 					// foreach attribute
 					foreach ( $feature->properties as $key => $value ) {
-						if (isset ( $schemaObject->properties->{$key}->title )) {
+						
+						if (isset($schemaObject) && isset ( $schemaObject->properties->{$key}->title )) {
 							$attributeTitle = $schemaObject->properties->{$key}->title;
 						} else {
 							$attributeTitle = $key;
