@@ -21,33 +21,33 @@
       "code": "INSPIRE_Directive_Article13_1a",
       "title": {
         "de": "INSPIRE Richtlinie Artikel 13 1a",
-        "en": ""
+        "en": "INSPIRE Directive Article 13 1a"
       },
       "description": {
         "de": "Nachteilige Auswirkungen auf die Vertraulichkeit der Verfahren von Behörden, sofern eine derartige Vertraulichkeit gesetzlich vorgesehen ist",
-        "en": ""
+        "en": "Adversely affect the confidentiality of the proceedings of public authorities, where such confidentiality is provided for by law"
       }
     },
     {
       "code": "INSPIRE_Directive_Article13_1b",
       "title": {
         "de": "INSPIRE Richtlinie Artikel 13 1b",
-        "en": ""
+        "en": "INSPIRE Directive Article 13 1b"
       },
       "description": {
         "de": "Nachteilige Auswirkungen auf internationale Beziehungen, die öffentliche Sicherheit oder die Landesverteidigung",
-        "en": ""
+        "en": "Adversely affect international relations, public security or national defence"
       }
     },
     {
       "code": "INSPIRE_Directive_Article13_1c",
       "title": {
         "de": "INSPIRE Richtlinie Artikel 13 1c",
-        "en": ""
+        "en": "INSPIRE Directive Article 13 1c"
       },
       "description": {
         "de": "Nachteilige Auswirkungen auf laufende Gerichtsverfahren, die Möglichkeiten einer Person, ein faires Verfahren zu erhalten oder die Möglichkeiten einer Behörde, Untersuchungen strafrechtlicher oder disziplinarischer Art durchzuführen",
-        "en": ""
+        "en": "Adversely affect the course of justice, the ability of any person to receive a fair trial or the ability of a public authority to conduct an enquiry of a criminal or disciplinary nature"
       }
     }
     ,
@@ -55,13 +55,60 @@
       "code": "INSPIRE_Directive_Article13_1d",
       "title": {
         "de": "INSPIRE Richtlinie Artikel 13 1d",
-        "en": ""
+        "en": "INSPIRE Directive Article 13 1d"
       },
       "description": {
         "de": "Nachteilige Auswirkungen auf die Vertraulichkeit von Geschäfts- oder Betriebsinformationen, sofern das innerstaatliche Recht oder das Gemeinschaftsrecht diese Vertraulichkeit vorsieht, um berechtigte wirtschaftliche Interessen, einschließlich des öffentlichen Interesses an der Wahrung der statistischen Geheimhaltung und des Steuergeheimnisses, zu schützen",
-        "en": ""
+        "en": "Adversely affect the confidentiality of commercial or industrial information, where such confidentiality is provided for by national or Community law to protect a legitimate economic interest, including the public interest in maintaining statistical confidentiality and tax secrecy"
+      }
+    }
+    ,
+    {
+      "code": "INSPIRE_Directive_Article13_1e",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1e",
+        "en": "INSPIRE Directive Article 13 1e"
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf die Rechte des geistigen Eigentums",
+        "en": "Adversely affect intellectual property rights"
+      }
+    }
+    ,
+    {
+      "code": "INSPIRE_Directive_Article13_1f",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1f",
+        "en": "INSPIRE Directive Article 13 1f"
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf die Vertraulichkeit personenbezogener Daten und/oder Akten über eine natürliche Person, sofern diese der Bekanntgabe dieser Informationen an die Öffentlichkeit nicht zugestimmt hat und sofern eine derartige Vertraulichkeit nach einzelstaatlichem oder gemeinschaftlichem Recht vorgesehen ist",
+        "en": "Adversely affect the confidentiality of personal data and/or files relating to a natural person where that person has not consented to the disclosure of the information to the public, where such confidentiality is provided for by national or Community law"
+      }
+    }
+    ,
+    {
+      "code": "INSPIRE_Directive_Article13_1g",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1g",
+        "en": "INSPIRE Directive Article 13 1g"
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf die Interessen oder den Schutz einer Person, die die angeforderte Information freiwillig zur Verfügung gestellt hat, ohne dazu gesetzlich verpflichtet zu sein oder verpflichtet werden zu können, es sei denn, dass diese Person der Herausgabe der betreffenden Informationen zugestimmt hat",
+        "en": "Adversely affect the interests or protection of any person who supplied the information requested on a voluntary basis without being under, or capable of being put under, a legal obligation to do so, unless that person has consented to the release of the information concerned"
+      }
+    }
+    ,
+    {
+      "code": "INSPIRE_Directive_Article13_1h",
+      "title": {
+        "de": "INSPIRE Richtlinie Artikel 13 1h",
+        "en": "INSPIRE Directive Article 13 1h"
+      },
+      "description": {
+        "de": "Nachteilige Auswirkungen auf den Schutz der Umweltbereiche, auf die sich die Informationen beziehen, wie z. B. die Aufenthaltsorte seltener Tierarten",
+        "en": "Adversely affect the protection of the environment to which such information relates, such as the location of rare species"
       }
     }
   ]
- 
 }
