@@ -44,7 +44,7 @@ class mbOverviewDecorator extends mbTemplatePdfDecorator
         $o_url->set('bbox', $this->pdf->adjustBbox($this->conf, explode(",", $o_url->get('BBOX')), $o_url->get('srs')));
         $overview_url = $o_url->url;
 
-        $urls = $this->getValues("map_url");
+        $urls = $this->getValue("map_url");
         $array_urls = explode("___", $urls);
         //problem with false in some map_urls see http/plugins/mb_metadata_wmcPreview.php
         //exchange array_urls with array_urls without false entries - it depends on the scale hints - if not visible the map_url is false!
