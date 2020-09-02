@@ -1186,7 +1186,8 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     global $reqParams;
     $urlsToChange = array();
     switch ($reqParams['version']) {
-	case "2.0.0":
+    case "2.0.0":
+        $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
 	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
 	    foreach($operations as $operation) {
 		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
@@ -1197,8 +1198,9 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
 				"xlink" => "http://www.w3.org/1999/xlink"
 	    );
 		break;
-	case "2.0.2":
-	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
+    case "2.0.2":
+        $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
+        $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
 	    foreach($operations as $operation) {
 		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
 		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
@@ -1208,9 +1210,11 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
 				"xlink" => "http://www.w3.org/1999/xlink"
 	    );
 		break;
-	case "1.1.0":
+    case "1.1.0":
+        $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
 	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "GetGmlObject", "Transaction");
 	    foreach($operations as $operation) {
+            
 		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
 		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
 	    }	    
@@ -1219,7 +1223,8 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
 				"xlink" => "http://www.w3.org/1999/xlink"
 	    );
 		break;
-	case "1.0.0":
+    case "1.0.0":
+        $urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Service/wfs:OnlineResource/text()';
 	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction");
 	    foreach($operations as $operation) {
 		$urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Capability/wfs:Request/wfs:'.$operation.'/wfs:DCPType/wfs:HTTP/wfs:Get/@onlineResource';
