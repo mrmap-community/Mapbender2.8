@@ -33,18 +33,17 @@ $authType = 'digest';
 //example {"wfs_id":"40","REQUEST":"GetFeature","typename":"ave:Flurstueck","VERSION":"1.1.0","SERVICE":"WFS","maxFeatures":"1"}
 
 if (isset($_REQUEST["forceBasicAuth"]) && $_REQUEST["forceBasicAuth"] != "") {
-	$testMatch = $_REQUEST["forceBasicAuth"];	
- 	if (!($testMatch == 'true')){ 
-		echo 'Parameter <b>forceBasicAuth</b> is not valid (true).<br/>'; 
-		die(); 		
- 	} else {
-		$authType = 'basic';
-	}
-	$testMatch = NULL;
+    $testMatch = $_REQUEST["forceBasicAuth"];
+    if (!($testMatch == 'true')) {
+        echo 'Parameter <b>forceBasicAuth</b> is not valid (true).<br/>';
+        die();
+    } else {
+        $authType = 'basic';
+    }
+    $testMatch = NULL;
 }
 
-if (is_file(dirname(__FILE__) . "/../../conf/excludeproxyurls.conf"))
-{
+if (is_file(dirname(__FILE__) . "/../../conf/excludeproxyurls.conf")) {
     require_once(dirname(__FILE__) . "/../../conf/excludeproxyurls.conf");
 }
 //database connection
@@ -64,44 +63,44 @@ $wfsId = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $e = new mb_notice("http_auth/http/index.php: REQUEST METHOD: POST");
 } else {
-    $e = new mb_notice("http_auth/http/index.php: REQUEST METHOD: ".$_SERVER['REQUEST_METHOD']);
+    $e = new mb_notice("http_auth/http/index.php: REQUEST METHOD: " . $_SERVER['REQUEST_METHOD']);
 }
 //test for existing post data
 $postData = file_get_contents("php://input");
 //debug!
 //$e = new mb_exception("http_auth/http/index.php: postdata: ".$postData);
 if (isset($postData) && $postData !== '') {
-	$e = new mb_notice("http_auth/http/index.php: postdata: ".$postData);
+    $e = new mb_notice("http_auth/http/index.php: postdata: " . $postData);
 } else {
-	$e = new mb_notice("http_auth/http/index.php: postdata (file content) empty!");
-	$postData = false;
+    $e = new mb_notice("http_auth/http/index.php: postdata (file content) empty!");
+    $postData = false;
 }
 
 if (isset($_REQUEST["layer_id"]) & $_REQUEST["layer_id"] != "") {
-        //validate integer
-        $testMatch = $_REQUEST["layer_id"];
-        //give max 99 entries - more will be to slow
-        $pattern = '/^[0-9]*$/';  
-        if (!preg_match($pattern,$testMatch)){
-             	//echo 'userId: <b>'.$testMatch.'</b> is not valid.<br/>';
-                echo 'Parameter <b>layer_id</b> is not valid (integer).<br/>';
-                die();
-        }
-        $layerId = $testMatch;
-        $testMatch = NULL;
+    //validate integer
+    $testMatch = $_REQUEST["layer_id"];
+    //give max 99 entries - more will be to slow
+    $pattern = '/^[0-9]*$/';
+    if (!preg_match($pattern, $testMatch)) {
+        //echo 'userId: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo 'Parameter <b>layer_id</b> is not valid (integer).<br/>';
+        die();
+    }
+    $layerId = $testMatch;
+    $testMatch = NULL;
 }
 if (isset($_REQUEST["wfs_id"]) & $_REQUEST["wfs_id"] != "") {
-        //validate integer
-        $testMatch = $_REQUEST["wfs_id"];
-        //give max 99 entries - more will be to slow
-        $pattern = '/^[0-9]*$/';  
-        if (!preg_match($pattern,$testMatch)){
-             	//echo 'userId: <b>'.$testMatch.'</b> is not valid.<br/>';
-                echo 'Parameter <b>wfs_id</b> is not valid (integer).<br/>';
-                die();
-        }
-        $wfsId = $testMatch;
-        $testMatch = NULL;
+    //validate integer
+    $testMatch = $_REQUEST["wfs_id"];
+    //give max 99 entries - more will be to slow
+    $pattern = '/^[0-9]*$/';
+    if (!preg_match($pattern, $testMatch)) {
+        //echo 'userId: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo 'Parameter <b>wfs_id</b> is not valid (integer).<br/>';
+        die();
+    }
+    $wfsId = $testMatch;
+    $testMatch = NULL;
 }
 
 //parse query 
@@ -110,184 +109,184 @@ $query = new QueryHandler($postData, $_REQUEST, $_SERVER['REQUEST_METHOD']);
 $reqParams = $query->getRequestParams();
 //$e = new mb_exception($reqParams['version']);
 if ($wfsId !== false) {
-	//switch for different parameter name - typename for wfs < 2.0 typenames for wfs >= 2.0
-	$typeNameParameter = "typename"; //lowercase
-	switch ($reqParams['version']) {
-		case "2.0.0":
-			if (strtolower($reqParams['request']) == 'describefeaturetype') {
-			    $typeNameParameter = "typename";
-                        } else {
-			    $typeNameParameter = "typenames";
-			}
-			break;
-		case "2.0.2":
-			if (strtolower($reqParams['request']) == 'describefeaturetype') {
-			    $typeNameParameter = "typename";
-                        } else {
-			    $typeNameParameter = "typenames";
-			}
-			break;
-		default:
-			$typeNameParameter = "typename";
-			break;
-	}
-	//initialize typename parameter with false - not given
-	//check for featuretype name
-	if (isset($reqParams[$typeNameParameter]) & $reqParams[$typeNameParameter] != "") {
-        	//validate integer
-        	$testMatch = $reqParams[$typeNameParameter];
-        	//simple pattern - without blanks!
-       	 	$pattern = '/^[0-9a-zA-Z\.\-_:,]*$/';  
-        	if (!preg_match($pattern,$testMatch)){
-             		//echo 'userId: <b>'.$testMatch.'</b> is not valid.<br/>';
-                	echo 'Parameter <b>'.$typeNameParameter.'</b> is not valid.<br/>';
-                	die();
-        	}
-		$reqParams[$typeNameParameter] = $testMatch;
-        	$testMatch = NULL;
-	}
+    //switch for different parameter name - typename for wfs < 2.0 typenames for wfs >= 2.0
+    $typeNameParameter = "typename"; //lowercase
+    switch ($reqParams['version']) {
+        case "2.0.0":
+            if (strtolower($reqParams['request']) == 'describefeaturetype') {
+                $typeNameParameter = "typename";
+            } else {
+                $typeNameParameter = "typenames";
+            }
+            break;
+        case "2.0.2":
+            if (strtolower($reqParams['request']) == 'describefeaturetype') {
+                $typeNameParameter = "typename";
+            } else {
+                $typeNameParameter = "typenames";
+            }
+            break;
+        default:
+            $typeNameParameter = "typename";
+            break;
+    }
+    //initialize typename parameter with false - not given
+    //check for featuretype name
+    if (isset($reqParams[$typeNameParameter]) & $reqParams[$typeNameParameter] != "") {
+        //validate integer
+        $testMatch = $reqParams[$typeNameParameter];
+        //simple pattern - without blanks!
+        $pattern = '/^[0-9a-zA-Z\.\-_:,]*$/';
+        if (!preg_match($pattern, $testMatch)) {
+            //echo 'userId: <b>'.$testMatch.'</b> is not valid.<br/>';
+            echo 'Parameter <b>' . $typeNameParameter . '</b> is not valid.<br/>';
+            die();
+        }
+        $reqParams[$typeNameParameter] = $testMatch;
+        $testMatch = NULL;
+    }
 }
 //check authorization
 $anonymousAccess = false;
 if ($layerId !== false) {
-	$user = new user(PUBLIC_USER);
-	$anonymousAccess = $user->isLayerAccessible($layerId);
-	//$e = new mb_exception("http_auth/http/index.php: anonymous access possible: ".$anonymousAccess);
+    $user = new user(PUBLIC_USER);
+    $anonymousAccess = $user->isLayerAccessible($layerId);
+    //$e = new mb_exception("http_auth/http/index.php: anonymous access possible: ".$anonymousAccess);
 }
 //$e = new mb_exception("http_auth/index.php: ".$typeNameParameter.": ".(string)$reqParams[$typeNameParameter]);
 if ($wfsId !== false) {
-	if (isset($reqParams[$typeNameParameter]) && $reqParams[$typeNameParameter] !== false && $reqParams[$typeNameParameter] !== '') {
-		$user = new user(PUBLIC_USER);
-		$anonymousAccess = $user->areFeaturetypesAccessible($reqParams[$typeNameParameter], $wfsId);
-	} else {
-		//typename not requested - so check accessability for each featuretype of the service - only if all are accessable, give anonymous access to getcapabilities and other requests, that don't need a typename(s) parameter
-		$sql = "SELECT featuretype_name FROM wfs_featuretype WHERE fkey_wfs_id = $1";
-        	$v = array($wfsId);
-        	$t = array("i");
-    		$res = db_prep_query($sql, $v, $t);
-    		if (!($row = db_fetch_all($res))) {
-        		return false;
-    		} else {
-			if (count($row) == 1 && $row[0]['featuretype_name'] == null) {
-				return false;
-			} else {
-				$allTypenames = "";
-				foreach ($row as $singleRow) {
-					$allTypenames .= $singleRow['featuretype_name'] . ",";
-				}
-				$allTypenames = rtrim($allTypenames, ',');
-			}
-			//$e = new mb_exception("http_auth/index.php: allTypenames for wfs ".$wfsId." : ".$allTypenames);
-			$user = new user(PUBLIC_USER);
-			$anonymousAccess = $user->areFeaturetypesAccessible($allTypenames, $wfsId);
-		}
-	}
+    if (isset($reqParams[$typeNameParameter]) && $reqParams[$typeNameParameter] !== false && $reqParams[$typeNameParameter] !== '') {
+        $user = new user(PUBLIC_USER);
+        $anonymousAccess = $user->areFeaturetypesAccessible($reqParams[$typeNameParameter], $wfsId);
+    } else {
+        //typename not requested - so check accessability for each featuretype of the service - only if all are accessable, give anonymous access to getcapabilities and other requests, that don't need a typename(s) parameter
+        $sql = "SELECT featuretype_name FROM wfs_featuretype WHERE fkey_wfs_id = $1";
+        $v = array($wfsId);
+        $t = array("i");
+        $res = db_prep_query($sql, $v, $t);
+        if (!($row = db_fetch_all($res))) {
+            return false;
+        } else {
+            if (count($row) == 1 && $row[0]['featuretype_name'] == null) {
+                return false;
+            } else {
+                $allTypenames = "";
+                foreach ($row as $singleRow) {
+                    $allTypenames .= $singleRow['featuretype_name'] . ",";
+                }
+                $allTypenames = rtrim($allTypenames, ',');
+            }
+            //$e = new mb_exception("http_auth/index.php: allTypenames for wfs ".$wfsId." : ".$allTypenames);
+            $user = new user(PUBLIC_USER);
+            $anonymousAccess = $user->areFeaturetypesAccessible($allTypenames, $wfsId);
+        }
+    }
 }
 
 //$e = new mb_exception("http_auth/index.php: anonymousAcces possible: ".(string)$anonymousAccess);
 //first check if anonymous user has rights to access ressource - if so - don't use authentication
 if ($anonymousAccess == true) {
-	$userId = PUBLIC_USER;
+    $userId = PUBLIC_USER;
 } else {
-	switch ($authType) {
-		case 'digest':
-			//special for type of authentication ******************************
-			//control if digest auth is set, if not set, generate the challenge with getNonce()
-			if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
-    				header('HTTP/1.1 401 Unauthorized');
-    				header('WWW-Authenticate: Digest realm="' . REALM .
-        			'",qop="auth",nonce="' . getNonce() . '",opaque="' . md5(REALM) . '"');
-    				die('Text to send if user hits Cancel button');
-			}
-			//read out the header in an array
-			$requestHeaderArray = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
-			//error if header could not be read
-			if (!($requestHeaderArray)) {
-    				echo 'Following Header information cannot be validated - check your clientsoftware!<br>';
-    				echo $_SERVER['PHP_AUTH_DIGEST'] . '<br>';
-    				die();
-			}
-			//get mb_username and email out of http_auth username string
-			$userIdentification = explode(';', $requestHeaderArray['username']);
-			$mbUsername = $userIdentification[0];
-			$mbEmail = $userIdentification[1]; //not given in all circumstances
-			$userInformation = getUserInfo($mbUsername, $mbEmail);
-			/*
+    switch ($authType) {
+        case 'digest':
+            //special for type of authentication ******************************
+            //control if digest auth is set, if not set, generate the challenge with getNonce()
+            if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
+                header('HTTP/1.1 401 Unauthorized');
+                header('WWW-Authenticate: Digest realm="' . REALM .
+                    '",qop="auth",nonce="' . getNonce() . '",opaque="' . md5(REALM) . '"');
+                die('Text to send if user hits Cancel button');
+            }
+            //read out the header in an array
+            $requestHeaderArray = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
+            //error if header could not be read
+            if (!($requestHeaderArray)) {
+                echo 'Following Header information cannot be validated - check your clientsoftware!<br>';
+                echo $_SERVER['PHP_AUTH_DIGEST'] . '<br>';
+                die();
+            }
+            //get mb_username and email out of http_auth username string
+            $userIdentification = explode(';', $requestHeaderArray['username']);
+            $mbUsername = $userIdentification[0];
+            $mbEmail = $userIdentification[1]; //not given in all circumstances
+            $userInformation = getUserInfo($mbUsername, $mbEmail);
+            /*
         			$result[0] = $row['mb_user_id'];
         			$result[1] = $row['mb_user_digest'];
 				$result[2] = $row['mb_user_password'];
 				$result[3] = $row['password'];
 			*/
-			if ($userInformation[0] == '-1') {
-    				die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!');
-			}
-			if ($userInformation[1] == '') { //check if digest exists in db - if no digest exists it should be a null string!
-    				die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!');
-			}
-			//first check the stale!
-			if ($requestHeaderArray['nonce'] == getNonce()) {
-    				// Up-to-date nonce received
-    				$stale = false;
-			} else {
-    				// Stale nonce received (probably more than x seconds old)
-    				$stale = true;
-    				//give another chance to authenticate
-    				header('HTTP/1.1 401 Unauthorized');
-    				header('WWW-Authenticate: Digest realm="' . REALM . '",qop="auth",nonce="' . getNonce() . '",opaque="' . md5(REALM) . '" ,stale=true');
-			}
-			// generate the valid response to check the request of the client
-			$A1 = $userInformation[1];
-			$A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $requestHeaderArray['uri']);
-			$valid_response = $A1 . ':' . getNonce() . ':' . $requestHeaderArray['nc'];
-			$valid_response .= ':' . $requestHeaderArray['cnonce'] . ':' . $requestHeaderArray['qop'] . ':' . $A2;
-			$valid_response = md5($valid_response);
-			if ($requestHeaderArray['response'] != $valid_response) {//the user have to authenticate new - cause something in the authentication went wrong
-    				die('Authentication failed - sorry, you have to authenticate once more!');
-			}
-			//if we are here - authentication has been done well!
-			//let's do the proxy things (came from owsproxy.php):
-			//special for type of authentication ******************************
-			//user information
-			//define $userId from database information
-			$userId = $userInformation[0];
-			break;
-		case 'basic':
-			if (!isset($_SERVER['PHP_AUTH_USER'])) {
-    				header('WWW-Authenticate: Basic realm="' . REALM .'"');				
-				header('HTTP/1.1 401 Unauthorized');
-				die('Authentication failed - sorry, you have to authenticate once more!');
-			} else {
-				//get mb_username and email out of http_auth username string
-				$userIdentification = explode(';', $_SERVER['PHP_AUTH_USER']);
-				$mbUsername = $userIdentification[0];
-				$mbEmail = $userIdentification[1]; //not given in all circumstances
-				$userInformation = getUserInfo($mbUsername, $mbEmail);
-				/*
+            if ($userInformation[0] == '-1') {
+                die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!');
+            }
+            if ($userInformation[1] == '') { //check if digest exists in db - if no digest exists it should be a null string!
+                die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!');
+            }
+            //first check the stale!
+            if ($requestHeaderArray['nonce'] == getNonce()) {
+                // Up-to-date nonce received
+                $stale = false;
+            } else {
+                // Stale nonce received (probably more than x seconds old)
+                $stale = true;
+                //give another chance to authenticate
+                header('HTTP/1.1 401 Unauthorized');
+                header('WWW-Authenticate: Digest realm="' . REALM . '",qop="auth",nonce="' . getNonce() . '",opaque="' . md5(REALM) . '" ,stale=true');
+            }
+            // generate the valid response to check the request of the client
+            $A1 = $userInformation[1];
+            $A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $requestHeaderArray['uri']);
+            $valid_response = $A1 . ':' . getNonce() . ':' . $requestHeaderArray['nc'];
+            $valid_response .= ':' . $requestHeaderArray['cnonce'] . ':' . $requestHeaderArray['qop'] . ':' . $A2;
+            $valid_response = md5($valid_response);
+            if ($requestHeaderArray['response'] != $valid_response) { //the user have to authenticate new - cause something in the authentication went wrong
+                die('Authentication failed - sorry, you have to authenticate once more!');
+            }
+            //if we are here - authentication has been done well!
+            //let's do the proxy things (came from owsproxy.php):
+            //special for type of authentication ******************************
+            //user information
+            //define $userId from database information
+            $userId = $userInformation[0];
+            break;
+        case 'basic':
+            if (!isset($_SERVER['PHP_AUTH_USER'])) {
+                header('WWW-Authenticate: Basic realm="' . REALM . '"');
+                header('HTTP/1.1 401 Unauthorized');
+                die('Authentication failed - sorry, you have to authenticate once more!');
+            } else {
+                //get mb_username and email out of http_auth username string
+                $userIdentification = explode(';', $_SERVER['PHP_AUTH_USER']);
+                $mbUsername = $userIdentification[0];
+                $mbEmail = $userIdentification[1]; //not given in all circumstances
+                $userInformation = getUserInfo($mbUsername, $mbEmail);
+                /*
 					$result[0] = $row['mb_user_id'];
 					$result[1] = $row['mb_user_digest'];
 					$result[2] = $row['mb_user_password'];
 					$result[3] = $row['password'];
 				*/
-				if ($userInformation[0] == '-1') {
-    					die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!');
-				}
-				/*if ($userInformation[1] == '') { //check if digest exists in db - if no digest exists it should be a null string!
+                if ($userInformation[0] == '-1') {
+                    die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!');
+                }
+                /*if ($userInformation[1] == '') { //check if digest exists in db - if no digest exists it should be a null string!
     					die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!');
 				}*/
-				//check password - new since 06/2019 - secure password !!!!!
-				if ($userInformation[3] == '' || $userInformation[3] == null) {
-					die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no password which is stored in a secure way. - Please login at the portal to generate one!');
-				}
-				if (password_verify($_SERVER['PHP_AUTH_PW'], $userInformation[3])) {
-					$userId = $userInformation[0];
-				} else {
-					$userId = $userInformation[0];
-					die('HTTP Authentication failed for user: ' . $mbUsername.'!');
-				}	
-			}
-			break;
-		}//end switch	
-	//}
+                //check password - new since 06/2019 - secure password !!!!!
+                if ($userInformation[3] == '' || $userInformation[3] == null) {
+                    die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no password which is stored in a secure way. - Please login at the portal to generate one!');
+                }
+                if (password_verify($_SERVER['PHP_AUTH_PW'], $userInformation[3])) {
+                    $userId = $userInformation[0];
+                } else {
+                    $userId = $userInformation[0];
+                    die('HTTP Authentication failed for user: ' . $mbUsername . '!');
+                }
+            }
+            break;
+    } //end switch	
+    //}
 }
 //$e = new mb_exception("authentication successful!");
 $layerId = $_REQUEST['layer_id'];
@@ -303,21 +302,21 @@ if (isset($_REQUEST["withChilds"]) && $_REQUEST["withChilds"] === "1") {
 $reqParams = $query->getRequestParams();*/
 
 $n = new administration();
-if (!(isset($reqParams['service'])) AND (strtolower($reqParams['request'])=='getmap' || strtolower($reqParams['request'])=='getlegendgraphic')) { 
-	$reqParams['service'] = 'wms'; 
-} 
+if (!(isset($reqParams['service'])) and (strtolower($reqParams['request']) == 'getmap' || strtolower($reqParams['request']) == 'getlegendgraphic')) {
+    $reqParams['service'] = 'wms';
+}
 //check for type of ows requested
 switch (strtolower($reqParams['service'])) {
-	case 'wms':
-		//get id 
-		$wmsId = getWmsIdByLayerId($layerId);
-		$owsproxyString = $n->getWMSOWSstring($wmsId);
-		$auth = $n->getAuthInfoOfWMS($wmsId);
-	break;
-	case 'wfs':
-		$owsproxyString = $n->getWFSOWSstring($wfsId);
-		$auth = $n->getAuthInfoOfWFS($wfsId);
-	break;
+    case 'wms':
+        //get id 
+        $wmsId = getWmsIdByLayerId($layerId);
+        $owsproxyString = $n->getWMSOWSstring($wmsId);
+        $auth = $n->getAuthInfoOfWMS($wmsId);
+        break;
+    case 'wfs':
+        $owsproxyString = $n->getWFSOWSstring($wfsId);
+        $auth = $n->getAuthInfoOfWFS($wfsId);
+        break;
 }
 
 if (!$owsproxyString) {
@@ -335,61 +334,60 @@ if ($auth['auth_type'] == '') {
 
 switch (strtolower($reqParams['request'])) {
     case 'getcapabilities':
-	switch (strtolower($reqParams['service'])) {
-		case 'wfs':
-			$arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
-        		$query->setOnlineResource($arrayOnlineresources['wfs_getcapabilities']);
-        		$request = $query->getRequest(); 
-			$request = str_replace('?&','?',$request);
-			//TODO: following is not the standard way because ows has not to handle vsp!!!
-			$request = delTotalFromQuery("wfs_id",$request);
-			//add force basic to request!!!!! - not for capabilities?
-			if ($authType == 'basic') {
-				$extraParameter = "forceBasicAuth=true";
-			} else {
-				$extraParameter = false;
-			}
-			//don't allow get parameters in conjunction with post!
-			if ($postData !== false) {
-				$request = $arrayOnlineresources['wfs_getcapabilities'];
-			}
-			if (isset($auth)) {
-            			getWfsCapabilities($request, $extraParameter, $auth);
-        		} else {
-            			getWfsCapabilities($request, $extraParameter);
-        		}		
-		break;
-		case 'wms':
-        		$arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
-        		$query->setOnlineResource($arrayOnlineresources['wms_getcapabilities']);
-			if (isset($_SERVER["HTTPS"])) {
-            			$urlPrefix = "https://";
-        		} else {
-            			$urlPrefix = "http://";
-        		}
-        		if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
-            			$request = MAPBENDER_PATH . "/php/wms.php?layer_id=" . $layerId;
-        		} else {
-            			$request = $urlPrefix . $_SERVER['HTTP_HOST'] . "/mapbender/php/wms.php?layer_id=" . $layerId;
-        		}
-        		if ($withChilds) {
-            			$requestFull .= $request . '&withChilds=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
-        		} else {
-            			$requestFull .= $request . '&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
-        		}
-			if ($authType == 'basic') {
-				$extraParameter = "&forceBasicAuth=true";
-			} else {
-				$extraParameter = false;
-			}
-        		if (isset($auth)) {
-            			getCapabilities($request, $requestFull, $extraParameter, $auth);
-        		} else {
-            			getCapabilities($request, $requestFull, $extraParameter);
-        		}
-		break;
-	
-	}
+        switch (strtolower($reqParams['service'])) {
+            case 'wfs':
+                $arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
+                $query->setOnlineResource($arrayOnlineresources['wfs_getcapabilities']);
+                $request = $query->getRequest();
+                $request = str_replace('?&', '?', $request);
+                //TODO: following is not the standard way because ows has not to handle vsp!!!
+                $request = delTotalFromQuery("wfs_id", $request);
+                //add force basic to request!!!!! - not for capabilities?
+                if ($authType == 'basic') {
+                    $extraParameter = "forceBasicAuth=true";
+                } else {
+                    $extraParameter = false;
+                }
+                //don't allow get parameters in conjunction with post!
+                if ($postData !== false) {
+                    $request = $arrayOnlineresources['wfs_getcapabilities'];
+                }
+                if (isset($auth)) {
+                    getWfsCapabilities($request, $extraParameter, $auth);
+                } else {
+                    getWfsCapabilities($request, $extraParameter);
+                }
+                break;
+            case 'wms':
+                $arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
+                $query->setOnlineResource($arrayOnlineresources['wms_getcapabilities']);
+                if (isset($_SERVER["HTTPS"])) {
+                    $urlPrefix = "https://";
+                } else {
+                    $urlPrefix = "http://";
+                }
+                if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
+                    $request = MAPBENDER_PATH . "/php/wms.php?layer_id=" . $layerId;
+                } else {
+                    $request = $urlPrefix . $_SERVER['HTTP_HOST'] . "/mapbender/php/wms.php?layer_id=" . $layerId;
+                }
+                if ($withChilds) {
+                    $requestFull .= $request . '&withChilds=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
+                } else {
+                    $requestFull .= $request . '&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS';
+                }
+                if ($authType == 'basic') {
+                    $extraParameter = "&forceBasicAuth=true";
+                } else {
+                    $extraParameter = false;
+                }
+                if (isset($auth)) {
+                    getCapabilities($request, $requestFull, $extraParameter, $auth);
+                } else {
+                    getCapabilities($request, $requestFull, $extraParameter);
+                }
+                break;
+        }
         break;
     case 'getfeatureinfo':
         $arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
@@ -400,59 +398,59 @@ switch (strtolower($reqParams['request'])) {
             throwE("GetFeatureInfo permission denied on layer with id" . $layerId);
             die();
         }
-	    //mask
+        //mask
         $log_id = false;
         if ($n->getWmsfiLogTag($arrayOnlineresources['wms_id']) == 1) {
             #do log to db
             #get price out of db
             $price = intval($n->getWmsfiPrice($arrayOnlineresources['wms_id']));
-		    //TODO - session is not set!!!!!!!!
+            //TODO - session is not set!!!!!!!!
             $log_id = $n->logWmsGFIProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price);
         }
-        if (!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] =="f") {
-        	if (isset($auth)) {
-        		getFeatureInfo($log_id, $request, $auth);
-        	} else {
-        		getFeatureInfo($log_id, $request);
-        	}
+        if (!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
+            if (isset($auth)) {
+                getFeatureInfo($log_id, $request, $auth);
+            } else {
+                getFeatureInfo($log_id, $request);
+            }
         } else {
-        	new mb_notice("spatial security: $request");
-        				
-        	$x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
-        	$y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
-        				
-        	$mask = spatial_security\get_mask($reqParams, $userId);
-        				
-        	if ($mask === null) {
-        		echo "Permission denied";
-        		die();
-        	}
-        					
-        	$color = $mask->getImagePixelColor($x, $y);
-        	$transparency = $color->getColorValue(Imagick::COLOR_ALPHA);
-        					
-        	if ($transparency < 1) {
-        		echo "Permission denied";
-        		die();
-        	}
-        						
-        	if (isset($auth)) {
-        		getFeatureInfo($log_id, $request, $auth);
-        	} else {
-        		getFeatureInfo($log_id, $request);
-        	}
-        								
-        	$mask->destroy();
+            new mb_notice("spatial security: $request");
+
+            $x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
+            $y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
+
+            $mask = spatial_security\get_mask($reqParams, $userId);
+
+            if ($mask === null) {
+                echo "Permission denied";
+                die();
+            }
+
+            $color = $mask->getImagePixelColor($x, $y);
+            $transparency = $color->getColorValue(Imagick::COLOR_ALPHA);
+
+            if ($transparency < 1) {
+                echo "Permission denied";
+                die();
+            }
+
+            if (isset($auth)) {
+                getFeatureInfo($log_id, $request, $auth);
+            } else {
+                getFeatureInfo($log_id, $request);
+            }
+
+            $mask->destroy();
         }
         /*if (isset($auth)) {
             getFeatureInfo($log_id, $request, $auth);
         } else {
             getFeatureInfo($log_id, $request);
         }*/
-        
+
         break;
     case 'getmap':
-    	//$e = new mb_exception("http_auth/http/index.php: userId: ".$userId);
+        //$e = new mb_exception("http_auth/http/index.php: userId: ".$userId);
         $arrayOnlineresources = checkWmsPermission($owsproxyString, $userId);
         $query->setOnlineResource($arrayOnlineresources['wms_getmap']);
         $layers = checkLayerPermission($wmsId, $reqParams['layers'], $userId);
@@ -464,7 +462,7 @@ switch (strtolower($reqParams['request'])) {
         $request = $query->getRequest();
         // Ergaenzungen secured UMN Requests
         //log proxy requests
-        $log_id = false;     
+        $log_id = false;
         /*if ($n->getWmsLogTag($wmsId) == 1) {
             #do log to db
             #TODO read out size of bbox and calculate price
@@ -478,47 +476,47 @@ switch (strtolower($reqParams['request'])) {
             getImage($log_id, $request);
         }*/
         //$e = new mb_exception("wms: ".$arrayOnlineresources['wms_id']);
-        if(!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
-        	#log proxy requests
-        	if($n->getWmsLogTag($arrayOnlineresources['wms_id'])==1) {#do log to db
-        		#get price out of db
-        		$price=intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
-        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0);
-        	}
-        	if(isset($auth)){
-        	    getImage($log_id, $request, $auth);
-        	} else {
-        		getImage($log_id, $request);
-        	}
+        if (!defined("SPATIAL_SECURITY") || (defined("SPATIAL_SECURITY") && SPATIAL_SECURITY == false) || $arrayOnlineresources["wms_spatial_security"] == "f") {
+            #log proxy requests
+            if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) { #do log to db
+                #get price out of db
+                $price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
+                $log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0);
+            }
+            if (isset($auth)) {
+                getImage($log_id, $request, $auth);
+            } else {
+                getImage($log_id, $request);
+            }
         } else {
-        	new mb_notice("wms {$arrayOnlineresources['wms_id']} is spatially secured");
-        	if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) {#log proxy requests
-        		#do log to db
-        		#get price out of db
-        		$price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
-        		//initially create log record with number of all pixels - if image has only one color, the pixel count
-        		//will be reset later in function getImage
-        		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
-        	}
-        	$mask = spatial_security\get_mask($reqParams, $userId);
-        	if ($mask === null) {
-        		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");
-        		die();
-        	}	
-        	if (isset($auth)) {
-        		getImage($log_id, $request, $auth, $mask);
-        	} else {
-        		getImage($log_id, $request, false, $mask);
-        	}	
-        	$mask->destroy();
-        }      
+            new mb_notice("wms {$arrayOnlineresources['wms_id']} is spatially secured");
+            if ($n->getWmsLogTag($arrayOnlineresources['wms_id']) == 1) { #log proxy requests
+                #do log to db
+                #get price out of db
+                $price = intval($n->getWmsPrice($arrayOnlineresources['wms_id']));
+                //initially create log record with number of all pixels - if image has only one color, the pixel count
+                //will be reset later in function getImage
+                $log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
+            }
+            $mask = spatial_security\get_mask($reqParams, $userId);
+            if ($mask === null) {
+                throwImage("WMS " . $arrayOnlineresources['wms_id'] . " needs spatial mask!");
+                die();
+            }
+            if (isset($auth)) {
+                getImage($log_id, $request, $auth, $mask);
+            } else {
+                getImage($log_id, $request, false, $mask);
+            }
+            $mask->destroy();
+        }
         break;
     case 'getlegendgraphic':
         $url = getLegendUrl($wmsId);
-		if (isset($reqParams['sld']) && $reqParams['sld'] != "") {
+        if (isset($reqParams['sld']) && $reqParams['sld'] != "") {
             $url = $url . getConjunctionCharacter($url) . "SLD=" . $reqParams['sld'];
         }
-		//$e = new mb_exception("invoked legend url: ".$url);
+        //$e = new mb_exception("invoked legend url: ".$url);
         if (isset($auth)) {
             getImage(false, $url, $auth);
         } else {
@@ -526,39 +524,51 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'getfeature':
-		//$e = new mb_exception("http_auth/http/index.php - getfeature - requested features: ".$typeNameParameter.": ".json_encode($reqParams[$typeNameParameter]));
-		if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
-	        	$storedQueryId = $reqParams['storedquery_id'];
-	        	$arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
-		} else {
-			$arrayFeatures = array($reqParams[$typeNameParameter]);
-			//$e = new mb_exception("http_auth/http/index.php - getfeature - check permission: ".json_encode($arrayFeatures));
-			//$e = new mb_exception("".$typeNameParameter.": ".$reqParams[$typeNameParameter]);
-	        $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
-		}
-	    $query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
-	    $request = $query->getRequest();
-	    $request = stripslashes($request);
-		//TODO - what if storedquery are used ? log storedquery_id?
-		if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
-	        //get price out of db
-	        $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
-		    if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
-			$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
-	                $price, 0, $reqParams['storedquery_id']);
-		    } else {
-	            	$log_id = $n->logWfsProxyRequest($arrayOnlineresources['wfs_id'], $userId, $request,
-	                $price, 0, $reqParams[$typeNameParameter]);
-		    }
-	    } else {
-			$log_id = false;
-		}
-		//TODO: following is not the standard way because ows has not to handle vsp!!!
-		$request = delTotalFromQuery("wfs_id",$request);
-		//don't allow get parameters in conjunction with post!
-		if ($postData !== false) {
-			$request = $arrayOnlineresources['wfs_getfeature'];
-		}
+        //$e = new mb_exception("http_auth/http/index.php - getfeature - requested features: ".$typeNameParameter.": ".json_encode($reqParams[$typeNameParameter]));
+        if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
+            $storedQueryId = $reqParams['storedquery_id'];
+            $arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
+        } else {
+            $arrayFeatures = array($reqParams[$typeNameParameter]);
+            //$e = new mb_exception("http_auth/http/index.php - getfeature - check permission: ".json_encode($arrayFeatures));
+            //$e = new mb_exception("".$typeNameParameter.": ".$reqParams[$typeNameParameter]);
+            $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
+        }
+        $query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
+        $request = $query->getRequest();
+        $request = stripslashes($request);
+        //TODO - what if storedquery are used ? log storedquery_id?
+        if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
+            //get price out of db
+            $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
+            if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
+                $log_id = $n->logWfsProxyRequest(
+                    $arrayOnlineresources['wfs_id'],
+                    $userId,
+                    $request,
+                    $price,
+                    0,
+                    $reqParams['storedquery_id']
+                );
+            } else {
+                $log_id = $n->logWfsProxyRequest(
+                    $arrayOnlineresources['wfs_id'],
+                    $userId,
+                    $request,
+                    $price,
+                    0,
+                    $reqParams[$typeNameParameter]
+                );
+            }
+        } else {
+            $log_id = false;
+        }
+        //TODO: following is not the standard way because ows has not to handle vsp!!!
+        $request = delTotalFromQuery("wfs_id", $request);
+        //don't allow get parameters in conjunction with post!
+        if ($postData !== false) {
+            $request = $arrayOnlineresources['wfs_getfeature'];
+        }
         if (isset($auth)) {
             getFeature($log_id, $request, $auth);
         } else {
@@ -573,12 +583,12 @@ switch (strtolower($reqParams['request'])) {
         $query->setOnlineResource($arrayOnlineresources['wfs_describefeaturetype']);
         $request = $query->getRequest();
         $request = stripslashes($request);
-		//TODO: following is not the standard way because ows has not to handle vsp!!!
-		$request = delTotalFromQuery("wfs_id",$request);
-		//don't allow get parameters in conjunction with post!
-		if ($postData !== false) {
-			$request = $arrayOnlineresources['wfs_describefeaturetype'];
-		}
+        //TODO: following is not the standard way because ows has not to handle vsp!!!
+        $request = delTotalFromQuery("wfs_id", $request);
+        //don't allow get parameters in conjunction with post!
+        if ($postData !== false) {
+            $request = $arrayOnlineresources['wfs_describefeaturetype'];
+        }
         if (isset($auth)) {
             describeFeaturetype($request, $auth);
         } else {
@@ -586,21 +596,21 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'liststoredqueries':
-		if ($postData !== false) {
-			$operationMethod = "Post";
-		} else {
-			$operationMethod = "Get";
-		}
-		$listStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "ListStoredQueries", $operationMethod);
-	        $query->setOnlineResource($listStoredQueriesUrl);
-	        $request = $query->getRequest();
-	        $request = stripslashes($request);
-		//TODO: following is not the standard way because ows has not to handle vsp!!!
-		$request = delTotalFromQuery("wfs_id",$request);
-		//don't allow get parameters in conjunction with post!
-		if ($postData !== false) {
-			$request = $listStoredQueriesUrl;
-		}
+        if ($postData !== false) {
+            $operationMethod = "Post";
+        } else {
+            $operationMethod = "Get";
+        }
+        $listStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "ListStoredQueries", $operationMethod);
+        $query->setOnlineResource($listStoredQueriesUrl);
+        $request = $query->getRequest();
+        $request = stripslashes($request);
+        //TODO: following is not the standard way because ows has not to handle vsp!!!
+        $request = delTotalFromQuery("wfs_id", $request);
+        //don't allow get parameters in conjunction with post!
+        if ($postData !== false) {
+            $request = $listStoredQueriesUrl;
+        }
         if (isset($auth)) {
             listStoredQueries($request, $auth);
         } else {
@@ -608,21 +618,21 @@ switch (strtolower($reqParams['request'])) {
         }
         break;
     case 'describestoredqueries':
-		if ($postData !== false) {
-			$operationMethod = "Post";
-		} else {
-			$operationMethod = "Get";
-		}
-		$describeStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "DescribeStoredQueries", $operationMethod);
-	        $query->setOnlineResource($describeStoredQueriesUrl);
-	        $request = $query->getRequest();
-	        $request = stripslashes($request);
-		//TODO: following is not the standard way because ows has not to handle vsp!!!
-		$request = delTotalFromQuery("wfs_id",$request);
-		//don't allow get parameters in conjunction with post!
-		if ($postData !== false) {
-			$request = $describeStoredQueriesUrl;
-		}
+        if ($postData !== false) {
+            $operationMethod = "Post";
+        } else {
+            $operationMethod = "Get";
+        }
+        $describeStoredQueriesUrl = getWfsOperationUrl($owsproxyString, "DescribeStoredQueries", $operationMethod);
+        $query->setOnlineResource($describeStoredQueriesUrl);
+        $request = $query->getRequest();
+        $request = stripslashes($request);
+        //TODO: following is not the standard way because ows has not to handle vsp!!!
+        $request = delTotalFromQuery("wfs_id", $request);
+        //don't allow get parameters in conjunction with post!
+        if ($postData !== false) {
+            $request = $describeStoredQueriesUrl;
+        }
         if (isset($auth)) {
             describeStoredQueries($request, $auth);
         } else {
@@ -632,20 +642,18 @@ switch (strtolower($reqParams['request'])) {
     case '':
         if (version_compare(PHP_VERSION, '7.0.0', '<')) {
             $arrayFeatures = getWfsFeaturesFromTransaction($HTTP_RAW_POST_DATA);
-        }
-        else {
+        } else {
             $rawpostdata = file_get_contents("php://input");
             $arrayFeatures = getWfsFeaturesFromTransaction($rawpostdata);
         }
         $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
         $query->setOnlineResource($arrayOnlineresources['wfs_transaction']);
         $request = $query->getRequest();
-		//TODO: following is not the standard way because ows has not to handle vsp!!!
-		$request = delTotalFromQuery("wfs_id",$request);
+        //TODO: following is not the standard way because ows has not to handle vsp!!!
+        $request = delTotalFromQuery("wfs_id", $request);
         if (version_compare(PHP_VERSION, '7.0.0', '<')) {
             doTransaction($request, $HTTP_RAW_POST_DATA);
-        }
-        else {
+        } else {
             $rawpostdata = file_get_contents("php://input");
             doTransaction($request, $rawpostdata);
         }
@@ -690,8 +698,8 @@ function getUserInfo($mbUsername, $mbEmail)
     } else {
         $result[0] = $row['mb_user_id'];
         $result[1] = $row['mb_user_digest'];
-	$result[2] = $row['mb_user_password'];
-	$result[3] = $row['password'];
+        $result[2] = $row['mb_user_password'];
+        $result[3] = $row['password'];
     }
     return $result;
 }
@@ -800,14 +808,14 @@ function completeURL($url)
  */
 function getImage($log_id, $or, $auth = false, $mask = false)
 {
-    global $reqParams;    
+    global $reqParams;
     global $imageformats;
     if (!in_array($reqParams['format'], $imageformats)) {
         $header = "Content-Type: image/png";
     } else {
-        $header = "Content-Type: ".$reqParams['format'];
+        $header = "Content-Type: " . $reqParams['format'];
     }
-	//$e = new mb_exception("try to get: ". $or);
+    //$e = new mb_exception("try to get: ". $or);
     getDocumentContent($log_id, $or, $header, $auth, $mask);
 }
 
@@ -842,7 +850,7 @@ function getFeature($log_id, $url, $auth = false)
         $content = getDocumentContent($log_id, $url, "Content-Type: application/xml", $auth);
     } else {
         //allow other formats - add format to request
-    	$content = getDocumentContent(false, $url, '', $auth);
+        $content = getDocumentContent(false, $url, '', $auth);
     }
 }
 
@@ -998,11 +1006,11 @@ function matchUrls($content)
     global $urlsToExclude;
     $owsproxyUrls = Mapbender::session()->get('owsproxyUrls');
     if ($owsproxyUrls == false) {
-		$e = new mb_notice("owsproxyUrls does not exist - create it!");
-		$owsproxyUrls = array();
-		$owsproxyUrls['id'] = array();
-		$owsproxyUrls['url'] = array();
-		Mapbender::session()->set('owsproxyUrls',$owsproxyUrls);
+        $e = new mb_notice("owsproxyUrls does not exist - create it!");
+        $owsproxyUrls = array();
+        $owsproxyUrls['id'] = array();
+        $owsproxyUrls['url'] = array();
+        Mapbender::session()->set('owsproxyUrls', $owsproxyUrls);
     }
     $pattern = "/[\"|\'](https*:\/\/[^\"|^\']*)[\"|\']/";
     preg_match_all($pattern, $content, $matches);
@@ -1010,10 +1018,10 @@ function matchUrls($content)
         $req = $matches[1][$i];
         $e = new mb_notice("Gefundene URL " . $i . ": " . $req);
         #$notice = new mb_notice("owsproxy id:".$req);
-	//only register and exchange urls, that should not be excluded!
-	if (in_array($req,$urlsToExclude)) {
-       	 	continue;
-	}
+        //only register and exchange urls, that should not be excluded!
+        if (in_array($req, $urlsToExclude)) {
+            continue;
+        }
         $id = registerURL($req);
         $extReq = setExternalRequest($id);
         //$e = new mb_exception("MD5 URL " . $id . "-Externer Link: " . $extReq);
@@ -1103,9 +1111,9 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
     global $layerId;
     header("Content-Type: application/xml");
     if ($auth) { //new for HTTP Authentication
-	$d = new connector($requestFull, $auth);
+        $d = new connector($requestFull, $auth);
     } else {
-	$d = new connector($requestFull);
+        $d = new connector($requestFull);
     }
     $content = $d->file;
     //show temporal content fo capabilities
@@ -1151,7 +1159,7 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
 }
 
 function replaceOwsUrls($owsUrl, $layerId, $extraParameter)
-{	
+{
     $new = "http_auth/" . $layerId . "?";
     $pattern = "#owsproxy/[a-z0-9]{32}\/[a-z0-9]{32}\?#m";
     $httpAuthUrl = preg_replace($pattern, $new, $owsUrl);
@@ -1173,8 +1181,8 @@ function replaceOwsUrls($owsUrl, $layerId, $extraParameter)
             $httpAuthUrl = preg_replace("#:80/#", ":443/", $httpAuthUrl);
         }
     }
-    if ($extraParameter !== false) {	
-	$httpAuthUrl .= $extraParameter;
+    if ($extraParameter !== false) {
+        $httpAuthUrl .= $extraParameter;
     }
     return $httpAuthUrl;
 }
@@ -1186,114 +1194,117 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     global $reqParams;
     $urlsToChange = array();
     switch ($reqParams['version']) {
-    case "2.0.0":
-        $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
-	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
-	    foreach($operations as $operation) {
-		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
-		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
-	    }
-	    $namespaces = array("ows" => "http://www.opengis.net/ows/1.1",
-				"wfs" => "http://www.opengis.net/wfs/2.0",
-				"xlink" => "http://www.w3.org/1999/xlink"
-	    );
-		break;
-    case "2.0.2":
-        $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
-        $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
-	    foreach($operations as $operation) {
-		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
-		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
-	    }	    
-	    $namespaces = array("ows" => "http://www.opengis.net/ows/1.1",
-				"wfs" => "http://www.opengis.net/wfs/2.0",
-				"xlink" => "http://www.w3.org/1999/xlink"
-	    );
-		break;
-    case "1.1.0":
-        $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
-	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "GetGmlObject", "Transaction");
-	    foreach($operations as $operation) {
-            
-		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
-		$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
-	    }	    
-	    $namespaces = array("ows" => "http://www.opengis.net/ows",
-				"wfs" => "http://www.opengis.net/wfs",
-				"xlink" => "http://www.w3.org/1999/xlink"
-	    );
-		break;
-    case "1.0.0":
-        $urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Service/wfs:OnlineResource/text()';
-	    $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction");
-	    foreach($operations as $operation) {
-		$urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Capability/wfs:Request/wfs:'.$operation.'/wfs:DCPType/wfs:HTTP/wfs:Get/@onlineResource';
-		$urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Capability/wfs:Request/wfs:'.$operation.'/wfs:DCPType/wfs:HTTP/wfs:Post/@onlineResource';
-	    }
-	    $namespaces = array("wfs" => "http://www.opengis.net/wfs");
-		break;
-	default:
-		//default exchange all like 2.0.0
-		$operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
-	    	foreach($operations as $operation) {
-			$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
-			$urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="'.$operation.'"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
-	    	}
-	    	$namespaces = array("ows" => "http://www.opengis.net/ows/1.1",
-				"wfs" => "http://www.opengis.net/wfs/2.0",
-				"xlink" => "http://www.w3.org/1999/xlink"
-	    	);
-		break;
-	
+        case "2.0.0":
+            $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
+            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
+            foreach ($operations as $operation) {
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
+            }
+            $namespaces = array(
+                "ows" => "http://www.opengis.net/ows/1.1",
+                "wfs" => "http://www.opengis.net/wfs/2.0",
+                "xlink" => "http://www.w3.org/1999/xlink"
+            );
+            break;
+        case "2.0.2":
+            $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
+            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
+            foreach ($operations as $operation) {
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
+            }
+            $namespaces = array(
+                "ows" => "http://www.opengis.net/ows/1.1",
+                "wfs" => "http://www.opengis.net/wfs/2.0",
+                "xlink" => "http://www.w3.org/1999/xlink"
+            );
+            break;
+        case "1.1.0":
+            $urlsToChange[] = '/wfs:WFS_Capabilities/ows:ServiceProvider/ows:ServiceContact/ows:ContactInfo/ows:OnlineResource/@xlink:href';
+            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "GetGmlObject", "Transaction");
+            foreach ($operations as $operation) {
+
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
+            }
+            $namespaces = array(
+                "ows" => "http://www.opengis.net/ows",
+                "wfs" => "http://www.opengis.net/wfs",
+                "xlink" => "http://www.w3.org/1999/xlink"
+            );
+            break;
+        case "1.0.0":
+            $urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Service/wfs:OnlineResource/text()';
+            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction");
+            foreach ($operations as $operation) {
+                $urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Capability/wfs:Request/wfs:' . $operation . '/wfs:DCPType/wfs:HTTP/wfs:Get/@onlineResource';
+                $urlsToChange[] = '/wfs:WFS_Capabilities/wfs:Capability/wfs:Request/wfs:' . $operation . '/wfs:DCPType/wfs:HTTP/wfs:Post/@onlineResource';
+            }
+            $namespaces = array("wfs" => "http://www.opengis.net/wfs");
+            break;
+        default:
+            //default exchange all like 2.0.0
+            $operations = array("GetCapabilities", "DescribeFeatureType", "GetFeature", "Transaction", "GetPropertyValue", "ListStoredQueries", "DescribeStoredQueries", "CreateStoredQuery", "DropStoredQuery");
+            foreach ($operations as $operation) {
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Get/@xlink:href';
+                $urlsToChange[] = '/wfs:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name="' . $operation . '"]/ows:DCP/ows:HTTP/ows:Post/@xlink:href';
+            }
+            $namespaces = array(
+                "ows" => "http://www.opengis.net/ows/1.1",
+                "wfs" => "http://www.opengis.net/wfs/2.0",
+                "xlink" => "http://www.w3.org/1999/xlink"
+            );
+            break;
     }
     //TODO - set to persistent url
     $owsproxyUrl = parse_url(OWSPROXY);
     if ($owsproxyUrl['port'] == '80' || $owsproxyUrl['port'] == '') {
-	$port = "";
+        $port = "";
     } else {
-	$port = ":".$owsproxyUrl['port'];
+        $port = ":" . $owsproxyUrl['port'];
     }
-    $new = $owsproxyUrl['scheme'] . "://" .$owsproxyUrl['host']. $port . "/registry/wfs/" . $wfsId;# ."?";
+    $new = $owsproxyUrl['scheme'] . "://" . $owsproxyUrl['host'] . $port . "/registry/wfs/" . $wfsId; # ."?";
     if ($extraParameter !== false) {
-        $new .= '?'.$extraParameter;
+        $new .= '?' . $extraParameter;
         //force https if authType is basic!
         $new = str_replace("http://", "https://", $new);
     }
     if ($postData == false) { //no post_xml was used
-	//check POST/GET
-	if ($query->reqMethod !== 'POST') {
+        //check POST/GET
+        if ($query->reqMethod !== 'POST') {
             if ($auth) { //new for HTTP Authentication
                 $d = new connector($request, $auth);
             } else {
                 $d = new connector($request);
             }
-	} else {
-	    $d = new connector();
-	    $d->set('httpType','POST');
-	    //$d->set('curlSendCustomHeaders',true);
-	    $d->set('httpPostData', $query->getPostQueryString());//as array
-	    //$d->set('httpContentType','text/xml');
-	    //TODO maybe delete some params from querystring which are already in post array
+        } else {
+            $d = new connector();
+            $d->set('httpType', 'POST');
+            //$d->set('curlSendCustomHeaders',true);
+            $d->set('httpPostData', $query->getPostQueryString()); //as array
+            //$d->set('httpContentType','text/xml');
+            //TODO maybe delete some params from querystring which are already in post array
             if ($auth) { //new for HTTP Authentication
                 $d->load($request, $auth);
             } else {
                 $d->load($request);
             }
-	}
+        }
         $wfsCaps = $d->file;
     } else {
-	//$e = new mb_exception("owsproxy/index.php: postData will be send: ".$postData);
-	$postInterfaceObject = new connector();
-	$postInterfaceObject->set('httpType','POST');
-	$postInterfaceObject->set('curlSendCustomHeaders',true);
-	$postInterfaceObject->set('httpPostData', $postData);
-	$postInterfaceObject->set('httpContentType','text/xml');
-	if ($auth) { //new for HTTP Authentication
-		$postInterfaceObject->load($request, $auth);
-	} else {
-		$postInterfaceObject->load($request);
-	}		 
-	$wfsCaps = $postInterfaceObject->file;
+        //$e = new mb_exception("owsproxy/index.php: postData will be send: ".$postData);
+        $postInterfaceObject = new connector();
+        $postInterfaceObject->set('httpType', 'POST');
+        $postInterfaceObject->set('curlSendCustomHeaders', true);
+        $postInterfaceObject->set('httpPostData', $postData);
+        $postInterfaceObject->set('httpContentType', 'text/xml');
+        if ($auth) { //new for HTTP Authentication
+            $postInterfaceObject->load($request, $auth);
+        } else {
+            $postInterfaceObject->load($request);
+        }
+        $wfsCaps = $postInterfaceObject->file;
     }
 
     //load xml and replace urls
@@ -1315,16 +1326,16 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     }
     //exchange via xpath
     //register namespaces
-    
-    foreach($namespaces as $key => $value){
-	$capFromFascadeXmlObject->registerXPathNamespace($key, $value);
+
+    foreach ($namespaces as $key => $value) {
+        $capFromFascadeXmlObject->registerXPathNamespace($key, $value);
     }
     $test = $capFromFascadeXmlObject->xpath("");
     //replace
     foreach ($urlsToChange as $xpath) {
-	//$e = new mb_exception($xpath);
+        //$e = new mb_exception($xpath);
         $href = $capFromFascadeXmlObject->xpath($xpath);
-	//$e = new mb_exception($href[0]);
+        //$e = new mb_exception($href[0]);
         $href[0][0] = $new;
     }
     header("Content-Type: application/xml");
@@ -1434,11 +1445,11 @@ function checkWfsPermission($wfsOws, $features, $userId)
     global $con, $n;
     $myconfs = $n->getWfsConfByPermission($userId);
     if ($features !== false) {
-	//check if we know the features requested
-	if (count($features) == 0) {
-	        throwE(array("No wfs_feature data available."));
-        	die();
-    	}	
+        //check if we know the features requested
+        if (count($features) == 0) {
+            throwE(array("No wfs_feature data available."));
+            die();
+        }
     }
 
     //get wfs
@@ -1463,10 +1474,10 @@ function checkWfsPermission($wfsOws, $features, $userId)
 
         //get appropriate wfs_conf
         $sql = "SELECT wfs_conf.wfs_conf_id FROM wfs_conf ";
-        $sql.= "JOIN wfs_featuretype ";
-        $sql.= "ON wfs_featuretype.featuretype_id = wfs_conf.fkey_featuretype_id ";
-        $sql.= "WHERE wfs_featuretype.featuretype_name = $2 ";
-        $sql.= "AND wfs_featuretype.fkey_wfs_id = $1";
+        $sql .= "JOIN wfs_featuretype ";
+        $sql .= "ON wfs_featuretype.featuretype_id = wfs_conf.fkey_featuretype_id ";
+        $sql .= "WHERE wfs_featuretype.featuretype_name = $2 ";
+        $sql .= "AND wfs_featuretype.fkey_wfs_id = $1";
         $v = array($service["wfs_id"], $feature);
         $t = array("i", "s");
         $res = db_prep_query($sql, $v, $t);
@@ -1502,7 +1513,7 @@ function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
     $myconfs = $n->getWfsConfByPermission($userId);
     if ($storedQueryId !== false) {
     } else {
-	throwE(array("No storedquery_id data available."));
+        throwE(array("No storedquery_id data available."));
         die();
     }
     //get wfs
@@ -1528,9 +1539,9 @@ function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
     $t = array("i", "s");
     $res = db_prep_query($sql, $v, $t);
     if (!($row = db_fetch_array($res))) {
-    	$notice = new mb_exception("Permissioncheck failed no wfs conf for wfs " . $service["wfs_id"] . " with storedquery_id " . $storedQueryId);
-	throwE(array("No wfs_conf data for storedquery_id " . $storedQueryId));
-	die();
+        $notice = new mb_exception("Permissioncheck failed no wfs conf for wfs " . $service["wfs_id"] . " with storedquery_id " . $storedQueryId);
+        throwE(array("No wfs_conf data for storedquery_id " . $storedQueryId));
+        die();
     }
     $conf_id = $row["wfs_conf_id"];
     //check permission
@@ -1542,64 +1553,65 @@ function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
     return $service;
 }
 
-function getWfsOperationUrl($wfsOws, $operationName, $operationMethod) {
-	$timeBegin = microtime();
-	$sql = "SELECT wfs_getcapabilities_doc FROM wfs WHERE  wfs_owsproxy = $1";
-	$v = array($wfsOws);
-    	$t = array("s");
-    	$res = db_prep_query($sql, $v, $t);
-    	if ($row = db_fetch_array($res)) {
-        	$capXml = $row["wfs_getcapabilities_doc"];
-    	} else {
-        	throwE(array("No wfs data available."));
-        	die();
-    	}
-	//parse capabilities
-	$wfs20Cap = new DOMDocument();
-	try {
-		if (!$wfs20Cap->loadXML($capXml)) {
-        		throw new Exception("Cannot parse WFS 2.0 Capabilities!");
-        	}
-	}
-	catch (Exception $e) {
-    		$e = new mb_exception($e->getMessage());
-	}	
-	if ($wfs20Cap !== false) {
-		$xpath = new DOMXPath($wfs20Cap);
-		$rootNamespace = $wfs20Cap->lookupNamespaceUri($wfs20Cap->namespaceURI);
-		$e = new mb_notice("rootns: ".$rootNamespace);
-		$xpath->registerNamespace('defaultns', $rootNamespace); 
-		$xpath->registerNamespace("ows", "http://www.opengis.net/ows");
-		$xpath->registerNamespace("gml", "http://www.opengis.net/gml");
-		$xpath->registerNamespace("ogc", "http://www.opengis.net/ogc");
-		$xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
-		$xpath->registerNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		$urlArray = DOMNodeListObjectValuesToArray($xpath->query('/defaultns:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name=\''.$operationName.'\']/ows:DCP/ows:HTTP/ows:'.$operationMethod.'/@xlink:href'));
-		//check for type
-		if (is_array($urlArray)) {
-			$e = new mb_notice("http_auth/http/index.php: url for operation ".$operationName." : ".$urlArray[0]);
-			$timeEnd = microtime();
-			$e = new mb_notice("http_auth/http/index.php: time to get url from capabilities: ".($timeEnd-$timeBegin)*1000);
-			return $urlArray[0];
-		} else {
-			$e = new mb_exception("http_auth/http/index.php: no url for operation ".$operationName." and method ".$operationMethod." found in Capabilities. Function returned: ".json_encode($urlArray[0]));
-			return false;
-		} 
-	} else {
-		$e = new mb_exception("http_auth/http/index.php: Problem while trying to do xpath on capabilities document!");
-		return false;
-	}
+function getWfsOperationUrl($wfsOws, $operationName, $operationMethod)
+{
+    $timeBegin = microtime();
+    $sql = "SELECT wfs_getcapabilities_doc FROM wfs WHERE  wfs_owsproxy = $1";
+    $v = array($wfsOws);
+    $t = array("s");
+    $res = db_prep_query($sql, $v, $t);
+    if ($row = db_fetch_array($res)) {
+        $capXml = $row["wfs_getcapabilities_doc"];
+    } else {
+        throwE(array("No wfs data available."));
+        die();
+    }
+    //parse capabilities
+    $wfs20Cap = new DOMDocument();
+    try {
+        if (!$wfs20Cap->loadXML($capXml)) {
+            throw new Exception("Cannot parse WFS 2.0 Capabilities!");
+        }
+    } catch (Exception $e) {
+        $e = new mb_exception($e->getMessage());
+    }
+    if ($wfs20Cap !== false) {
+        $xpath = new DOMXPath($wfs20Cap);
+        $rootNamespace = $wfs20Cap->lookupNamespaceUri($wfs20Cap->namespaceURI);
+        $e = new mb_notice("rootns: " . $rootNamespace);
+        $xpath->registerNamespace('defaultns', $rootNamespace);
+        $xpath->registerNamespace("ows", "http://www.opengis.net/ows");
+        $xpath->registerNamespace("gml", "http://www.opengis.net/gml");
+        $xpath->registerNamespace("ogc", "http://www.opengis.net/ogc");
+        $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
+        $xpath->registerNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        $urlArray = DOMNodeListObjectValuesToArray($xpath->query('/defaultns:WFS_Capabilities/ows:OperationsMetadata/ows:Operation[@name=\'' . $operationName . '\']/ows:DCP/ows:HTTP/ows:' . $operationMethod . '/@xlink:href'));
+        //check for type
+        if (is_array($urlArray)) {
+            $e = new mb_notice("http_auth/http/index.php: url for operation " . $operationName . " : " . $urlArray[0]);
+            $timeEnd = microtime();
+            $e = new mb_notice("http_auth/http/index.php: time to get url from capabilities: " . ($timeEnd - $timeBegin) * 1000);
+            return $urlArray[0];
+        } else {
+            $e = new mb_exception("http_auth/http/index.php: no url for operation " . $operationName . " and method " . $operationMethod . " found in Capabilities. Function returned: " . json_encode($urlArray[0]));
+            return false;
+        }
+    } else {
+        $e = new mb_exception("http_auth/http/index.php: Problem while trying to do xpath on capabilities document!");
+        return false;
+    }
 }
 
-function DOMNodeListObjectValuesToArray($domNodeList) {
-	$iterator = 0;
-	$array = array();
-	foreach ($domNodeList as $item) {
-    		$array[$iterator] = $item->nodeValue; // this is a DOMNode instance
-    		// you might want to have the textContent of them like this
-    		$iterator++;
-	}
-	return $array;
+function DOMNodeListObjectValuesToArray($domNodeList)
+{
+    $iterator = 0;
+    $array = array();
+    foreach ($domNodeList as $item) {
+        $array[$iterator] = $item->nodeValue; // this is a DOMNode instance
+        // you might want to have the textContent of them like this
+        $iterator++;
+    }
+    return $array;
 }
 
 function checkLayerPermission($wms_id, $l, $userId)
@@ -1622,40 +1634,40 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
     //debug
     $startTime = microtime();
     if ($postData == false) {
-	//check POST/GET
-	if ($query->reqMethod !== 'POST') {
+        //check POST/GET
+        if ($query->reqMethod !== 'POST') {
             if ($auth) { //new for HTTP Authentication
                 $d = new connector($url, $auth);
             } else {
                 $d = new connector($url);
             }
-	} else {
-	    $d = new connector();
-	    $d->set('httpType','POST');
-	    //$d->set('curlSendCustomHeaders',true);
-	    $d->set('httpPostData', $query->getPostQueryString());//as array
-	    //$d->set('httpContentType','text/xml');
-	    //TODO maybe delete some params from querystring which are already in post array
+        } else {
+            $d = new connector();
+            $d->set('httpType', 'POST');
+            //$d->set('curlSendCustomHeaders',true);
+            $d->set('httpPostData', $query->getPostQueryString()); //as array
+            //$d->set('httpContentType','text/xml');
+            //TODO maybe delete some params from querystring which are already in post array
             if ($auth) { //new for HTTP Authentication
                 $d->load($url, $auth);
             } else {
                 $d->load($url);
             }
-	}
-	$content = $d->file;
+        }
+        $content = $d->file;
     } else {
-		$e = new mb_notice("owsproxy/index.php: postData will be send ");
-		$postInterfaceObject = new connector();
-		$postInterfaceObject->set('httpType','POST');
-		$postInterfaceObject->set('curlSendCustomHeaders',true);
-		$postInterfaceObject->set('httpPostData', $postData);
-		$postInterfaceObject->set('httpContentType','text/xml');
-		if ($auth) { //new for HTTP Authentication
-			$postInterfaceObject->load($url, $auth);
-		} else {
-			$postInterfaceObject->load($url);
-		}		 
-		$content = $postInterfaceObject->file;
+        $e = new mb_notice("owsproxy/index.php: postData will be send ");
+        $postInterfaceObject = new connector();
+        $postInterfaceObject->set('httpType', 'POST');
+        $postInterfaceObject->set('curlSendCustomHeaders', true);
+        $postInterfaceObject->set('httpPostData', $postData);
+        $postInterfaceObject->set('httpContentType', 'text/xml');
+        if ($auth) { //new for HTTP Authentication
+            $postInterfaceObject->load($url, $auth);
+        } else {
+            $postInterfaceObject->load($url);
+        }
+        $content = $postInterfaceObject->file;
     }
     $endTime = microtime();
     //$e = new mb_exception("owsproxy/http/index.php: Time for getting remote resource: ".(string)($endTime - $startTime));
@@ -1680,21 +1692,21 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             /*header("Content-Type: " . $reqParams['format']);
             echo $content;*/
             if ($mask !== null && $mask != false) {
-            	new mb_notice("spatial security: applying mask");
-            	$source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
+                new mb_notice("spatial security: applying mask");
+                $source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0, Imagick::CHANNEL_ALPHA);
             }
             $numColors = $source->getImageColors();
             if ($log_id != null && is_integer($log_id)) {
-            	$n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
+                $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
             header("Content-Type: " . $reqParams['format']);
             echo $source->getImageBlob();
         }
         return true;
     } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") { // getmap
-//		header("Content-Type: ".$reqParams['info_format']);
-//		$content = matchUrls($content);
-//		echo $content;
+        //		header("Content-Type: ".$reqParams['info_format']);
+        //		$content = matchUrls($content);
+        //		echo $content;
         $pattern_exc = '~EXCEPTION~i';
         preg_match($pattern_exc, $content, $exception);
         if (!$content) {
@@ -1719,108 +1731,107 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         }
         return true;
     } elseif (strtoupper($reqParams["request"]) == "GETFEATURE") {
-	    //$e = new mb_exception("http_auth/http/index.php: GetFeature invoked");
-	    $startTime = microtime();
-	    //parse featureCollection and get number of objects
-	    //only possible if features should be logged!
-	    if ($log_id !== false) {
-	    	$e = new mb_notice("http_auth/http/index.php: GetFeature invoked - logging activated!");
-	        libxml_use_internal_errors(true);
-	        try {
-		        $featureCollectionXml = simplexml_load_string($content);
-		        if ($featureCollectionXml === false) {
-			        foreach(libxml_get_errors() as $error) {
-        			    $err = new mb_exception("owsproxy/http/index.php:".$error->message);
-    			    }
-			        throw new Exception("owsproxy/http/index.php:".'Cannot parse featureCollection XML!');
-			        //TODO give error message
-		        }
-	        }
-	        catch (Exception $e) {
-    		    $err = new mb_exception("owsproxy/index.php:".$e->getMessage());
-		        //TODO give error message
-	        }
-	        if ($featureCollectionXml !== false) {
-		        //$featureCollectionXml->registerXPathNamespace("gmd", "http://www.isotc211.org/2005/gmd");
-		        $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
-		        if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
-			        $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
-		        } else {
-			        $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
-		        }
-		        $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
-		        $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
-		        $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
-		        $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		        $featureCollectionXml->registerXPathNamespace("default", "");
-        	    preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
-       		    if (!$reqParams['version']) {
-			        $e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
-		        }
-				switch ($reqParams['version']) {
-					case "1.0.0":
-						//get # of features from counting features
-						$numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-						$numberOfFeatures = count($numberOfFeatures);
-						break;
-					case "1.1.0":
-						//get # of features from counting features
-						$numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-						$numberOfFeatures = count($numberOfFeatures);
-						break;
-					//for wfs 2.0 - don't count features
-					default:
-						//get # of features from attribut
-						$numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
-						$numberOfFeatures = $numberOfFeatures[0];
-						break;
-				}
-				$endTime = microtime();
-				$e = new mb_notice("owsproxy/http/index.php: ".$numberOfFeatures." delivered features from wfs.");
-				//TODO: enhance error management
-				if ($log_id !== false) {
-                	$n->updateWfsLog(1, '', '', $numberOfFeatures, $log_id);
-            	}
-				$e = new mb_notice("owsproxy/http/index.php: Time for counting: ". (string)($endTime - $startTime));
-				$e = new mb_notice("owsproxy/http/index.php: Memory used for XML String: ".getVariableUsage($content)/1000000 ."MB");
-				if ($header != false) { 
-					header($header);
-				}
-        		echo $content;
-			} else {
-			    //TODO: no feature xml found ! - give back a good error message
-			    if ($header != false) {
-				    header($header);
-			    }
-			    echo $content;
-	        }
-	    } else {
-	    	//$e = new mb_exception('http_auth/http/index.php: no logging activated!');
-	    	//$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
-	    	//$e = new mb_exception('http_auth/http/index.php: actual header var: '.$header);
-	    	if ($header != false) {
-	    		header($header);
-	    	} else {
-	    	    //define header as requested outputFormat of wfs - only a workaround!
-	    		//$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
-	    		if ($reqParams['outputformat'] != false) {
-	    	        header("Content-Type: ".$reqParams['outputformat']);
-	    	        switch($reqParams['outputformat']) {
-	    	        	case "application/zip":
-	    	        		$dateTime = date("Y-m-d");
-	    	        		header("Content-Disposition: attachment; filename=\"".$dateTime."_mapbender_featuretype_".$reqParams['typename'].".zip\"");
-	    	        		break;
-	    	        }
-	    		} else {
-	    			header("Content-Type: application/xml");
-	    		}
-	    	}
-	    	echo $content;
-	    }
+        //$e = new mb_exception("http_auth/http/index.php: GetFeature invoked");
+        $startTime = microtime();
+        //parse featureCollection and get number of objects
+        //only possible if features should be logged!
+        if ($log_id !== false) {
+            $e = new mb_notice("http_auth/http/index.php: GetFeature invoked - logging activated!");
+            libxml_use_internal_errors(true);
+            try {
+                $featureCollectionXml = simplexml_load_string($content);
+                if ($featureCollectionXml === false) {
+                    foreach (libxml_get_errors() as $error) {
+                        $err = new mb_exception("owsproxy/http/index.php:" . $error->message);
+                    }
+                    throw new Exception("owsproxy/http/index.php:" . 'Cannot parse featureCollection XML!');
+                    //TODO give error message
+                }
+            } catch (Exception $e) {
+                $err = new mb_exception("owsproxy/index.php:" . $e->getMessage());
+                //TODO give error message
+            }
+            if ($featureCollectionXml !== false) {
+                //$featureCollectionXml->registerXPathNamespace("gmd", "http://www.isotc211.org/2005/gmd");
+                $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
+                if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
+                    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
+                } else {
+                    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
+                }
+                $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
+                $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
+                $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
+                $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                $featureCollectionXml->registerXPathNamespace("default", "");
+                preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
+                if (!$reqParams['version']) {
+                    $e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
+                }
+                switch ($reqParams['version']) {
+                    case "1.0.0":
+                        //get # of features from counting features
+                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+                        $numberOfFeatures = count($numberOfFeatures);
+                        break;
+                    case "1.1.0":
+                        //get # of features from counting features
+                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+                        $numberOfFeatures = count($numberOfFeatures);
+                        break;
+                        //for wfs 2.0 - don't count features
+                    default:
+                        //get # of features from attribut
+                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
+                        $numberOfFeatures = $numberOfFeatures[0];
+                        break;
+                }
+                $endTime = microtime();
+                $e = new mb_notice("owsproxy/http/index.php: " . $numberOfFeatures . " delivered features from wfs.");
+                //TODO: enhance error management
+                if ($log_id !== false) {
+                    $n->updateWfsLog(1, '', '', $numberOfFeatures, $log_id);
+                }
+                $e = new mb_notice("owsproxy/http/index.php: Time for counting: " . (string)($endTime - $startTime));
+                $e = new mb_notice("owsproxy/http/index.php: Memory used for XML String: " . getVariableUsage($content) / 1000000 . "MB");
+                if ($header != false) {
+                    header($header);
+                }
+                echo $content;
+            } else {
+                //TODO: no feature xml found ! - give back a good error message
+                if ($header != false) {
+                    header($header);
+                }
+                echo $content;
+            }
+        } else {
+            //$e = new mb_exception('http_auth/http/index.php: no logging activated!');
+            //$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
+            //$e = new mb_exception('http_auth/http/index.php: actual header var: '.$header);
+            if ($header != false) {
+                header($header);
+            } else {
+                //define header as requested outputFormat of wfs - only a workaround!
+                //$e = new mb_exception('http_auth/http/index.php: requested outputFormat: '.$reqParams['outputformat']);
+                if ($reqParams['outputformat'] != false) {
+                    header("Content-Type: " . $reqParams['outputformat']);
+                    switch ($reqParams['outputformat']) {
+                        case "application/zip":
+                            $dateTime = date("Y-m-d");
+                            header("Content-Disposition: attachment; filename=\"" . $dateTime . "_mapbender_featuretype_" . $reqParams['typename'] . ".zip\"");
+                            break;
+                    }
+                } else {
+                    header("Content-Type: application/xml");
+                }
+            }
+            echo $content;
+        }
     } else {
-	    if ($header !== false) { 
-		    header($header);
-	    }
+        if ($header !== false) {
+            header($header);
+        }
         echo $content;
     }
 }
@@ -1847,24 +1858,25 @@ function getWmsIdByLayerId($id)
         return false;
 }
 
-function getVariableUsage($var) {
-  $total_memory = memory_get_usage();
-  $tmp = unserialize(serialize($var));
-  return memory_get_usage() - $total_memory; 
+function getVariableUsage($var)
+{
+    $total_memory = memory_get_usage();
+    $tmp = unserialize(serialize($var));
+    return memory_get_usage() - $total_memory;
 }
 
 //function to remove one complete get param out of the query
-function delTotalFromQuery($paramName,$queryString) {
-	//echo $paramName ."<br>";
-	$queryString = "&".$queryString;
-	if ($paramName == "searchText") {
-			$str2exchange = "searchText=*&";
-		} else {
-			$str2exchange = "";
-	}
-	$queryStringNew = preg_replace('/\b'.$paramName.'\=[^&]*&?/',$str2exchange,$queryString); //TODO find empty get params
-	$queryStringNew = ltrim($queryStringNew,'&');
-	$queryStringNew = rtrim($queryStringNew,'&');
-	return $queryStringNew;
+function delTotalFromQuery($paramName, $queryString)
+{
+    //echo $paramName ."<br>";
+    $queryString = "&" . $queryString;
+    if ($paramName == "searchText") {
+        $str2exchange = "searchText=*&";
+    } else {
+        $str2exchange = "";
+    }
+    $queryStringNew = preg_replace('/\b' . $paramName . '\=[^&]*&?/', $str2exchange, $queryString); //TODO find empty get params
+    $queryStringNew = ltrim($queryStringNew, '&');
+    $queryStringNew = rtrim($queryStringNew, '&');
+    return $queryStringNew;
 }
-?>
