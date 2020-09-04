@@ -2055,11 +2055,13 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 
 switch ($f) {
 	case "json" :
-		header ( "application/json" );
+		//header ( "Content-type: application/json" );
+		header ( "Content-type: application/vnd.geo+json" );
 		echo json_encode ( $returnObject );
 		break;
 	case "xml" :
-		header ( "application/xml" );
+		header ( "Content-type: application/xml" );
+		//Content-type: application/xhtml+xml; charset=UTF-8
 		//header ( "application/gml+xml; version=3.2; profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf0" );
 		echo $gmlFeatureCache;
 		break;
