@@ -111,16 +111,21 @@ foreach ( $textualDataArray as $textualData ) {
 		${$textualData} = $configObject->{$textualData};
 	}
 }
-
 // $startmem = memory_get_usage();
 // http://localhost/mapbender/devel_tests/wfsClientTest.php?wfsid=16&ft=vermkv:fluren_rlp&bbox=7.9,50.8,8.0,52
 // problem: mapbender parses featuretype names from wfs <= 1.1.0 without namespaces, if they are not explecitly defined!
 // better to use wfs 2.0.0 as native interface
-
 // default page
 $page = 0;
-// default format f is html
+// default format f is html, also json and xml is possible - implement content negotiation
 $f = "html";
+// overwrite outputFormat for special headers:
+IF (in_array($_SERVER ["HTTP_ACCEPT"], array("application/xml", "text/xml", "text/xml; subtype=gml/3.1.1", "text/xml; subtype=gml/3.2", "text/xml; subtype=gml/2.1.2", "text/xml; subtype=gml/3.2.1"))) {
+	$f = "xml";
+}
+IF (in_array($_SERVER ["HTTP_ACCEPT"], array("application/json", "application/json; subtype=geojsontext/xml", "text/json"))) {
+	$f = "json";
+}
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
 // default outputFormat for wfs objects:
@@ -1600,6 +1605,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						if (in_array ( 'application/json; subtype=geojson', explode ( ',', $ftOutputFormats ) ) && $nativeJson == true) {
 							// if (false) {
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", 'application/json; subtype=geojson', $wfs_http_method );
+							$gmlFeatureCache = $features;
 							$geojsonList = json_decode ( $features );
 							$geojsonBbox = array ();
 							$geojsonIndex = 0;
@@ -1706,6 +1712,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", false, $wfs_http_method );
 							// transform to geojson to allow rendering !
 							// $e = new mb_exception($features);
+							$gmlFeatureCache = $features;
 							$gml3Class = new Gml_3_Factory ();
 							// create featuretype object
 							// TODO
@@ -1819,6 +1826,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					// $e = new mb_exception("wfsid: ".$wfsid." - collection: ".$collection." - item: ".$item);
 					if (in_array ( 'application/json; subtype=geojson', explode ( ',', $ftOutputFormats ) ) && $nativeJson == true) {
 						$features = $wfs->getFeatureById ( $collection, 'application/json; subtype=geojson', $item, "2.0.0", "EPSG:4326" );
+						$gmlFeatureCache = $features;
 						$geojsonList = json_decode ( $features );
 						$geojsonBbox = array ();
 						$geojsonIndex = 0;
@@ -1918,6 +1926,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						// transform to geojson to allow rendering !
 						// TODO test for ows:ExceptionReport!!!!
 						$gml3Class = new Gml_3_Factory ();
+						$gmlFeatureCache = $features;
 						// create featuretype object
 						// TODO
 						$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
@@ -2050,6 +2059,9 @@ switch ($f) {
 		echo json_encode ( $returnObject );
 		break;
 	case "xml" :
+		header ( "application/xml" );
+		//header ( "application/gml+xml; version=3.2; profile=http://www.opengis.net/def/profile/ogc/2.0/gml-sf0" );
+		echo $gmlFeatureCache;
 		break;
 	case "html" :
 		$js1 = '<script>' . $newline;
