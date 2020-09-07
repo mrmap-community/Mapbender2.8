@@ -1222,12 +1222,12 @@ class User implements RPCObject{
 		$row = db_fetch_all($res);
 		if (count($row) == 1 && $row[0]['featuretype_id'] == null) {
 			//
-			new mb_exception("http_auth/index.php: Some featuretype is null - no anonymous access possible!");
+			new mb_exception("classes/classe_user.php: No wfs_conf found for the requested featuretype - access not allowed if security proxy is activated!");
 			return false;
 		}
 		//$e = new mb_exception("featuretype_id[0]: '".$row[0]['featuretype_id']."' - ".count($row));
 		if (count($row) !== $numberOfFeaturetypes) {
-			new mb_exception("http_auth/index.php: Number of requested featuretypes are not equal to found wfs_confs!");
+			new mb_exception("classes/classe_user.php: Number of requested featuretypes are not equal to found wfs_confs!");
 			return false;
 		} else {
 			return true;
