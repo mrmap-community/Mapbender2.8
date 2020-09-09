@@ -5,9 +5,11 @@ require_once (dirname ( __FILE__ ) . "/../classes/class_universal_wfs_factory.ph
 require_once (dirname ( __FILE__ ) . "/../classes/class_gml_3_factory.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_owsConstraints.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_connector.php"); // for resolving external @context content
+require_once (dirname ( __FILE__ ) . "/../classes/class_user.php");
 global $rewritePath;
 global $behindRewrite;
 global $linkedDataProxyUrl;
+global $nonceLife;
 /*
  * examples:
  * get
@@ -15,7 +17,12 @@ global $linkedDataProxyUrl;
  *
  * rest
  *
- *
+ * TODO: add CORS header, add authentication - see spec: 
+ * HTTP authentication, 
+ * an API key (either as a header or as a query parameter),
+ * OAuth2’s common flows (implicit, password, application and access code) as defined in RFC6749, and
+ * OpenID Connect Discovery
+ * 
  */
 if (file_exists ( dirname ( __FILE__ ) . "/../../conf/linkedDataProxy.json" )) {
 	$configObject = json_decode ( file_get_contents ( "../../conf/linkedDataProxy.json" ) );
@@ -120,12 +127,34 @@ $page = 0;
 // default format f is html, also json and xml is possible - implement content negotiation
 $f = "html";
 // overwrite outputFormat for special headers:
-IF (in_array($_SERVER ["HTTP_ACCEPT"], array("application/xml", "text/xml", "text/xml; subtype=gml/3.1.1", "text/xml; subtype=gml/3.2", "text/xml; subtype=gml/2.1.2", "text/xml; subtype=gml/3.2.1"))) {
+//try to read out first entry!
+if (strpos($_SERVER ["HTTP_ACCEPT"], ";") != false) {
+	$formatPartOfAcceptHeader = explode(';', $_SERVER ["HTTP_ACCEPT"]);
+	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader[0];
+} else {
+	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
+}
+if (strpos($formatPartOfAcceptHeader, ",") != false) {
+	$formatPartOfAcceptHeader = explode(',', $formatPartOfAcceptHeader);
+	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader[0];
+} else {
+	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
+}
+//$e = new mb_exception("php/mod_linkedDataProxy.php: first found format: ".$formatPartOfAcceptHeader);
+
+if (in_array($formatPartOfAcceptHeader, array("application/xml", "text/xml", "text/xml; subtype=gml/3.1.1", "text/xml; subtype=gml/3.2", "text/xml; subtype=gml/2.1.2", "text/xml; subtype=gml/3.2.1"))) {
 	$f = "xml";
 }
-IF (in_array($_SERVER ["HTTP_ACCEPT"], array("application/json", "application/json; subtype=geojsontext/xml", "text/json"))) {
+if (in_array($formatPartOfAcceptHeader, array("application/geo+json", "application/openapi+json;version=3.0", "application/json", "application/json; subtype=geojsontext/xml", "text/json"))) {
 	$f = "json";
 }
+/*
+ * For debugging purposes only
+ */
+//$e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
+//$e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
+//$e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
+
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
 // default outputFormat for wfs objects:
@@ -139,6 +168,7 @@ $allowedOutputFormats = array (
 		"text/xml; subtype=gml/3.2.1",
 		"SHAPEZIP",
 		"application/json; subtype=geojson",
+		"application/openapi+json;version=3.0",
 		"text/csv",
 		"application/zip" 
 );
@@ -150,6 +180,47 @@ $allowedFormats = array (
 );
 //
 $newline = " ";
+// for digest authentication
+// function to get relevant user information from mb db
+function getUserInfo($mbUsername, $mbEmail) {
+	$result = array();
+	if (preg_match('#[@]#', $mbEmail)) {
+		$sql = "SELECT mb_user_id, mb_user_digest, mb_user_password, password FROM mb_user where mb_user_name = $1 AND mb_user_email = $2";
+		$v = array($mbUsername, $mbEmail);
+		$t = array("s", "s");
+	} else {
+		$sql = "SELECT mb_user_id, mb_user_aldigest As mb_user_digest, mb_user_password, password FROM mb_user where mb_user_name = $1";
+		$v = array($mbUsername);
+		$t = array("s");
+	}
+	$res = db_prep_query($sql, $v, $t);
+	if (!($row = db_fetch_array($res))) {
+		$result[0] = "-1";
+	} else {
+		$result[0] = $row['mb_user_id'];
+		$result[1] = $row['mb_user_digest'];
+		$result[2] = $row['mb_user_password'];
+		$result[3] = $row['password'];
+	}
+	return $result;
+}
+function http_digest_parse($txt) {
+	// protect against missing data
+	$needed_parts = array('nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1);
+	$data = array();
+	$keys = implode('|', array_keys($needed_parts));
+	preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
+	foreach ($matches as $m) {
+		$data[$m[1]] = $m[3] ? $m[3] : $m[4];
+		unset($needed_parts[$m[1]]);
+	}
+	return $needed_parts ? false : $data;
+}
+function getNonce() {
+	global $nonceLife;
+	$time = ceil(time() / $nonceLife) * $nonceLife;
+	return md5(date('Y-m-d H:i', $time) . ':' . $_SERVER['REMOTE_ADDR'] . ':' . NONCEKEY);
+}
 function microtime_float() {
 	list ( $usec, $sec ) = explode ( " ", microtime () );
 	return (( float ) $usec + ( float ) $sec);
@@ -285,7 +356,7 @@ function getOpenApi3JsonComponentTemplate() {
               "title" : "this document"
             }, {
               "href" : "http://data.example.org/api",
-              "rel" : "service",
+              "rel" : "service-desc",
               "type" : "application/openapi+json;version=3.0",
               "title" : "the API definition"
             }, {
@@ -1002,6 +1073,24 @@ $returnObject = new stdClass ();
 // ************************************************************************************************************************************
 // service list part
 // ************************************************************************************************************************************
+/*
+ * GET list of wfs which are published with an open license - they don't need autorization control
+ * 
+ */
+$sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+// all wfs - without open filter!
+// $sql = "SELECT wfs_id, wfs_abstract, wfs_version, wfs_title, wfs_owsproxy, wfs_getcapabilities, providername, fees FROM wfs";
+$v = array ();
+$t = array ();
+$res = db_prep_query ( $sql, $v, $t );
+$i = 0;
+$openWfsIds = array();
+while ( $row = db_fetch_array ( $res ) ) {
+	$openWfsIds[] = $row ['wfs_id'];
+	$i ++;
+}
+unset($i);
+//$e = new mb_exception("php/linkedDataProxy.php: open wfs: ".json_encode($openWfsIds));//strings !
 if (! isset ( $wfsid ) || $wfsid == "") {
 	// list all public available wfs which are classified as opendata!
 	$returnObject->service = array ();
@@ -1031,10 +1120,152 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 		$returnObject->message = "Services found in registry!";
 	}
 } else {
-	// ************************************************************************************************************************************
-	// service part
-	// ************************************************************************************************************************************
-	// try to instantiate wfs object
+		// ************************************************************************************************************************************
+		// service part
+		// ************************************************************************************************************************************
+		// try to instantiate wfs object
+		/*
+	 * check authentication if access to resource / featuretype is not allowed
+	 *
+	 */
+	if (! in_array ( $wfsid, $openWfsIds )) {
+		$proxyActivated = false;
+		$authType = "digest";
+		// $e = new mb_exception("php/linkedDataProxy.php: wfs has no open data compatible license - check autorization!");
+		// for a special featuretype check autorization
+		// check authorization - see http_auth/http/index.php
+		// check if security proxy is activated
+		$sql = "SELECT wfs_owsproxy FROM wfs WHERE wfs_id = $1";
+		$v = array ($wfsid);
+		$t = array ('i');
+		$res = db_prep_query ( $sql, $v, $t );
+		while ( $row = db_fetch_array ( $res ) ) {
+			if (isset($row['wfs_owsproxy']) && $row['wfs_owsproxy'] != "") {
+				$proxyActivated = true;
+			}
+		}
+		$anonymousAccess = false;
+		//$e = new mb_exception ( $collection );
+		if (isset ( $collection ) && ! is_null ( $collection ) && $proxyActivated == true) {
+			$user = new user ( PUBLIC_USER );
+			$anonymousAccess = $user->areFeaturetypesAccessible ( $collection, $wfsid );
+			if ($anonymousAccess == true) {
+				$userId = PUBLIC_USER;
+			} else {
+				switch ($authType) {
+					case 'digest' :
+						// special for type of authentication ******************************
+						// control if digest auth is set, if not set, generate the challenge with getNonce()
+						if (empty ( $_SERVER ['PHP_AUTH_DIGEST'] )) {
+							header ( 'HTTP/1.1 401 Unauthorized' );
+							header ( 'WWW-Authenticate: Digest realm="' . REALM . '",qop="auth",nonce="' . getNonce () . '",opaque="' . md5 ( REALM ) . '"' );
+							die ( 'Login cancelled by user!' );
+						}
+						// read out the header in an array
+						$requestHeaderArray = http_digest_parse ( $_SERVER ['PHP_AUTH_DIGEST'] );
+						// error if header could not be read
+						if (! ($requestHeaderArray)) {
+							echo 'Following Header information cannot be validated - check your clientsoftware!<br>';
+							echo $_SERVER ['PHP_AUTH_DIGEST'] . '<br>';
+							die ();
+						}
+						// get mb_username and email out of http_auth username string
+						$userIdentification = explode ( ';', $requestHeaderArray ['username'] );
+						$mbUsername = $userIdentification [0];
+						$mbEmail = $userIdentification [1]; // not given in all circumstances
+						$userInformation = getUserInfo ( $mbUsername, $mbEmail );
+						/*
+						 * $result[0] = $row['mb_user_id'];
+						 * $result[1] = $row['mb_user_digest'];
+						 * $result[2] = $row['mb_user_password'];
+						 * $result[3] = $row['password'];
+						 */
+						if ($userInformation [0] == '-1') {
+							die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!' );
+						}
+						if ($userInformation [1] == '') { // check if digest exists in db - if no digest exists it should be a null string!
+							die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!' );
+						}
+						// first check the stale!
+						if ($requestHeaderArray ['nonce'] == getNonce ()) {
+							// Up-to-date nonce received
+							$stale = false;
+						} else {
+							// Stale nonce received (probably more than x seconds old)
+							$stale = true;
+							// give another chance to authenticate
+							header ( 'HTTP/1.1 401 Unauthorized' );
+							header ( 'WWW-Authenticate: Digest realm="' . REALM . '",qop="auth",nonce="' . getNonce () . '",opaque="' . md5 ( REALM ) . '" ,stale=true' );
+						}
+						// generate the valid response to check the request of the client
+						$A1 = $userInformation [1];
+						$A2 = md5 ( $_SERVER ['REQUEST_METHOD'] . ':' . $requestHeaderArray ['uri'] );
+						$valid_response = $A1 . ':' . getNonce () . ':' . $requestHeaderArray ['nc'];
+						$valid_response .= ':' . $requestHeaderArray ['cnonce'] . ':' . $requestHeaderArray ['qop'] . ':' . $A2;
+						$valid_response = md5 ( $valid_response );
+						if ($requestHeaderArray ['response'] != $valid_response) { // the user have to authenticate new - cause something in the authentication went wrong
+							die ( 'Authentication failed - sorry, you have to authenticate once more!' );
+						}
+						// if we are here - authentication has been done well!
+						// let's do the proxy things (came from owsproxy.php):
+						// special for type of authentication ******************************
+						// user information
+						// define $userId from database information
+						$userId = $userInformation [0];
+						break;
+					case 'basic' :
+						if (! isset ( $_SERVER ['PHP_AUTH_USER'] )) {
+							header ( 'WWW-Authenticate: Basic realm="' . REALM . '"' );
+							header ( 'HTTP/1.1 401 Unauthorized' );
+							die ( 'Authentication failed - sorry, you have to authenticate once more!' );
+						} else {
+							// get mb_username and email out of http_auth username string
+							$userIdentification = explode ( ';', $_SERVER ['PHP_AUTH_USER'] );
+							$mbUsername = $userIdentification [0];
+							$mbEmail = $userIdentification [1]; // not given in all circumstances
+							$userInformation = getUserInfo ( $mbUsername, $mbEmail );
+							/*
+							 * $result[0] = $row['mb_user_id'];
+							 * $result[1] = $row['mb_user_digest'];
+							 * $result[2] = $row['mb_user_password'];
+							 * $result[3] = $row['password'];
+							 */
+							if ($userInformation [0] == '-1') {
+								die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!' );
+							}
+							/*
+							 * if ($userInformation[1] == '') { //check if digest exists in db - if no digest exists it should be a null string!
+							 * die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!');
+							 * }
+							 */
+							// check password - new since 06/2019 - secure password !!!!!
+							if ($userInformation [3] == '' || $userInformation [3] == null) {
+								die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no password which is stored in a secure way. - Please login at the portal to generate one!' );
+							}
+							if (password_verify ( $_SERVER ['PHP_AUTH_PW'], $userInformation [3] )) {
+								$userId = $userInformation [0];
+							} else {
+								$userId = $userInformation [0];
+								die ( 'HTTP Authentication failed for user: ' . $mbUsername . '!' );
+							}
+						}
+						break;
+				}
+			}
+			// userId known now
+			// check autorization
+			$user = new user ( $userId );
+			//$e = new mb_exception( $userId );
+			$accessAllowed = $user->areFeaturetypesAccessible ( $collection, $wfsid );
+			if ($accessAllowed == false) {
+				header('HTTP/1.0 403 Forbidden');
+				die("Access to requested collection is not allowed to current user - log out and try again!"); // give http 403!
+			} /*else {
+				echo "Access to " . $collection . " allowed for requesting user"; // give http 403!
+				die ();
+			}*/
+		}
+	}
 	$myWfsFactory = new UniversalWfsFactory ();
 	$wfs = $myWfsFactory->createFromDb ( $wfsid ); // set force version to pull featuretype_name with namespace!!!!, $forceVersion = "2.0.0"
 	if ($wfs == null) {
@@ -1169,6 +1400,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				$apiDescriptionJson->paths->{'/collections'}->get->responses->{'default'}->content->{'text/html'}->schema->{'type'} = "string";
 				// path /collections ****************************************************************
 				// collect the elements foreach featuretype via sql
+				/*
+				 * check authorization before - against the list of accessable featuretypes for this user
+				 */
 				foreach ( $wfs->featureTypeArray as $featureType ) {
 					// path /collections ****************************************************************
 					$featuretypePathPart = '/collections/' . $featureType->name;
@@ -1265,7 +1499,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[0]->title = "this document";
 				 *
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->href = "http://data.example.org/api";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->rel = "service";
+				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->rel = "service-desc";
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->type = "application/openapi+json;version=3.0";
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->title = "the API definition";
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[2]->href = "http://data.example.org/conformance";
@@ -1337,12 +1571,16 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			$returnObject->links [1]->title = "this document as HTML";
 			$returnObject->links [1]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&f=html" );
 			// TODO service api
+			$returnObject->links [2]->rel = "service-desc";
+			$returnObject->links [2]->type = "application/vnd.oai.openapi+json;version=3.0";
+			$returnObject->links [2]->title = "The OpenAPI definition as JSON";
+			$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collections=api" );
 			// TODO conformance
 			// TODO data
-			$returnObject->links [2]->rel = "data";
-			$returnObject->links [2]->type = "application/json";
-			$returnObject->links [2]->title = "Metadata about the feature collections";
-			$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collections=all" );
+			$returnObject->links [3]->rel = "data";
+			$returnObject->links [3]->type = "application/json";
+			$returnObject->links [3]->title = "Metadata about the feature collections";
+			$returnObject->links [3]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collection=all" );
 			// available crs? - howto get from capabilities
 			
 			// ************************************************************************************************************************************
@@ -1720,7 +1958,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							// $e = new mb_exception("featuretype name: ".$ftName);
 							// $memBeforeGmlParsing = memory_get_usage();
 							// $e = new mb_exception("Memory before GML Object: ".((memory_get_usage() - $startmem) / 1000)." MB");
-							// $e = new mb_exception($wfs." - ".$myFeatureType." - ".$geomColumnName);
+							//$e = new mb_exception($wfs." - ".$myFeatureType." - ".$geomColumnName);
 							$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
 							// $e = new mb_exception("Memory for GML Object: ".((memory_get_usage() - $memBeforeGmlParsing) / 1000)." MB");
 							// $e = new mb_exception("geojson from mb class: ".json_encode($gml3Object));
