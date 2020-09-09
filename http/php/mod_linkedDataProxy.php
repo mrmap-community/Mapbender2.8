@@ -127,12 +127,34 @@ $page = 0;
 // default format f is html, also json and xml is possible - implement content negotiation
 $f = "html";
 // overwrite outputFormat for special headers:
-IF (in_array($_SERVER ["HTTP_ACCEPT"], array("application/xml", "text/xml", "text/xml; subtype=gml/3.1.1", "text/xml; subtype=gml/3.2", "text/xml; subtype=gml/2.1.2", "text/xml; subtype=gml/3.2.1"))) {
+//try to read out first entry!
+if (strpos($_SERVER ["HTTP_ACCEPT"], ";") != false) {
+	$formatPartOfAcceptHeader = explode(';', $_SERVER ["HTTP_ACCEPT"]);
+	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader[0];
+} else {
+	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
+}
+if (strpos($formatPartOfAcceptHeader, ",") != false) {
+	$formatPartOfAcceptHeader = explode(',', $formatPartOfAcceptHeader);
+	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader[0];
+} else {
+	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
+}
+//$e = new mb_exception("php/mod_linkedDataProxy.php: first found format: ".$formatPartOfAcceptHeader);
+
+if (in_array($formatPartOfAcceptHeader, array("application/xml", "text/xml", "text/xml; subtype=gml/3.1.1", "text/xml; subtype=gml/3.2", "text/xml; subtype=gml/2.1.2", "text/xml; subtype=gml/3.2.1"))) {
 	$f = "xml";
 }
-IF (in_array($_SERVER ["HTTP_ACCEPT"], array("application/json", "application/json; subtype=geojsontext/xml", "text/json"))) {
+if (in_array($formatPartOfAcceptHeader, array("application/geo+json", "application/openapi+json;version=3.0", "application/json", "application/json; subtype=geojsontext/xml", "text/json"))) {
 	$f = "json";
 }
+/*
+ * For debugging purposes only
+ */
+//$e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
+//$e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
+//$e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
+
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
 // default outputFormat for wfs objects:
@@ -146,6 +168,7 @@ $allowedOutputFormats = array (
 		"text/xml; subtype=gml/3.2.1",
 		"SHAPEZIP",
 		"application/json; subtype=geojson",
+		"application/openapi+json;version=3.0",
 		"text/csv",
 		"application/zip" 
 );
@@ -333,7 +356,7 @@ function getOpenApi3JsonComponentTemplate() {
               "title" : "this document"
             }, {
               "href" : "http://data.example.org/api",
-              "rel" : "service",
+              "rel" : "service-desc",
               "type" : "application/openapi+json;version=3.0",
               "title" : "the API definition"
             }, {
@@ -1476,7 +1499,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[0]->title = "this document";
 				 *
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->href = "http://data.example.org/api";
-				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->rel = "service";
+				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->rel = "service-desc";
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->type = "application/openapi+json;version=3.0";
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[1]->title = "the API definition";
 				 * $apiDescriptionJson->components->schemas->root->properties->links->example[2]->href = "http://data.example.org/conformance";
@@ -1548,12 +1571,16 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			$returnObject->links [1]->title = "this document as HTML";
 			$returnObject->links [1]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&f=html" );
 			// TODO service api
+			$returnObject->links [2]->rel = "service-desc";
+			$returnObject->links [2]->type = "application/vnd.oai.openapi+json;version=3.0";
+			$returnObject->links [2]->title = "The OpenAPI definition as JSON";
+			$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collections=api" );
 			// TODO conformance
 			// TODO data
-			$returnObject->links [2]->rel = "data";
-			$returnObject->links [2]->type = "application/json";
-			$returnObject->links [2]->title = "Metadata about the feature collections";
-			$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collections=all" );
+			$returnObject->links [3]->rel = "data";
+			$returnObject->links [3]->type = "application/json";
+			$returnObject->links [3]->title = "Metadata about the feature collections";
+			$returnObject->links [3]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collection=all" );
 			// available crs? - howto get from capabilities
 			
 			// ************************************************************************************************************************************
