@@ -127,33 +127,46 @@ $page = 0;
 // default format f is html, also json and xml is possible - implement content negotiation
 $f = "html";
 // overwrite outputFormat for special headers:
-//try to read out first entry!
-if (strpos($_SERVER ["HTTP_ACCEPT"], ";") != false) {
-	$formatPartOfAcceptHeader = explode(';', $_SERVER ["HTTP_ACCEPT"]);
-	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader[0];
+// try to read out first entry!
+if (strpos ( $_SERVER ["HTTP_ACCEPT"], ";" ) != false) {
+	$formatPartOfAcceptHeader = explode ( ';', $_SERVER ["HTTP_ACCEPT"] );
+	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader [0];
 } else {
 	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
 }
-if (strpos($formatPartOfAcceptHeader, ",") != false) {
-	$formatPartOfAcceptHeader = explode(',', $formatPartOfAcceptHeader);
-	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader[0];
+if (strpos ( $formatPartOfAcceptHeader, "," ) != false) {
+	$formatPartOfAcceptHeader = explode ( ',', $formatPartOfAcceptHeader );
+	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader [0];
 } else {
 	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
 }
-//$e = new mb_exception("php/mod_linkedDataProxy.php: first found format: ".$formatPartOfAcceptHeader);
-
-if (in_array($formatPartOfAcceptHeader, array("application/xml", "text/xml", "text/xml; subtype=gml/3.1.1", "text/xml; subtype=gml/3.2", "text/xml; subtype=gml/2.1.2", "text/xml; subtype=gml/3.2.1"))) {
+// $e = new mb_exception("php/mod_linkedDataProxy.php: first found format: ".$formatPartOfAcceptHeader);
+// TODO: check all given formats in header an choose the right one 
+if (in_array ( $formatPartOfAcceptHeader, array (
+		"application/xml",
+		"text/xml",
+		"text/xml; subtype=gml/3.1.1",
+		"text/xml; subtype=gml/3.2",
+		"text/xml; subtype=gml/2.1.2",
+		"text/xml; subtype=gml/3.2.1" 
+) )) {
 	$f = "xml";
 }
-if (in_array($formatPartOfAcceptHeader, array("application/geo+json", "application/openapi+json;version=3.0", "application/json", "application/json; subtype=geojsontext/xml", "text/json"))) {
+if (in_array ( $formatPartOfAcceptHeader, array (
+		"application/geo+json",
+		"application/openapi+json;version=3.0",
+		"application/json",
+		"application/json; subtype=geojsontext/xml",
+		"text/json" 
+) )) {
 	$f = "json";
 }
 /*
  * For debugging purposes only
  */
-//$e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
-//$e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
-//$e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
+// $e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
+// $e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
+// $e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
 
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
@@ -1142,6 +1155,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 		while ( $row = db_fetch_array ( $res ) ) {
 			if (isset($row['wfs_owsproxy']) && $row['wfs_owsproxy'] != "") {
 				$proxyActivated = true;
+				$admin = new administration();
+			} else {
+				$admin = false;
 			}
 		}
 		$anonymousAccess = false;
@@ -1941,6 +1957,19 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								// $e = new mb_exception("bbox featurecollection: minxFC:".$minxFC." minyFC:".$minyFC." maxxFC:".$maxxFC." maxyFC:".$maxyFC."");
 							}
 							/*
+							 * log count of features, if logging is activated
+							 */
+							if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
+								//get price out of db
+								$price = intval($admin->getWfsPrice($wfsid));
+								$log_id = $admin->logWfsProxyRequest($wfsid, $userId, "OGC API Features Proxy", $price, 0, $ftName);
+							} else {
+								$log_id = false;
+							}
+							if ($log_id !== false) {
+								$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
+							}
+							/*
 							 * header('application/json');
 							 * echo $features;
 							 * die();
@@ -2016,6 +2045,19 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								// free memory
 								unset ( $gml3Object->featureCollection->featureArray [$geojsonIndex] );
 								$geojsonIndex ++;
+							}
+							/*
+							 * log count of features, if logging is activated
+							 */
+							if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
+								//get price out of db
+								$price = intval($admin->getWfsPrice($wfsid));
+								$log_id = $admin->logWfsProxyRequest($wfsid, $userId, "OGC API Features Proxy", $price, 0, $ftName);
+							} else {
+								$log_id = false;
+							}
+							if ($log_id !== false) {
+								$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 							}
 						}
 						if ($f == 'html') {
@@ -2159,6 +2201,16 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$geomType = $feature->geometry->type;
 							$geojsonIndex ++;
 						}
+						if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
+							//get price out of db
+							$price = intval($admin->getWfsPrice($wfsid));
+							$log_id = $admin->logWfsProxyRequest($wfsid, $userId, "OGC API Features Proxy", $price, 0, $ftName);
+						} else {
+							$log_id = false;
+						}
+						if ($log_id !== false) {
+							$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
+						}
 					} else {
 						$features = $wfs->getFeatureById ( $collection, 'text/xml; subtype=gml/3.1.1', $item, "2.0.0", "EPSG:4326" );
 						// transform to geojson to allow rendering !
@@ -2210,6 +2262,16 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$geomType = json_decode ( $mbFeature->toGeoJSON () )->geometry->type;
 							$geojsonList->features [] = json_decode ( $mbFeature->toGeoJSON () );
 							$geojsonIndex ++;
+						}
+						if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
+							//get price out of db
+							$price = intval($admin->getWfsPrice($wfsid));
+							$log_id = $admin->logWfsProxyRequest($wfsid, $userId, "OGC API Features Proxy", $price, 0, $ftName);
+						} else {
+							$log_id = false;
+						}
+						if ($log_id !== false) {
+							$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 						}
 					} // end if of supported and requested json format
 					  // resolve json-schema *********************************************************
