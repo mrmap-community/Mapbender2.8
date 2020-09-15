@@ -5,13 +5,17 @@ a {color: #333;}
 .navbar-fixed-top {border-width: 0 0 2px;}
 .navbar-inverse .navbar-brand {color: #0362b9;} /*Hessenblau */
 .navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav > li > a{text-shadow:unset;}
-.navbar-inverse .navbar-brand:hover, .navbar-inverse .navbar-brand:focus{color: #0362b9;}
+.navbar-inverse .navbar-brand, .navbar-inverse .navbar-brand:focus{color: #0362b9;}
 .navbar-inverse .navbar-nav > li > a{color:#777;}
 .navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus{color:#333;}
 .navbar-inverse .navbar-toggle .icon-bar{background-color:#0362b9;}
 .navbar-inverse .navbar-toggle:hover > .icon-bar, .navbar-inverse .navbar-toggle:focus > .icon-bar{background-color:#fff;}
 .navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .active > a{background-image: unset;filter:unset;-webkit-box-shadow:unset;box-shadow:unset;}
 .navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .open > a:hover, .navbar-inverse .navbar-nav > .open > a:focus{background-color: #555;}
+.navbar-backlink{float: left;padding: 15px 15px 15px 0px;font-size: 14px;line-height: 20px;height: 50px;color:#0362b9;}
+.navbar-backlink:hover{text-decoration:none;}
+.navbar-brand{font-size:14px;}	
+.navbar-inverse .navbar-brand:hover{color:#48101b;}
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus{background-color:#555;background-image:unset;filter:unset;}
 .panel-primary {border-color:#aaa;}
 .panel-primary > .panel-heading{background:none;border-color:#aaa;}
@@ -39,3 +43,12 @@ a {color: #333;}
 .ol-scale-line {background-color:#efefef !important;background-image: linear-gradient(to bottom,#fff 0,#efefef 100%) !important;}
 .ol-scale-line-inner {color:#333;border-color: #333;}
 .measure-overlay {background-color:#333 !important;}
+.nav.navbar-nav > li {border-left: 1px solid #ddd;}
+.nav.navbar-nav > li:last-child {border-right: 1px solid #ddd;}
+.hesselogo-mobile {background-image: url(/static/useroperations/images/logo-gdi.png);height: 40px;background-size: contain;width: 33px;margin: 5px 10px 5px 5px !important;padding: 0 !important;background-repeat: no-repeat;}
+
+@media (min-width: 768px) and (max-width: 1000px) {
+    #navbar-container {height: 52px;}    
+}
+
+

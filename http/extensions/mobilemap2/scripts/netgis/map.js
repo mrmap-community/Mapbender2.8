@@ -462,7 +462,7 @@ netgis.map =
 		
 		var viewFull = function()
 		{
-			viewExtent( 412133, 5471408, 586408, 5723093 );
+			viewExtent( 403960, 5468250, 595890, 5733150 );
 		};
 		
 		var viewExtent = function( minx, miny, maxx, maxy )
