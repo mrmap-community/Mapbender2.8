@@ -128,6 +128,8 @@ $page = 0;
 $f = "html";
 // overwrite outputFormat for special headers:
 // try to read out first entry!
+$acceptHeaderArray = array();
+
 if (strpos ( $_SERVER ["HTTP_ACCEPT"], ";" ) != false) {
 	$formatPartOfAcceptHeader = explode ( ';', $_SERVER ["HTTP_ACCEPT"] );
 	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader [0];
@@ -136,30 +138,45 @@ if (strpos ( $_SERVER ["HTTP_ACCEPT"], ";" ) != false) {
 }
 if (strpos ( $formatPartOfAcceptHeader, "," ) != false) {
 	$formatPartOfAcceptHeader = explode ( ',', $formatPartOfAcceptHeader );
-	$formatPartOfAcceptHeader = $formatPartOfAcceptHeader [0];
+	foreach ($formatPartOfAcceptHeader as $acceptedFormat) {
+		$acceptHeaderArray[] = trim($acceptedFormat);
+	}
 } else {
-	$formatPartOfAcceptHeader = $_SERVER ["HTTP_ACCEPT"];
+	$acceptHeaderArray[0] = $_SERVER ["HTTP_ACCEPT"];
 }
 // $e = new mb_exception("php/mod_linkedDataProxy.php: first found format: ".$formatPartOfAcceptHeader);
 // TODO: check all given formats in header an choose the right one 
-if (in_array ( $formatPartOfAcceptHeader, array (
-		"application/xml",
-		"text/xml",
-		"text/xml; subtype=gml/3.1.1",
-		"text/xml; subtype=gml/3.2",
-		"text/xml; subtype=gml/2.1.2",
-		"text/xml; subtype=gml/3.2.1" 
-) )) {
-	$f = "xml";
+$acceptedHeaderFormatArray = array();
+foreach ($acceptHeaderArray as $acceptHeaderFomat) {
+	if (in_array ( $acceptHeaderFomat, array (
+			"application/xml",
+			"text/xml",
+			"text/xml; subtype=gml/3.1.1",
+			"text/xml; subtype=gml/3.2",
+			"text/xml; subtype=gml/2.1.2",
+			"text/xml; subtype=gml/3.2.1"
+	) )) {
+		$acceptedHeaderFormatArray[] = "xml";
+	}
+	if (in_array ( $acceptHeaderFomat, array (
+			"application/geo+json",
+			"application/openapi+json;version=3.0",
+			"application/json",
+			"application/json; subtype=geojsontext/xml",
+			"text/json"
+	) )) {
+		$acceptedHeaderFormatArray[] = "json";
+	}
+	if (in_array ( $acceptHeaderFomat, array (
+			"text/html"
+	) )) {
+		$acceptedHeaderFormatArray[] = "html";
+	}
 }
-if (in_array ( $formatPartOfAcceptHeader, array (
-		"application/geo+json",
-		"application/openapi+json;version=3.0",
-		"application/json",
-		"application/json; subtype=geojsontext/xml",
-		"text/json" 
-) )) {
-	$f = "json";
+if (is_array($acceptedHeaderFormatArray) && count($acceptedHeaderFormatArray) > 0) {
+	$f = $acceptedHeaderFormatArray[0];
+} else {
+	//$f = "html"; //default value
 }
 /*
  * For debugging purposes only
@@ -1686,7 +1703,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					$returnObject->name = $myFeatureType->name;
 					$returnObject->title = $myFeatureType->title;
 					$returnObject->description = $myFeatureType->abstract;
-					$returnObject->extent->spatial = array ();
+					
+					$returnObject->extent->spatial = $myFeatureType->latLonBboxArray;
 					$returnObject->extent->temporal = array ();
 					$returnObject->links = array ();
 					$returnObject->links [0]->rel = "item";
@@ -1704,6 +1722,14 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$returnObject->collectionName = $ftName;
 						$returnObject->collectionTitle = $myFeatureType->title;
 						//
+						$returnObject->title = $myFeatureType->title;
+						$returnObject->id = $ftName;
+						$returnObject->description = $myFeatureType->summary;
+						$returnObject->extent->spatial = $myFeatureType->latLonBboxArray;
+						$returnObject->extent->temporal = array ();
+						
+						
+						
 						$returnObject->type = "FeatureCollection";
 						$returnObject->links = array ();
 						$returnObject->links [0]->rel = "self";
@@ -2356,7 +2382,12 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 switch ($f) {
 	case "json" :
 		//header ( "Content-type: application/json" );
-		header ( "Content-type: application/vnd.geo+json" );
+		//define header type - if only wfsid is given, give application/json
+		if (! isset ( $collection ) || $collection == "" || $collections == "all" || $collections == "api") {
+			header ( "Content-type: application/json" );
+		} else {
+			header ( "Content-type: application/vnd.geo+json" );
+		}
 		echo json_encode ( $returnObject );
 		break;
 	case "xml" :
