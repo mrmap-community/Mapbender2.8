@@ -568,7 +568,6 @@ function fillISO19139($iso19139, $recordId) {
 	$keyword_cs->appendChild ( $keywordText );
 	$keyword->appendChild ( $keyword_cs );
 	$MD_Keywords->appendChild ( $keyword );
-	
 	// pull special keywords from custom categories:
 	$sql = "SELECT custom_category.custom_category_key FROM custom_category, layer_custom_category WHERE layer_custom_category.fkey_layer_id = $1 AND layer_custom_category.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
 	$v = array (
@@ -578,10 +577,9 @@ function fillISO19139($iso19139, $recordId) {
 			'i' 
 	);
 	$res = db_prep_query ( $sql, $v, $t );
-	$e = new mb_notice ( "look for custom categories: " );
 	$countCustom = 0;
 	while ( $row = db_fetch_array ( $res ) ) {
-		if (isset ( $row ['keyword'] ) && $row ['keyword'] != "") {
+		if (isset ( $row ['custom_category_key'] ) && $row ['custom_category_key'] != "") {
 			$keyword = $iso19139->createElement ( "gmd:keyword" );
 			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
 			$keywordText = $iso19139->createTextNode ( $row ['custom_category_key'] );

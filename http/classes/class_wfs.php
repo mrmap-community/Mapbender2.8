@@ -95,7 +95,7 @@ abstract class Wfs extends Ows {
 	}
 
 	public static function findGeomColumnNameByFeaturetypeId($ftId) {
-		$geomTypesArray = array('GeometryPropertyType','PointPropertyType','LineStringPropertyType','PolygonPropertyType','MultiPointPropertyType','MultiLineStringPropertyType','MultiPolygonPropertyType');
+		$geomTypesArray = array('GeometryPropertyType','PointPropertyType','LineStringPropertyType','PolygonPropertyType','MultiPointPropertyType','MultiLineStringPropertyType','MultiPolygonPropertyType','SurfacePropertyType','MultiSurfacePropertyType');
 		$sql = "SELECT element_name, element_type FROM wfs_element WHERE fkey_featuretype_id = $1";
 		$res = db_prep_query($sql, array($ftId), array("i"));
 		//simple uses first supported geom type!
