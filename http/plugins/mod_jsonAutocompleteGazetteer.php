@@ -27,7 +27,7 @@
  * > '','mapframe1','','http://www.mapbender.org/index.php/mod_jsonAutocompleteGazetteer');
  * >
  * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) 
- * > VALUES('<app_id>', 'jsonAutocompleteGazetteer', 'gazetteerUrl', 'http://geoportal.saarland.de/mapbender/geoportal/gaz_geom_mobile.php',
+ * > VALUES('<app_id>', 'jsonAutocompleteGazetteer', 'gazetteerUrl', 'http://ws.geonames.org/searchJSON?lang=de&',
  * >  '' ,'var');
  * > 
  * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
@@ -61,7 +61,7 @@ Mapbender.events.afterMapRequest.register( function(){
 
 //initialize modul
 if (options.gazetteerUrl === undefined) {
-	options.gazetteerUrl = 'http://geoportal.saarland.de/mapbender/geoportal/gaz_geom_mobile.php';
+	options.gazetteerUrl = 'http://ws.geonames.org/searchJSON?lang=de&';
 }
 if (options.isGeonames === undefined ) {
 	options.isGeonames = false;
