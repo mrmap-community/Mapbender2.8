@@ -27,7 +27,7 @@
  * > '','mapframe1','','http://www.mapbender.org/index.php/mod_jsonAutocompleteGazetteer');
  * >
  * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) 
- * > VALUES('<app_id>', 'jsonAutocompleteGazetteer', 'gazetteerUrl', 'http://geoportal.saarland.de/mapbender/geoportal/gaz_geom_mobile.php',
+ * > VALUES('<app_id>', 'jsonAutocompleteGazetteer', 'gazetteerUrl', 'http://ws.geonames.org/searchJSON?lang=de&',
  * >  '' ,'var');
  * > 
  * > INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type)
@@ -61,10 +61,10 @@ Mapbender.events.afterMapRequest.register( function(){
 
 //initialize modul
 if (options.gazetteerUrl === undefined) {
-	options.gazetteerUrl = 'http://geoportal.saarland.de/mapbender/geoportal/gaz_geom_mobile.php';
+	options.gazetteerUrl = 'http://ws.geonames.org/searchJSON?lang=de&';
 }
 if (options.isGeonames === undefined ) {
-	options.isGeonames = false;
+	options.isGeonames = true;
 } else {
 	options.isGeonames = false;
 }
@@ -99,7 +99,7 @@ if (options.gazetteerFrontImageOff === undefined) {
 	options.gazetteerFrontImageOff = "../img/button_blue_red/gazetteer3_off.png";
 }
 if (options.helpText === undefined) {
-	options.helpText = "Orts- und Straßennamen sind bei der Adresssuche mit einem Komma voneinander zu trennen!<br><br>Auch Textfragmente der gesuchten Adresse reichen hierbei aus.<br><br>&nbsp&nbsp&nbsp&nbsp Beispiel:<br>&nbsp&nbsp&nbsp&nbsp&nbsp\"Am Zehnthof 10 , St. Goar\" oder<br>&nbsp&nbsp&nbsp&nbsp&nbsp\"zehnt 10 , goar\"<br><br>Der passende Treffer muss in der erscheinenden Auswahlliste per Mausklick ausgewählt werden!";
+	options.helpText = "";
 }
 
 var JsonAutocompleteGazetteer = function() {
@@ -227,9 +227,7 @@ var JsonAutocompleteGazetteer = function() {
 			);
 		}
 		this.inputAddress.attr({'id':'geographicName'});
-	      
-               
-               		//default value
+		//default value
 		this.inputAddress.val('<?php echo _mb('Search for addresses'); ?>');
 		this.inputAddress.click(function() {
 			that.inputAddress.val('');
@@ -244,9 +242,7 @@ var JsonAutocompleteGazetteer = function() {
 		$(function() {
 			$( "#geographicName" ).autocomplete({
 				source: function( request, response ) {
-               options.map_width = mb_mapObj[getMapObjIndexByName(options.target)].width;
-               options.map_height = mb_mapObj[getMapObjIndexByName(options.target)].height;
-               					$.ajax({
+					$.ajax({
 						url: options.gazetteerUrl,
 						dataType: "jsonp",
 						data: {
@@ -258,10 +254,7 @@ var JsonAutocompleteGazetteer = function() {
 							searchText: request.term,
 							featureClass: "P",
 							style: "full",
-							name_startsWith: request.term,
-                                                        map_width : options.map_width,
-                                                        map_height : options.map_height
-
+							name_startsWith: request.term
 
 						},
 						success: function( data ) {
