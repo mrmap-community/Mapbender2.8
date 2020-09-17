@@ -268,12 +268,7 @@ var JsonAutocompleteGazetteer = function() {
 		});*/
 		
 		this.inputAddress.css('width',options.inputWidth);
-                
-                //options.map_width = mb_mapObj[getMapObjIndexByName(options.target)].width;
-                //options.map_height = mb_mapObj[getMapObjIndexByName(options.target)].height;
-                //alert(options.map_height); 		
-                $('.ui-menu').css('width','100px');
-                
+		$('.ui-menu').css('width','100px');
 		$('.ui-menu-item').css('width','100px');
 		//set the loading symbol for autoloader class
 		//$('.ui-autocomplete-loading').css('background','white url("../img/indicator_wheel.gif") right center no-repeat');
@@ -282,9 +277,6 @@ var JsonAutocompleteGazetteer = function() {
 		$(function() {
 			$( "#geographicName" ).autocomplete({
 				source: function( request, response ) {
-                options.map_width = mb_mapObj[getMapObjIndexByName(options.target)].width;
-                options.map_height = mb_mapObj[getMapObjIndexByName(options.target)].height;
-                
 					$.ajax({
 						url: options.gazetteerUrl,
 						dataType: "jsonp",
@@ -297,10 +289,7 @@ var JsonAutocompleteGazetteer = function() {
 							searchText: request.term,
 							featureClass: "P",
 							style: "full",
-							name_startsWith: request.term,
-                                                        map_width : options.map_width,
-                                                        map_height : options.map_height
-
+							name_startsWith: request.term
 
 						},
 						success: function( data ) {
