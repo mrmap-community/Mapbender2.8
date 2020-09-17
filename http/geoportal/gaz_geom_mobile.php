@@ -169,13 +169,20 @@ if ($_REQUEST['resultTarget'] != 'web') {
 
 
 
-$basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung";
+$key = BKG_GEOCODING_KEY;
+$basUrl1 = "https://sg.geodatenzentrum.de/gdz_geokodierung__";
 $basUrl2 = "/geosearch?query=";
 $maxFeatures = $maxResult;
 //exchange some letters
 //$e = new mb_exception("searchText1: ".$searchText);
 $searchText= str_replace('ß', 'SS', str_replace('Ü', 'UE', str_replace('Ä', 'AE', str_replace('Ö', 'OE', mb_strtoupper($searchText)))));
-$invokeUrl = $basUrl1.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&count=".$maxResults;
+//$e = new mb_exception("searchText2: ".$searchText);
+if ($bundesland != false) {
+	$searchText .= "&filter=bundesland:".$bundesland;
+}
+//$e = new mb_exception($invokeUrl);
+$invokeUrl = $basUrl1.$key.$basUrl2.$searchText."&srsName=EPSG%3A".$searchEPSG."&count=".$maxResults;
+//$e = new mb_exception($invokeUrl);
 $searchConnector = new connector($invokeUrl);
 $searchResult = $searchConnector->file;
 $gazetteerObject = json_decode($searchResult);
