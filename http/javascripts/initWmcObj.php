@@ -1045,10 +1045,13 @@ if ($saveInSession == false) {
 	//delete also the current gui - this is handled by revertGui...
 } else {
 	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client 
-	//if (){
+	if (isset($wmc_filename) && $wmc_filename != ""){
 	    $admin->putToStorage($wmc_filename, $wmcGetApi->toXml(), TMP_WMC_SAVE_STORAGE, 3600);
         //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc to storage - filename: ".$wmc_filename);
-	//}
+	} else {
+		$wmc_filename = TMPDIR."/wmc/".time()."_".uniqid();
+		$admin->putToStorage($wmc_filename, $wmcGetApi->toXml(), TMP_WMC_SAVE_STORAGE, 3600);
+	}
     //$e = new mb_exception('javascripts/initWmcObj.php: wmc remain in session');
 }
 //$e = new mb_exception('javascripts/initWmcObj.php: Actual mb_wmc from session: '.Mapbender::session()->get("mb_wmc"));
