@@ -108,6 +108,7 @@ if ($handle = opendir($metadataDir)) {
 		//save xml to file	
 	    }
 	    fclose($h); //close file for read
+		$metadataXml = exchangeLanguage( $metadataXml );
 	    //open same file for write and insert xml into the file!
             $writeHandle = fopen($metadataDir."/".$file, "w+");
 	    fwrite($writeHandle, $metadataXml);
@@ -126,7 +127,68 @@ if ($handle = opendir($metadataDir)) {
     $timeToBuildAll = microtime(true) - $startTimeForAll;
     logMessages("time to alter all xml: ".$timeToBuildAll);
 }
-
+function exchangeLanguage($metadataXml) {
+	// do parsing with dom, cause we want to alter the xml which have been parsed afterwards
+	$metadataDomObject = new DOMDocument ();
+	libxml_use_internal_errors ( true );
+	try {
+		$metadataDomObject->loadXML ( $metadataXml );
+		if ($metadataDomObject === false) {
+			foreach ( libxml_get_errors () as $error ) {
+				$err = new mb_exception ( "php/mod_qualifyPersistedMetadataXml.php:" . $error->message );
+			}
+			throw new Exception ( "php/mod_qualifyPersistedMetadataXm.php:" . 'Cannot parse metadata with dom!' );
+		}
+	} catch ( Exception $e ) {
+		$err = new mb_exception ( "php/mod_qualifyPersistedMetadataXm.php:" . $e->getMessage () );
+	}
+	if ($metadataDomObject !== false) {
+		// importing namespaces
+		$xpath = new DOMXPath ( $metadataDomObject );
+		$rootNamespace = $metadataDomObject->lookupNamespaceUri ( $metadataDomObject->namespaceURI );
+		$xpath->registerNamespace ( 'defaultns', $rootNamespace );
+		// $e = new mb_exception($rootNamespace);
+		// $xpath->registerNamespace('georss','http://www.georss.org/georss');
+		$xpath->registerNamespace ( "csw", "http://www.opengis.net/cat/csw/2.0.2" );
+		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml" );
+		$xpath->registerNamespace ( "gco", "http://www.isotc211.org/2005/gco" );
+		$xpath->registerNamespace ( "gmd", "http://www.isotc211.org/2005/gmd" );
+		$xpath->registerNamespace ( "gts", "http://www.isotc211.org/2005/gts" );
+		$xpath->registerNamespace ( "gmx", "http://www.isotc211.org/2005/gmx" );
+		// $xpath->registerNamespace("srv", "http://www.isotc211.org/2005/srv");
+		$xpath->registerNamespace ( "xsi", "http://www.w3.org/2001/XMLSchema-instance" );
+		$xpath->registerNamespace ( "xlink", "http://www.w3.org/1999/xlink" );
+		//
+		$newLanguageCodeXml = '<?xml version="1.0" encoding="UTF-8"?><gmd:language xmlns:gmd="http://www.isotc211.org/2005/gmd"><gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="ger">Deutsch</gmd:LanguageCode></gmd:language>';
+		// exchange language information
+		$contactDomObject = new DOMDocument ();
+		$contactDomObject->loadXML ( $newLanguageCodeXml );
+		$xpathInput = new DOMXpath ( $contactDomObject );
+		$inputNodeList = $xpathInput->query ( '/gmd:language' );
+		// $inputNode = $inputNodeList->item(0)->firstChild; responsible party
+		$inputNode = $inputNodeList->item ( 0 );
+		$languagePathToExchange = array (
+				'//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:language',
+				'//gmd:MD_Metadata/gmd:language' 
+		);
+		foreach ( $languagePathToExchange as $languagePath ) {
+			// get contact node or node list
+			$languageNodeList = $xpath->query ( $languagePath );
+			// test to delete all contact nodes more than one
+			for($i = 0; $i < $languageNodeList->length; $i ++) {
+				if ($i == 0) {
+					$temp = $languageNodeList->item ( $i );
+					$temp->parentNode->replaceChild ( $metadataDomObject->importNode ( $inputNode, true ), $temp );
+				}
+				if ($i > 0) {
+					$temp = $languageNodeList->item ( $i ); // avoid calling a function twice
+					$temp->parentNode->removeChild ( $temp );
+				}
+			}
+		}
+	}
+	return $metadataDomObject->saveXML ();
+}
 function addKeywords($metadataXml, $keywordsArray) {
     //logMessages("function addKeywords");
     //parse XML part
