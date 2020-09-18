@@ -339,10 +339,12 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
             "infoFeatureAccessService");
 	while ($row = db_fetch_array($res)) {
-        $pos++;
-        $xmlBuilder->addValue($MD_Metadata,
-            './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
-            $row['keyword']);
+                if ($row['keyword'] !== null && $row['keyword'] !== '') {
+                        $pos++;
+                        $xmlBuilder->addValue($MD_Metadata,
+                        './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                        $row['keyword']);
+                }
 	}
 
 	//pull special keywords from custom categories:	
