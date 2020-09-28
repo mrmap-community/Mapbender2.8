@@ -75,10 +75,10 @@
                 "karte" : {
                     "type" : "map",
                     "res_dpi" : 72,
-                    "x_ul" : 10.8,
-                    "y_ul" : 34.6,
-                    "width" : 188,
-                    "height" : 169.3,
+                    "x_ul" : 18.5,
+                    "y_ul" : 22.8,
+                    "width" : 179.7,
+                    "height" : 209.4,
                     "coords" : 1,
                     "coords_font_family" : "Arial",
                     "coords_font_size" : 8,
@@ -89,59 +89,37 @@
                     }
                 },
 
-                "titel" : {
+				"scale" : {
                     "type" : "text",
-                    "x_ul" : 110,
-                    "y_ul" : 17,
-                    "font_family" : "Arial",
-                    "font_size" : 16
-                },
-
-                "kommentar1" : {
-                    "type" : "para",
-                    "x_ul" : 16.1,
-                    "y_ul" : 255.2,
+                    "x_ul" : 106.0,
+                    "y_ul" : 242.7,
                     "font_family" : "Arial",
                     "font_size" : 11,
-                    "width" : 145,
-                    "height" : 5,
-                    "align" : "L",
-                    "border" : 0,
-                    "fill" : 0,
-                    "border_width" : 0.3
+                    "value" : "scale"
                 },
-                "legende" : {
-                    "type" : "legend",
-                    "x_ul" : 10,
-                    "y_ul" : 214,
-                    "width" : 200,
-                    "height" : 14,
+                "date" : {
+                    "type" : "text",
+                    "x_ul" : 41.0,
+                    "y_ul" : 242.7,
                     "font_family" : "Arial",
-                    "font_size" : 9,
-                    "scale" : 0.5
+                    "font_size" : 11,
+                    "value" : "date"
                 }
             }
         },
         {
             "tpl" : "Hochformat_A4_FeatureInfo.pdf",
             "featureInfo": true,
-            "titleHTML": "<h4 style=\"color:red;\">FeatureInfo</h4>",
+			"titleHTML": "<h3 style=\"color:black;\"><u>Ergebnis der Datenabfrage:</u></h3>",
             "useTplPage" : 2,
             "elements" : {
-                "titel": {
-                    "type": "text",
-                    "x_ul" : 6,
-                    "y_ul" : 20,
-                    "font_family" : "Arial",
-                    "font_size" : 20
-                },
                 "karte" : {
                     "type" : "map",
                     "res_dpi" : 72,
-                    "x_ul" : 10.8,
-                    "y_ul" : 34.6,
-                    "width" : 188,
-                    "height" : 169.3,
+                    "x_ul" : 18.5,
+                    "y_ul" : 22.8,
+                    "width" : 179.7,
+                    "height" : 209.4,
                     "coords" : 1,
                     "coords_font_family" : "Arial",
                     "coords_font_size" : 8,
@@ -153,12 +131,12 @@
                 },
                 "legende" : {
                     "type" : "legend",
-                    "x_ul" : 10,
-                    "y_ul" : 214,
+                    "x_ul" : 18.5,
+                    "y_ul" : 245,
                     "width" : 200,
                     "height" : 14,
                     "font_family" : "Arial",
-                    "font_size" : 9,
+                    "font_size" : 11,
                     "scale" : 0.5
                 }
 			}
