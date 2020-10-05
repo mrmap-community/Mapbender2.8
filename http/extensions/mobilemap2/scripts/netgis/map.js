@@ -32,6 +32,7 @@ netgis.map =
 		
 		var popupContainer;
 		var popupContent;
+		var popupControls;
 		var popupOverlay;
 		
 		var positionActive;
@@ -291,6 +292,7 @@ netgis.map =
 			// Popup
 			popupContainer = $( "#popup-container" );
 			popupContent = $( "#popup-content" );
+			popupControls = $( "#popup-controls" );
 			
 			popupOverlay = new ol.Overlay
 			(
@@ -334,6 +336,9 @@ netgis.map =
 			positionCenter = false;
 			
 			map.updateSize();
+			
+			// Additional Size Update, just to be sure
+			setTimeout( function() { map.updateSize(); }, 200 );
 			
 			// Parameters
 			var center = getCenter();
@@ -730,7 +735,7 @@ netgis.map =
 				},
 				function( data ) { onFeatureInfoResponse( data, layer ); }
 			);
-		}
+		};
 		
 		var updateSize = function()
 		{
@@ -871,6 +876,7 @@ netgis.map =
 		{
 			// Clear
 			popupContent.empty();
+			popupControls.hide();
 			
 			popupContent.append( content );
 			
@@ -921,7 +927,8 @@ netgis.map =
 		
 		var onMapClick = function( event )
 		{
-			//popupContent.empty();
+			popupContent.empty();
+			popupControls.show();
 			
 			netgis.menu.clearSideContent();
 			netgis.menu.toggleSideMenu( true );
