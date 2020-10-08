@@ -607,6 +607,15 @@ function throwE($e)
     }
 }
 
+function throwE_response_code_wrapper($e, $code = 500) {
+    if ( is_int($code) && ($code > 99) && ($code < 600) ) {
+        http_response_code($code);
+        throwE($e);
+    } else {
+        throwE($e);
+    }
+}
+
 function throwImage($e)
 {
     global $width, $height;
