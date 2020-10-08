@@ -1157,7 +1157,7 @@ function checkWmsPermission($wmsOws, $userId)
     }
 
     if (!in_array($service["wms_id"], $mywms)) {
-        throwE(array("Permission denied.", " -> " . $service["wms_id"], implode(",", $mywms)));
+        throwE_response_code_wrapper(array("Permission denied.", " -> " . $service["wms_id"], implode(",", $mywms)),401);
         die();
     }
     return $service;
