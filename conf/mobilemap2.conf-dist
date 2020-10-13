@@ -2,4 +2,8 @@
 //********************************************************************
 //configuration for mapbender mobilemap2
 $backgroundWms = array(913,914,915);
+define("MOBILEMAP2_HEIGHT_REQUEST_INFO_LAYER","mydhm");
+define("MOBILEMAP2_HEIGHT_REQUEST_INFO_URL","");
+#define("MOBILEMAP2_HEIGHT_REQUEST_INFO_URL","http://www.gdi-rp-dienste2.rlp.de/cgi-bin/mapserv?map=/data/umn/geoportal/dhm_query/dhm.map&"); example
+define("MOBILEMAP2_HEIGHT_REQUEST_EPSG","25832");
 ?>

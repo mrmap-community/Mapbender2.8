@@ -1,0 +1,17 @@
+{
+  "title": "",
+  "description": "",
+  "datasource_url": "",
+  "legal_notice_link": "",
+  "privacy_notice_link": "",
+  "memory_limit": "2000M",
+  "http_method": "GET",
+  "use_internal_bootstrap": true,
+  "own_css": "../css/linkedDataProxy.css",
+  "default_pages": 10,
+  "allowed_limits": ["1","5","10","20","50","100","200","500"],
+  "initial_bbox": [48, 6, 51, 9],
+  "map_position": "below_filter",
+  "behind_rewrite": false,
+  "rewrite_path": "spatial-objects"
+}

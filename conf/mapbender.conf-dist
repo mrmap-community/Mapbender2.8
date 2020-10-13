@@ -18,6 +18,11 @@ define("OWNER", "%%DBOWNER%%");
 define("PW", "%%DBPASSWORD%%");
 
 # --------------------------------------------
+# prepared statements (PHP > 5.1.x, PostgreSQL > 7.4)
+# --------------------------------------------
+define("PREPAREDSTATEMENTS",true);
+
+# --------------------------------------------
 # encoding - default characterset UTF-8
 # --------------------------------------------
 define("CHARSET","UTF-8");
@@ -46,7 +51,7 @@ define("LOG_DIR", dirname(__FILE__) . "/../log/");
 # --------------------------------------------
 # URL to login
 # --------------------------------------------
-define("LOGIN", "http://localhost/mapbender/frames/login.php");
+define("LOGIN", "https://".$_SERVER['HTTP_HOST']."/mapbender/frames/login.php");
 $login = LOGIN;
 
 # --------------------------------------------
@@ -142,7 +147,7 @@ define("MAILADMINNAME", "<mailadminname>");
 
 
 # --------------------------------------------
-# Send registration mail in cc to portal administrator (MAILADIM) 
+# Send registration mail in cc to portal administrator (MAILADIM)
 #---------------------------------------------
 define("SEND_REGISTRATION_CC", false);
 
@@ -158,6 +163,15 @@ define("AUTO_UPDATE", "0");
 define("TIME_LIMIT", "300");
 define("PHP_PATH", "/usr/bin/");
 
+# --------------------------------------------
+
+# Define special TIMEOUT for Capabilities Monitoring in seconds - default is defined in class_connector and is set to 20
+# --------------------------------------------
+define("CAP_MONITORING_TIMEOUT", "30");
+# --------------------------------------------
+# Define wait time between start of the single capabilities monitoring scripts. This may be usefull, if many services are on the same server as the monitoring installation. The time defined is given in microseconds - 2000000 is 2 seconds!
+# --------------------------------------------
+define("CAP_MONITORING_WAITSTATE", "200000");
 # --------------------------------------------
 # Mapbender error logging
 # --------------------------------------------
@@ -207,6 +221,12 @@ define("GEO_RSS_FILE", "../tmp/georss.xml");
 # --------------------------------------------
 define("TWITTER_NEWS", false);
 define("TWITTER_METADATA", false);
+
+#---------------------------------------------
+# ANONYMOUS
+#---------------------------------------------
+define("ANONYMOUS_USER","");
+define("ANONYMOUS_GROUP","");
 
 #---------------------------------------------
 # PREVIEW
@@ -308,12 +328,12 @@ define("PUBLIC_USER", "");
 
 
 # --------------------------------------------
-# define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework 
+# define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework
 # --------------------------------------------
 #define("REGISTRATING_GROUP",36);
 
 # --------------------------------------------
-# define a the user id of the portal admin in case of self registration - 
+# define a the user id of the portal admin in case of self registration -
 # this becomes the owner of the self-registered users. Defaults to user with id 1 (normally root).
 # --------------------------------------------
 #define("PORTAL_ADMIN_USER_ID","1");
@@ -400,7 +420,7 @@ define("CORS_WHITELIST", "http://localhost http://127.0.0.1");
 
 
 # --------------------------------------------
-# define if mapbender is already integrated in new django portal 
+# define if mapbender is already integrated in new django portal
 # --------------------------------------------
 #define("DJANGO_PORTAL", true);
 
@@ -438,13 +458,23 @@ define('DEFAULT_MAX_RESULTS_PER_PAGE', 10);
 
 # --------------------------------------------
 # Configuration for adding further keyword into exported xml based metadata records - this will help to identify them in portals
-# which harvest metadata from the mapbender registry. 
+# which harvest metadata from the mapbender registry.
 # --------------------------------------------
 #define('MAPBENDER_REGISTRY_UUID','2f23ed6e-0196-4c2b-8380-768389036509');
+
+# --------------------------------------------
+# Spatial Security
+# --------------------------------------------
+define("SPATIAL_SECURITY", true);
+# ROLETYPE can be user_group or gui
+define("SPATIAL_SECURITY_ROLETYPE", "gui");
+# local address of a mapserver instance
+define("MAPSERVER", "http://localhost/cgi-bin/mapserv");
+
 # --------------------------------------------
 # INSPIRE Metadata Specification
 # --------------------------------------------
-# Define which version of the INSPIRE Metadata Guidance should be used to export 
+# Define which version of the INSPIRE Metadata Guidance should be used to export
 # Mapbenders metadata for services and datasets
 # Supported versions: 1.3 & 2.0
 #define("INSPIRE_METADATA_SPEC", "1.3");
