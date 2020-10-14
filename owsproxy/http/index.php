@@ -203,7 +203,7 @@ if (getUserFromSession() == false || getUserFromSession() <= 0) {
         //kill actual session  
         $e = new mb_notice("delete temporary session file: " . $tmpSession);
         Mapbender::session()->storageDestroy($tmpSession);
-        throwE(array("Permission denied", " - no current session found and ", "public user not allowed to access ressource!"));
+        throwE_response_code_wrapper(array("Permission denied", " - no current session found and ", "public user not allowed to access ressource!"),401);
         unset($tmpSession);
         die();
     }
@@ -221,7 +221,7 @@ $n = new administration;
 //Extra security - IP check 
 if (defined("OWSPROXY_BIND_IP") && OWSPROXY_BIND_IP == true) {
     if (Mapbender::session()->get('mb_user_ip') != $_SERVER['REMOTE_ADDR']) {
-        throwE(array("Session not identified.", "Permission denied.", "Please authenticate."));
+        throwE_response_code_wrapper(array("Session not identified.", "Permission denied.", "Please authenticate."), 401);
         die();
     }
 }
@@ -367,7 +367,7 @@ switch (strtolower($reqParams['request'])) {
         $query->setOnlineResource($arrayOnlineresources['wms_getmap']);
         $layers = checkLayerPermission($arrayOnlineresources['wms_id'], $reqParams['layers'], $userId);
         if ($layers === "") {
-            throwE("Permission denied");
+            throwE_response_code_wrapper("Permission denied", 401);
             die();
         }
         $query->setParam("layers", urldecode($layers)); //the decoding of layernames dont make problems - but not really good names will be requested also ;-)
@@ -443,7 +443,7 @@ switch (strtolower($reqParams['request'])) {
         $query->setOnlineResource($arrayOnlineresources['wms_getmap']);
         $layers = checkLayerPermission($arrayOnlineresources['wms_id'], $reqParams['layers'], $userId);
         if ($layers === "") {
-            throwE("Permission denied");
+            throwE_response_code_wrapper("Permission denied", 401);
             die();
         }
         $query->setParam("layers", urldecode($layers));
@@ -1221,7 +1221,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
         //check permission
         if (!in_array($conf_id, $myconfs)) {
             $notice = new mb_exception("Permissioncheck failed:" . $conf_id . " not in " . implode(",", $myconfs));
-            throwE(array("Permission denied.", " -> " . $conf_id, implode(",", $myconfs)));
+            throwE_response_code_wrapper(array("Permission denied.", " -> " . $conf_id, implode(",", $myconfs)),401);
             die();
         }
     }
@@ -1276,7 +1276,7 @@ function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
     //check permission
     if (!in_array($conf_id, $myconfs)) {
         $notice = new mb_exception("Permissioncheck failed:" . $conf_id . " not in " . implode(",", $myconfs));
-        throwE(array("Permission denied.", " -> " . $conf_id, implode(",", $myconfs)));
+        throwE_response_code_wrapper(array("Permission denied.", " -> " . $conf_id, implode(",", $myconfs)),401);
         die();
     }
     return $service;
