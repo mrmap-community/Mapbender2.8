@@ -1,0 +1,3 @@
+<?php
+define("BKG_GEOCODING_KEY", "%%BKG_GEOCODING_KEY%%");
+?>

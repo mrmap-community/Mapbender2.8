@@ -84,10 +84,11 @@ class FPDI extends FPDF_TPL {
         $this->current_filename = $filename;
         $fn =& $this->current_filename;
 
-        if (!isset($this->parsers[$fn]))
+        if (!isset($this->parsers[$fn])) {
             //$this->parsers[$fn] =& new fpdi_pdf_parser($fn,$this);
 	    $newClass = new fpdi_pdf_parser($fn,$this);
 	    $this->parsers[$fn] =& $newClass;
+        }
         $this->current_parser =& $this->parsers[$fn];
         
         return $this->parsers[$fn]->getPageCount();
