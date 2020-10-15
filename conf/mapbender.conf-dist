@@ -225,8 +225,8 @@ define("TWITTER_METADATA", false);
 #---------------------------------------------
 # ANONYMOUS
 #---------------------------------------------
-define("ANONYMOUS_USER","");
-define("ANONYMOUS_GROUP","");
+define("ANONYMOUS_USER","%%ANONYMOUSUSER%%");
+define("ANONYMOUS_GROUP","%%ANONYMOUSGROUP%%");
 
 #---------------------------------------------
 # PREVIEW
@@ -291,7 +291,7 @@ define("LOAD_JQUERY_FROM_GOOGLE", false);
 # This user is a typical anonymous user which don't need to authenticate itself.
 # Some functions of the portal framework not allowed for this user.
 # --------------------------------------------
-define("PUBLIC_USER", "");
+define("PUBLIC_USER", "%%PUBLICUSERID%%");
 
 # --------------------------------------------
 # automatically create a session for the public user if no session exists. If this const is set, either the two following should be activated!
@@ -330,7 +330,7 @@ define("PUBLIC_USER", "");
 # --------------------------------------------
 # define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework
 # --------------------------------------------
-#define("REGISTRATING_GROUP",36);
+#define("REGISTRATING_GROUP","%%REGISTRATINGGROUP%%");
 
 # --------------------------------------------
 # define a the user id of the portal admin in case of self registration -
