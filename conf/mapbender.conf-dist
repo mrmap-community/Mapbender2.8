@@ -97,8 +97,8 @@ define('HTTP_AUTH_PROXY',"https://".$_SERVER['HTTP_HOST']."/http_auth"); //Probl
 # curl, socket, http
 # --------------------------------------------
 
-#define("CONNECTION", "curl");
-define("CONNECTION", "http");
+define("CONNECTION", "curl");
+#define("CONNECTION", "http");
 #define("CONNECTION", "socket");
 
 define("CONNECTION_PROXY", ""); // ip
@@ -296,12 +296,12 @@ define("PUBLIC_USER", "%%PUBLICUSERID%%");
 # --------------------------------------------
 # automatically create a session for the public user if no session exists. If this const is set, either the two following should be activated!
 # --------------------------------------------
-#define("PUBLIC_USER_AUTO_CREATE_SESSION", true);
+define("PUBLIC_USER_AUTO_CREATE_SESSION", true);
 
 # --------------------------------------------
 # set the default start gui for PUBLIC_USER - beware, that the user must have access to this gui!
 # --------------------------------------------
-#define("PUBLIC_USER_DEFAULT_GUI", "Geoportal-RLP");
+define("PUBLIC_USER_DEFAULT_GUI", "Geoportal-RLP");
 
 # --------------------------------------------
 # define category for applications (guis) that are choosable by users as preferred gui
@@ -311,7 +311,7 @@ define("PUBLIC_USER", "%%PUBLICUSERID%%");
 # --------------------------------------------
 # set the default srs for the PUBLIC_USER in the SESSION
 # --------------------------------------------
-#define("PUBLIC_USER_DEFAULT_SRS", "EPSG:25832");
+define("PUBLIC_USER_DEFAULT_SRS", "EPSG:25832");
 
 # --------------------------------------------
 # define a public group
@@ -330,7 +330,7 @@ define("PUBLIC_USER", "%%PUBLICUSERID%%");
 # --------------------------------------------
 # define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework
 # --------------------------------------------
-#define("REGISTRATING_GROUP","%%REGISTRATINGGROUP%%");
+define("REGISTRATING_GROUP","%%REGISTRATINGGROUP%%");
 
 # --------------------------------------------
 # define a the user id of the portal admin in case of self registration -
