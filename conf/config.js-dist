@@ -52,23 +52,15 @@ netgis.config =
 	GEORSS_POINT_STROKE_WIDTH:	2,
 
 	/** Service URLs (avoid proxies by setting to null or empty string). */
-	//URL_WMC_PROXY:			"./scripts/proxy.php", //TODO: empty proxy to invoke from js client on same machine!!!
 	URL_WMC_PROXY:			"",
-	//URL_WMC_REQUEST:		"http://www.geoportal.rlp.de/mapbender/php/mod_exportWmc2Json.php",
-	//URL_WMC_REQUEST:		"http://localhost/mapbender/php/mod_exportWmc2Json.php",
 	URL_WMC_REQUEST:		"../../php/mod_exportWmc2Json.php",
 	//name of serverside conf file for mobilemap - will be used as parameter for mod_exportWmc2Json.php!
 	CONF_FILE_NAME:			"mobilemap2",
 	
-	//URL_LAYERS_PROXY:		"./scripts/proxy.php",
 	URL_LAYERS_PROXY:		"",
-	//URL_LAYERS_REQUEST:		"http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php",
-	//URL_LAYERS_REQUEST:		"http://localhost/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php",
-	URL_LAYERS_REQUEST:		"../mobilemap/mod_mapbender/search_proxy.php",
+	URL_LAYERS_REQUEST:		"../../php/mod_callMetadata.php",
 	
-	//URL_SEARCH_PROXY:		"./scripts/proxy.php",
 	URL_SEARCH_PROXY:		"",
-	//URL_SEARCH_REQUEST:		"http://www.geoportal.rlp.de/mapbender/geoportal/gaz_geom_mobile.php",
 	URL_SEARCH_REQUEST:		"../../geoportal/gaz_geom_mobile.php",
 	//URL_BACKGROUND_HYBRID:	"http://www.gdi-rp-dienste2.rlp.de/mapcache/tms/1.0.0/topplusbkg@UTM32",
 	URL_BACKGROUND_HYBRID:		"http://www.gdi-rp-dienste2.rlp.de/mapcache/tms/1.0.0/test@UTM32",
@@ -76,10 +68,8 @@ netgis.config =
 
 	URL_FEATURE_INFO_PROXY:	"./scripts/proxy.php",
 	
-	//URL_HEIGHT_PROXY:		"./scripts/proxy.php",
 	URL_HEIGHT_PROXY:		"",
-	//URL_HEIGHT_REQUEST:		"http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/query/rasterqueryWms.php?&lang=de" //"http://www.gdi-rp-dienste2.rlp.de/cgi-bin/mapserv.fcgi?map=/data/umn/geoportal/dhm_query/dhm.map&" + "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&SERVICE=WMS&LAYERS=mydhm&QUERY_LAYERS=mydhm"
-	URL_HEIGHT_REQUEST:		"../../extensions/mobilemap/query/rasterqueryWms.php?&lang=de",
+	URL_HEIGHT_REQUEST:		"scripts/heightRequest.php?lang=de",
 	URL_USAGE_TERMS:		"http://www.geoportal.rlp.de/portal/servicebereich/rechtshinweis.html"
 
 };
