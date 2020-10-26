@@ -1193,7 +1193,7 @@ SQL;
 	$DCP = $iso19139->createElement ( "srv:DCP" );
 	$DCPList = $iso19139->createElement ( "srv:DCPList" );
 	$DCPList->setAttribute ( "codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#DCPList" );
-	$DCPList->setAttribute ( "codeListValue", "WebService" );
+	$DCPList->setAttribute ( "codeListValue", "WebServices" );
 	
 	$DCP->appendChild ( $DCPList );
 	
