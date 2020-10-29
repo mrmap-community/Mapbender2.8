@@ -1,0 +1,8 @@
+#Monitoring der Kartenviewer Nutzer
+*/5 * * * *             /data/monitoring/session.sh
+#Erstellen der Graphik für Zugriffe
+*/15 * * * *            /data/monitoring/plot_session.sh
+* * * * *             /data/monitoring/plot_24h_session.sh
+*/10 * * * *            /data/monitoring/plot_7d_session.sh
+
+
