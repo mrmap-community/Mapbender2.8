@@ -974,10 +974,13 @@ JS;
 	Mapbender::session()->delete("wmcGetApi", $wmcGetApi);
 } else {
 	Mapbender::session()->set("wmcConstraints", $resultObj);
-	$output = $wmc->wmsToJavaScript();
-	$wmcJs = $wmc->toJavaScript(array());
+	//$output = $wmc->wmsToJavaScript();
+	//$wmcJs = $wmc->toJavaScript(array());
+	$output = $wmcGetApi->wmsToJavaScript();
+	$wmcJs = $wmcGetApi->toJavaScript(array());
 	$wmcJs = implode(";\n",$wmcJs);
-	$extentJs = $wmc->extentToJavaScript();
+	//$extentJs = $wmc->extentToJavaScript();
+	$extentJs = $wmcGetApi->extentToJavaScript();
 	$output[] = <<<JS
 		Mapbender.events.afterInit.register(function () {
 			$wmcJs;
