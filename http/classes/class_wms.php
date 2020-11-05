@@ -2909,7 +2909,7 @@ SQL;
 			}
 			$harvestMetadataUrl = true;
 			foreach($this->urlsToExclude as $urlToExclude) {
-				if (strpos($mbMetadata->href, $urlToExclude) === 0) {
+				if (strpos($mbMetadata->href, $urlToExclude) !== 0) {
 					$harvestMetadataUrl = false;
 					$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
 					break;
