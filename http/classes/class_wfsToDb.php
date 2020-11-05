@@ -690,13 +690,15 @@ if (!$updateMetadataOnly) {
 		}
 		$harvestMetadataUrl = true;
 		foreach($urlsToExclude as $urlToExclude) {
-			if (strpos($mbMetadata->href, $urlToExclude) === 0) {
+			if (strpos($mbMetadata->href, $urlToExclude) !== 0) {
+				$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
 				$harvestMetadataUrl = false;
 				break;
 			}
 		}
-		$result = $mbMetadata->insertToDB("featuretype",$aWfsFeatureTypeId, false, false, $harvestMetadataUrl);	
-
+		if ($harvestMetadataUrl == true) {
+			$result = $mbMetadata->insertToDB("featuretype",$aWfsFeatureTypeId, false, false, $harvestMetadataUrl);	
+		}
 		if ($result['value'] == false){
 			$e = new mb_exception("Problem while storing metadata url from wfs to db");
 			$e = new mb_exception($result['message']);
