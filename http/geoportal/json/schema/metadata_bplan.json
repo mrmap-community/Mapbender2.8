@@ -1,0 +1,127 @@
+{
+  "definitions": {}, 
+  "$schema": "http://json-schema.org/draft-07/schema#", 
+  "$id": "https://www.geoportal.rlp.de/mapbender/geoportal/json/schema/metadata_bplan.json", 
+  "type": "object", 
+  "title": "Bebauungsplan Metadaten Rheinland-Pfalz", 
+  "description": "Metadaten zu den Bebauungsplänen in der GDI-RP", 
+  "readOnly": true, 
+  "writeOnly": false, 
+  "required": [
+	"metadata_id",
+    "uuid", 
+    "link",
+    "metadata_resolver_linkage",
+	"title",
+	"abstract",
+    "lastchanged",	
+	"responsible_party_name",
+	"responsible_party_email",
+	"constraints"
+  ], 
+  "properties": {
+    "metadata_id": {
+      "$id": "#/properties/metadata_id", 
+      "type": "integer", 
+      "title": "GDI-RP MD ID", 
+      "description": "Ein eindeutiger Identifikator des Metadatensatzes im GeoPortal.rlp", 
+      "examples": [
+        "10234"
+      ] 
+    }, 
+    "uuid": {
+      "$id": "#/properties/uuid", 
+      "type": "string", 
+      "title": "Metadatenidentifikator", 
+      "description": "ISO 19139 fileIdentifier des Metadatensatzes. Über diesen Identifikator lässt sich der Datensatz bis auf die europäischen Ebene in Katalogen finden.", 
+      "examples": [
+        "8f34b429-d822-5e00-ef46-fc7c9800ceca"
+      ] 
+    },
+    "link": {
+      "$id": "#/properties/link", 
+      "type": "string", 
+      "format": "uri",
+      "title": "Originäre Metadaten", 
+      "description": "Link zu den originären Metadaten", 
+      "examples": [
+        "https://gis.saarburg-kell.de/saarburg_kell_online/mod_ogc/bplan_meta.php?gid=15&typ=bplan"
+      ] 
+    },
+	"metadata_resolver_linkage": {
+      "$id": "#/properties/metadata_resolver_linkage", 
+      "type": "string", 
+      "format": "uri",
+      "title": "Geodatenkatalog Rheinland-Pfalz", 
+      "description": "Link auf die Metadaten im Geodatenkatalog Rheinland-Pfalz mit Auflösung der möglichen Zugriffsoptionen (Anzeige, Download, ...)", 
+      "examples": [
+        "https://www.geoportal.rlp.de/mapbender/php/mod_exportIso19139.php?url=https%3A%2F%2Fvocabulary.geoportal.rlp.de%2Fgeonetwork%2Fsrv%2Feng%2Fcsw%3FREQUEST%3DGetRecordById%26VERSION%3D2.0.2%26SERVICE%3DCSW%26Id%3D8f34b429-d822-5e00-ef46-fc7c9800ceca%26ElementSetName%3Dfull%26OUTPUTSCHEMA%3Dhttp%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&resolveCoupledResources=true"
+      ] 
+    },
+	"title": {
+      "$id": "#/properties/title", 
+      "type": "string", 
+      "title": "Bezeichnung", 
+      "description": "Name des Bebauungsplans", 
+      "examples": [
+        "Waldweiler Gewerbegebiet Am Sportplatz"
+      ] 
+    },
+	"abstract": {
+      "$id": "#/properties/internet", 
+      "type": "string", 
+      "title": "Beschreibung", 
+      "description": "Beschreibung des Bebauungsplans", 
+      "examples": [
+        "Waldweiler Gewerbegebiet Am Sportplatz"
+      ] 
+    },
+	"lastchanged": {
+      "$id": "#/properties/lastchanged", 
+      "type": "string", 
+      "format": "date-time",
+      "title": "Letzte Änderung", 
+      "description": "Letzte Änderung des Metadatensatzes", 
+      "examples": [
+        "2020-04-02 23:58:29.830905"
+      ] 
+    },
+    "lineage": {
+      "$id": "#/properties/lineage", 
+      "type": "string", 
+      "title": "Hinweise zur Erstellung", 
+      "description": "Hinweise zur Erstellung/Herkunft des Datensatzes", 
+      "examples": [
+        "Bebauungsplan wurde auf Basis der Liegenschaftskarte georeferenziert."
+      ] 
+    },
+	"responsible_party_name": {
+      "$id": "#/properties/responsible_party_name", 
+      "type": "string", 
+      "title": "Verantwortliche Stelle", 
+      "description": "Namen der verwantwortlichen Stelle", 
+      "examples": [
+        "Verbandsgemeindeverwaltung Saarburg-Kell"
+      ] 
+    },
+    "responsible_party_email": {
+      "$id": "#/properties/responsible_party_email", 
+      "type": "string",
+      "format": "email",
+      "title": "EMail", 
+      "description": "EMail der verwantwortlichen Stelle", 
+      "examples": [
+        "gis@saarburg-kell.de"
+      ] 
+    },
+    "constraints": {
+      "$id": "#/properties/constraints", 
+      "type": "string", 
+      "title": "Zugriffsbeschränkungen", 
+      "description": "Existierende Zugriffsbeschränkungen, falls vorhanden", 
+      "examples": [
+        "Keine Zugriffsbeschränkungen"
+      ] 
+    }
+  }
+}
