@@ -65,7 +65,7 @@ if ($handle = opendir($metadataDir)) {
 		
 		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
 		    //echo $metadataObject->title."<br>";
-                    //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
+            //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
 		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional";
 		    $keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
@@ -108,7 +108,8 @@ if ($handle = opendir($metadataDir)) {
 		//save xml to file	
 	    }
 	    fclose($h); //close file for read
-		$metadataXml = exchangeLanguage( $metadataXml );
+	    
+		$metadataXml = exchangeLanguageAndDeletePolygon( $metadataXml );
 	    //open same file for write and insert xml into the file!
             $writeHandle = fopen($metadataDir."/".$file, "w+");
 	    fwrite($writeHandle, $metadataXml);
@@ -127,7 +128,7 @@ if ($handle = opendir($metadataDir)) {
     $timeToBuildAll = microtime(true) - $startTimeForAll;
     logMessages("time to alter all xml: ".$timeToBuildAll);
 }
-function exchangeLanguage($metadataXml) {
+function exchangeLanguageAndDeletePolygon($metadataXml) {
 	// do parsing with dom, cause we want to alter the xml which have been parsed afterwards
 	$metadataDomObject = new DOMDocument ();
 	libxml_use_internal_errors ( true );
@@ -185,6 +186,12 @@ function exchangeLanguage($metadataXml) {
 					$temp->parentNode->removeChild ( $temp );
 				}
 			}
+		}
+		//delete polygonal extents
+		$xpathPolygon = "//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent[gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon]";
+		$polygonNodeList = $xpath->query ( $xpathPolygon );
+		foreach($polygonNodeList as $element){
+			$element->parentNode->removeChild($element);
 		}
 	}
 	return $metadataDomObject->saveXML ();
