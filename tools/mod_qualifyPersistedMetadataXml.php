@@ -63,7 +63,7 @@ if ($handle = opendir($metadataDir)) {
 		logMessages("fileIdentifier: ".$metadataObject->fileIdentifier);
 		logMessages("type: ".$metadataObject->hierarchyLevel);
 		
-		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
+		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Local', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
 		    //echo $metadataObject->title."<br>";
             //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
 		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional";
