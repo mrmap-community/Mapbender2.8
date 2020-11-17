@@ -1,3 +1,5 @@
+#Löschen der Session WMCs
+* * * * * find /data/mapbender/http/tmp/wmc  -name '*' -mmin +40 -type f | xargs rm -f
 #Monitoring der Kartenviewer Nutzer
 */5 * * * *             /data/monitoring/session.sh
 #Erstellen der Graphik für Zugriffe
