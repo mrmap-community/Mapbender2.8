@@ -40,6 +40,7 @@ $voicetelephone = $_POST["voicetelephone"];
 $facsimiletelephone = $_POST["facsimiletelephone"];
 $email = $_POST["email"];
 $logo_path = $_POST["logo_path"];
+$homepage = $_POST["homepage"];
 $action = $_POST["action"];
 $searchable = $_POST["searchable"];
 $spatialSecurity = spatial_security\read_post();
