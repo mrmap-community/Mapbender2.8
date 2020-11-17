@@ -81,7 +81,7 @@ if ($handle = opendir($metadataDir)) {
 			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
 		}
 		//workaround for hesse
-		if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Local', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+		if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Local', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
 			$keywordsArray[$newKeywordsIndex]->keyword = "Local";
 			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
