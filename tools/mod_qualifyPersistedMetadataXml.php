@@ -80,6 +80,12 @@ if ($handle = opendir($metadataDir)) {
 			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
 		}
+		//workaround for hesse
+		if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Local', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+			$keywordsArray[$newKeywordsIndex]->keyword = "Local";
+			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
+			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
+		}
 		//logMessages("Actual keywords: ".json_encode($metadataObject->keywords));
         if ($injectRegistryUuid && !in_array($uuid, $metadataObject->keywords)) {  //add mapbender registry keyword
 		    $newKeywordsIndex++;
