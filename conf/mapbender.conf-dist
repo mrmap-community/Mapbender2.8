@@ -325,8 +325,8 @@ define("MAPBENDER_CACHE_TYPE", "apc");
 # define memcached server connections, if memcached ist used for session storing
 # lib/class_Mapbender_session.php
 #
-#define("MEMCACHED_IP", "localhost");
-#define("MEMCACHED_PORT", "11211");
+define("MEMCACHED_IP", "localhost");
+define("MEMCACHED_PORT", "11211");
 
 # --------------------------------------------
 # define where to store temporary wmc documents (client configurations) when switching between applications. Needed if mb is integrated as iframe in external applications
