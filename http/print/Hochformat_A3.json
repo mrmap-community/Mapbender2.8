@@ -161,22 +161,6 @@
                     "border_width" : 0.3
                 }
             }
-        },
-		{
-            "tpl" : "Hochformat_A3.pdf",
-            "useTplPage" : 2,
-            "elements" : {
-                "legende" : {
-                    "type" : "legend",
-                    "x_ul" : 7,
-                    "y_ul" : 40,
-                    "width" : 90,
-                    "height" : 180,
-                    "font_family" : "Arial",
-                    "font_size" : 14,
-                    "scale" : 1
-                }
-			}
-		}
+        }
     ]
 }
