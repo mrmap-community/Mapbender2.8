@@ -385,9 +385,21 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:serviceType/gco:LocalName',
             'download');
+    switch ($serviceType) {
+    	case "wfs":
+    		$serviceTypeVersion = $mbMeta['wfs_version'];
+    		break;
+    	case "ogcapifeatures":
+    		$serviceTypeVersion = "ogcapifeatures";
+    		break;
+    	default:
+    		$serviceTypeVersion = "undefined";
+    		break;
+    }
+    
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:serviceTypeVersion/gco:CharacterString',
-            "1.1.1");
+            $serviceTypeVersion);
      
 	//Geographical Extent
 	$bbox = array(-180, -90, 180, 90);
@@ -432,14 +444,14 @@ SQL;
    
    switch ($serviceType) {
         case "wfs":
-	    $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-	    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
-	    $operation = "GetCapabilities";
+	    	$url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
+		    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
+		    $operation = "GetCapabilities";
             break;
-	case "ogcapifeatures":
-            $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."/api";
-	    $protocol = "OGC:API:Features";
-	    $operation = "getApiDescription";
+		case "ogcapifeatures":
+            $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."";
+		    $protocol = "OGC:API:Features";
+		    $operation = "getApiDescription";
             break;
     } 
 
