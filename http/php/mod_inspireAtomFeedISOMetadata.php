@@ -975,12 +975,14 @@ SQL;
 		);
 		$res = db_prep_query ( $sql, $v, $t );
 		while ( $row = db_fetch_array ( $res ) ) {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
+			if (isset($row ['keyword']) && $row ['keyword'] != '') {
+				$keyword = $iso19139->createElement ( "gmd:keyword" );
+				$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+				$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+				$keyword_cs->appendChild ( $keywordText );
+				$keyword->appendChild ( $keyword_cs );
+				$MD_Keywords->appendChild ( $keyword );
+			}
 		}
 	} else { // dls is generated from wms for one layer
 		$sql = <<<SQL
@@ -995,12 +997,14 @@ SQL;
 		);
 		$res = db_prep_query ( $sql, $v, $t );
 		while ( $row = db_fetch_array ( $res ) ) {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
+			if (isset($row ['keyword']) && $row ['keyword'] != '') {
+				$keyword = $iso19139->createElement ( "gmd:keyword" );
+				$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+				$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+				$keyword_cs->appendChild ( $keywordText );
+				$keyword->appendChild ( $keyword_cs );
+				$MD_Keywords->appendChild ( $keyword );
+			}
 		}
 	}
 	// a special keyword for service type wms as INSPIRE likes it ;-) infoMapAccessService or infoFeatureAccessService
