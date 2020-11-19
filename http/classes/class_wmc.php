@@ -727,8 +727,10 @@ class wmc {
 							// Insert the new element after the last nodeA
 							$this->simplexml_insert_after($insert, $target);
 							$layer->DataURL->addChild('OnlineResource');
-							$layer->DataURL->OnlineResource->addAttribute('xlink:type', 'simple','http://www.w3.org/1999/xlink');
-							$layer->DataURL->OnlineResource->addAttribute('xlink:href', $downloadOptionsUrl,'http://www.w3.org/1999/xlink');
+							if (!is_null($layer->DataURL->OnlineResource)) {
+								$layer->DataURL->OnlineResource->addAttribute('xlink:type', 'simple','http://www.w3.org/1999/xlink');
+								$layer->DataURL->OnlineResource->addAttribute('xlink:href', $downloadOptionsUrl,'http://www.w3.org/1999/xlink');
+							}
 						} else {
 							//put it after Title Element
 							$insert = new SimpleXMLElement("<DataURL></DataURL>");
@@ -738,8 +740,10 @@ class wmc {
 							// Insert the new element after the last nodeA
 							$this->simplexml_insert_after($insert, $target);
 							$layer->DataURL->addChild('OnlineResource');
-							$layer->DataURL->OnlineResource->addAttribute('xlink:type', 'simple','http://www.w3.org/1999/xlink');
-							$layer->DataURL->OnlineResource->addAttribute('xlink:href', $downloadOptionsUrl,'http://www.w3.org/1999/xlink');
+							if (!is_null($layer->DataURL->OnlineResource)) {
+								$layer->DataURL->OnlineResource->addAttribute('xlink:type', 'simple','http://www.w3.org/1999/xlink');
+								$layer->DataURL->OnlineResource->addAttribute('xlink:href', $downloadOptionsUrl,'http://www.w3.org/1999/xlink');
+							}
 						}
 						$e = new mb_notice("class_wmc.php - updateUrlsInDb new DataURL XML : ".$layer->asXML());
 					}
