@@ -249,9 +249,9 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 
     $xmlBuilder->addValue($MD_Metadata, './gmd:metadataStandardVersion/gco:CharacterString', "2005/PDAM 1");
 
-    $xmlBuilder->addValue($MD_Metadata,
+    /*$xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/@uuid',
-            isset($mbMeta['wfs_uuid']) ? $mbMeta['wfs_uuid'] : "wfs uuid not given");
+            isset($mbMeta['wfs_uuid']) ? $mbMeta['wfs_uuid'] : "wfs uuid not given");*/
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString',
             isset($mbMeta['wfs_title']) ? $mbMeta['wfs_title']." - ".$mbMeta['featuretype_title']." - ".$serviceTypeTitle : "title not given");
@@ -291,9 +291,9 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
 	}
 
-    $xmlBuilder->addValue($MD_Metadata,
+    /*$xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString',
-            isset($mbMeta['uuid']) ? "http://ww.geoportal.rlp.de/featuretype/" . $mbMeta['uuid']: "no id found");
+            isset($mbMeta['uuid']) ? "http://www.geoportal.rlp.de/featuretype/" . $mbMeta['uuid']: "no id found");*/
 
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:abstract/gco:CharacterString',
