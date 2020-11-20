@@ -91,7 +91,7 @@ if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 if ($_REQUEST['SERVICETYPE'] == "wfs" || $_REQUEST['SERVICETYPE'] == "ogcapifeatures") {
     $serviceType = $_REQUEST['SERVICETYPE'];
     if ($serviceType == 'ogcapifeatures') {
-        $serviceTypeTitle = "OGC API Features (Draft)";
+        $serviceTypeTitle = "OGC API Features";
     }
 }
 
@@ -513,10 +513,10 @@ SQL;
     }
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:name/@gco:nilReason',
-            'missing');
+            'inapplicable');
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:version/@gco:nilReason',
-            'missing');
+            'inapplicable');
     
     //Check if anonymous user has rights to access this featuretype - if not ? which resource should be advertised? TODO
     //initialize url to give back as point of access
