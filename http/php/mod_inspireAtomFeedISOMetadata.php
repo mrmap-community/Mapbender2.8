@@ -975,12 +975,14 @@ SQL;
 		);
 		$res = db_prep_query ( $sql, $v, $t );
 		while ( $row = db_fetch_array ( $res ) ) {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
+			if (isset($row ['keyword']) && $row ['keyword'] != '') {
+				$keyword = $iso19139->createElement ( "gmd:keyword" );
+				$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+				$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+				$keyword_cs->appendChild ( $keywordText );
+				$keyword->appendChild ( $keyword_cs );
+				$MD_Keywords->appendChild ( $keyword );
+			}
 		}
 	} else { // dls is generated from wms for one layer
 		$sql = <<<SQL
@@ -995,12 +997,14 @@ SQL;
 		);
 		$res = db_prep_query ( $sql, $v, $t );
 		while ( $row = db_fetch_array ( $res ) ) {
-			$keyword = $iso19139->createElement ( "gmd:keyword" );
-			$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
-			$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
-			$keyword_cs->appendChild ( $keywordText );
-			$keyword->appendChild ( $keyword_cs );
-			$MD_Keywords->appendChild ( $keyword );
+			if (isset($row ['keyword']) && $row ['keyword'] != '') {
+				$keyword = $iso19139->createElement ( "gmd:keyword" );
+				$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+				$keywordText = $iso19139->createTextNode ( $row ['keyword'] );
+				$keyword_cs->appendChild ( $keywordText );
+				$keyword->appendChild ( $keyword_cs );
+				$MD_Keywords->appendChild ( $keyword );
+			}
 		}
 	}
 	// a special keyword for service type wms as INSPIRE likes it ;-) infoMapAccessService or infoFeatureAccessService
@@ -1184,7 +1188,7 @@ SQL;
 	$operationName = $iso19139->createElement ( "srv:operationName" );
 	$operationName_cs = $iso19139->createElement ( "gco:CharacterString" );
 	
-	$operationNameText = $iso19139->createTextNode ( "Get Download Service Metadata" );
+	$operationNameText = $iso19139->createTextNode ( "Download" );
 	
 	$operationName_cs->appendChild ( $operationNameText );
 	$operationName->appendChild ( $operationName_cs );
@@ -1192,38 +1196,45 @@ SQL;
 	// srv DCP **************************************
 	$DCP = $iso19139->createElement ( "srv:DCP" );
 	$DCPList = $iso19139->createElement ( "srv:DCPList" );
-	$DCPList->setAttribute ( "codeList", "DCPList" );
-	$DCPList->setAttribute ( "codeListValue", "WebService" );
+	$DCPList->setAttribute ( "codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#DCPList" );
+	$DCPList->setAttribute ( "codeListValue", "WebServices" );
 	
 	$DCP->appendChild ( $DCPList );
 	
 	// connectPoint **********************************
 	$connectPoint = $iso19139->createElement ( "srv:connectPoint" );
 	
-	$CI_OnlineResource = $iso19139->createElement ( "gmd:CI_OnlineResource" );
+	$CI_OnlineResource1 = $iso19139->createElement ( "gmd:CI_OnlineResource" );
 	
-	$gmd_linkage = $iso19139->createElement ( "gmd:linkage" );
-	$gmd_URL = $iso19139->createElement ( "gmd:URL" );
-	
+	$gmd_linkage1 = $iso19139->createElement ( "gmd:linkage" );
+	$gmd_URL1 = $iso19139->createElement ( "gmd:URL" );
+	$gmd_URLText1 = $iso19139->createTextNode ("https://www.mapbender.org/dummyurl");
 	// examples for links to Atom service feeds
 	// http://www.geoportal.rlp.de/mapbender/php/mod_inspireDownloadFeed.php?id=e9d22d13-e045-f0e0-25cc-1f146d681216&type=SERVICE&generateFrom=wfs&wfsid=216
 	// http://www.geoportal.rlp.de/mapbender/php/mod_inspireDownloadFeed.php?id=aaa492a3-0585-e27f-ff56-df9118420560&type=SERVICE&generateFrom=wmslayer&layerid=32566
 	
 	switch ($generateFrom) {
 		case "wmslayer" :
-			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );
+			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wmslayer&layerid=" . $mapbenderMetadata ['resourceId'] );	
 			break;
 		case "dataurl" :
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=dataurl&layerid=" . $mapbenderMetadata ['resourceId'] );
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=dataurl&layerid=" . $mapbenderMetadata ['resourceId'] );
 			break;
 		case "wfs" :
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wfs&wfsid=" . $mapbenderMetadata ['serviceId'] );
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=wfs&wfsid=" . $mapbenderMetadata ['serviceId'] );
+				
 			break;
 		case "metadata" :
+			$gmd_URLText1 = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=metadata" );
 			$gmd_URLText = $iso19139->createTextNode ( $mapbenderPath . "/php/mod_inspireDownloadFeed.php?id=" . $recordId . "&type=SERVICE&generateFrom=metadata" );
+				
 			break;
 	}
 	
+	//$gmd_URLText1 = $iso19139->createTextNode ("https://www.mapbender.org");
 	// Check if anonymous user has rights to access this layer - if not ? which resource should be advertised? TODO
 	/*
 	 * if ($hasPermission) {
@@ -1234,10 +1245,12 @@ SQL;
 	 * $gmd_URLText=$iso19139->createTextNode("https://".$serverWithOutPort80."/http_auth/".$mapbenderMetadata['layer_id']."?REQUEST=GetCapabilities&SERVICE=WMS");
 	 * }
 	 */
-	$gmd_URL->appendChild ( $gmd_URLText );
-	$gmd_linkage->appendChild ( $gmd_URL );
-	$CI_OnlineResource->appendChild ( $gmd_linkage );
-	$connectPoint->appendChild ( $CI_OnlineResource );
+	
+	$gmd_URL1->appendChild ( $gmd_URLText1 );
+	$gmd_linkage1->appendChild ( $gmd_URL1 );
+	$CI_OnlineResource1->appendChild ( $gmd_linkage1 );
+	
+	$connectPoint->appendChild ( $CI_OnlineResource1 );
 	
 	$SV_OperationMetadata->appendChild ( $operationName );
 	$SV_OperationMetadata->appendChild ( $DCP );

@@ -49,6 +49,7 @@ class Crs {
 		$this->resolveSuccess = false;
 		$this->resolveErrorMessage = false;
 		$this->extractIdentifierType($identifier);
+		
 		if ($this->resolveCrsInfo() == true) {
 			$this->resolveSuccess = true;
 		}
@@ -60,7 +61,6 @@ class Crs {
 	//handles ows identifier: wms_1.0.0, wms_1.1.1, wms_1.3.0, wfs_1.0.0, wfs_1.1.0, wfs_2.0.0, wfs_2.0.2
 	public function alterAxisOrder ($targetOws) {
 		$owsWithSpecialOrder = array("wms_1.0.0","wms_1.1.1","wfs_1.0.0","gml_2.0.0","gml_2.1.0","gml_3.1.1","geojson");//lon/lat,east/north 
-
 		$owsWithOrderAsDefined = array("wms_1.3.0","wfs_1.1.0","wfs_2.0.0","wfs_2.0.2","gml_3.2.0");
 		//$owsWithOrderAsDefined = array("wms_1.3.0","wfs_2.0.0","wfs_2.0.2");
 		$order = "east,north"; //dummy postgis/oracle spatial order
@@ -77,11 +77,14 @@ class Crs {
 	}
 
 	private function extractIdentifierType ($identifier) {
+		//$e = new mb_exception("http/classes/class_crs.php - extract identifier: *".$identifier."*");
 		//check for type
 		if (substr(strtoupper($identifier), 0, 5) === "EPSG:") {
+			//$e = new mb_exception("http/classes/class_crs.php - found EPSG: identifier!");
 			$this->identifier = $identifier;
 			$this->identifierType = 'epsg';
 			$this->identifierCode = explode(':',$identifier)[1];
+			//$e = new mb_exception("http/classes/class_crs.php - found code: *".$this->identifierCode."*");
 			return;
 		} else {
 			//check for urn based version - example: urn:ogc:def:crs:EPSG:
@@ -89,6 +92,7 @@ class Crs {
 				//delete this part from original identifier
 				$identifierNew = str_replace('URN:OGC:DEF:CRS:EPSG:','',strtoupper($identifier));			
 				$this->identifier = $identifier;
+				//$e = new mb_exception("http/classes/class_crs.php - urn identifier new: ".$identifierNew);
 				$this->identifierType = 'urn';
 				if (substr($identifierNew, 0, 1 ) === ":") {
 				    $this->identifierCode = ltrim($identifierNew, ':');
@@ -96,13 +100,15 @@ class Crs {
 				    if (strpos($identifierNew, ":") !== false) {
 				    	$this->identifierCode = explode(':',$identifierNew)[1];
 				    } else {
-					$this->identifierCode = $identifierNew;
+						$this->identifierCode = $identifierNew;
 				    }
-				}			
+				    //$e = new mb_exception("http/classes/class_crs.php - code: ".$this->identifierCode);
+				}	
+				//$e = new mb_exception("http/classes/class_crs.php - urn identifier code: *".$this->identifierCode."*");
 				return;
 			} else {
 				//case urn:x-ogc:def:crs:EPSG:25832?? - geoserver
-                                if (substr(strtoupper($identifier), 0, 23) === "URN:X-OGC:DEF:CRS:EPSG:") {
+                if (substr(strtoupper($identifier), 0, 23) === "URN:X-OGC:DEF:CRS:EPSG:") {
 					//delete this part from original identifier
 					$identifierNew = str_replace('URN:X-OGC:DEF:CRS:EPSG:','',strtoupper($identifier));	
 					$this->identifier = $identifier;
@@ -122,6 +128,7 @@ class Crs {
 						$this->identifier = $identifier;
 						$this->identifierType = 'other';
 						$this->identifierCode = $identifier;
+						return;
 					}
 				}
 			}
@@ -137,32 +144,38 @@ class Crs {
 			$this->epsgType = $cachedObject->epsgType;
 			$this->axisOrder = $cachedObject->axisOrder;
 			$this->name = $cachedObject->name;		
-			$e = new mb_notice("http/classes/class_crs.php - read crs info from cache!");
+			//$e = new mb_exception("http/classes/class_crs.php - read crs info from cache!");
 			return true;
 		}
+		//$e = new mb_exception("http/classes/class_crs.php - type: ".$this->identifierType." - code: ".$this->identifierCode);
 		//built urls to get information from registries
 		switch ($this->identifierType) {
-			case "epsg":
+			case "epsg1":
 				$registryBaseUrl = "http://www.epsg-registry.org/export.htm?gml=";
 				$registryUrl = $registryBaseUrl.urlencode("urn:ogc:def:crs:EPSG::".$this->identifierCode);
 				break;
-			case "urn":
+			case "urn1":
 				$registryBaseUrl = "http://www.epsg-registry.org/export.htm?gml=";
 				$registryUrl = $registryBaseUrl.urlencode($this->identifier);
 				/*$xpathCrsType = "";
 				$xpathAxis = "";*/
 				break;
-			case "url":
+			case "url1":
 				$registryBaseUrl = "http://www.epsg-registry.org/export.htm?gml=";
 				$registryUrl = $registryBaseUrl.urlencode("urn:ogc:def:crs:EPSG::".$this->identifierCode);
 				/*$xpathCrsType = "";
 				$xpathAxis = "";*/
 				break;
 			default:
+				$registryBaseUrl = "https://apps.epsg.org/api/v1/CoordRefSystem/{CRS_IDENTIFIER}/export/?format=gml";
+				$registryUrl = str_replace("{CRS_IDENTIFIER}", $this->identifierCode,$registryBaseUrl);
 				break;
 		}
+		//$e = new mb_exception("registry url: ".$registryUrl);
 		$crsConnector = new connector();
 		$crsConnector->set("timeOut", "2");
+		//New Oct 2020
+		$crsConnector->set("externalHeaders", array("Accept: application/xml"));
 		$crsConnector->load($registryUrl);
 		if ($crsConnector->timedOut == true) {
 			return false;
@@ -188,15 +201,17 @@ class Crs {
 		}
 		//if parsing was successful
 		if ($crsXml !== false) {
-			$crsXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:1.0:dataset");
+			//$crsXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:1.0:dataset");
+			$crsXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:2.2:dataset");
 			$crsXml->registerXPathNamespace("gml", "http://www.opengis.net/gml/3.2");
 			$crsXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
 			//switch for type of cs - distinguish between ellipsoidalCS and CartesianCS (begin with lowercase character in crs document)
 			$this->epsgType = $crsXml->xpath('//gml:metaDataProperty/epsg:CommonMetaData/epsg:type');
 			$this->epsgType = $this->epsgType[0];
+			//$e = new mb_exception("http/classes/class_crs.php - epsgType: ".$this->epsgType);
 			$this->name = $crsXml->xpath('//gml:name');
 			$this->name = $this->name[0];
-			$e = new mb_notice("http/classes/class_crs.php - name of crs: ".$this->name);
+			//$e = new mb_exception("http/classes/class_crs.php - name of crs: ".$this->name);
 			$jsonCrsInfo->name = (string)$this->name;
 			$jsonCrsInfo->epsgType = (string)$this->epsgType;
 			//echo $this->name;
@@ -209,12 +224,18 @@ class Crs {
 				case "geographic 2D":
 					$xpathIdentifierCs = "//gml:ellipsoidalCS/@xlink:href";
 					break;
+				case "geographic 2d":
+					$xpathIdentifierCs = "//gml:ellipsoidalCS/@xlink:href";
+					break;
 			} 
 			$csIdentifier = $crsXml->xpath($xpathIdentifierCs);
 			$csIdentifier = $csIdentifier[0];
 			//get axis order from further xml document
-			$urlToCsDefinition = $registryBaseUrl.urlencode($csIdentifier);
+			//$urlToCsDefinition = $registryBaseUrl.urlencode($csIdentifier);
+			//New Oct 2020
+			$urlToCsDefinition = $csIdentifier;
 			$csConnector = new connector($urlToCsDefinition);
+			$crsConnector->set("externalHeaders", array("Accept: application/xml"));
 			$csConnector->set("timeOut", "2");
 			if ($csConnector->timedOut == true) {
 				return false;
@@ -235,7 +256,8 @@ class Crs {
 				return false;
 			}		
 			if ($csXml !== false) {
-				$csXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:1.0:dataset");
+				//$csXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:1.0:dataset");
+				$csXml->registerXPathNamespace("epsg", "urn:x-ogp:spec:schema-xsd:EPSG:2.2:dataset");
 				$csXml->registerXPathNamespace("gml", "http://www.opengis.net/gml/3.2");
 				$csXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
 				//switch for type of cs - distinguish between ellipsoidalCS and CartesianCS (begin with lowercase character in crs document)

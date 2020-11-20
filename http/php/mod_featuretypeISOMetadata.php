@@ -91,7 +91,7 @@ if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 if ($_REQUEST['SERVICETYPE'] == "wfs" || $_REQUEST['SERVICETYPE'] == "ogcapifeatures") {
     $serviceType = $_REQUEST['SERVICETYPE'];
     if ($serviceType == 'ogcapifeatures') {
-        $serviceTypeTitle = "OGC API Features (Draft)";
+        $serviceTypeTitle = "OGC API Features";
     }
 }
 
@@ -249,9 +249,9 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 
     $xmlBuilder->addValue($MD_Metadata, './gmd:metadataStandardVersion/gco:CharacterString', "2005/PDAM 1");
 
-    $xmlBuilder->addValue($MD_Metadata,
+    /*$xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/@uuid',
-            isset($mbMeta['wfs_uuid']) ? $mbMeta['wfs_uuid'] : "wfs uuid not given");
+            isset($mbMeta['wfs_uuid']) ? $mbMeta['wfs_uuid'] : "wfs uuid not given");*/
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString',
             isset($mbMeta['wfs_title']) ? $mbMeta['wfs_title']." - ".$mbMeta['featuretype_title']." - ".$serviceTypeTitle : "title not given");
@@ -291,9 +291,9 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
 	}
 
-    $xmlBuilder->addValue($MD_Metadata,
+    /*$xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString',
-            isset($mbMeta['uuid']) ? "http://ww.geoportal.rlp.de/featuretype/" . $mbMeta['uuid']: "no id found");
+            isset($mbMeta['uuid']) ? "http://www.geoportal.rlp.de/featuretype/" . $mbMeta['uuid']: "no id found");*/
 
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:abstract/gco:CharacterString',
@@ -339,10 +339,12 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
             "infoFeatureAccessService");
 	while ($row = db_fetch_array($res)) {
-        $pos++;
-        $xmlBuilder->addValue($MD_Metadata,
-            './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
-            $row['keyword']);
+                if ($row['keyword'] !== null && $row['keyword'] !== '') {
+                        $pos++;
+                        $xmlBuilder->addValue($MD_Metadata,
+                        './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+                        $row['keyword']);
+                }
 	}
 
 	//pull special keywords from custom categories:	
@@ -383,9 +385,21 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:serviceType/gco:LocalName',
             'download');
+    switch ($serviceType) {
+    	case "wfs":
+    		$serviceTypeVersion = $mbMeta['wfs_version'];
+    		break;
+    	case "ogcapifeatures":
+    		$serviceTypeVersion = "ogcapifeatures";
+    		break;
+    	default:
+    		$serviceTypeVersion = "undefined";
+    		break;
+    }
+    
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/srv:serviceTypeVersion/gco:CharacterString',
-            "1.1.1");
+            $serviceTypeVersion);
      
 	//Geographical Extent
 	$bbox = array(-180, -90, 180, 90);
@@ -430,14 +444,14 @@ SQL;
    
    switch ($serviceType) {
         case "wfs":
-	    $url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
-	    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
-	    $operation = "GetCapabilities";
+	    	$url = $mapbenderServiceUrl.$mbMeta['featuretype_id']."&REQUEST=GetCapabilities&SERVICE=WFS&VERSION=".$mbMeta['wfs_version'];
+		    $protocol = "OGC:WFS-".$mbMeta['wfs_version']."-http-get-feature";
+		    $operation = "GetCapabilities";
             break;
-	case "ogcapifeatures":
-            $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."/api";
-	    $protocol = "OGC:API:Features";
-	    $operation = "getApiDescription";
+		case "ogcapifeatures":
+            $url = $ogcApiFeaturesUrl."/".$mbMeta['wfs_id']."";
+		    $protocol = "OGC:API:Features";
+		    $operation = "getApiDescription";
             break;
     } 
 
@@ -499,10 +513,10 @@ SQL;
     }
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:name/@gco:nilReason',
-            'missing');
+            'inapplicable');
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:distributionInfo/gmd:MD_Distribution/gmd:distributionFormat/gmd:MD_Format/gmd:version/@gco:nilReason',
-            'missing');
+            'inapplicable');
     
     //Check if anonymous user has rights to access this featuretype - if not ? which resource should be advertised? TODO
     //initialize url to give back as point of access
