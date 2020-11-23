@@ -317,15 +317,28 @@ if ($MD_MetadataNodeList->item(0) != null) {
 		} //end - foreach keyword in array
 		//if keyword was injected - the metadata dateStamp has to be altered - fictive 1 day will be added to mark the difference!
 		$dateNodeList = $xpath->query('//gmd:MD_Metadata/gmd:dateStamp/gco:Date');
-                $dateStamp = $dateNodeList->item(0)->nodeValue;
-		//$date = new DateTime($dateStamp);
-                $date = new DateTime('NOW');
-	        //add one day
-		//$date->add(new DateInterval('P1D'));
-		$date = new DateTime('NOW');
-		$dateNew = date_format($date, 'Y-m-d');
-                $fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gco:Date', $dateNew);
-		$dateNodeList->item(0)->parentNode->replaceChild($fragment, $dateNodeList->item(0)); 
+		if (!is_null($dateNodeList)) {
+			$dateStamp = $dateNodeList->item(0)->nodeValue;
+			//$date = new DateTime($dateStamp);
+			$date = new DateTime('NOW');
+			//add one day
+			//$date->add(new DateInterval('P1D'));
+			$date = new DateTime('NOW');
+			$dateNew = date_format($date, 'Y-m-d');
+			$fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gco:Date', $dateNew);
+			$dateNodeList->item(0)->parentNode->replaceChild($fragment, $dateNodeList->item(0)); 
+		} else {
+			//try to find dateTime instead
+			$dateTimeNodeList = $xpath->query('//gmd:MD_Metadata/gmd:dateStamp/gco:DateTime');
+			$dateTimeStamp = $dateTimeNodeList->item(0)->nodeValue;
+			//$date = new DateTime($dateStamp);
+			//add one day
+			//$date->add(new DateInterval('P1D'));
+			$date = new DateTime('NOW');
+			$dateTimeNew = date_format($date, 'Y-m-dTH:i:s');
+			$fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gco:DateTime', $dateTimeNew);
+			$dateTimeNodeList->item(0)->parentNode->replaceChild($fragment, $dateTimeNodeList->item(0));
+		}
 	} //end for parsing xml successfully
 	return $metadataDomObject->saveXML();
 }
