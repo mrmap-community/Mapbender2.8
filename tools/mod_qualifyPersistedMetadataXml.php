@@ -52,89 +52,90 @@ if ($handle = opendir($metadataDir)) {
             if (filesize($metadataDir."/".$file) != 0) {
                 $metadataXml = fread($h, filesize($metadataDir."/".$file));
 
-		//repair https problems from komserv!!!!!
-		$metadataXml = str_replace('https://standards.iso.org', 'http://standards.iso.org', $metadataXml);
-		$metadataXml = str_replace('https://www.isotc211.org', 'http://www.isotc211.org', $metadataXml);
-		$metadataXml = str_replace('https://www.w3.org', 'http://www.w3.org', $metadataXml);
-		$metadataXml = str_replace('https://www.opengis.net', 'http://www.opengis.net', $metadataXml);
-		$metadataXml = str_replace('https://schemas.opengis.net', 'http://schemas.opengis.net', $metadataXml);
-		try {
-			$metadataObject = $metadataClass->createMapbenderMetadataFromXML($metadataXml);
-		} catch ( Exception $e ) {
-			$err = new mb_exception ( "php/mod_qualifyPersistedMetadataXm.php:" . $e->getMessage () );
-			logMessages("Problem when loading metadata xml into mapbender metadata object - problematic file: ".$metadataDir."/".$file);
-			continue;
-		}
+				//repair https problems from komserv!!!!!
+				$metadataXml = str_replace('https://standards.iso.org', 'http://standards.iso.org', $metadataXml);
+				$metadataXml = str_replace('https://www.isotc211.org', 'http://www.isotc211.org', $metadataXml);
+				$metadataXml = str_replace('https://www.w3.org', 'http://www.w3.org', $metadataXml);
+				$metadataXml = str_replace('https://www.opengis.net', 'http://www.opengis.net', $metadataXml);
+				$metadataXml = str_replace('https://schemas.opengis.net', 'http://schemas.opengis.net', $metadataXml);
+				try {
+					$metadataObject = $metadataClass->createMapbenderMetadataFromXML($metadataXml);
+				} catch ( Exception $e ) {
+					$err = new mb_exception ( "php/mod_qualifyPersistedMetadataXm.php:" . $e->getMessage () );
+					logMessages("Problem when loading metadata xml into mapbender metadata object - problematic file: ".$metadataDir."/".$file);
+					fclose($h); //close file for read
+					continue;
+				}
 
-		logMessages("fileIdentifier: ".$metadataObject->fileIdentifier);
-		logMessages("type: ".$metadataObject->hierarchyLevel);
-		
-		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
-		    //echo $metadataObject->title."<br>";
-            //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
-		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional";
-		    $keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
-		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
-		    /*$newKeywordsIndex++;
-		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional1";
-		    $keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope1";
-		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
-                    $e = new mb_exception("test3");*/
-		}
-		if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
-			$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
-			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
-			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
-		}
-		//workaround for hesse
-		if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
-			$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
-			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
-			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
-		}
-		//logMessages("Actual keywords: ".json_encode($metadataObject->keywords));
-        if ($injectRegistryUuid && !in_array($uuid, $metadataObject->keywords)) {  //add mapbender registry keyword
-		    $newKeywordsIndex++;
-		    $keywordsArray[$newKeywordsIndex]->keyword = $uuid;
-		    $keywordsArray[$newKeywordsIndex]->thesaurusTitle = "mapbender.2.registryId";
-		    $keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-10-30";
-		}    
+				logMessages("fileIdentifier: ".$metadataObject->fileIdentifier);
+				logMessages("type: ".$metadataObject->hierarchyLevel);
+				
+				if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
+					//echo $metadataObject->title."<br>";
+					//echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
+					$keywordsArray[$newKeywordsIndex]->keyword = "Regional";
+					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
+					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
+					/*$newKeywordsIndex++;
+					$keywordsArray[$newKeywordsIndex]->keyword = "Regional1";
+					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope1";
+					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
+							$e = new mb_exception("test3");*/
+				}
+				if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+					$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
+					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
+					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
+				}
+				//workaround for hesse
+				if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+					$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
+					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
+					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
+				}
+				//logMessages("Actual keywords: ".json_encode($metadataObject->keywords));
+				if ($injectRegistryUuid && !in_array($uuid, $metadataObject->keywords)) {  //add mapbender registry keyword
+					$newKeywordsIndex++;
+					$keywordsArray[$newKeywordsIndex]->keyword = $uuid;
+					$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "mapbender.2.registryId";
+					$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-10-30";
+				}    
                 //logMessages("count keywordsArray: ".count($keywordsArray)." - count metadataObject->keywords: ".count($metadataObject->keywords));
-		if ($debug == true) {
-		    $metadataXml = addKeywords($metadataXml, $keywordsArray);
-                    logMessages("Keywords will be injected without test before - debug mode!");
-		} else {
-		    if (count($keywordsArray) > 0 && count($metadataObject->keywords) > 0) {
-		        $metadataXml = addKeywords($metadataXml, $keywordsArray);
-                        logMessages("Keywords will be injected!");
-		    } else {
-		        //TODO inject keyword after some other element!
-		        logMessages("No keywords will be injected - file unaltered!");
-		    }
-                }
-		unset($keywordsArray);
-		//debug
-		//header("Content-type: text/xml");
-		//echo $metadataXml;
-		//die();
-		//save xml to file	
-	    }
-	    fclose($h); //close file for read
-	    
-		$metadataXml = exchangeLanguageAndDeletePolygon( $metadataXml );
-	    //open same file for write and insert xml into the file!
+				if ($debug == true) {
+					$metadataXml = addKeywords($metadataXml, $keywordsArray);
+							logMessages("Keywords will be injected without test before - debug mode!");
+				} else {
+					if (count($keywordsArray) > 0 && count($metadataObject->keywords) > 0) {
+						$metadataXml = addKeywords($metadataXml, $keywordsArray);
+								logMessages("Keywords will be injected!");
+					} else {
+						//TODO inject keyword after some other element!
+						logMessages("No keywords will be injected - file unaltered!");
+					}
+				}
+				unset($keywordsArray);
+				//debug
+				//header("Content-type: text/xml");
+				//echo $metadataXml;
+				//die();
+				//save xml to file	
+			}
+			fclose($h); //close file for read
+			
+			$metadataXml = exchangeLanguageAndDeletePolygon( $metadataXml );
+			//open same file for write and insert xml into the file!
             $writeHandle = fopen($metadataDir."/".$file, "w+");
-	    fwrite($writeHandle, $metadataXml);
-	    fclose($writeHandle);
-	    logMessages("Number of altered file: ".($numberOfFile + 1));
-	    $numberOfFile++;
-	    $timeToBuild = microtime(true) - $startTime;
+			fwrite($writeHandle, $metadataXml);
+			fclose($writeHandle);
+			logMessages("Number of altered file: ".($numberOfFile + 1));
+			$numberOfFile++;
+			$timeToBuild = microtime(true) - $startTime;
             logMessages("time to alter xml: ".$timeToBuild);
-	    //save xml to file
-	    //echo $metadataDir."/".$file." will be altered!<br>";
-	} else {
-        	//echo "$file will not be altered!<br>";
-	}
+			//save xml to file
+			//echo $metadataDir."/".$file." will be altered!<br>";
+		} else {
+				//echo "$file will not be altered!<br>";
+		}
     }
     closedir($handle);
     $timeToBuildAll = microtime(true) - $startTimeForAll;
