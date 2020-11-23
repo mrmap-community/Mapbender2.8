@@ -58,8 +58,14 @@ if ($handle = opendir($metadataDir)) {
 		$metadataXml = str_replace('https://www.w3.org', 'http://www.w3.org', $metadataXml);
 		$metadataXml = str_replace('https://www.opengis.net', 'http://www.opengis.net', $metadataXml);
 		$metadataXml = str_replace('https://schemas.opengis.net', 'http://schemas.opengis.net', $metadataXml);
+		try {
+			$metadataObject = $metadataClass->createMapbenderMetadataFromXML($metadataXml);
+		} catch ( Exception $e ) {
+			$err = new mb_exception ( "php/mod_qualifyPersistedMetadataXm.php:" . $e->getMessage () );
+			logMessages("Problem when loading metadata xml into mapbender metadata object - problematic file: ".$metadataDir."/".$file);
+			continue;
+		}
 
-		$metadataObject = $metadataClass->createMapbenderMetadataFromXML($metadataXml);
 		logMessages("fileIdentifier: ".$metadataObject->fileIdentifier);
 		logMessages("type: ".$metadataObject->hierarchyLevel);
 		
