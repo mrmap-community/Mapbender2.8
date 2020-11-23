@@ -317,7 +317,7 @@ if ($MD_MetadataNodeList->item(0) != null) {
 		} //end - foreach keyword in array
 		//if keyword was injected - the metadata dateStamp has to be altered - fictive 1 day will be added to mark the difference!
 		$dateNodeList = $xpath->query('//gmd:MD_Metadata/gmd:dateStamp/gco:Date');
-		if (!is_null($dateNodeList)) {
+		if ($dateNodeList->length > 0) {
 			$dateStamp = $dateNodeList->item(0)->nodeValue;
 			//$date = new DateTime($dateStamp);
 			$date = new DateTime('NOW');
@@ -335,7 +335,7 @@ if ($MD_MetadataNodeList->item(0) != null) {
 			//add one day
 			//$date->add(new DateInterval('P1D'));
 			$date = new DateTime('NOW');
-			$dateTimeNew = date_format($date, 'Y-m-dTH:i:s');
+			$dateTimeNew = date_format($date, 'Y-m-d\TH:i:s');
 			$fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gco:DateTime', $dateTimeNew);
 			$dateTimeNodeList->item(0)->parentNode->replaceChild($fragment, $dateTimeNodeList->item(0));
 		}
