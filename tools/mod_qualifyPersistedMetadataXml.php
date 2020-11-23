@@ -63,7 +63,7 @@ if ($handle = opendir($metadataDir)) {
 		logMessages("fileIdentifier: ".$metadataObject->fileIdentifier);
 		logMessages("type: ".$metadataObject->hierarchyLevel);
 		
-		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Local', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
+		if (in_array('inspireidentifiziert', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset') {
 		    //echo $metadataObject->title."<br>";
             //echo $metadataDir."/".$file." has keyword inspireidentifiziert!<br>";
 		    $keywordsArray[$newKeywordsIndex]->keyword = "Regional";
@@ -76,13 +76,13 @@ if ($handle = opendir($metadataDir)) {
                     $e = new mb_exception("test3");*/
 		}
 		if (in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
-			$keywordsArray[$newKeywordsIndex]->keyword = "Local";
+			$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
 			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
 		}
 		//workaround for hesse
-		if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Local', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
-			$keywordsArray[$newKeywordsIndex]->keyword = "Local";
+		if (in_array('mapbenderLocal', $metadataObject->keywords) && !in_array('bplan', $metadataObject->keywords) && !in_array('Regional', $metadataObject->keywords) && !in_array('Lokal', $metadataObject->keywords) && $metadataObject->hierarchyLevel == 'dataset' && in_array('inspireidentifiziert', $metadataObject->keywords)) {
+			$keywordsArray[$newKeywordsIndex]->keyword = "Lokal";
 			$keywordsArray[$newKeywordsIndex]->thesaurusTitle = "Spatial scope";
 			$keywordsArray[$newKeywordsIndex]->thesaurusPubDate = "2019-05-22";
 		}
