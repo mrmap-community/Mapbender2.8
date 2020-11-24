@@ -77,3 +77,5 @@ CREATE INDEX idx_wst_wmc_timestamp
   USING btree
   (wmc_timestamp);
 
+GRANT ALL ON TABLE wmc_search_table TO mapbenderdbuser;
+ALTER TABLE wmc_search_table OWNER TO mapbenderdbuser;

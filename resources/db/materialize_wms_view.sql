@@ -82,4 +82,9 @@ CREATE INDEX idx_wms_list_wms_id
   (wms_id);
 
 
+GRANT ALL ON TABLE wms_search_table TO mapbenderdbuser;
+ALTER TABLE wms_search_table OWNER TO mapbenderdbuser;
+ALTER TABLE wms_list OWNER TO mapbenderdbuser;
+
+
 
