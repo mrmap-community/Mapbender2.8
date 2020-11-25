@@ -372,7 +372,7 @@ SQL;
 } else {
 $sqlCount = <<<SQL
 
-	SELECT count(metadata_id) FROM mb_metadata WHERE (mb_metadata.type = 'dataset' AND mb_metadata.metadata_id IN ($metadataList)
+	SELECT count(metadata_id) FROM mb_metadata WHERE (mb_metadata.type != 'application' AND mb_metadata.metadata_id IN ($metadataList)
 
 SQL;
 }
@@ -386,7 +386,7 @@ SQL;
 } else {
 $sqlAll = <<<SQL
 
-	SELECT metadata_id as metadata_id, metadata_id as id, uuid, title, lastchanged, f_get_coupled_resources(metadata_id), origin, searchable, export2csw FROM mb_metadata WHERE (mb_metadata.type = 'dataset' AND mb_metadata.metadata_id IN ($metadataList)
+	SELECT metadata_id as metadata_id, metadata_id as id, uuid, title, lastchanged, f_get_coupled_resources(metadata_id), origin, searchable, export2csw FROM mb_metadata WHERE (mb_metadata.type != 'application' AND mb_metadata.metadata_id IN ($metadataList)
 
 SQL;
 }
