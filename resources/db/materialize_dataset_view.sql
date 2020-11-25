@@ -102,3 +102,5 @@ CREATE INDEX idx_wst_dataset_timestamp
   USING btree
   (dataset_timestamp);
 
+GRANT ALL ON TABLE dataset_search_table TO mapbenderdbuser;
+ALTER TABLE dataset_search_table OWNER TO mapbenderdbuser;

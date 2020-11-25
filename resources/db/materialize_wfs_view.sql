@@ -54,4 +54,7 @@ CREATE INDEX idx_wst_wfs_timestamp
 --vacuum analyze;
 --VACUUM ANALYZE wfs_search_table;
 
+GRANT ALL ON TABLE wfs_search_table TO mapbenderdbuser;
+ALTER TABLE wfs_search_table OWNER TO mapbenderdbuser;
+
 
