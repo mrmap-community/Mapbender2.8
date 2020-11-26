@@ -598,8 +598,8 @@ DROP TABLE IF EXISTS wmc_md_topic_category CASCADE;
 
 
 --adopt mb_user_wmc to store a serial column too!
-ALTER TABLE mb_user_wmc DROP CONSTRAINT pk_user_wmc CASCADE;
-ALTER TABLE mb_user_wmc DROP CONSTRAINT mb_user_wmc_pkey; --for older implementations
+ALTER TABLE mb_user_wmc DROP CONSTRAINT IF EXISTS  pk_user_wmc CASCADE;
+ALTER TABLE mb_user_wmc DROP CONSTRAINT IF EXISTS mb_user_wmc_pkey; --for older implementations
 --DROP SEQUENCE mb_user_wmc_wmc_serial_id_seq cascade;
 CREATE SEQUENCE mb_user_wmc_wmc_serial_id_seq;
 ALTER  TABLE mb_user_wmc ADD COLUMN wmc_serial_id INTEGER;
@@ -1637,7 +1637,7 @@ ALTER TABLE layer ALTER COLUMN layer_searchable SET DEFAULT 1;
 --ALTER TABLE wfs_featuretype ALTER COLUMN featuretype_searchable SET DEFAULT 1;
 
 
-ALTER TABLE wfs_featuretype ADD COLUMN featuretype_searchable integer;
+--ALTER TABLE wfs_featuretype ADD COLUMN featuretype_searchable integer;
 
 
 -- Column: wms_timestamp_create

@@ -77,11 +77,6 @@ UPDATE gui_element SET e_content = '<div id="printPDF_working_bg"></div><div id=
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('gui2', 'resizeMapsize', 'max_height', '700', 'define a max mapframe width (units pixel) f.e. 700 or false' ,'var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('gui2', 'resizeMapsize', 'max_width', '700', 'define a max mapframe width (units pixel) f.e. 700 or false' ,'var');
 
-
--- add new element vars for resizemapSize to gui2
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('gui2', 'resizeMapsize', 'max_height', '700', 'define a max mapframe width (units pixel) f.e. 700 or false' ,'var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('gui2', 'resizeMapsize', 'max_width', '700', 'define a max mapframe width (units pixel) f.e. 700 or false' ,'var');
-
 -- Column: mb_group_admin_code
 
 -- ALTER TABLE mb_group DROP COLUMN mb_group_admin_code;
