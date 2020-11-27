@@ -184,19 +184,17 @@ mb_internal_encoding("UTF-8");
 // (non-recursive due to possible security hazard)
 //
 if (get_magic_quotes_gpc()) {
-	$in = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
+	$inputs = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
 
-	while (list($k, $v) = each($in)) {
-		foreach ($v as $key => $val) {
+	foreach ($inputs as $input) {
+		foreach ($input as $key => $val) {
 			if (!is_array($val)) {
-				$in[$k][$key] = stripslashes($val);
-				continue;
+				$input[$key] = stripslashes($val);
 			}
-			$in[]= &$in[$k][$key];
 		}
 	}
 
-	unset($in);
+	unset($inputs);
 }
 
 //

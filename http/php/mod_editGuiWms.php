@@ -413,7 +413,7 @@ if (isset ($update_content) && $update_content == "1") {
 	/* */
 
 	$cnt = 0;
-	while (list ($key, $val) = each($_POST)) {
+	foreach ($_POST as $key => $val) {
 		if (preg_match("/___/", $key)) {
 			$myKey = explode("___", $key);
 			if ($myKey[1] != "layer_parent" && $myKey[1] != 'layer_id') {
