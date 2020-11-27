@@ -121,7 +121,7 @@ class PropertyIsBetween
 		$temp .= $offset." </td>\n";
 		$temp .= $offset." <td>\n";
 		
-		$number = split("_", $id);
+		$number = explode("_", $id);
 		$number = $number[count($number)-1];
 		$temp .= $offset."  <a class=\"edit\" href=\"?function=deleteoperation&id=".$this->parent."&number=".$number."\">";
 		$temp .= "<img src='./img/minus.gif' border='0'>&nbsp;l&ouml;schen</a>\n";

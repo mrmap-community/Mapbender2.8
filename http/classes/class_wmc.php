@@ -1736,7 +1736,7 @@ SQL;
 			$tagLowerCase = administration::sepNameSpace($element['tag']);
 			$type = $element['type'];
 			$attributes = $element['attributes'];
-			$value = mb_utf8_decode(html_entity_decode($element['value']));
+			$value = utf8_decode(html_entity_decode($element['value']));
 
 			if ($tag == "VIEWCONTEXT" && $type == "open") {
 				$this->wmc_id = $attributes["id"];

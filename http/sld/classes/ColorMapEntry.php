@@ -96,7 +96,7 @@ class ColorMapEntry
 		$temp .= $offset."  <td style=\"width: 100px;\">\n";
 		$temp .= $offset."   ColormapEntry<br>\n";
 		
-		$number = split("_", $id);
+		$number = explode("_", $id);
 		$number = $number[count($number)-1];
 		
 		$temp .= $offset."   <a class='edit' href=\"sld_function_handler.php?function=deletecolormapentry&id=".$this->parent."&number=".$number."\">l&ouml;schen</a>\n";

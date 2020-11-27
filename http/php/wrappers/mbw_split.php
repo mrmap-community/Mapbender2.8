@@ -34,7 +34,7 @@ function mbw_split() {
             case "0":
             case "1":
             case "2":
-               $result =  split($pars);
+               $result = explode($pars);
                break;
             default:
                 if ($pars[2] == null) {

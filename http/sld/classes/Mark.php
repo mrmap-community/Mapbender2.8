@@ -94,7 +94,7 @@ class Mark
 		$temp .= $offset."   Mark<br>\n";
 		$temp .= $offset."   <input type=\"hidden\" name=\"".$id."\" value=\"mark\">\n";
 		
-		$number = split("_", $id);
+		$number = explode("_", $id);
 		$number = $number[count($number)-1];
 		$temp .= $offset."   <a class='edit' href=\"sld_function_handler.php?function=deleteexternalgraphicormark&id=".$this->parent."&number=".$number."\">l&ouml;schen</a>\n";
 		

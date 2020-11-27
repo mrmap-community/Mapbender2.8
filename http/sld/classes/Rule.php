@@ -135,7 +135,7 @@ class Rule extends FeatureTypeStyle
 			$temp .= $offset."    <input type=\"hidden\" name=\"".$id."\" value=\"rule\">\n";
 			$temp .= $offset."   </td>\n";
 			
-			$number = split("_", $id);
+			$number = explode("_", $id);
 			$number = $number[count($number)-1];
 			
 			$temp .= $offset."   <td>\n";

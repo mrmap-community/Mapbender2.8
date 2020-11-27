@@ -3595,8 +3595,8 @@ class PHPMailer
         if (is_numeric(str_replace('.', '', $host))) {
             //Is it a valid IPv4 address?
             return (bool) filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-        }
-        if (filter_var('http://' . $host, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)) {
+	}
+	if (filter_var('http://' . $host, FILTER_VALIDATE_URL)) {
             //Is it a syntactically valid hostname?
             return true;
         }
