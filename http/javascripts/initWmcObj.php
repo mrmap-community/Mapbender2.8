@@ -224,7 +224,7 @@ $startWmcId = $input["id"];
 WMS
 */
 $e = new mb_notice("javascripts/initWmcObj.php: check WMS API");
-//private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven 
+//private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven
 if ($getParams['WMS']) {
 	// WMS param given as array
 	if (is_array($getParams['WMS'])) {
@@ -287,7 +287,7 @@ if ($getParams['WMS']) {
 				else if (is_string($val)) {
 					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);		
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
-					//Set zoom to extent of wms 
+					//Set zoom to extent of wms
 					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
 					//$e = new mb_exception("javascripts/initWmcObj.php: first layer layer_epsg: ".json_encode($currentWms->objLayer[0]->layer_epsg[0]));
 					//find layer epsg of service where epsg=EPSG:4326
@@ -302,8 +302,8 @@ if ($getParams['WMS']) {
 								$bbox->transform($wmcGetApi->mainMap->getEpsg());
 							}
 							$wmcGetApi->mainMap->setExtent($bbox);
-							//overwrite zoom to parameter 
-							break;	
+							//overwrite zoom to parameter
+							break;
 						}
 					}
 					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
@@ -326,7 +326,7 @@ if ($getParams['WMS']) {
 								}
 								break;
 							}
-						
+
 						}
 					}
 				}
@@ -643,7 +643,7 @@ if (true) {
 	        $applicationMetadata->metadataUrl = MAPBENDER_PATH."/php/mod_iso19139ToHtml.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$applicationMetadata->fileIdentifier);
 	        $applicationMetadataJson = json_encode($applicationMetadata);
 	        //$e = new mb_exception(json_encode($applicationMetadata));
-	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
+	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
 	    }
     } else {
         $e = new mb_notice("Found no mapbender application metadata!");

@@ -2088,7 +2088,7 @@ class searchMetadata
 			$queryStringNew = str_replace($str2search, $str2exchange, $queryString);
 			$queryStringNew = str_replace("&&", "&", $queryStringNew);
 		} else {
-			//there are more than one filter - reduce the filter  
+			//there are more than one filter - reduce the filter
 			$objectList = "";
 			for ($i = 0; $i < count($queryArray); $i++) {
 				if ($queryArray[$i] != $string) {
@@ -2114,7 +2114,7 @@ class searchMetadata
 		}
 	}
 
-	// function to add a new variable or complete parameter to a GET parameter query url 
+	// function to add a new variable or complete parameter to a GET parameter query url
 	private function addToQuery($paramName, $queryString, $string, $queryList)
 	{
 		//test if string was part of query before, if so, don't extent the query
@@ -2144,7 +2144,7 @@ class searchMetadata
 		}
 	}
 
-	// function to delete one GET parameter totally from a query url 
+	// function to delete one GET parameter totally from a query url
 	private function delTotalFromQuery($paramName, $queryString)
 	{
 		$queryString = "&" . $queryString;

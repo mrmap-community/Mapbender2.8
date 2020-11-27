@@ -289,7 +289,7 @@ switch (strtolower($reqParams['request'])) {
             			getWfsCapabilities($request, $auth);
         		} else {
             			getWfsCapabilities($request);
-        		}		
+        		}
 		break;
 		case 'wms':
         		$arrayOnlineresources = checkWmsPermission($query->getOwsproxyServiceId(), $userId);
@@ -334,31 +334,31 @@ switch (strtolower($reqParams['request'])) {
         	}
         } else {
            	new mb_notice("spatial security: $request");
-        				
+
         	$x = empty($reqParams["i"]) ? $reqParams["x"] : $reqParams["i"];
         	$y = empty($reqParams["j"]) ? $reqParams["y"] : $reqParams["j"];
-        				
+
         	$mask = spatial_security\get_mask($reqParams, Mapbender::session()->get("mb_user_id"));
-        				
+
         	if ($mask === null) {
         		echo "Permission denied";
         		die();
         	}
-        					
+
         	$color = $mask->getImagePixelColor($x, $y);
         	$transparency = $color->getColorValue(Imagick::COLOR_ALPHA);
-        					
+
         	if ($transparency < 1) {
         		echo "Permission denied";
         		die();
         	}
-        						
+
         	if (isset($auth)) {
         		getFeatureInfo($log_id, $request, $auth);
         	} else {
         		getFeatureInfo($log_id, $request);
         	}
-        								
+
         	$mask->destroy();
         }
         break;
@@ -420,20 +420,20 @@ switch (strtolower($reqParams['request'])) {
         		//will be reset later in function getImage
         		$log_id = $n->logFullWmsProxyRequest($arrayOnlineresources['wms_id'], $userId, $request, $price, 0, false);
         	}
-        						
+
         	$mask = spatial_security\get_mask($reqParams, Mapbender::session()->get("mb_user_id"));
-        						
+
         	if ($mask === null) {
         		throwImage("WMS ".$arrayOnlineresources['wms_id']." needs spatial mask!");
         		die();
         	}
-        							
+
         	if (isset($auth)) {
         		getImage($log_id, $request, $auth, $mask);
         	} else {
         		getImage($log_id, $request, false, $mask);
         	}
-        									
+
         	$mask->destroy();
         }
 
@@ -1511,7 +1511,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             }
 		    $e = new mb_notice("owsproxy/http/index.php: Time for counting: ". (string)($endTime - $startTime));
 		    $e = new mb_notice("owsproxy/http/index.php: Memory used for XML String: ".getVariableUsage($content)/1000000 ."MB");
-		    if (header !== false) { 
+		    if (header !== false) {
 			    header($header);
 		    } else {
 	    	    //define header as requested outputFormat of wfs - only a workaround!
@@ -1531,7 +1531,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             echo $content;
 	    }
     } else {
-	    if (header !== false) { 
+	    if (header !== false) {
 		    header($header);
 	    }
         echo $content;
