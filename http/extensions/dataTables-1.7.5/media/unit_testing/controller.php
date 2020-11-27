@@ -76,7 +76,7 @@
 					fscanf( $fp, "// DATA_TEMPLATE: %s", $sTemplate );
 					fclose( $fp );
 					
-					$aPath = split('/', $aFiles[$i]);
+					$aPath = explode('/', $aFiles[$i]);
 					
 					echo '{ '.
 						'"sTemplate": "'.$sTemplate.'", '.

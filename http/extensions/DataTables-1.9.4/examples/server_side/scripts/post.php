@@ -42,12 +42,12 @@
 	/* 
 	 * MySQL connection
 	 */
-	if ( ! $gaSql['link'] = mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) )
+	if ( ! $gaSql['link'] = mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) )
 	{
 		fatal_error( 'Could not open connection to server' );
 	}
 
-	if ( ! mysql_select_db( $gaSql['db'], $gaSql['link'] ) )
+	if ( ! mysqli_select_db($gaSql['link'] ,  $gaSql['db']) )
 	{
 		fatal_error( 'Could not select database ' );
 	}
@@ -101,7 +101,7 @@
 		{
 			if ( isset($_POST['bSearchable_'.$i]) && $_POST['bSearchable_'.$i] == "true" )
 			{
-				$sWhere .= $aColumns[$i]." LIKE '%".mysql_real_escape_string( $_POST['sSearch'] )."%' OR ";
+				$sWhere .= $aColumns[$i]." LIKE '%".mysqli_real_escape_string( $_POST['sSearch'] )."%' OR ";
 			}
 		}
 		$sWhere = substr_replace( $sWhere, "", -3 );
@@ -121,7 +121,7 @@
 			{
 				$sWhere .= " AND ";
 			}
-			$sWhere .= $aColumns[$i]." LIKE '%".mysql_real_escape_string($_POST['sSearch_'.$i])."%' ";
+			$sWhere .= $aColumns[$i]." LIKE '%".mysqli_real_escape_string($_POST['sSearch_'.$i])."%' ";
 		}
 	}
 	
@@ -137,14 +137,14 @@
 		$sOrder
 		$sLimit
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or fatal_error( 'MySQL Error: ' . mysql_errno() );
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or fatal_error( 'MySQL Error: ' . mysqli_errno($gaSql['link']) );
 	
 	/* Data set length after filtering */
 	$sQuery = "
 		SELECT FOUND_ROWS()
 	";
-	$rResultFilterTotal = mysql_query( $sQuery, $gaSql['link'] ) or fatal_error( 'MySQL Error: ' . mysql_errno() );
-	$aResultFilterTotal = mysql_fetch_array($rResultFilterTotal);
+	$rResultFilterTotal = mysqli_query($gaSql['link'] ,  $sQuery) or fatal_error( 'MySQL Error: ' . mysqli_errno($gaSql['link']) );
+	$aResultFilterTotal = mysqli_fetch_array($rResultFilterTotal);
 	$iFilteredTotal = $aResultFilterTotal[0];
 	
 	/* Total data set length */
@@ -152,8 +152,8 @@
 		SELECT COUNT(".$sIndexColumn.")
 		FROM   $sTable
 	";
-	$rResultTotal = mysql_query( $sQuery, $gaSql['link'] ) or fatal_error( 'MySQL Error: ' . mysql_errno() );
-	$aResultTotal = mysql_fetch_array($rResultTotal);
+	$rResultTotal = mysqli_query($gaSql['link'] ,  $sQuery) or fatal_error( 'MySQL Error: ' . mysqli_errno($gaSql['link']) );
+	$aResultTotal = mysqli_fetch_array($rResultTotal);
 	$iTotal = $aResultTotal[0];
 	
 	
@@ -165,7 +165,7 @@
 	$sOutput .= '"iTotalRecords": '.$iTotal.', ';
 	$sOutput .= '"iTotalDisplayRecords": '.$iFilteredTotal.', ';
 	$sOutput .= '"aaData": [ ';
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		$sOutput .= "[";
 		for ( $i=0 ; $i<count($aColumns) ; $i++ )

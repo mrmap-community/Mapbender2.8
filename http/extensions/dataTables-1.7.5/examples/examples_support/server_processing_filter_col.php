@@ -2,28 +2,28 @@
   /* MySQL connection */
 	include( $_SERVER['DOCUMENT_ROOT']."/datatables/mysql.php" ); /* ;-) */
 	
-	$gaSql['link'] =  mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
+	$gaSql['link'] =  mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
 		die( 'Could not open connection to server' );
 	
-	mysql_select_db( $gaSql['db'], $gaSql['link'] ) or 
+	mysqli_select_db($gaSql['link'] ,  $gaSql['db']) or 
 		die( 'Could not select database '. $gaSql['db'] );
 	
 	/* Paging */
 	$sLimit = "";
 	if ( isset( $_GET['iDisplayStart'] ) && $_GET['iDisplayLength'] != '-1' )
 	{
-		$sLimit = "LIMIT ".mysql_real_escape_string( $_GET['iDisplayStart'] ).", ".
-			mysql_real_escape_string( $_GET['iDisplayLength'] );
+		$sLimit = "LIMIT ".mysqli_real_escape_string( $_GET['iDisplayStart'] ).", ".
+			mysqli_real_escape_string( $_GET['iDisplayLength'] );
 	}
 	
 	/* Ordering */
 	if ( isset( $_GET['iSortCol_0'] ) )
 	{
 		$sOrder = "ORDER BY  ";
-		for ( $i=0 ; $i<mysql_real_escape_string( $_GET['iSortingCols'] ) ; $i++ )
+		for ( $i=0 ; $i<mysqli_real_escape_string( $_GET['iSortingCols'] ) ; $i++ )
 		{
-			$sOrder .= fnColumnToField(mysql_real_escape_string( $_GET['iSortCol_'.$i] ))."
-			 	".mysql_real_escape_string( $_GET['sSortDir_'.$i] ) .", ";
+			$sOrder .= fnColumnToField(mysqli_real_escape_string( $_GET['iSortCol_'.$i] ))."
+			 	".mysqli_real_escape_string( $_GET['sSortDir_'.$i] ) .", ";
 		}
 		$sOrder = substr_replace( $sOrder, "", -2 );
 	}
@@ -35,11 +35,11 @@
 	$sWhere = "";
 	if ( $_GET['sSearch'] != "" )
 	{
-		$sWhere = "WHERE ( engine LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "browser LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "platform LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "version LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "grade LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' )";
+		$sWhere = "WHERE ( engine LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "browser LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "platform LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "version LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "grade LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' )";
 	}
 	
 	for ( $i=0 ; $i<$_GET['iColumns'] ; $i++ )
@@ -54,7 +54,7 @@
 			{
 				$sWhere .= "WHERE ";
 			}
-			$sWhere .= fnColumnToField($i) ." LIKE '%".mysql_real_escape_string( $_GET['sSearch_'.$i] )."%'";
+			$sWhere .= fnColumnToField($i) ." LIKE '%".mysqli_real_escape_string( $_GET['sSearch_'.$i] )."%'";
 		}
 	}
 	
@@ -65,21 +65,21 @@
 		$sOrder
 		$sLimit
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
 	
 	$sQuery = "
 		SELECT FOUND_ROWS()
 	";
-	$rResultFilterTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-	$aResultFilterTotal = mysql_fetch_array($rResultFilterTotal);
+	$rResultFilterTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+	$aResultFilterTotal = mysqli_fetch_array($rResultFilterTotal);
 	$iFilteredTotal = $aResultFilterTotal[0];
 	
 	$sQuery = "
 		SELECT COUNT(id)
 		FROM   ajax
 	";
-	$rResultTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-	$aResultTotal = mysql_fetch_array($rResultTotal);
+	$rResultTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+	$aResultTotal = mysqli_fetch_array($rResultTotal);
 	$iTotal = $aResultTotal[0];
 	
 	$sOutput = '{';
@@ -87,7 +87,7 @@
 	$sOutput .= '"iTotalRecords": '.$iTotal.', ';
 	$sOutput .= '"iTotalDisplayRecords": '.$iFilteredTotal.', ';
 	$sOutput .= '"aaData": [ ';
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		$sOutput .= "[";
 		$sOutput .= '"'.str_replace('"', '\"', $aRow['engine']).'",';

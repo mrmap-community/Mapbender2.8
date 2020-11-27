@@ -3,7 +3,7 @@
 //Basic configuration of mapserver client
 require_once(dirname(__FILE__)."/../../../../conf/mobilemap.conf");
 
-$coord = split(',',$_GET["coord"]);
+$coord = explode(',',$_GET["coord"]);
 
 //Mapfile laden
 $map= ms_newMapObj($mapfilepath.'/dhm.map');
@@ -30,12 +30,12 @@ print ('<table border="0" cellspacing="0" cellpadding="1" class="normal">');
      if ($datQuery == MS_SUCCESS) {
          for ($j=0; $j<$layer->getNumResults(); $j++) {
             $result = $layer->getResult($j);			
-			//Versionsüberprüfung	
+			//Versionsï¿½berprï¿½fung	
 			if (ms_GetVersionInt() < 50600){
 				$layer->open(); 
 			}
 			
-			//Versionsüberprüfung	
+			//Versionsï¿½berprï¿½fung	
 			if (ms_GetVersionInt() < 50600){
 			$shpobj = $layer->getShape($result->tileindex,$result->shapeindex);
 			}
@@ -55,7 +55,7 @@ print ('<table border="0" cellspacing="0" cellpadding="1" class="normal">');
 			}
 			$shpobj->free(); 
 			
-			//Versionsüberprüfung		
+			//Versionsï¿½berprï¿½fung		
 			if (ms_GetVersionInt() < 50600){
 				$layer->close();
 			}
@@ -63,7 +63,7 @@ print ('<table border="0" cellspacing="0" cellpadding="1" class="normal">');
      }
 	 else{
 	    print '<tr ><td colspan="3" ><strong>'.$maplang['rasterquery_noh'].'</strong></td></tr>';
-		//echo "Kein Wert verfügbar!";
+		//echo "Kein Wert verfï¿½gbar!";
 	} 
 
 print ('<tr bgcolor="#E6E6E6"><td colspan="3" >'.$maplang['rasterquery_gps'].'</td></tr>

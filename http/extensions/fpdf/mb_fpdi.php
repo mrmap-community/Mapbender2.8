@@ -624,7 +624,7 @@ class mb_fpdi extends FPDI {
         if (isset($dash)) {
             $dash_string = '';
             if ($dash) {
-                if(ereg('^.+, ', $dash))
+                if(preg_match('/^.+, /', $dash))
                     $tab = explode(', ', $dash);
                 else
                     $tab = array($dash);

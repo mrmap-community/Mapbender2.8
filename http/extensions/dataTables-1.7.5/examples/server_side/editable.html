@@ -92,10 +92,10 @@
 	$gaSql['server']     = "*********";
 	$gaSql['type']       = "mysql";
 	
-	$gaSql['link'] =  mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
+	$gaSql['link'] =  mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
 		die( 'Could not open connection to server' );
 	
-	mysql_select_db( $gaSql['db'], $gaSql['link'] ) or 
+	mysqli_select_db($gaSql['link'] ,  $gaSql['db']) or
 		die( 'Could not select database '. $gaSql['db'] );
 	
 	/* Paging */
@@ -136,14 +136,14 @@
 		$sOrder
 		$sLimit
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysql_error());
 	
 	$sQuery = "
 		SELECT id
 		FROM   ajax
 	";
-	$rResultTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-	$iTotal = mysql_num_rows($rResultTotal);
+	$rResultTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysql_error());
+	$iTotal = mysqli_num_rows($rResultTotal);
 	
 	if ( $sWhere != "" )
 	{
@@ -152,8 +152,8 @@
 			FROM   ajax
 			$sWhere
 		";
-		$rResultFilterTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-		$iFilteredTotal = mysql_num_rows($rResultFilterTotal);
+		$rResultFilterTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysql_error());
+		$iFilteredTotal = mysqli_num_rows($rResultFilterTotal);
 	}
 	else
 	{
@@ -164,7 +164,7 @@
 	$sOutput .= '"iTotalRecords": '.$iTotal.', ';
 	$sOutput .= '"iTotalDisplayRecords": '.$iFilteredTotal.', ';
 	$sOutput .= '"aaData": [ ';
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		$sOutput .= "[";
 		$sOutput .= "'".$aRow['engine']."',";
