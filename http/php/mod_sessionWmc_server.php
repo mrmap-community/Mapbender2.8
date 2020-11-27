@@ -35,13 +35,13 @@ switch ($ajaxResponse->getMethod()) {
 	case 'updateWmc':
 		if (
 			!Mapbender::session()->exists("wmcGetApi") ||
-			!is_a(Mapbender::session()->get("wmcGetApi"), "wmc")
+			!is_a(base64_decode(Mapbender::session()->get("wmcGetApi")), "wmc")
 		) {
 			$ajaxResponse->setMessage(_mb("No WMC in session."));
 			$ajaxResponse->setSuccess(true);
 			break;
 		}
-		$wmc = Mapbender::session()->get("wmcGetApi");
+		$wmc = base64_decode(Mapbender::session()->get("wmcGetApi"));
 		$skipWms = $ajaxResponse->getParameter("wmsIndices");
 		$skipWms = is_array($skipWms) ? $skipWms : array();
 		$js = $wmc->toJavaScript($skipWms);

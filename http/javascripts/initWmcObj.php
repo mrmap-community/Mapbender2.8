@@ -988,7 +988,7 @@ JS;
 			$extentJs
 		});
 JS;
-	Mapbender::session()->set("wmcGetApi", $wmcGetApi);
+	Mapbender::session()->set("wmcGetApi", base64_encode($wmcGetApi));
 }
 $outputString = "";
 for ($i = 0; $i < count($output); $i++) {
