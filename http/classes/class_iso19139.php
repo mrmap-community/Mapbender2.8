@@ -1340,13 +1340,7 @@ XML;
 			//***************************************************************************
 			switch ($layout) {
 				case "accordion":
-					$html .= '</div>';
-					$html .= '</div>';
-					break;
 				case "tabs":
-					$html .= '</div>';
-					$html .= '</div>';
-					break;
 				case "plain":
 					$html .= '</div>';
 					$html .= '</div>';

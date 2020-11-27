@@ -1116,19 +1116,7 @@ switch ($_REQUEST["mdtype"]) {
 		die();
 	break;
 	case "inspire":
-		echo "<a href='".$url."'>GetRecordById URL</a><br><br>";
-		for($a = 0; $a < count($md_ident); $a++) {
-			echo "<b>".$md_ident[$a]['html']."</b>: ".$md_ident[$a]['value']."<br><br>";
-		}
-		die();
-	break;
 	case "debug":
-		echo "<a href='".$url."'>GetRecordById URL</a><br><br>";
-		for($a = 0; $a < count($md_ident); $a++) {
-			echo "<b>".$md_ident[$a]['html']."</b>: ".$md_ident[$a]['value']."<br><br>";
-		}
-		die();
-	break;
 	default:
 		echo "<a href='".$url."'>GetRecordById URL</a><br><br>";
 		for($a = 0; $a < count($md_ident); $a++) {

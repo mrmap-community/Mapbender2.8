@@ -56,13 +56,6 @@ class cswClient {
 		//check for operation support
 		switch (strtolower($operationName)) {
 			case "getrecords":
-				if (isset($csw->cat_op_values[$operationName]['get']) ||  isset($csw->cat_op_values[$operationName]['post'])) {
-					//all ok
-				} else {
-					$e = new mb_exception("classes/class_cswClient.php: Operation not supported by catalogue!");
-					return false;
-				}
-				break;
 			case "getrecordbyid":
 				if (isset($csw->cat_op_values[$operationName]['get']) ||  isset($csw->cat_op_values[$operationName]['post'])) {
 					//all ok
@@ -72,13 +65,6 @@ class cswClient {
 				}
 				break;
 			case "transactionupdate":
-				if (isset($csw->cat_op_values["transaction"]['get']) ||  isset($csw->cat_op_values["transaction"]['post'])) {
-					//all ok
-				} else {
-					$e = new mb_exception("classes/class_cswClient.php: Operation not supported by catalogue!");
-					return false;
-				}
-				break;
 			case "transactioninsert":
 				if (isset($csw->cat_op_values["transaction"]['get']) ||  isset($csw->cat_op_values["transaction"]['post'])) {
 					//all ok
@@ -89,21 +75,7 @@ class cswClient {
 				break;
 			//wrapped operations for internal usage
 			case "counthits":
-				if (isset($csw->cat_op_values['getrecords']['post'])) {
-					//all ok
-				} else {
-					$e = new mb_exception("classes/class_cswClient.php: Needed operation not supported by catalogue!");
-					return false;
-				}
-				break;
 			case "getrecordsresolvecoupling":
-				if (isset($csw->cat_op_values['getrecords']['post'])) {
-					//all ok
-				} else {
-					$e = new mb_exception("classes/class_cswClient.php: Needed operation not supported by catalogue!");
-					return false;
-				}
-				break;
 			case "getrecordspaging":				
 				if (isset($csw->cat_op_values['getrecords']['post'])) {
 					//all ok
@@ -127,9 +99,6 @@ class cswClient {
 				$postRequest .= '<csw:GetRecordById xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" version="2.0.2" outputSchema="http://www.isotc211.org/2005/gmd">';
     				$postRequest .= '<csw:Id>'.$recordId.'</csw:Id>';
 				$postRequest .= '</csw:GetRecordById>';
-				break;
-			case "getrecords":
-				
 				break;
 			case "getrecordsresolvecoupling":
 				$postRequest = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -333,7 +302,8 @@ class cswClient {
 					$e = new mb_exception("classes/class_cswClient.php: Operation getrecordspaging needs more parameters!");
 				}
 					break;
-			default: 
+			case "getrecords":
+			default:
 				break;
 			
 		}

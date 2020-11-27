@@ -170,13 +170,10 @@ function getList($langCode){
 			$exceptionGroupTitle = "The title for this group have not been defined till now!";
 			$entries['translations']['labelOpenData'] = "restrict to OpenData";
 			break;
-		case 'fr':
-			break;
 		case 'es':
-
-		
-			break;
+		case 'fr':
 		default:
+			break;
 	}
 	$entries['user_department'] = array();
 	$entries['group_name'] = array();

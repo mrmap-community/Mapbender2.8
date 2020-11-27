@@ -119,15 +119,11 @@ class OwsMetadataUrl {
 		switch ($service) {
 			case 'wfs':
 				switch ($version) {
+					case "1.0.0":
 					case "1.1.0":
 						$template = "mb_ows_wfs_1.x_metadataurl.xml";
 						break;
-					case "1.0.0":
-						$template = "mb_ows_wfs_1.x_metadataurl.xml";
-						break;
 					case "2.0.0":
-						$template = "mb_ows_wfs_2.x_metadataurl.xml";
-						break;
 					case "2.0.2":
 						$template = "mb_ows_wfs_2.x_metadataurl.xml";
 						break;
@@ -177,10 +173,7 @@ class OwsMetadataUrl {
 							$xpathMetadataUrl->query('/mb:metadataurl/MetadataURL')->item(0)->nodeValue = "";
 							$xpathMetadataUrl->query('/mb:metadataurl/MetadataURL')->item(0)->appendChild($textNode);
 							break;
-						case "2.0.0":			
-							$xpathMetadataUrl->query('/mb:metadataurl/MetadataURL')->item(0)->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-							$xpathMetadataUrl->query('/mb:metadataurl/MetadataURL')->item(0)->setAttribute("xlink:href", $this->urlArray[$i]);
-							break;
+						case "2.0.0":
 						case "2.0.2":
 							$xpathMetadataUrl->query('/mb:metadataurl/MetadataURL')->item(0)->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 							$xpathMetadataUrl->query('/mb:metadataurl/MetadataURL')->item(0)->setAttribute("xlink:href", $this->urlArray[$i]);

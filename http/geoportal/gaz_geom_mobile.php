@@ -197,9 +197,6 @@ foreach ($gazetteerObject->features as $feature) {
 			$returnObject->geonames[$countGeonames]->title = $feature->properties->text." ("."Haus".")";	
 			$returnObject->geonames[$countGeonames]->category = "haus";
 			break;
-		case "Geoname":
-		        $returnObject->geonames[$countGeonames]->title = $feature->properties->text;
-			break;
 		case "Strasse":
 			$returnObject->geonames[$countGeonames]->title = $feature->properties->text." ("."Straße".")";
 			$returnObject->geonames[$countGeonames]->category = "str";

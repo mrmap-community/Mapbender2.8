@@ -184,29 +184,17 @@ if($action == 'save'){
 		$user->postalCode = $postal_code;
 		$user->city = $city;
 		$user->country = $country;
-		$user->spatialSecurity = $spatialSecurity;
-		switch ($create_digest) {
-			case "on":
-				$user->createDigest = 't';
-				break;
-			case "off":
-				$user->createDigest = 'f';
-				break;
-			default: 
-				$user->createDigest = 'f';
-				break;
-		}
-		switch ($is_active) {
-			case "on":
-				$user->isActive = 't';
-				break;
-			case "off":
-				$user->isActive = 'f';
-				break;
-			default: 
-				$user->isActive = 'f';
-				break;
-		}
+        $user->spatialSecurity = $spatialSecurity;
+        if ($create_digest == "on") {
+            $user->createDigest = 't';
+        } else {
+            $user->createDigest = 'f';
+        }
+        if ($is_active == "on") {
+            $user->isActive = 't';
+        } else {
+            $user->isActive = 'f';
+        }
 		$user->preferredGui = $fkey_preferred_gui_id;
 		$user->textSize = $textsize;
 		switch ($wants_newsletter) {
@@ -253,8 +241,8 @@ if($action == 'save'){
 				$user->wantsGlossar = 'f';
 				break;
 		}
-		
-		
+
+
 		$user->create();
 		$user->setNewUserPasswordTicket();
 		//TODO: check function !
@@ -295,73 +283,37 @@ if ($action == 'update') {
 		$user->country = $country;
 		$user->spatialSecurity = $spatialSecurity;
 		$user->loginCount = $login_count;
-		switch ($create_digest) {
-			case "on":
-				$user->createDigest = 't';
-				break;
-			case "off":
-				$user->createDigest = 'f';
-				break;
-			default: 
-				$user->createDigest = 'f';
-				break;
-		}
-		switch ($is_active) {
-			case "on":
-				$user->isActive = 't';
-				break;
-			case "off":
-				$user->isActive = 'f';
-				break;
-			default: 
-				$user->isActive = 'f';
-				break;
-		}
+        if ($create_digest == "on") {
+            $user->createDigest = 't';
+        } else {
+            $user->createDigest = 'f';
+        }
+        if ($is_active == "on") {
+            $user->isActive = 't';
+        } else {
+            $user->isActive = 'f';
+        }
 		$user->preferredGui = $fkey_preferred_gui_id;
 		$user->textSize = $textsize;
-		switch ($wants_newsletter) {
-			case "on":
-				$user->wantsNewsletter = 't';
-				break;
-			case "off":
-				$user->wantsNewsletter = 'f';
-				break;
-			default:
-				$user->wantsNewsletter = 'f';
-				break;
+		if ($wants_newsletter == "on") {
+            $user->wantsNewsletter = 't';
+        } else {
+            $user->wantsNewsletter = 'f';
 		}
-		switch ($allows_survey) {
-			case "on":
-				$user->allowsSurvey = 't';
-				break;
-			case "off":
-				$user->allowsSurvey = 'f';
-				break;
-			default:
-				$user->allowsSurvey = 'f';
-				break;
+		if ($allows_survey == "on") {
+            $user->allowsSurvey = 't';
+        } else {
+            $user->allowsSurvey = 'f';
+        }
+		if ($wants_spatial_suggest == "on") {
+            $user->wantsSpatialSuggest = 't';
+        } else {
+		    $user->wantsSpatialSuggest = 'f';
 		}
-		switch ($wants_spatial_suggest) {
-			case "on":
-				$user->wantsSpatialSuggest = 't';
-				break;
-			case "off":
-				$user->wantsSpatialSuggest = 'f';
-				break;
-			default:
-				$user->wantsSpatialSuggest = 'f';
-				break;
-		}
-		switch ($wants_glossar) {
-			case "on":
-				$user->wantsGlossar = 't';
-				break;
-			case "off":
-				$user->wantsGlossar = 'f';
-				break;
-			default:
-				$user->wantsGlossar = 'f';
-				break;
+		if ($wants_glossar == "on") {
+            $user->wantsGlossar = 't';
+        } else {
+            $user->wantsGlossar = 'f';
 		}
 		$user->commit();
 
@@ -493,7 +445,7 @@ if(isset($selected_user) && $selected_user != 0){
 		$wants_newsletter = $data["wantsNewsletter"];
 		$wants_glossar = $data["wantsGlossar"];
 		$wants_spatial_suggest = $data["wantsSpatialSuggest"];
-		$allows_survey = $data["allowsSurvey"];	
+		$allows_survey = $data["allowsSurvey"];
 	}
 }
 

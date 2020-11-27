@@ -80,17 +80,11 @@ if($action == 'save'){
 		$changes->spatialSecurity = $spatialSecurity;
 		$changes->homepage = $homepage;
 		$changes->adminCode = $adminCode;
-		switch ($searchable) {
-			case "on":
-				$changes->searchable = 't';
-				break;
-			case "off":
-				$changes->searchable = 'f';
-				break;
-			default: 
-				$changes->searchable = 'f';
-				break;
-		}
+        if ($searchable == "on") {
+            $changes->searchable = 't';
+        } else {
+            $changes->searchable = 'f';
+        }
 		$group->change($changes);	
 		
 		$group->create();	
@@ -124,17 +118,11 @@ if ($action == 'update') {
 		$changes->spatialSecurity = $spatialSecurity;
 		$changes->homepage = $homepage;
 		$changes->adminCode = $adminCode;
-		switch ($searchable) {
-			case "on":
-				$changes->searchable = 't';
-				break;
-			case "off":
-				$changes->searchable = 'f';
-				break;
-			default: 
-				$changes->searchable = 'f';
-				break;
-		}
+        if ($searchable == "on") {
+            $changes->searchable = 't';
+        } else {
+            $changes->searchable = 'f';
+        }
 		$group->change($changes);		
 
 		$group->commit();	

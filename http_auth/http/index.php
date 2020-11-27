@@ -1671,16 +1671,12 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 }
                 switch ($reqParams['version']) {
                     case "1.0.0":
-                        //get # of features from counting features
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-                        $numberOfFeatures = count($numberOfFeatures);
-                        break;
                     case "1.1.0":
                         //get # of features from counting features
                         $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
                         $numberOfFeatures = count($numberOfFeatures);
                         break;
-                        //for wfs 2.0 - don't count features
+					//for wfs 2.0 - don't count features
                     default:
                         //get # of features from attribut
                         $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');

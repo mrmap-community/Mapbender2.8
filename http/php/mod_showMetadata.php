@@ -737,25 +737,10 @@ $html .= '<body>';
 $html .= '<link type="text/css" href="../css/metadata_responsiv.css" rel="Stylesheet" />';
 /************************/ //Things for rdf-a handling via referencing http://schema.org vocabulary
 //define main vocabulary
-switch ($resource) {
-	case "wms":
-		$mainVocabReference = 'vocab="http://schema.org/" typeof="Map"';
-		break;
-	case "layer":
-		$mainVocabReference = 'vocab="http://schema.org/" typeof="Map"';
-		break;
-	case "wmc":
-		$mainVocabReference = 'vocab="http://schema.org/" typeof="Map"';
-		break;
-	case "wfs":
-		$mainVocabReference = 'vocab="http://schema.org/" typeof="Dataset"';
-		break;
-	case "featuretype":
-		$mainVocabReference = 'vocab="http://schema.org/" typeof="Dataset"';
-		break;
-	default:
-		$mainVocabReference = 'vocab="http://schema.org/" typeof="Dataset"';
-		break;
+if ($resource == "layer" || $resource == "wmc" || $resource == "wms") {
+	$mainVocabReference = 'vocab="http://schema.org/" typeof="Map"';
+} else {
+	$mainVocabReference = 'vocab="http://schema.org/" typeof="Dataset"';
 }
 $providerOrganizationCategory = 'property="provider" typeof="Organization"';
 $publisherOrganizationCategory = 'property="publisher" typeof="Organization"';
@@ -1134,16 +1119,10 @@ if ($resource == 'featuretype' or $resource == 'wfs-conf' or $resource == "wfs")
 		$describeFeaturetypeUrl = $mapbenderServerUrl."/registry/wfs/".$resourceMetadata['serviceid']."?";
 		$wfsGetCapabilitiesUrl = $describeFeaturetypeUrl;
 	}
-	switch ($resourceMetadata['serviceversion']) {
-		case "2.0.0":
-			$featureTypeName = "typeNames";
-			break;
-		case "2.0.2":
-			$featureTypeName = "typeNames";
-			break;
-		default:
-			$featureTypeName = "typeName";
-			break;
+	if ($resourceMetadata['serviceversion'] == "2.0.2" || $resourceMetadata['serviceversion'] == "2.0.0") {
+		$featureTypeName = "typeNames";
+	} else {
+		$featureTypeName = "typeName";
 	}
 }
 

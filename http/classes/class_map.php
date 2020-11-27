@@ -144,8 +144,6 @@ class Map {
 	 * @return Int scale of map
 	 */
 	public function getScale($mapResolutionDpi = MB_RESOLUTION){
-		$scale;
-		$xtenty;
 		$bbox = $this->getExtentInfo();
 
 		if ($this->getEpsg() == "EPSG:4326") {

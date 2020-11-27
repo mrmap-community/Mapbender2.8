@@ -48,12 +48,8 @@ if ($_POST["upload_action"] === "upload") {
     $images_orig;
     //create an gd-image-object from the source file
     switch ($ext) {
-        case 'jpg':
-
-            $images_orig = ImageCreateFromJPEG($image);
-            break;
-
         case 'jpeg':
+        case 'jpg':
 
             $images_orig = ImageCreateFromJPEG($image);
             break;
