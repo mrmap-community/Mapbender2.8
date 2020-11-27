@@ -62,7 +62,7 @@ SQL;
 
 		while ($row = db_fetch_row($res)) {
 		    // convert NULL to '', NULL values cause datatables to crash
-			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
+			$row = array_map('strval', $row);
 			$row[] = "<img style='cursor:pointer;' class='deleteImg' title='löschen' src='../img/cross.png' />";
 			//if fkey_upload_id is set, format it to date for dataTables
 			$row[5] = $row[5]?date("Y-m-d",$row[5]) : $row[5];

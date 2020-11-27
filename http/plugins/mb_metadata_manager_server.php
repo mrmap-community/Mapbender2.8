@@ -51,8 +51,7 @@ function validateType($variable, $value) {
 //parse row (array) from database to new array - change some of the values and add some further
 function parseMetadataRow($row, $withOutFirstColumn = false) {
 	global $hierarchyLevel;
-	//convert NULL to '', NULL values cause datatables to crash
-	$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
+	$row = array_map('strval', $row)
 	//preview with uuid
 	$row[0] = $row[0];
 	$row[1] = $row[1];
