@@ -399,7 +399,7 @@ if (isset($_REQUEST["searchPages"]) & $_REQUEST["searchPages"] != "") {
 	$searchPages = $testMatch;
 	$testMatch = NULL;
 #$searchPages = $_REQUEST["searchPages"];
-	#$searchPages = split(',',$searchPages);
+	#$searchPages = explode(',',$searchPages);
 
 }
 if (isset($_REQUEST["resultTarget"]) & $_REQUEST["resultTarget"] != "") {

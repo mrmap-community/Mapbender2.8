@@ -263,7 +263,7 @@ function db_free_result($qhandle) {
  */
 function db_reset_result($qhandle,$row=0) {
 #dummy
-	return 0;#mysql_data_seek($qhandle,$row);
+	return 0;#mysqli_data_seek($qhandle,$row);
 	
 }
 
