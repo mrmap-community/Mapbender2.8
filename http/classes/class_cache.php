@@ -112,7 +112,6 @@ class Cache {
 				return false;
 			break;
 		}
-		return false;
 	}
 
 	final public function cachedVariableAdd($key, $value, $ttl = 0) {

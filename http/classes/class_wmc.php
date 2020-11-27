@@ -1636,7 +1636,7 @@ SQL;
 	 * @return
 	 */
 	public function appendWmsArray ($wmsArray) {
-		return $this->mainMap->appendWmsArray($wmsArray);
+		$this->mainMap->appendWmsArray($wmsArray);
 	}
 
 	/**
@@ -1647,9 +1647,9 @@ SQL;
 	public function mergeWmsArray ($wmsArray) {
 		if (func_num_args() > 1) {
 			$options = func_get_arg(1);
-			return $this->mainMap->mergeWmsArray($wmsArray, $options);
+			$this->mainMap->mergeWmsArray($wmsArray, $options);
 		}
-		return $this->mainMap->mergeWmsArray($wmsArray);
+		$this->mainMap->mergeWmsArray($wmsArray);
 	}
 
 	//for debugging purposes only

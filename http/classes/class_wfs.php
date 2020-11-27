@@ -711,9 +711,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		$propertiesSegment = "";
 		foreach ($feature->properties as $key => $value) {
 			if (isset($value)) {
-				if (is_numeric($value) || $value == "" || $value == "NULL") {
-					$value = $value;
-				} else {
+				if (!is_numeric($value) && $value != "" && $value != "NULL") {
 					$value = "<![CDATA[$value]]>";
 				}
 				if ($value != "NULL") {
@@ -749,10 +747,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		$propertiesSegment = "";
 		foreach ($feature->properties as $key => $value) {
 			if (isset($value)) {
-				if (is_numeric($value) || $value == "" || $value == "NULL") {
-					$value = $value;
-				}
-				else {
+				if (!is_numeric($value) && $value != "" && $value != "NULL") {
 					$value = "<![CDATA[$value]]>";
 				}
 				if ($value != "NULL") {
@@ -785,7 +780,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 				"</wfs:Update>";
 	}
 	
-	public function getFeatureById ($featureTypeName, $outputFormat=false, $id, $version=false, $srsName=false) {
+	public function getFeatureById ($featureTypeName, $outputFormat, $id, $version=false, $srsName=false) {
 		if ($version == false) {
 			$version = $this->getVersion();
 		} else {

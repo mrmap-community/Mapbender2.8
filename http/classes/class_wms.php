@@ -1822,7 +1822,7 @@ class wms {
 		return $str;
 	  }
 	  
-	  function createJsLayerObjFromWMS($parent=0, $layer_name){
+	  function createJsLayerObjFromWMS($parent, $layer_name){
 	  	if(!$this->wms_title || $this->wms_title == ""){
 			echo " alert('Error: no valid capabilities-document !!');";
 			die; exit;
@@ -2030,8 +2030,8 @@ class wms {
 		# TABLE layer and gui_layer
 		
 		for($i=0; $i<count($this->objLayer); $i++){
-			$this->insertLayer($i,$myWMS,$gui_id);
-			$this->insertGuiLayer($i,$myWMS,$gui_id);
+			$this->insertLayer($i, $myWMS);
+			$this->insertGuiLayer($i, $myWMS, $gui_id);
 		}	
 			
 		
@@ -2048,7 +2048,7 @@ class wms {
 		$t = array('s');
 		$res = db_prep_query($sql,$v,$t);
 		if (db_result($res, 0,"pos") > -1) {
-			$position = db_result($res, 0,"pos") + 1;
+			$position = intval(db_result($res, 0,"pos")) + 1;
 		} 
 		else { 
 			$position = 0; 

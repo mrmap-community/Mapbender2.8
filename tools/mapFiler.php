@@ -49,8 +49,6 @@
   </table>
   <?php
   
-import_request_variables('PG');
-
 /*********PARAMS***************/
 $countSymbolsFiles = 0;
 $arraySymbolsFiles;

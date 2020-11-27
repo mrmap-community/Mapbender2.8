@@ -61,13 +61,10 @@ class Group implements RPCObject {
 	 */
 	public function __construct ($groupId) {
 		//check if id is uuid or integer
-		$uuid = new Uuid();
-		if ($uuid->isValid($groupId)) {
+		if (Uuid::isuuid($groupId)) {
 			$this->uuid = $groupId;
-		} else {
-			if (!is_numeric($groupId)) {
-				return;
-			}
+		} else if (!is_numeric($groupId)) {
+			return;
 		}
 		$this->id = $groupId;
 		try{

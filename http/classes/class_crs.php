@@ -192,7 +192,6 @@ class Crs {
         				$err = new mb_exception("class_crs:".$error->message);
     				}
 				throw new Exception("class_crs:".'Cannot parse crs gml!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -248,7 +247,6 @@ class Crs {
         					$err = new mb_exception("class_crs:".$error->message);
     					}
 					throw new Exception("class_crs: Cannot parse cs gml!");
-					return false;
 				}
 			}
 			catch (Exception $e) {

@@ -344,9 +344,8 @@ class cswClient {
 				foreach(libxml_get_errors() as $error) {
         				$err = new mb_exception("class_cswClient:".$error->message);
     				}
-				throw new Exception("class_cswClient:".'Cannot parse CSW Response XML!');
 				$this->operationResult = "Cannot parse CSW Response XML!";
-				return false;
+				throw new Exception("class_cswClient:".'Cannot parse CSW Response XML!');
 			}
 		}
 		catch (Exception $e) {

@@ -554,7 +554,7 @@ XML;
 					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
 			        $epsgId = $crsObject->identifierCode;
 			        $this->refSystem = "EPSG:".$epsgId;
-				} 
+				}
 			}
 			//debug output of keywords:
 			/*$iKeyword = 0;
@@ -796,7 +796,7 @@ XML;
 	}
 
 	public function transformToHtml3($layout,$languageCode){
-		
+		return '';
 	}
 
 	public function transformToHtml($layout, $languageCode, $serviceInformation=false){
@@ -1028,7 +1028,7 @@ XML;
 						$html .= $t_a."<img src='../img/dj_".$service->serviceType.".png'/> ".$t_b."<a href='".$accessUrl."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
 					} else {
 						$html .= $t_a."<b>".$service->serviceType."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."?url=".urlencode($service->metadataUrl)."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
-			
+
 					}
 				}
 				$html .= $tableEnd;

@@ -841,7 +841,7 @@ if (!class_exists('QRcode', false)) {
 						}
 					}
 				} else {
-					if ($y == $w) {
+					if ($y === $w) {
 						$y = $w - 1;
 						$x -= 2;
 						$this->dir = -1;

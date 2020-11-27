@@ -46,7 +46,6 @@ class Mapbender_bbox {
 		}
 		else {
 			throw new Exception("Invalid argument count.");
-			return;
 		}
 		
 		// params are point, point, epsg

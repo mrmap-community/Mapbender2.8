@@ -309,7 +309,7 @@ if ($mbMetadata->hierarchyLevel == 'dataset' || $mbMetadata->hierarchyLevel == '
 					}
 				} else {
 					$serviceMetadata->service[$k]->serviceType = 'other';
-					if ($mdAccessUrl == "" || isempty($mdAccessUrl)) {
+					if ($mdAccessUrl == "" || empty($mdAccessUrl)) {
 						$serviceMetadata->service[$k]->accessUrl = null;
 					}
 				}

@@ -34,7 +34,7 @@ class DisplayOperationModule
 	 * @param $operations array containing the operations for which the source should be created
 	 * @return string the created code
 	 */
-	function generateHtmlForm($offset = "", $operations, $id)
+	function generateHtmlForm($offset, $operations, $id)
 	{
 		$temp = "";
 		$operation_id = 0;

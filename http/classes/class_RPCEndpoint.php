@@ -109,7 +109,7 @@ class RPCEndpoint {
         try{
           $this->rpc_list();
         }catch(Exception $E){
-          $this->ajaxResponse->setMessage("List failed. Error: " + $E);
+          $this->ajaxResponse->setMessage("List failed. Error: " . $E);
         }
         break;
 
@@ -241,7 +241,7 @@ class RPCEndpoint {
   public function rpc_list(){
     $result = array();
     $instances = array();
-    $instances = $this->RPCObjectGetList('');
+    $instances = $this->RPCObjectGetList();
     if(!$instances)
     {
       $this->ajaxResponse->setSuccess(false);

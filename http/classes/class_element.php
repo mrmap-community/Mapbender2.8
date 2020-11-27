@@ -312,7 +312,6 @@ class Element {
 				return "</". $this->element . ">";
 			}
 		}
-		return "";
 	}
 	
 	private function getUrlParameters () {

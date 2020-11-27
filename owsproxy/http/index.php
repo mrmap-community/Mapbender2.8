@@ -1004,7 +1004,7 @@ function registerUrl($url)
     	return $id;
 }
 
-function getCapabilities($url)
+function getCapabilities($url, $auth = false)
 {
     global $arrayOnlineresources;
     global $sid, $serviceId;

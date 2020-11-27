@@ -652,7 +652,7 @@ if (true) {
 //*******************************************************************************************************
 // TODO test following
 // workaround to have a fully merged WMC for loading
-$xml = $wmcGetApi->toXml();
+$xml = utf8_encode($wmcGetApi->toXml());
 //$e = new mb_notice("javascripts/initWmcObj.php: WMC document after reading information from GET-API: ".$xml);
 //$e = new mb_notice("");
 //die();

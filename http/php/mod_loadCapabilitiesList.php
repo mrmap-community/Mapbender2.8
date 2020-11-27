@@ -149,7 +149,7 @@ if(isset($wmsID) && isset($guiID_)){
 	$t = array('s');
 	$res_pos = db_prep_query($sql_pos,$v,$t);
 	if(db_result($res_pos,0,"my_gui_wms_position") > -1){
-		$gui_wms_position = db_result($res_pos,0,"my_gui_wms_position") + 1;
+		$gui_wms_position = intval(db_result($res_pos,0,"my_gui_wms_position")) + 1;
 	}
 	else{
 		$gui_wms_position = 0;

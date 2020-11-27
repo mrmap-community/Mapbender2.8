@@ -122,7 +122,6 @@ class Filter {
 			foreach ($this->filterArray as $filter) {
 				if (!is_a($filter, "Filter")) {
 					throw new Exception("Filter: Not a valid filter.");
-					return false;
 				}
 			}
 			return true;
