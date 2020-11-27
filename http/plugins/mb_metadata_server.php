@@ -5,378 +5,381 @@ require_once dirname(__FILE__) . "/../classes/class_wms.php";//already includes 
 require_once dirname(__FILE__) . "/../classes/class_Uuid.php";
 require_once dirname(__FILE__) . "/../classes/class_wfs.php";
 require_once dirname(__FILE__) . "/../classes/class_administration.php";
-require_once(dirname(__FILE__)."/../classes/class_universal_wfs_factory.php");
+require_once(dirname(__FILE__) . "/../classes/class_universal_wfs_factory.php");
 require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 
 $ajaxResponse = new AjaxResponse($_POST);
 
-function abort ($message) {
-	global $ajaxResponse;
-	$ajaxResponse->setSuccess(false);
-	$ajaxResponse->setMessage($message);
-	$ajaxResponse->send();
-	die();
+function abort($message)
+{
+    global $ajaxResponse;
+    $ajaxResponse->setSuccess(false);
+    $ajaxResponse->setMessage($message);
+    $ajaxResponse->send();
+    die();
 }
 
-function DOMNodeListObjectValuesToArray($domNodeList) {
-	$iterator = 0;
-	$array = array();
-	foreach ($domNodeList as $item) {
-    		$array[$iterator] = $item->nodeValue; // this is a DOMNode instance
-    		// you might want to have the textContent of them like this
-    		$iterator++;
-	}
-	return $array;
+function DOMNodeListObjectValuesToArray($domNodeList)
+{
+    $iterator = 0;
+    $array = array();
+    foreach ($domNodeList as $item) {
+        $array[$iterator] = $item->nodeValue; // this is a DOMNode instance
+        // you might want to have the textContent of them like this
+        $iterator++;
+    }
+    return $array;
 }
 
-function getWms ($wmsId = null) {
-	$user = new User(Mapbender::session()->get("mb_user_id"));
-	$wmsIdArray = $user->getOwnedWms();
+function getWms($wmsId = null)
+{
+    $user = new User(Mapbender::session()->get("mb_user_id"));
+    $wmsIdArray = $user->getOwnedWms();
 
-	if (!is_null($wmsId) && !in_array($wmsId, $wmsIdArray)) {
-		abort(_mb("You are not allowed to access this WMS."));
-	}
-	return $wmsIdArray;
+    if (!is_null($wmsId) && !in_array($wmsId, $wmsIdArray)) {
+        abort(_mb("You are not allowed to access this WMS."));
+    }
+    return $wmsIdArray;
 }
 
-function getWfs ($wfsId = null) {
-	$user = new User(Mapbender::session()->get("mb_user_id"));
-	$wfsIdArray = $user->getOwnedWfs();
+function getWfs($wfsId = null)
+{
+    $user = new User(Mapbender::session()->get("mb_user_id"));
+    $wfsIdArray = $user->getOwnedWfs();
 
-	if (!is_null($wfsId) && !in_array($wfsId, $wfsIdArray)) {
-		abort(_mb("You are not allowed to access this WFS."));
-	}
-	return $wfsIdArray;
+    if (!is_null($wfsId) && !in_array($wfsId, $wfsIdArray)) {
+        abort(_mb("You are not allowed to access this WFS."));
+    }
+    return $wfsIdArray;
 }
 
-function getLayer ($layerId = null) {
-	$user = new User(Mapbender::session()->get("mb_user_id"));
-	$wmsIdArray = $user->getOwnedWms();
-	if (!is_array($wmsIdArray) || count($wmsIdArray) === 0) {
-		abort(_mb("No metadata sets available."));
-	}
-	$wmsId = wms::getWmsIdByLayerId($layerId);
-	if (is_null($wmsId) || !in_array($wmsId, $wmsIdArray)) {
-		abort(_mb("You are not allowed to access WMS " . $wmsId));
-	}
-	return;
+function getLayer($layerId = null)
+{
+    $user = new User(Mapbender::session()->get("mb_user_id"));
+    $wmsIdArray = $user->getOwnedWms();
+    if (!is_array($wmsIdArray) || count($wmsIdArray) === 0) {
+        abort(_mb("No metadata sets available."));
+    }
+    $wmsId = wms::getWmsIdByLayerId($layerId);
+    if (is_null($wmsId) || !in_array($wmsId, $wmsIdArray)) {
+        abort(_mb("You are not allowed to access WMS " . $wmsId));
+    }
+    return;
 }
 
-function getFeaturetype ($featuretypeId = null) {
-	$user = new User(Mapbender::session()->get("mb_user_id"));
-	$wfsIdArray = $user->getOwnedWfs();
-	if (!is_array($wfsIdArray) || count($wfsIdArray) === 0) {
-		abort(_mb("No metadata sets available."));
-	}
-	$wfsId = wfs::getWfsIdByFeaturetypeId($featuretypeId);
-	if (is_null($wfsId) || !in_array($wfsId, $wfsIdArray)) {
-		abort(_mb("You are not allowed to access this WFS " . $wfsId));
-	}
-	return;
+function getFeaturetype($featuretypeId = null)
+{
+    $user = new User(Mapbender::session()->get("mb_user_id"));
+    $wfsIdArray = $user->getOwnedWfs();
+    if (!is_array($wfsIdArray) || count($wfsIdArray) === 0) {
+        abort(_mb("No metadata sets available."));
+    }
+    $wfsId = wfs::getWfsIdByFeaturetypeId($featuretypeId);
+    if (is_null($wfsId) || !in_array($wfsId, $wfsIdArray)) {
+        abort(_mb("You are not allowed to access this WFS " . $wfsId));
+    }
+    return;
 }
 
 //NOTE: independend
-function extractPolygonArray($domXpath, $path) {
-	$polygonalExtentExterior = array();
-	if ($domXpath->query($path.'/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList')) {
-		//read posList
-		$exteriorRingPoints = $domXpath->query($path.'/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList');
-		$exteriorRingPoints = DOMNodeListObjectValuesToArray($exteriorRingPoints);
-		if (count($exteriorRingPoints) > 0) {
-			//poslist is only space separated
-			$exteriorRingPointsArray = explode(' ',$exteriorRingPoints[0]);
-			for ($i = 0; $i <= count($exteriorRingPointsArray)/2-1; $i++) {
-				$polygonalExtentExterior[$i]['x'] = $exteriorRingPointsArray[2*$i];
-				$polygonalExtentExterior[$i]['y'] = $exteriorRingPointsArray[(2*$i)+1];
-			}
-		}
-	} else {
-		//try to read coordinates
-		$exteriorRingPoints = $domXpath->query($path.'/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates');
-		$exteriorRingPoints = DOMNodeListObjectValuesToArray($exteriorRingPoints);
-		if (count($exteriorRingPoints) > 0) {
-			//two coordinates of one point are comma separated
-			//problematic= ", " or " ," have to be deleted before
-			$exteriorRingPoints[0] = str_replace(', ',',',str_replace(' ,',',',$exteriorRingPoints[0]));
-			$exteriorRingPointsArray = explode(' ',$exteriorRingPoints[0]);
-			for ($i = 0; $i <= count($exteriorRingPointsArray)-1;$i++) {
-				$coords = explode(",",$exteriorRingPointsArray[$i]);
-				$polygonalExtentExterior[$i]['x'] = $coords[0];
-				$polygonalExtentExterior[$i]['y'] = $coords[1];
-			}
-		}
-	}
-	return $polygonalExtentExterior;
+function extractPolygonArray($domXpath, $path)
+{
+    $polygonalExtentExterior = array();
+    if ($domXpath->query($path . '/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList')) {
+        //read posList
+        $exteriorRingPoints = $domXpath->query($path . '/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList');
+        $exteriorRingPoints = DOMNodeListObjectValuesToArray($exteriorRingPoints);
+        if (count($exteriorRingPoints) > 0) {
+            //poslist is only space separated
+            $exteriorRingPointsArray = explode(' ', $exteriorRingPoints[0]);
+            for ($i = 0; $i <= count($exteriorRingPointsArray) / 2 - 1; $i++) {
+                $polygonalExtentExterior[$i]['x'] = $exteriorRingPointsArray[2 * $i];
+                $polygonalExtentExterior[$i]['y'] = $exteriorRingPointsArray[(2 * $i) + 1];
+            }
+        }
+    } else {
+        //try to read coordinates
+        $exteriorRingPoints = $domXpath->query($path . '/gml:Polygon/gml:exterior/gml:LinearRing/gml:coordinates');
+        $exteriorRingPoints = DOMNodeListObjectValuesToArray($exteriorRingPoints);
+        if (count($exteriorRingPoints) > 0) {
+            //two coordinates of one point are comma separated
+            //problematic= ", " or " ," have to be deleted before
+            $exteriorRingPoints[0] = str_replace(', ', ',', str_replace(' ,', ',', $exteriorRingPoints[0]));
+            $exteriorRingPointsArray = explode(' ', $exteriorRingPoints[0]);
+            for ($i = 0; $i <= count($exteriorRingPointsArray) - 1; $i++) {
+                $coords = explode(",", $exteriorRingPointsArray[$i]);
+                $polygonalExtentExterior[$i]['x'] = $coords[0];
+                $polygonalExtentExterior[$i]['y'] = $coords[1];
+            }
+        }
+    }
+    return $polygonalExtentExterior;
 }
+
 //NOTE: independend
-function gml2wkt($gml) {
-	//function to create wkt from given gml multipolygon
-	//DOM
-	$polygonalExtentExterior = array();
-	$gmlObject = new DOMDocument();
-	libxml_use_internal_errors(true);
-	try {
-		$gmlObject->loadXML($gml);
-		if ($gmlObject === false) {
-			foreach(libxml_get_errors() as $error) {
-        			$err = new mb_exception("mb_metadata_server.php:".$error->message);
-    			}
-			throw new Exception("mb_metadata_server.php:".'Cannot parse GML!');
-			return false;
-		}
-	}
-	catch (Exception $e) {
-    		$err = new mb_exception("mb_metadata_server.php:".$e->getMessage());
-		return false;
-	}
-	//if parsing was successful
-	if ($gmlObject !== false) {
-		//read crs from gml
-		$xpath = new DOMXPath($gmlObject);
-		$xpath->registerNamespace('gml','http://www.opengis.net/gml');
-		$MultiSurface = $xpath->query('/gml:MultiSurface');
-		if ($MultiSurface->length == 1) { //test for DOM!
-			$crs = $xpath->query('/gml:MultiSurface/@srsName');
-			$crsArray = DOMNodeListObjectValuesToArray($crs);
-			$crsId = end(explode(":",$crsArray[0]));
-			//count surfaceMembers
-			$numberOfSurfaces = count(DOMNodeListObjectValuesToArray($xpath->query('/gml:MultiSurface/gml:surfaceMember')));
-			for ($k = 0; $k < $numberOfSurfaces; $k++) {
-				$polygonalExtentExterior[] = extractPolygonArray($xpath, '/gml:MultiSurface/gml:surfaceMember['. (string)($k + 1) .']');
-			}
-		} else {
-			$polygonalExtentExterior[0] = extractPolygonArray($xpath, '/');
-		}
-		$crs = $xpath->query('/gml:Polygon/@srsName');
-		$crsArray = DOMNodeListObjectValuesToArray($crs);
-		$crsId = end(explode(":",$crsArray[0]));
-		if (!isset($crsId) || $crsId =="" || $crsId == NULL) {
-			//set default to lonlat wgs84
-			$crsId = "4326";
-		}
-		$mbMetadata = new Iso19139();
-		$wkt = $mbMetadata->createWktPolygonFromPointArray($polygonalExtentExterior);
-		return $wkt;
-	}
+function gml2wkt($gml)
+{
+    //function to create wkt from given gml multipolygon
+    //DOM
+    $polygonalExtentExterior = array();
+    $gmlObject = new DOMDocument();
+    libxml_use_internal_errors(true);
+    try {
+        $gmlObject->loadXML($gml);
+        if ($gmlObject === false) {
+            foreach (libxml_get_errors() as $error) {
+                $err = new mb_exception("mb_metadata_server.php:" . $error->message);
+            }
+            throw new Exception("mb_metadata_server.php:" . 'Cannot parse GML!');
+        }
+    } catch (Exception $e) {
+        $err = new mb_exception("mb_metadata_server.php:" . $e->getMessage());
+        return false;
+    }
+    //if parsing was successful
+    if ($gmlObject !== false) {
+        //read crs from gml
+        $xpath = new DOMXPath($gmlObject);
+        $xpath->registerNamespace('gml', 'http://www.opengis.net/gml');
+        $MultiSurface = $xpath->query('/gml:MultiSurface');
+        if ($MultiSurface->length == 1) { //test for DOM!
+            $crs = $xpath->query('/gml:MultiSurface/@srsName');
+            $crsArray = DOMNodeListObjectValuesToArray($crs);
+            $crsId = end(explode(":", $crsArray[0]));
+            //count surfaceMembers
+            $numberOfSurfaces = count(DOMNodeListObjectValuesToArray($xpath->query('/gml:MultiSurface/gml:surfaceMember')));
+            for ($k = 0; $k < $numberOfSurfaces; $k++) {
+                $polygonalExtentExterior[] = extractPolygonArray($xpath, '/gml:MultiSurface/gml:surfaceMember[' . (string)($k + 1) . ']');
+            }
+        } else {
+            $polygonalExtentExterior[0] = extractPolygonArray($xpath, '/');
+        }
+        $crs = $xpath->query('/gml:Polygon/@srsName');
+        $crsArray = DOMNodeListObjectValuesToArray($crs);
+        $crsId = end(explode(":", $crsArray[0]));
+        if (!isset($crsId) || $crsId == "" || $crsId == NULL) {
+            //set default to lonlat wgs84
+            $crsId = "4326";
+        }
+        $mbMetadata = new Iso19139();
+        $wkt = $mbMetadata->createWktPolygonFromPointArray($polygonalExtentExterior);
+        return $wkt;
+    }
 }
+
 //routines to do the ajax server side things
 switch ($ajaxResponse->getMethod()) {
-	case "getWms" :
-		$wmsIdArray = getWms();
-		$wmsList = implode(",", $wmsIdArray);
-		$sql = <<<SQL
+    case "getWms" :
+        $wmsIdArray = getWms();
+        $wmsList = implode(",", $wmsIdArray);
+        $sql = <<<SQL
 SELECT wms.wms_id, wms.wms_title, to_timestamp(wms.wms_timestamp),to_timestamp(wms.wms_timestamp_create), wms_version, m.status_comment, wms_id
 FROM wms LEFT JOIN mb_wms_availability AS m
 ON wms.wms_id = m.fkey_wms_id
 WHERE wms_id IN ($wmsList);
 SQL;
-		$res = db_query($sql);
-		$resultObj = array(
-			"header" => array(
-				_mb("WMS ID"),
-				_mb("title"),
-				_mb("last change"),
-				_mb("creation"),
-				_mb("version"),
-				_mb("status"),
-				_mb("wms id")
-			),
-			"data" => array()
-		);
-		while ($row = db_fetch_row($res)) {
-			// convert NULL to '', NULL values cause datatables to crash
-			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
-			$resultObj["data"][]= $row;
-		}
-		$ajaxResponse->setResult($resultObj);
-		$ajaxResponse->setSuccess(true);
-		break;
-	case "getWfs" :
-		$wfsIdArray = getWfs();
-		$wfsList = implode(",", $wfsIdArray);
-		$sql = <<<SQL
+        $res = db_query($sql);
+        $resultObj = array(
+            "header" => array(
+                _mb("WMS ID"),
+                _mb("title"),
+                _mb("last change"),
+                _mb("creation"),
+                _mb("version"),
+                _mb("status"),
+                _mb("wms id")
+            ),
+            "data" => array()
+        );
+        while ($row = db_fetch_row($res)) {
+            // convert NULL to '', NULL values cause datatables to crash
+            $resultObj["data"][] = array_map('strval', $row);
+        }
+        $ajaxResponse->setResult($resultObj);
+        $ajaxResponse->setSuccess(true);
+        break;
+    case "getWfs" :
+        $wfsIdArray = getWfs();
+        $wfsList = implode(",", $wfsIdArray);
+        $sql = <<<SQL
 SELECT wfs.wfs_id, wfs.wfs_title, wfs.wfs_timestamp, wfs_version
 FROM wfs WHERE wfs_id IN ($wfsList);
 SQL;
-		$res = db_query($sql);
-		$resultObj = array(
-			"header" => array(
-				"WFS ID",
-				"Titel",
-				"Timestamp",
-				"Version"
-			), 
-			"data" => array()
-		);
-		while ($row = db_fetch_row($res)) {
-			// convert NULL to '', NULL values cause datatables to crash
-			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
-			$resultObj["data"][]= $row;
-		}
-		$ajaxResponse->setResult($resultObj);
-		$ajaxResponse->setSuccess(true);
-		break;
-	case "getMapviewerUrl" :
-		$mapviewer_id = $ajaxResponse->getParameter("mapviewerId");
-		$gui_id = $ajaxResponse->getParameter("guiId");
-		$wmc_id = $ajaxResponse->getParameter("wmcId");
-		//default gui_id and wmc_id to false! - string or boolean?
-		$admin = new administration();
-		$resultObj['mapviewer_url'] = $admin->getMapviewerInvokeUrl($mapviewer_id, $gui_id, $wmc_id);
-		if ($resultObj['mapviewer_url'] == false) {
-		    $ajaxResponse->setMessage(_mb("An unknown error occured when trying to generate mapviewer url!"));
-		    $ajaxResponse->setSuccess(false);
-		} else {
-		    $ajaxResponse->setResult($resultObj);
-		    $ajaxResponse->setSuccess(true);
-		}
-		break;
-	case "getWmsMetadata" :
-		$wmsId = $ajaxResponse->getParameter("id");
-		getWms($wmsId);
+        $res = db_query($sql);
+        $resultObj = array(
+            "header" => array(
+                "WFS ID",
+                "Titel",
+                "Timestamp",
+                "Version"
+            ),
+            "data" => array()
+        );
+        while ($row = db_fetch_row($res)) {
+            // convert NULL to '', NULL values cause datatables to crash
+            $resultObj["data"][] = array_map('strval', $row);
+        }
+        $ajaxResponse->setResult($resultObj);
+        $ajaxResponse->setSuccess(true);
+        break;
+    case "getMapviewerUrl" :
+        $mapviewer_id = $ajaxResponse->getParameter("mapviewerId");
+        $gui_id = $ajaxResponse->getParameter("guiId");
+        $wmc_id = $ajaxResponse->getParameter("wmcId");
+        //default gui_id and wmc_id to false! - string or boolean?
+        $admin = new administration();
+        $resultObj['mapviewer_url'] = $admin->getMapviewerInvokeUrl($mapviewer_id, $gui_id, $wmc_id);
+        if ($resultObj['mapviewer_url'] == false) {
+            $ajaxResponse->setMessage(_mb("An unknown error occured when trying to generate mapviewer url!"));
+            $ajaxResponse->setSuccess(false);
+        } else {
+            $ajaxResponse->setResult($resultObj);
+            $ajaxResponse->setSuccess(true);
+        }
+        break;
+    case "getWmsMetadata" :
+        $wmsId = $ajaxResponse->getParameter("id");
+        getWms($wmsId);
 
-		$wms = new wms();
-		$wms->createObjFromDBNoGui($wmsId);//here the owsproxyurls will be read out - to make previews with proxy urls
+        $wms = new wms();
+        $wms->createObjFromDBNoGui($wmsId);//here the owsproxyurls will be read out - to make previews with proxy urls
 
-		$fields = array(
-			"wms_id",
-			"wms_abstract",
-			"wms_title",
-			"fees",
-			"accessconstraints",
-			"contactperson",
-			"contactposition",
-			"contactvoicetelephone",
-			"contactfacsimiletelephone",
-			"contactorganization",
-			"address",
-			"city",
-			"stateorprovince",
-			"postcode",
-			"country",
-			"contactelectronicmailaddress",
-			"wms_timestamp",
-			"wms_timestamp_create",
-			"wms_network_access",
-			"wms_max_imagesize",
-			"fkey_mb_group_id",
-			"inspire_annual_requests",
-			"wms_license_source_note",
-			"wms_bequeath_licence_info",
-			"wms_bequeath_contact_info"
-		);
+        $fields = array(
+            "wms_id",
+            "wms_abstract",
+            "wms_title",
+            "fees",
+            "accessconstraints",
+            "contactperson",
+            "contactposition",
+            "contactvoicetelephone",
+            "contactfacsimiletelephone",
+            "contactorganization",
+            "address",
+            "city",
+            "stateorprovince",
+            "postcode",
+            "country",
+            "contactelectronicmailaddress",
+            "wms_timestamp",
+            "wms_timestamp_create",
+            "wms_network_access",
+            "wms_max_imagesize",
+            "fkey_mb_group_id",
+            "inspire_annual_requests",
+            "wms_license_source_note",
+            "wms_bequeath_licence_info",
+            "wms_bequeath_contact_info"
+        );
 
-		$resultObj = array();
-		foreach ($fields as $field) {
-			if ($field == "wms_timestamp" || $field == "wms_timestamp_create") {
-				if ($wms->$field != "") {
+        $resultObj = array();
+        foreach ($fields as $field) {
+            if ($field == "wms_timestamp" || $field == "wms_timestamp_create") {
+                if ($wms->$field != "") {
 
-					$resultObj[$field] = date('d.m.Y', $wms->$field);
+                    $resultObj[$field] = date('d.m.Y', $wms->$field);
 
-				}
-			}
-			else {
-				$resultObj[$field] = $wms->$field;
-				//$e = new mb_exception("mb_metadata_server: resultObject[".$field."]=".$wms->$field);
-			}
-		}
-		// layer searchable
-		$resultObj["layer_searchable"] = array();
-		foreach ($wms->objLayer as $layer) {
-			if (intval($layer->layer_searchable) === 1) {
-				$resultObj["layer_searchable"][] = intval($layer->layer_uid);
-			}
-		}
+                }
+            } else {
+                $resultObj[$field] = $wms->$field;
+                //$e = new mb_exception("mb_metadata_server: resultObject[".$field."]=".$wms->$field);
+            }
+        }
+        // layer searchable
+        $resultObj["layer_searchable"] = array();
+        foreach ($wms->objLayer as $layer) {
+            if (intval($layer->layer_searchable) === 1) {
+                $resultObj["layer_searchable"][] = intval($layer->layer_uid);
+            }
+        }
 
-		$keywordSql = <<<SQL
+        $keywordSql = <<<SQL
 SELECT DISTINCT keyword FROM keyword, layer_keyword
 WHERE keyword_id = fkey_keyword_id AND fkey_layer_id IN (
 	SELECT layer_id from layer, wms
 	WHERE fkey_wms_id = wms_id AND wms_id = $wmsId
 ) ORDER BY keyword
 SQL;
-		$keywordRes = db_query($keywordSql);
-		$keywords = array();
-		while ($keywordRow = db_fetch_assoc($keywordRes)) {
-			$keywords[]= $keywordRow["keyword"];
-		}
+        $keywordRes = db_query($keywordSql);
+        $keywords = array();
+        while ($keywordRow = db_fetch_assoc($keywordRes)) {
+            $keywords[] = $keywordRow["keyword"];
+        }
 
-		$resultObj["wms_keywords"] = implode(", ", $keywords);
+        $resultObj["wms_keywords"] = implode(", ", $keywords);
 
-		$termsofuseSql = <<<SQL
+        $termsofuseSql = <<<SQL
 SELECT fkey_termsofuse_id FROM wms_termsofuse WHERE fkey_wms_id = $wmsId
 SQL;
-		$termsofuseRes = db_query($termsofuseSql);
-		if ($termsofuseRes) {
-			$termsofuseRow = db_fetch_assoc($termsofuseRes);
-			$resultObj["wms_termsofuse"] = $termsofuseRow["fkey_termsofuse_id"];
-		}
-		else {
-			$resultObj["wms_termsofuse"] = null;
-		}
-		$resultObj['wms_network_access'] = $resultObj['wms_network_access'] == 1 ? true : false;
-		$resultObj['wms_bequeath_licence_info'] = $resultObj['wms_bequeath_licence_info'] == 1 ? true : false;
-		$resultObj['wms_bequeath_contact_info'] = $resultObj['wms_bequeath_contact_info'] == 1 ? true : false;
-		if (is_null($resultObj['inspire_annual_requests']) || $resultObj['inspire_annual_requests'] == "") {
-			$resultObj['inspire_annual_requests'] = "0";
-		}
-		//get contact information from group relation
-		//check if fkey_mb_group_id has been defined before - in service table
-		if ($resultObj["fkey_mb_group_id"] == "" || !isset($resultObj["fkey_mb_group_id"])){
-			$e = new mb_notice("fkey_mb_group_id is null or empty");
-			//check if primary group is set
-			$user = new User;
-			$userId = $user->id;
-			//$e = new mb_exception("user id:".$userId);
-			$sql = <<<SQL
+        $termsofuseRes = db_query($termsofuseSql);
+        if ($termsofuseRes) {
+            $termsofuseRow = db_fetch_assoc($termsofuseRes);
+            $resultObj["wms_termsofuse"] = $termsofuseRow["fkey_termsofuse_id"];
+        } else {
+            $resultObj["wms_termsofuse"] = null;
+        }
+        $resultObj['wms_network_access'] = $resultObj['wms_network_access'] == 1 ? true : false;
+        $resultObj['wms_bequeath_licence_info'] = $resultObj['wms_bequeath_licence_info'] == 1 ? true : false;
+        $resultObj['wms_bequeath_contact_info'] = $resultObj['wms_bequeath_contact_info'] == 1 ? true : false;
+        if (is_null($resultObj['inspire_annual_requests']) || $resultObj['inspire_annual_requests'] == "") {
+            $resultObj['inspire_annual_requests'] = "0";
+        }
+        //get contact information from group relation
+        //check if fkey_mb_group_id has been defined before - in service table
+        if ($resultObj["fkey_mb_group_id"] == "" || !isset($resultObj["fkey_mb_group_id"])) {
+            $e = new mb_notice("fkey_mb_group_id is null or empty");
+            //check if primary group is set
+            $user = new User;
+            $userId = $user->id;
+            //$e = new mb_exception("user id:".$userId);
+            $sql = <<<SQL
 SELECT fkey_mb_group_id, mb_group_name, mb_group_title, mb_group_address, mb_group_email, mb_group_postcode, mb_group_city, mb_group_logo_path, mb_group_voicetelephone FROM (SELECT fkey_mb_group_id FROM mb_user_mb_group WHERE fkey_mb_user_id = $1 AND mb_user_mb_group_type = 2) AS a LEFT JOIN mb_group ON a.fkey_mb_group_id = mb_group.mb_group_id
 SQL;
-			$v = array($userId);
-			$t = array('i');
-			$res = db_prep_query($sql,$v,$t);
-			$row = array();
-			if ($res) {
-				$row = db_fetch_assoc($res);
-				$resultObj["fkey_mb_group_id"] = $row["fkey_mb_group_id"];
-				$resultObj["mb_group_title"] = $row["mb_group_title"];
-				$resultObj["mb_group_address"] = $row["mb_group_address"];
-				$resultObj["mb_group_email"] = $row["mb_group_email"];
-				$resultObj["mb_group_postcode"] = $row["mb_group_postcode"];
-				$resultObj["mb_group_city"] = $row["mb_group_city"];
-				$resultObj["mb_group_logo_path"] = $row["mb_group_logo_path"];
-				$resultObj["mb_group_voicetelephone"] = $row["mb_group_voicetelephone"];
-			}
-		} else {
-			//get current fkey_mb_group_id and the corresponding data
-			$sql = <<<SQL
+            $v = array($userId);
+            $t = array('i');
+            $res = db_prep_query($sql, $v, $t);
+            $row = array();
+            if ($res) {
+                $row = db_fetch_assoc($res);
+                $resultObj["fkey_mb_group_id"] = $row["fkey_mb_group_id"];
+                $resultObj["mb_group_title"] = $row["mb_group_title"];
+                $resultObj["mb_group_address"] = $row["mb_group_address"];
+                $resultObj["mb_group_email"] = $row["mb_group_email"];
+                $resultObj["mb_group_postcode"] = $row["mb_group_postcode"];
+                $resultObj["mb_group_city"] = $row["mb_group_city"];
+                $resultObj["mb_group_logo_path"] = $row["mb_group_logo_path"];
+                $resultObj["mb_group_voicetelephone"] = $row["mb_group_voicetelephone"];
+            }
+        } else {
+            //get current fkey_mb_group_id and the corresponding data
+            $sql = <<<SQL
 SELECT mb_group_name, mb_group_title, mb_group_address, mb_group_email, mb_group_postcode, mb_group_city, mb_group_logo_path, mb_group_voicetelephone FROM mb_group WHERE mb_group_id = $1
 SQL;
-			$v = array($resultObj["fkey_mb_group_id"]);
-			$t = array('i');
-			$res = db_prep_query($sql,$v,$t);
-			$row = array();
-			if ($res) {
-				$row = db_fetch_assoc($res);
-				$resultObj["mb_group_title"] = $row["mb_group_title"];
-				$resultObj["mb_group_address"] = $row["mb_group_address"];
-				$resultObj["mb_group_email"] = $row["mb_group_email"];
-				$resultObj["mb_group_postcode"] = $row["mb_group_postcode"];
-				$resultObj["mb_group_city"] = $row["mb_group_city"];
-				$resultObj["mb_group_logo_path"] = $row["mb_group_logo_path"];
-				$resultObj["mb_group_voicetelephone"] = $row["mb_group_voicetelephone"];
-			}
-			else {
-				$resultObj["fkey_mb_group_id"] = null;
-			}
-		}
-		$ajaxResponse->setResult($resultObj);
-		$ajaxResponse->setSuccess(true);
-	break;
-	//TODO make function get service metadata - easier!!!
-	case "getWfsMetadata" :
-		$wfsId = $ajaxResponse->getParameter("id");
-		getWfs($wfsId);
-		$sql = <<<SQL
+            $v = array($resultObj["fkey_mb_group_id"]);
+            $t = array('i');
+            $res = db_prep_query($sql, $v, $t);
+            $row = array();
+            if ($res) {
+                $row = db_fetch_assoc($res);
+                $resultObj["mb_group_title"] = $row["mb_group_title"];
+                $resultObj["mb_group_address"] = $row["mb_group_address"];
+                $resultObj["mb_group_email"] = $row["mb_group_email"];
+                $resultObj["mb_group_postcode"] = $row["mb_group_postcode"];
+                $resultObj["mb_group_city"] = $row["mb_group_city"];
+                $resultObj["mb_group_logo_path"] = $row["mb_group_logo_path"];
+                $resultObj["mb_group_voicetelephone"] = $row["mb_group_voicetelephone"];
+            } else {
+                $resultObj["fkey_mb_group_id"] = null;
+            }
+        }
+        $ajaxResponse->setResult($resultObj);
+        $ajaxResponse->setSuccess(true);
+        break;
+    //TODO make function get service metadata - easier!!!
+    case "getWfsMetadata" :
+        $wfsId = $ajaxResponse->getParameter("id");
+        getWfs($wfsId);
+        $sql = <<<SQL
 SELECT wfs_id, wfs_abstract, wfs_title, fees, accessconstraints, 
 individualname, positionname, providername, voice, 
 facsimile, deliverypoint, city, 
@@ -384,33 +387,33 @@ administrativearea, postalcode, country, electronicmailaddress,
 wfs_timestamp, wfs_timestamp_create, wfs_network_access, fkey_mb_group_id, wfs_max_features, inspire_annual_requests, wfs_license_source_note  
 FROM wfs WHERE wfs_id = $wfsId;
 SQL;
-		$res = db_query($sql);
-		$resultObj = array();
-		$row = db_fetch_assoc($res);
-		$resultObj['wfs_id'] = $row['wfs_id'];
-		$resultObj['summary'] = $row['wfs_abstract'];
-		$resultObj['title'] = $row['wfs_title'];
-		$resultObj['fees'] = $row['fees'];
-		$resultObj['accessconstraints'] = $row['accessconstraints'];
-		$resultObj['individualName'] = $row['individualname'];
-		$resultObj['positionName'] = $row['positionname'];
-		$resultObj['providerName'] = $row['providername'];
-		$resultObj['voice'] = $row['voice'];
-		$resultObj['facsimile'] = $row['facsimile'];
-		$resultObj['deliveryPoint'] = $row['deliverypoint'];
-		$resultObj['city'] = $row['city'];
-		$resultObj['administrativeArea'] = $row['administrativearea'];
-		$resultObj['postalCode'] = $row['postalcode'];
-		$resultObj['country'] = $row['country'];
-		$resultObj['electronicMailAddress'] = $row['electronicmailaddress'];
-		$resultObj['timestamp'] = $row['wfs_timestamp'] != "" ? date('d.m.Y', $row['wfs_timestamp']) : "";
-		$resultObj['timestamp_create'] = $row['wfs_timestamp_create'] != "" ? date('d.m.Y', $row['wfs_timestamp_create']) : "";
-		$resultObj['wfs_network_access'] = $row['wfs_network_access'];
-		$resultObj['wfs_max_features'] = $row['wfs_max_features'];
-		$resultObj['fkey_mb_group_id'] = $row['fkey_mb_group_id'];
-		$resultObj['inspire_annual_requests'] = $row['inspire_annual_requests'];
-		$resultObj['wfs_license_source_note'] = $row['wfs_license_source_note'];
-		$keywordSql = <<<SQL
+        $res = db_query($sql);
+        $resultObj = array();
+        $row = db_fetch_assoc($res);
+        $resultObj['wfs_id'] = $row['wfs_id'];
+        $resultObj['summary'] = $row['wfs_abstract'];
+        $resultObj['title'] = $row['wfs_title'];
+        $resultObj['fees'] = $row['fees'];
+        $resultObj['accessconstraints'] = $row['accessconstraints'];
+        $resultObj['individualName'] = $row['individualname'];
+        $resultObj['positionName'] = $row['positionname'];
+        $resultObj['providerName'] = $row['providername'];
+        $resultObj['voice'] = $row['voice'];
+        $resultObj['facsimile'] = $row['facsimile'];
+        $resultObj['deliveryPoint'] = $row['deliverypoint'];
+        $resultObj['city'] = $row['city'];
+        $resultObj['administrativeArea'] = $row['administrativearea'];
+        $resultObj['postalCode'] = $row['postalcode'];
+        $resultObj['country'] = $row['country'];
+        $resultObj['electronicMailAddress'] = $row['electronicmailaddress'];
+        $resultObj['timestamp'] = $row['wfs_timestamp'] != "" ? date('d.m.Y', $row['wfs_timestamp']) : "";
+        $resultObj['timestamp_create'] = $row['wfs_timestamp_create'] != "" ? date('d.m.Y', $row['wfs_timestamp_create']) : "";
+        $resultObj['wfs_network_access'] = $row['wfs_network_access'];
+        $resultObj['wfs_max_features'] = $row['wfs_max_features'];
+        $resultObj['fkey_mb_group_id'] = $row['fkey_mb_group_id'];
+        $resultObj['inspire_annual_requests'] = $row['inspire_annual_requests'];
+        $resultObj['wfs_license_source_note'] = $row['wfs_license_source_note'];
+        $keywordSql = <<<SQL
 SELECT DISTINCT keyword FROM keyword, wfs_featuretype_keyword 
 WHERE keyword_id = fkey_keyword_id AND fkey_featuretype_id IN (
 	SELECT featuretype_id from wfs_featuretype, wfs 
