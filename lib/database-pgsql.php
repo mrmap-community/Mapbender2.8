@@ -224,7 +224,7 @@ function db_rollback() {
 function db_numrows($qhandle) {
 	// return only if qhandle exists, otherwise 0
 	if ($qhandle) {
-		return @pg_numrows($qhandle);
+		return pg_numrows($qhandle);
 	} else {
 		return 0;
 	}
@@ -238,7 +238,7 @@ function db_numrows($qhandle) {
 function db_num_rows($qhandle) {
 	// return only if qhandle exists, otherwise 0
 	if ($qhandle) {
-		return @pg_num_rows($qhandle);
+		return pg_num_rows($qhandle);
 	} else {
 		return 0;
 	}
@@ -250,7 +250,7 @@ function db_num_rows($qhandle) {
  *  @param	$qhandle (string)	Query result set handle
  */
 function db_free_result($qhandle) {
-	return @pg_freeresult($qhandle);
+	return pg_freeresult($qhandle);
 }
 
 /**
@@ -274,8 +274,8 @@ function db_reset_result($qhandle,$row=0) {
  *  @param		$row (int)		Row number
  *  @param		$field (string)	Field name
  */
-function db_result($qhandle,$row,$field) {
-	return @pg_result($qhandle,$row,$field);
+function db_result($qhandle, $row, $field) {
+	return pg_fetch_result($qhandle, $row, $field);
 }
 
 /**
@@ -284,7 +284,7 @@ function db_result($qhandle,$row,$field) {
  *  @param		$lhandle (string)	Query result set handle
  */
 function db_numfields($lhandle) {
-	return @pg_numfields($lhandle);
+	return pg_numfields($lhandle);
 }
 
 /**
@@ -294,7 +294,7 @@ function db_numfields($lhandle) {
  *	php >4.2
  */
 function db_num_fields($lhandle) {
-	return @pg_num_fields($lhandle);
+	return pg_num_fields($lhandle);
 }
 
 /**
@@ -304,7 +304,7 @@ function db_num_fields($lhandle) {
  *  @param		$fnumber (int)	Column number
  */
 function db_fieldname($lhandle,$fnumber) {
-	   return @pg_fieldname($lhandle,$fnumber);
+	   return pg_fieldname($lhandle,$fnumber);
 }
 
 /**
@@ -314,7 +314,7 @@ function db_fieldname($lhandle,$fnumber) {
  */
 function db_affected_rows($qhandle) {
 	
-	return @pg_cmdtuples($qhandle);
+	return pg_affected_rows($qhandle);
 }
 
 /**
@@ -327,7 +327,7 @@ function db_affected_rows($qhandle) {
  *  @param		$qhandle (string)	Query result set handle
  */
 function db_fetch_array($qhandle) {
-	return @pg_fetch_array($qhandle);
+	return pg_fetch_array($qhandle);
 }
 /**                                                       
  * fetch a row into an associative array 
@@ -336,11 +336,11 @@ function db_fetch_array($qhandle) {
  *  @param		$fnumber (int)	Column number
  */
 function db_fetch_assoc($qhandle) {
-	return @pg_fetch_assoc($qhandle);
+	return pg_fetch_assoc($qhandle);
 
 }
 function db_fetch_all($qhandle){
-		return @pg_fetch_all($qhandle);
+		return pg_fetch_all($qhandle);
 }
 /**                                                       
  * fetch a row into an array 
@@ -362,7 +362,7 @@ function db_fetch_row($qhandle,$fnumber=0) {
 function db_insertid($qhandle="",$table_name="",$pkey_field_name="") {
 	$res=db_query("SELECT max($pkey_field_name) AS id FROM $table_name");
     if ($res && db_numrows($res) > 0) {
-        return @db_result($res,0,'id');
+        return db_result($res,0,'id');
     } else {
         return 0;
     }
@@ -405,7 +405,7 @@ function db_last_oid()
  * Returns the last error from the database
  */
 function db_error() {
-	return @pg_last_error();
+	return pg_last_error();
 }
 
 /**
@@ -432,7 +432,7 @@ function db_field_flags($lhandle,$fnumber) {
  */                                                       
                                                           
 function db_field_type($lhandle,$fnumber) {               
-	   return @pg_fieldtype($lhandle,$fnumber);         
+	   return pg_field_type($lhandle,$fnumber);
 }                                                         
 
 /**                                                       
@@ -443,7 +443,7 @@ function db_field_type($lhandle,$fnumber) {
  */                                                       
                                                           
 function db_field_len($lhandle,$fnumber) {               
-	   return @pg_fieldlen($lhandle,$fnumber);         
+	   return pg_field_prtlen($lhandle,$fnumber);
 } 
 
 ?>
