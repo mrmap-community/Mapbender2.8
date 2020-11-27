@@ -94,7 +94,6 @@ class UniversalWmsFactory extends WmsFactory {
 				throw new Exception("Unknown WMS version " . $version);
 				break;
 		}
-		return null;
 	}
 	
 	public function createFromDb ($id, $appId = null) {

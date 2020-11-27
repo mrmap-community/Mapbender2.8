@@ -25,7 +25,6 @@ function mb_validateInput($text){
 	for($i=0; $i<count($match);$i++){
 		if( preg_match($match[$i], $text) == true){
 			return null;
-			exit;
 		}
 		else{
 			return $text;

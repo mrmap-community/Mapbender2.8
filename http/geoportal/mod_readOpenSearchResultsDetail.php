@@ -1126,6 +1126,7 @@ switch ($_REQUEST["mdtype"]) {
 	break;
 }
 
+/*
 if ($_REQUEST['mdtype']=='debug'){
 		echo "DEBUG Metadatenanzeige<br>";
 		#define table
@@ -1154,28 +1155,28 @@ if ($_REQUEST['mdtype']=='html'){
 	<head>
 		<title>GeoPortal Rheinland-Pfalz - Metadaten</title>
 		<meta name="description" content="Metadaten" xml:lang="de" />
-		<meta name="keywords" content="Metadaten" xml:lang="de" />		
+		<meta name="keywords" content="Metadaten" xml:lang="de" />
 		<meta http-equiv="cache-control" content="no-cache">
 		<meta http-equiv="pragma" content="no-cache">
 		<meta http-equiv="expires" content="0">
 		<meta http-equiv="content-language" content="de" />
-		<meta http-equiv="content-style-type" content="text/css" />		
+		<meta http-equiv="content-style-type" content="text/css" />
 <?php
-	echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';	
+	echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';
 ?>
 		<link rel="stylesheet" type="text/css" href="../../../portal/fileadmin/design/css/screen.css" media="screen" />
 		<link rel="stylesheet" type="text/css" href="../../../portal/fileadmin/design/css/print.css" media="print" />
 	</head>
 	<body id="top" class="popup">
 
-	
+
 	<div id="header_gray">
 	<a href="javascript:window.print()">Drucken <img src="../../../portal/fileadmin/design/images/icon_print.gif" width="14" height="14" alt="" /></a>
 	<a href="javascript:window.close()">Fenster schlie&szlig;en <img src="../../../portal/fileadmin/design/images/icon_close.gif" width="14" height="14" alt="" /></a>
 	</div>
 	<div id="header_redbottom"></div>
 	<div id="header_red"></div>
-	
+
 	<div class="content">
 <?php
 	echo "<h1>Detailinformationen:</h1>";
@@ -1183,7 +1184,7 @@ if ($_REQUEST['mdtype']=='html'){
 	echo "<html><table class='contenttable-0-wide'>";
 	echo "<tr>";
 	#loop for each detail - tag - sometimes there are other tags in there - if one detail has more than one entry! - maybe this must be interpreted but later!
-	foreach ($detail_keys as $detailkey) {	
+	foreach ($detail_keys as $detailkey) {
 		if (in_array($detailkey, $ibus_names)==true){
 			echo "<td>".$md_ident[array_search($detailkey, $ibus_names)]['html']."</td>";
 			echo "<td>";
@@ -1200,14 +1201,14 @@ if ($_REQUEST['mdtype']=='inspire') {
 	<head>
 		<title>GeoPortal Rheinland-Pfalz - Metadaten</title>
 		<meta name="description" content="Metadaten" xml:lang="de" />
-		<meta name="keywords" content="Metadaten" xml:lang="de" />		
+		<meta name="keywords" content="Metadaten" xml:lang="de" />
 		<meta http-equiv="cache-control" content="no-cache">
 		<meta http-equiv="pragma" content="no-cache">
 		<meta http-equiv="expires" content="0">
 		<meta http-equiv="content-language" content="de" />
-		<meta http-equiv="content-style-type" content="text/css" />		
+		<meta http-equiv="content-style-type" content="text/css" />
 <?php
-	echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';	
+	echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';
 ?>
 		<link rel="stylesheet" type="text/css" href="../../../portal/fileadmin/design/css/screen.css" media="screen" />
 		<link rel="stylesheet" type="text/css" href="../../../portal/fileadmin/design/css/print.css" media="print" />
@@ -1239,4 +1240,5 @@ if ($_REQUEST['mdtype']=='inspire') {
 	echo "</table></html>";
 	echo '<br><b>INSPIRE output not completly implemented!<b><br>';
 }
+*/
 ?>

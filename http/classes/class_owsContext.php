@@ -316,7 +316,6 @@ $creator->creatorApplication->version = "2.8_trunk";
         				$err = new mb_exception("class_owsContext.php:".$error->message);
     				}
 				throw new Exception("class_owsContext.php:".'Cannot parse WMC XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {

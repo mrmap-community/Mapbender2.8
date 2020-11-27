@@ -81,7 +81,6 @@ class SaveLegend{
 		}  
 		imageinterlace($im, 0); 
 		return $im;
-		imagedestroy($im);
 	}
 }
 

@@ -156,38 +156,37 @@ SQL;
 		}
 		$ajaxResponse->setMessage("Scheduling updated!");
 		$ajaxResponse->setSuccess(true);
-		break;
 
-		$sql = <<<SQL
-
-SELECT scheduler_id, wms_id, wms_title, wms_owner, scheduler_interval,scheduler_mail,scheduler_publish, scheduler_overwrite, scheduler_overwrite_categories, scheduler_searchable FROM scheduler INNER JOIN wms ON scheduler.fkey_wms_id=wms.wms_id WHERE scheduler.scheduler_id = $1;
-
-SQL;
-		$v = array($schedulerId);
-		$t = array('i');
-		$res = db_prep_query($sql,$v,$t);
-
-		$row = array();
-		if ($res) {
-			$row = db_fetch_assoc($res);
-			$resultObj["scheduler_id"] = $row["scheduler_id"];
-			$resultObj["wms_id"] = $row["wms_id"];
-			$resultObj["wms_title"] = $row["wms_title"];
-			if (intval($row["wms_owner"]) !== intval($user->id) ) {
-				$ajaxResponse->setSuccess(false);
-				$ajaxResponse->setMessage(_mb("The user is not allowed to alter the update scheduler."));
-				break;
-			}
-			$resultObj["wms_owner"] = $row["wms_owner"];
-			$resultObj["scheduler_interval"] = $row["scheduler_interval"];
-			$resultObj["scheduler_mail"] = $row["scheduler_mail"];
-			$resultObj["scheduler_publish"] = $row["scheduler_publish"];
-			$resultObj["scheduler_overwrite"] = $row["scheduler_overwrite"];
-			$resultObj["scheduler_overwrite_categories"] = $row["scheduler_overwrite_categories"];
-			$resultObj["scheduler_searchable"] = $row["scheduler_searchable"];
-		}
-		$ajaxResponse->setResult($resultObj);
-		$ajaxResponse->setSuccess(true);
+//		$sql = <<<SQL
+//
+//SELECT scheduler_id, wms_id, wms_title, wms_owner, scheduler_interval,scheduler_mail,scheduler_publish, scheduler_overwrite, scheduler_overwrite_categories, scheduler_searchable FROM scheduler INNER JOIN wms ON scheduler.fkey_wms_id=wms.wms_id WHERE scheduler.scheduler_id = $1;
+//
+//SQL;
+//		$v = array($schedulerId);
+//		$t = array('i');
+//		$res = db_prep_query($sql,$v,$t);
+//
+//		$row = array();
+//		if ($res) {
+//			$row = db_fetch_assoc($res);
+//			$resultObj["scheduler_id"] = $row["scheduler_id"];
+//			$resultObj["wms_id"] = $row["wms_id"];
+//			$resultObj["wms_title"] = $row["wms_title"];
+//			if (intval($row["wms_owner"]) !== intval($user->id) ) {
+//				$ajaxResponse->setSuccess(false);
+//				$ajaxResponse->setMessage(_mb("The user is not allowed to alter the update scheduler."));
+//				break;
+//			}
+//			$resultObj["wms_owner"] = $row["wms_owner"];
+//			$resultObj["scheduler_interval"] = $row["scheduler_interval"];
+//			$resultObj["scheduler_mail"] = $row["scheduler_mail"];
+//			$resultObj["scheduler_publish"] = $row["scheduler_publish"];
+//			$resultObj["scheduler_overwrite"] = $row["scheduler_overwrite"];
+//			$resultObj["scheduler_overwrite_categories"] = $row["scheduler_overwrite_categories"];
+//			$resultObj["scheduler_searchable"] = $row["scheduler_searchable"];
+//		}
+//		$ajaxResponse->setResult($resultObj);
+//		$ajaxResponse->setSuccess(true);
 		break;
 		
 	case "deleteWmsSchedule" :

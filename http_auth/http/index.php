@@ -1053,8 +1053,6 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
                 $err = new mb_exception("http_auth/index.php: " . $error->message);
             }
             throw new Exception("http_auth/index.php: " . 'Cannot parse Metadata XML!');
-            echo "<error>http_auth/index.php: Cannot parse Capabilities XML!</error>";
-            die();
         }
     } catch (Exception $e) {
         $err = new mb_exception("http_auth/index.php: " . $e->getMessage());
@@ -1238,8 +1236,6 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
                 $err = new mb_exception("http_auth/index.php: " . $error->message);
             }
             throw new Exception("http_auth/index.php: " . 'Cannot parse Metadata XML!');
-            echo "<error>http_auth/index.php: Cannot parse WFS Capabilities XML!</error>";
-            die();
         }
     } catch (Exception $e) {
         $err = new mb_exception("http_auth/index.php: " . $e->getMessage());

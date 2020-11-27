@@ -809,7 +809,6 @@ XML;
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML (transformToHtml)!');
-				return "error";
 			}
 		}
 		catch (Exception $e) {
@@ -1423,7 +1422,6 @@ XML;
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -1498,7 +1496,6 @@ XML;
         						$err = new mb_exception("class_Iso19139:".$error->message);
     						}
 						throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-						return false;
 					}
 				}
 				catch (Exception $e) {
@@ -2701,7 +2698,6 @@ SQL;
 			}
 			return true;
 		}
-		return true;
 	}
 
 	public function getExtentGraphic($layer_4326_box) {

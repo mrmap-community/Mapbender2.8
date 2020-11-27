@@ -1558,7 +1558,6 @@ function getConjunctionCharacter ($url) {
 	else {
 		return "?";
 	}
-	return "";
 }
 
 

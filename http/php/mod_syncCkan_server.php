@@ -387,7 +387,6 @@ if (isset($orgaId)){
 						$update_result = db_prep_query($sql,$v,$t);
 						if(!$update_result)	{
 							throw new Exception("Database error updating mb_group table with ckan uuid attribute!");
-							return false;
 						}
 						//set orga->id for further requests
 						$orga->id = $ckanResultObject->result->id;
@@ -402,7 +401,6 @@ if (isset($orgaId)){
 					$update_result = db_prep_query($sql,$v,$t);
 					if(!$update_result)	{
 						throw new Exception("Database error updating mb_group table with ckan uuid attribute!");
-						return false;
 					}
 					//set orga->id for further requests
 					$orga->id = $ckanResultObject->result->id;
@@ -476,7 +474,6 @@ if (isset($orgaId)){
 				$update_result = db_prep_query($sql,$v,$t);
 				if(!$update_result) {
 					throw new Exception("Database error updating mb_group table with ckan api-key attribute!");
-					return false;
 				}
 			}
 			//add user with role editor to current organization

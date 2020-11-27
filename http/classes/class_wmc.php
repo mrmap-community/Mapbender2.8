@@ -566,7 +566,6 @@ class wmc {
         				$err = new mb_exception("class_wmc:".$error->message);
     				}
 				throw new Exception("class_wmc:".'Cannot parse WMC XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -829,7 +828,6 @@ class wmc {
         				$err = new mb_exception("class_wmc:".$error->message);
     				}
 				throw new Exception("class_wmc:".'Cannot parse WMC XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {

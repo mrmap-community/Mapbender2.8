@@ -356,7 +356,6 @@ class wms {
 		else {
 			return "?";
 		}
-		return "";
 	}
 	//TODO: Problem layer_name is not always given - use other possibility to gain access - think deeper
 	public function getLayerById ($id) {
@@ -411,7 +410,7 @@ class wms {
 	function createOlObjFromWMS($base){
 	 	if(!$this->wms_title || $this->wms_title == ""){
 			echo "alert('Error: no valid capabilities-document !!');";
-			die; exit;
+			die;
 		}
 		// wms_title and abstract have previously been urlencoded
 		// this solution may not yet be the ultimate one
@@ -1684,7 +1683,7 @@ class wms {
 		$str = "";
 	  	if(!$this->wms_title || $this->wms_title == ""){
 			$str .= "alert('Error: no valid capabilities-document !!');";
-			die; exit;
+			die;
 		}
 		if($parent){
 			$str .=  "parent.";
@@ -1825,7 +1824,7 @@ class wms {
 	  function createJsLayerObjFromWMS($parent, $layer_name){
 	  	if(!$this->wms_title || $this->wms_title == ""){
 			echo " alert('Error: no valid capabilities-document !!');";
-			die; exit;
+			die;
 		}
 			if($parent){
 				echo "parent.";

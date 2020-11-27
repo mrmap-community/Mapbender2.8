@@ -601,7 +601,6 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			$exceptionTest =  new SimpleXMLElement($resultOfCount);
 			if ($exceptionTest == false) {
 				throw new Exception('Cannot parse WFS number of hits request!');
-				return false;
 			}
 		}
 		catch (Exception $e) {

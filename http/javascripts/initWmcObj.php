@@ -807,7 +807,6 @@ if ($gml_string) {
 				$err = new mb_exception("javascripts/mod_renderGML.php: ".$error->message);
 	    	}
 			throw new Exception("javascripts/initWmcObj.php: ".'Cannot parse GML from session!');
-			return false;
 		}
 	}
 	catch (Exception $e) {
@@ -1047,7 +1046,7 @@ if ($saveInSession == false) {
 	Mapbender::session()->delete("mb_wmc");
 	//delete also the current gui - this is handled by revertGui...
 } else {
-	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client 
+	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client
 	if (isset($wmc_filename) && $wmc_filename != ""){
 	    $admin->putToStorage($wmc_filename, $wmcGetApi->toXml(), TMP_WMC_SAVE_STORAGE, 3600);
         //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc to storage - filename: ".$wmc_filename);
