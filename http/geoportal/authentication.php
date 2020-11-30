@@ -48,7 +48,7 @@ if (is_array($isAuthenticated) != false) {
 	Mapbender::session()->set("mb_user_postal_code",$isAuthenticated["mb_user_postal_code"]);
 	Mapbender::session()->set("epsg","EPSG:31466");
 	Mapbender::session()->set("HTTP_HOST",$_SERVER["HTTP_HOST"]);
-	Mapbender::session()->set("preferred_gui",$isAuthenticated["fkey_prefered_gui_id"]);
+	Mapbender::session()->set("preferred_gui",$isAuthenticated["fkey_preferred_gui_id"]);
 
 	if (defined("DJANGO_PORTAL") && DJANGO_PORTAL === true){
 		Mapbender::session()->set("django", "true");
