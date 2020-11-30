@@ -1716,7 +1716,7 @@ function partEllipse($x0,$y0,$astart,$afinish,$r1,$r2=0,$angle=0,$nSeg=8){
 * draw a filled ellipse
 */
 function filledEllipse($x0,$y0,$r1,$r2=0,$angle=0,$nSeg=8,$astart=0,$afinish=360){
-  return $this->ellipse($x0,$y0,$r1,$r2=0,$angle,$nSeg,$astart,$afinish,1,1);
+  $this->ellipse($x0,$y0,$r1,$r2=0,$angle,$nSeg,$astart,$afinish,1,1);
 }
 
 /**
@@ -2452,7 +2452,7 @@ function addTextWrap($x,$y,$width,$size,$text,$justification='left',$angle=0,$te
   $this->currentTextState = $store_currentTextState;
   $this->setCurrentFont();
   if (!$test){
-    $this->addText($x,$y,$size,$text,$angle,$adjust,$angle);
+    $this->addText($x,$y,$size,$text,$angle,$adjust);
   }
   return '';
 }
@@ -2962,7 +2962,7 @@ function addImage(&$img,$x,$y,$w=0,$h=0,$quality=75){
 *
 * @access private
 */
-function addJpegImage_common(&$data,$x,$y,$w=0,$h=0,$imageWidth,$imageHeight,$channels=3){
+function addJpegImage_common(&$data,$x,$y,$w,$h,$imageWidth,$imageHeight,$channels=3){
   // note that this function is not to be called externally
   // it is just the common code between the GD and the file options
   $this->numImages++;

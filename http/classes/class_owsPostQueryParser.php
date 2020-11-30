@@ -73,13 +73,11 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 			
 			//$e = new mb_exception("class_owsPostQueryHandler.php: ".json_encode($rootNamespace));
 			switch ($rootNamespace) {
-				case "http://www.opengis.net/wfs/2.0": 
+				case "http://www.opengis.net/wfs":
+				case "http://www.opengis.net/wfs/2.0":
 					$this->serviceType = "WFS";
                                 	break;
 				//maybe 1.1.0 or 1.0.0
-				case "http://www.opengis.net/wfs": 
-					$this->serviceType = "WFS";
-                                	break;
 				//maybe 1.1.0 or 1.1.1 or 1.3.0 - does 1.1.0 and 1.1.1 support POST?
 				case "http://www.opengis.net/wms": 
 					$this->serviceType = "WMS";

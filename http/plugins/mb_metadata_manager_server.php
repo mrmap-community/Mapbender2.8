@@ -51,15 +51,10 @@ function validateType($variable, $value) {
 //parse row (array) from database to new array - change some of the values and add some further
 function parseMetadataRow($row, $withOutFirstColumn = false) {
 	global $hierarchyLevel;
-	//convert NULL to '', NULL values cause datatables to crash
-	$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
+	$row = array_map('strval', $row)
 	//preview with uuid
-	$row[0] = $row[0];
-	$row[1] = $row[1];
 	//$row[2] = "<a class='modalDialog' target='_blank' id='metadata_".$row[0]."' href='../php/mod_exportIso19139.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row[2])."'>".$row[2]."</a>";
 	$row[2] = "<a class='modalDialog' id='metadata_".$row[0]."' url='../php/mod_exportIso19139.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$row[2])."'>".$row[2]."</a>";
-	$row[3] = $row[3];
-	$row[4] = $row[4];
 	$coupledResourceRow = 5;
 	$coupledResources = json_decode($row[$coupledResourceRow]);
 	$row[$coupledResourceRow] = "";

@@ -329,11 +329,15 @@ function addMeasuredItem($thePDF, $x_value_str, $y_value_str, $theConfArray = ar
 					$stroke_color_legend_image = imagecolorallocate($leg_img, round($theConfArray['stroke_color']['r'] * 255), round($theConfArray['stroke_color']['g'] * 255), round($theConfArray['stroke_color']['b'] * 255));
 					if (is_array($theConfArray['line_style']['dash'])
 					    && $theConfArray['line_style']['dash'][1] != ""
-							&& $theConfArray['line_style']['dash'][1] != 0) {
-						imagedashedline($leg_img, 0, 0, $legend_width-1, 0, $stroke_color_legend_image);
-						imagedashedline($leg_img, $legend_width-1, 1, $legend_width-1, $legend_width-1, $stroke_color_legend_image);
-						imagedashedline($leg_img, 0, 0, 0, $legend_width-1, $stroke_color_legend_image);
-						imagedashedline($leg_img, 0, $legend_width-1, $legend_width-1,$legend_width-1, $stroke_color_legend_image);
+					    && $theConfArray['line_style']['dash'][1] != 0) {
+					    	$style = array($stroke_color_legend_image, $stroke_color_legend_image, $stroke_color_legend_image, $stroke_color_legend_image,
+						IMG_COLOR_TRANSPARENT, IMG_COLOR_TRANSPARENT, IMG_COLOR_TRANSPARENT, IMG_COLOR_TRANSPARENT);
+					        imagesetstyle($leg_img, $style);
+					    	imageline($leg_img, 0, 0, $legend_width-1, 0, IMG_COLOR_STYLED);
+					   	imageline($leg_img, $legend_width-1, 1, $legend_width-1, $legend_width-1, IMG_COLOR_STYLED);
+					        imageline($leg_img, 0, 0, 0, $legend_width-1, IMG_COLOR_STYLED);
+					    	imageline($leg_img, 0, $legend_width-1, $legend_width-1,$legend_width-1, IMG_COLOR_STYLED);
+
 					} else {
 					  imageline($leg_img, 0, 0, $legend_width-1, 0, $stroke_color_legend_image);
 						imageline($leg_img, $legend_width-1, 0, $legend_width-1, $legend_width-1, $stroke_color_legend_image);

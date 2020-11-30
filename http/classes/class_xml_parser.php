@@ -32,10 +32,10 @@ class XMLParser {
     }
     
     public static function loadXMLFromString($string) {
-        self::$doc = new \DOMDocument();
+        self::$doc = new DOMDocument();
 
         if( !@self::$doc->loadXML($string) || 
-            !@self::$xp = new \DOMXPath(self::$doc)) {
+            !@self::$xp = new DOMXPath(self::$doc)) {
             return false;
         }
 

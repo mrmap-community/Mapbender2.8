@@ -82,9 +82,11 @@ class mbDynamicPdfFactory extends mbPrintFactory {
 
 }
 
-function __autoload($class_name) {
+function autoload($class_name) {
 	if (file_exists(dirname(__FILE__). "/{$class_name}.php"))
     	require_once $class_name . '.php';
 }
+
+spl_autoload_register('autoload');
 
 ?>

@@ -24,7 +24,6 @@ $user_id = Mapbender::session()->get("mb_user_id");
 // create wmc object
 $wmc = new wmc();
 // get post parameter
-$serial_id;
 $wmc_serial_id = $_POST["id"];
 // sql statement to get the wmc object and the serial_id
 $sql = 'Select wmc from mb_user_wmc where wmc_serial_id = $1 and wmc_has_local_data = 1 and fkey_user_id = $2;';

@@ -6,7 +6,7 @@
 # http://svn.osgeo.org/mapbender/trunk/mapbender/license/license.txt
 
 class Uuid {
-	private $uuid;
+	private $uuid = '';
 	
 	public function __construct ($aUuid = null) {
 		if (is_null($aUuid)) {

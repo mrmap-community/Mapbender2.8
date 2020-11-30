@@ -185,8 +185,8 @@ for ( $i=0 ; $i<count($aColumns) ; $i++ )
 /*$sQuery = "
 	SELECT FOUND_ROWS()
 ";
-$rResultFilterTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-$aResultFilterTotal = mysql_fetch_array($rResultFilterTotal);
+$rResultFilterTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+$aResultFilterTotal = mysqli_fetch_array($rResultFilterTotal);
 $iFilteredTotal = $aResultFilterTotal[0];*/
 	
 /* Total data set length */
@@ -194,8 +194,8 @@ $iFilteredTotal = $aResultFilterTotal[0];*/
 	SELECT COUNT(".$sIndexColumn.")
 	FROM   $sTable
 ";
-$rResultTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-$aResultTotal = mysql_fetch_array($rResultTotal);
+$rResultTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+$aResultTotal = mysqli_fetch_array($rResultTotal);
 $iTotal = $aResultTotal[0];*/
 	
 	

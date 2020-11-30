@@ -566,7 +566,6 @@ class wmc {
         				$err = new mb_exception("class_wmc:".$error->message);
     				}
 				throw new Exception("class_wmc:".'Cannot parse WMC XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -829,7 +828,6 @@ class wmc {
         				$err = new mb_exception("class_wmc:".$error->message);
     				}
 				throw new Exception("class_wmc:".'Cannot parse WMC XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -1636,7 +1634,7 @@ SQL;
 	 * @return
 	 */
 	public function appendWmsArray ($wmsArray) {
-		return $this->mainMap->appendWmsArray($wmsArray);
+		$this->mainMap->appendWmsArray($wmsArray);
 	}
 
 	/**
@@ -1647,9 +1645,9 @@ SQL;
 	public function mergeWmsArray ($wmsArray) {
 		if (func_num_args() > 1) {
 			$options = func_get_arg(1);
-			return $this->mainMap->mergeWmsArray($wmsArray, $options);
+			$this->mainMap->mergeWmsArray($wmsArray, $options);
 		}
-		return $this->mainMap->mergeWmsArray($wmsArray);
+		$this->mainMap->mergeWmsArray($wmsArray);
 	}
 
 	//for debugging purposes only
@@ -1738,7 +1736,7 @@ SQL;
 			$tagLowerCase = administration::sepNameSpace($element['tag']);
 			$type = $element['type'];
 			$attributes = $element['attributes'];
-			$value = mb_utf8_decode(html_entity_decode($element['value']));
+			$value = utf8_decode(html_entity_decode($element['value']));
 
 			if ($tag == "VIEWCONTEXT" && $type == "open") {
 				$this->wmc_id = $attributes["id"];

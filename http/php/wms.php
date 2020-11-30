@@ -1208,12 +1208,10 @@ function createLayerElement ($doc, $wmsId, $layerRow, $wmsRow, $AuthorityName, $
 	}
 	//switch wms version
 	switch ($wmsRow['wms_version']) {
-		case "1.1.1":
-			$metadataUrlType = "TC211";
-			break;
 		case "1.3.0":
 			$metadataUrlType = "ISO19115:2003";
 			break;
+		case "1.1.1":
 		default :
 			$metadataUrlType = "TC211";
 			break;	
@@ -1295,21 +1293,8 @@ SQL;
 					$onlineResource->setAttribute("xlink:href", $row_metadata['link']);
 				}
 			break;
-			case 'upload':
-				$metadataUrl = $doc->createElement("MetadataURL");
-				//$metadataUrl = $layer->appendChild($metadataUrl);
-				$metadataUrl->setAttribute('type', $metadataUrlType);
-				$format = $doc->createElement("Format");
-    				$format = $metadataUrl->appendChild($format);
-    				$formatText = $doc->createTextNode("text/xml");
-    				$formatText = $format->appendChild($formatText);
-				$onlineResource = $doc->createElement("OnlineResource");
-	    			$onlineResource = $metadataUrl->appendChild($onlineResource);
-				$onlineResource->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink" );
-				$onlineResource->setAttribute("xlink:href", $row_metadata['link']);
-				$onlineResource->setAttribute("xlink:href", $mapbenderMetadataUrlUrl.$row_metadata['uuid']);
-			break;
 			case 'metador':
+			case 'upload':
 				$metadataUrl = $doc->createElement("MetadataURL");
 				//$metadataUrl = $layer->appendChild($metadataUrl);
 				$metadataUrl->setAttribute('type', $metadataUrlType);

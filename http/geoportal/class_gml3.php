@@ -240,7 +240,7 @@ class gml3 {
 					if(strstr($epsgAttr,'#') !== false){
 						// http://www.opengis.net/gml/srs/epsg.xml#4326
 						$parts = explode('#',$epsgAttr);
-						$epsg == isset($parts[1]) ? $parts[1] : "";
+						$epsg = isset($parts[1]) ? $parts[1] : "";
 					}else if (strstr($epsgAttr,':') !== false){
 						// EPSG:31466
 						// urn:ogc:def:crs:EPSG:6.5:4326 
@@ -918,7 +918,7 @@ class GMLMultiLine {
 		
 	}
 	
-	protected function addPoint ($x, $y) {
+	protected function addPoint ($x, $y, $i) {
 		if (strstr($this->srs,'EPSG::')==True)  {
 			array_push($this->lineArray[$i], array("x" => $y, "y" => $x));
 		} else {

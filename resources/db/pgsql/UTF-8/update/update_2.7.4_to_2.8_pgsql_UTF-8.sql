@@ -123,7 +123,7 @@ ALTER FUNCTION f_collect_searchtext_dataset(integer)
   OWNER TO postgres;
 
 --DROP VIEW search_dataset_view;
---DROP FUNCTION f_collect_custom_cat_dataset(integer);
+--DROP FUNCTION f_idx_mb_proxy_log_timestampcollect_custom_cat_dataset(integer);
 -- DROP FUNCTION f_collect_inspire_cat_dataset(integer);
 -- DROP FUNCTION f_collect_topic_cat_dataset(integer);
 -- DROP FUNCTION f_collect_searchtext_dataset(integer);
@@ -131,7 +131,7 @@ ALTER FUNCTION f_collect_searchtext_dataset(integer)
 --new option to search for datasets in the internal mb_metadata table 
 -- View: search_dataset_view
 
-DROP VIEW search_dataset_view;
+DROP VIEW IF EXISTS wms_list_viewsearch_dataset_view;
 
 CREATE OR REPLACE VIEW search_dataset_view AS 
  SELECT dataset_dep.fkey_mb_user_id AS user_id, dataset_dep.dataset_id, dataset_dep.srs AS dataset_srs, dataset_dep.title, dataset_dep.abstract AS dataset_abstract, f_collect_searchtext_dataset(dataset_dep.dataset_id) AS searchtext, dataset_dep.dataset_timestamp, dataset_dep.department, dataset_dep.mb_group_name, dataset_dep.mb_group_title, dataset_dep.mb_group_country, 0 AS load_count, dataset_dep.mb_group_stateorprovince, f_collect_inspire_cat_dataset(dataset_dep.dataset_id) AS md_inspire_cats, f_collect_custom_cat_dataset(dataset_dep.dataset_id) AS md_custom_cats, f_collect_topic_cat_dataset(dataset_dep.dataset_id) AS md_topic_cats, dataset_dep.bbox, dataset_dep.mb_group_logo_path
@@ -180,7 +180,7 @@ ALTER FUNCTION f_wms_searchable_layers(integer)
   OWNER TO postgres;
 
 -- View: wms_list_view
-DROP VIEW wms_list_view;
+DROP VIEW IF EXISTS wms_list_view;
 
 CREATE OR REPLACE VIEW wms_list_view AS 
  
@@ -219,7 +219,7 @@ ALTER FUNCTION f_tou_isopen(integer)
 --enhance search view with isopen classification for resources
 -- View: search_wms_view
 
-DROP VIEW search_wms_view CASCADE;
+DROP VIEW IF EXISTS search_wms_view CASCADE;
 
 CREATE OR REPLACE VIEW search_wms_view AS 
  SELECT DISTINCT ON (wms_unref.layer_id) wms_unref.wms_id, wms_unref.availability, wms_unref.status, wms_unref.wms_title, wms_unref.wms_abstract, wms_unref.stateorprovince, wms_unref.country, wms_unref.accessconstraints, wms_unref.termsofuse, wms_unref.isopen, wms_unref.wms_owner, wms_unref.layer_id, wms_unref.epsg, wms_unref.layer_title, wms_unref.layer_abstract, wms_unref.layer_name, wms_unref.layer_parent, wms_unref.layer_pos, wms_unref.layer_queryable, wms_unref.load_count, wms_unref.searchtext, wms_unref.wms_timestamp, wms_unref.department, wms_unref.mb_group_name, f_collect_custom_cat_layer(wms_unref.layer_id) AS md_custom_cats, f_collect_inspire_cat_layer(wms_unref.layer_id) AS md_inspire_cats, f_collect_topic_cat_layer(wms_unref.layer_id) AS md_topic_cats, geometryfromtext(((((((((((((((((((('POLYGON(('::text || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || '))'::text, 4326) AS the_geom, (((((layer_epsg.minx::text || ','::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.maxx::text) || ','::text) || layer_epsg.maxy::text AS bbox, wms_unref.wms_proxylog, wms_unref.wms_network_access, wms_unref.wms_pricevolume, wms_unref.mb_group_logo_path
@@ -239,7 +239,7 @@ ALTER TABLE search_wms_view
 
 -- View: search_wfs_view
 
-DROP VIEW search_wfs_view CASCADE;
+DROP VIEW IF EXISTS search_wfs_view CASCADE;
 
 CREATE OR REPLACE VIEW search_wfs_view AS 
  SELECT wfs_dep.wfs_id, wfs_dep.wfs_title, wfs_dep.wfs_abstract, wfs_dep.administrativearea, wfs_dep.country, wfs_dep.accessconstraints, wfs_dep.termsofuse, wfs_dep.isopen, wfs_dep.wfs_owner, wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_srs, wfs_featuretype.featuretype_title, wfs_featuretype.featuretype_abstract, f_collect_searchtext_wfs(wfs_dep.wfs_id, wfs_featuretype.featuretype_id) AS searchtext, wfs_element.element_type, wfs_conf.wfs_conf_id, wfs_conf.wfs_conf_abstract, wfs_conf.wfs_conf_description, f_getwfsmodultype(wfs_conf.wfs_conf_id) AS modultype, wfs_dep.wfs_timestamp, wfs_dep.department, wfs_dep.mb_group_name, wfs_dep.mb_group_logo_path
@@ -424,7 +424,7 @@ ALTER FUNCTION f_get_download_options_for_layer(integer)
 -- alter view for list of metadata uuids that are connected to download services
 
 
-DROP VIEW search_wms_view CASCADE;
+DROP VIEW IF EXISTS search_wms_view CASCADE;
 
 CREATE OR REPLACE VIEW search_wms_view AS 
  SELECT DISTINCT ON (wms_unref.layer_id) wms_unref.wms_id, wms_unref.availability, wms_unref.status, wms_unref.wms_title, wms_unref.wms_abstract, wms_unref.stateorprovince, wms_unref.country, wms_unref.accessconstraints, wms_unref.termsofuse, wms_unref.isopen, wms_unref.wms_owner, wms_unref.layer_id, wms_unref.epsg, wms_unref.layer_title, wms_unref.layer_abstract, wms_unref.layer_name, wms_unref.layer_parent, wms_unref.layer_pos, wms_unref.layer_queryable, wms_unref.load_count, wms_unref.searchtext, wms_unref.wms_timestamp, wms_unref.department, wms_unref.mb_group_name, f_collect_custom_cat_layer(wms_unref.layer_id) AS md_custom_cats, f_collect_inspire_cat_layer(wms_unref.layer_id) AS md_inspire_cats, f_collect_topic_cat_layer(wms_unref.layer_id) AS md_topic_cats, f_get_download_options_for_layer(wms_unref.layer_id) as md_download_options, geometryfromtext(((((((((((((((((((('POLYGON(('::text || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || '))'::text, 4326) AS the_geom, (((((layer_epsg.minx::text || ','::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.maxx::text) || ','::text) || layer_epsg.maxy::text AS bbox, wms_unref.wms_proxylog, wms_unref.wms_network_access, wms_unref.wms_pricevolume, wms_unref.mb_group_logo_path
@@ -579,13 +579,6 @@ CREATE INDEX idx_inspire_dls_log_link
   USING btree
   (link );
 
-
--- Index für proxy-Log-Tabelle
-CREATE INDEX idx_mb_proxy_log_timestamp
-ON mb_proxy_log
-USING btree
-(proxy_log_timestamp);
-
 --Title for exportMapimage module
 INSERT INTO translations (locale, msgid, msgstr) values ('de','Export current mapimage','Export des aktuellen Kartenbilds');
 insert into translations (locale,msgid,msgstr) values ('en','Export des aktuellen Kartenbilds','Export current mapimage');
@@ -616,7 +609,7 @@ UPDATE mb_user SET mb_user_allow_survey = true WHERE mb_user_allow_survey IS NUL
 --Add possibility to prohibit export of layer metadata to external catalogues
 ALTER TABLE layer ADD COLUMN export2csw boolean DEFAULT true;
 
-DROP VIEW search_wms_view CASCADE;
+DROP VIEW IF EXISTS search_wms_view CASCADE;
 
 CREATE OR REPLACE VIEW search_wms_view AS 
  SELECT DISTINCT ON (wms_unref.layer_id) wms_unref.wms_id, wms_unref.availability, wms_unref.status, wms_unref.wms_title, wms_unref.wms_abstract, wms_unref.stateorprovince, wms_unref.country, wms_unref.accessconstraints, wms_unref.termsofuse, wms_unref.isopen, wms_unref.wms_owner, wms_unref.layer_id, wms_unref.epsg, wms_unref.layer_title, wms_unref.layer_abstract, wms_unref.layer_name, wms_unref.layer_parent, wms_unref.layer_pos, wms_unref.layer_queryable, wms_unref.export2csw, wms_unref.load_count, wms_unref.searchtext, wms_unref.wms_timestamp, wms_unref.department, wms_unref.mb_group_name, f_collect_custom_cat_layer(wms_unref.layer_id) AS md_custom_cats, f_collect_inspire_cat_layer(wms_unref.layer_id) AS md_inspire_cats, f_collect_topic_cat_layer(wms_unref.layer_id) AS md_topic_cats, geometryfromtext(((((((((((((((((((('POLYGON(('::text || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.maxy::text) || ','::text) || layer_epsg.maxx::text) || ' '::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.minx::text) || ' '::text) || layer_epsg.miny::text) || '))'::text, 4326) AS the_geom, (((((layer_epsg.minx::text || ','::text) || layer_epsg.miny::text) || ','::text) || layer_epsg.maxx::text) || ','::text) || layer_epsg.maxy::text AS bbox, wms_unref.wms_proxylog, wms_unref.wms_network_access, wms_unref.wms_pricevolume, wms_unref.mb_group_logo_path
@@ -634,7 +627,7 @@ CREATE OR REPLACE VIEW search_wms_view AS
 ALTER TABLE search_wms_view
   OWNER TO postgres;
 
-DROP VIEW search_dataset_view;
+DROP VIEW IF EXISTS search_dataset_view;
 
 CREATE OR REPLACE VIEW search_dataset_view AS 
  SELECT dataset_dep.fkey_mb_user_id AS user_id, dataset_dep.dataset_id, dataset_dep.srs AS dataset_srs, dataset_dep.title, dataset_dep.abstract AS dataset_abstract, f_collect_searchtext_dataset(dataset_dep.dataset_id) AS searchtext, dataset_dep.dataset_timestamp, dataset_dep.department, dataset_dep.mb_group_name, dataset_dep.mb_group_title, dataset_dep.mb_group_country, 0 AS load_count, dataset_dep.mb_group_stateorprovince, f_collect_inspire_cat_dataset(dataset_dep.dataset_id) AS md_inspire_cats, f_collect_custom_cat_dataset(dataset_dep.dataset_id) AS md_custom_cats, f_collect_topic_cat_dataset(dataset_dep.dataset_id) AS md_topic_cats, dataset_dep.bbox as the_geom, (ST_XMin(dataset_dep.bbox)::text || ','::text || ST_YMin(dataset_dep.bbox)::text || ','::text || ST_XMax(dataset_dep.bbox)::text || ','::text || ST_YMax(dataset_dep.bbox)::text) as bbox, dataset_dep.preview_url, dataset_dep.fileidentifier, dataset_dep.mb_group_logo_path
@@ -703,7 +696,7 @@ UPDATE gui_element SET e_content='<div id="printPDF_working_bg"></div><div id="p
 
 -- DROP FUNCTION f_get_coupled_resources(integer);
 
-DROP VIEW search_dataset_view; --depends in following function
+DROP VIEW IF EXISTS search_dataset_view; --depends in following function
 
 
 CREATE OR REPLACE FUNCTION f_get_coupled_resources(integer)
@@ -813,7 +806,7 @@ ON mb_proxy_log
 USING btree
 (fkey_wfs_id);
 
-DROP VIEW search_dataset_view;
+DROP VIEW IF EXISTS search_dataset_view;
 
 ALTER TABLE mb_metadata ALTER COLUMN ref_system TYPE character varying(50);
 
@@ -899,13 +892,13 @@ ALTER TABLE termsofuse ALTER COLUMN source_required SET DEFAULT false;
 
 -- Column: responsible_party_name
 
--- ALTER TABLE mb_metadata DROP COLUMN responsible_party_name;
+ALTER TABLE mb_metadata DROP COLUMN responsible_party_name;
 
 ALTER TABLE mb_metadata ADD COLUMN responsible_party_name character varying(255) DEFAULT null;
 
 -- Column: responsible_party_email
 
--- ALTER TABLE mb_metadata DROP COLUMN responsible_party_email;
+--ALTER TABLE mb_metadata DROP COLUMN responsible_party_email;
 
 ALTER TABLE mb_metadata ADD COLUMN responsible_party_email character varying(255) DEFAULT null;
 
@@ -957,7 +950,7 @@ ALTER TABLE metadata_load_count
 
 --new view which integrates the termsofuse for datasets if given 
 
-DROP VIEW search_dataset_view;
+DROP VIEW IF EXISTS search_dataset_view;
 
 CREATE OR REPLACE VIEW search_dataset_view AS 
 
@@ -973,7 +966,7 @@ ALTER TABLE search_dataset_view
   OWNER TO postgres;
 
 --new search wfs view with all featuretypes
-DROP VIEW search_wfs_view;
+DROP VIEW IF EXISTS search_wfs_view;
 CREATE OR REPLACE VIEW search_wfs_view AS 
 
 SELECT wfs_without_geom.wfs_id, wfs_without_geom.wfs_title, wfs_without_geom.wfs_abstract, wfs_without_geom.administrativearea, wfs_without_geom.country, wfs_without_geom.accessconstraints, wfs_without_geom.termsofuse, wfs_without_geom.isopen, wfs_without_geom.wfs_owner, wfs_without_geom.featuretype_id, wfs_without_geom.featuretype_srs, wfs_without_geom.featuretype_title, wfs_without_geom.featuretype_abstract, wfs_without_geom.searchtext, wfs_without_geom.element_type, wfs_without_geom.wfs_conf_id, wfs_without_geom.wfs_conf_abstract, wfs_without_geom.wfs_conf_description, wfs_without_geom.modultype, wfs_without_geom.wfs_timestamp, wfs_without_geom.department, wfs_without_geom.mb_group_name, wfs_without_geom.mb_group_logo_path, wfs_without_geom.wfs_network_access, wfs_without_geom.wfs_pricevolume, wfs_without_geom.wfs_proxylog, wfs_without_geom.featuretype_latlon_bbox, wfs_without_geom.featuretype_latlon_array, geometryfromtext(((((((((((((((((((('POLYGON(('::text || wfs_without_geom.featuretype_latlon_array[1]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[2]) || ','::text) || wfs_without_geom.featuretype_latlon_array[1]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[4]) || ','::text) || wfs_without_geom.featuretype_latlon_array[3]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[4]) || ','::text) || wfs_without_geom.featuretype_latlon_array[3]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[2]) || ','::text) || wfs_without_geom.featuretype_latlon_array[1]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[2]) || '))'::text, 4326) AS the_geom, (((((wfs_without_geom.featuretype_latlon_array[1] || ','::text) || wfs_without_geom.featuretype_latlon_array[2]) || ','::text) || wfs_without_geom.featuretype_latlon_array[3]) || ','::text) || wfs_without_geom.featuretype_latlon_array[4] AS bbox
@@ -1118,7 +1111,7 @@ DELETE FROM gui_element WHERE fkey_gui_id = 'admin_wfs_metadata' AND e_id = 'mb_
 INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_wfs_metadata','mb_metadata_gml_import',1,1,'','','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','div','../plugins/mb_metadata_gml_import.js','','','','');
 
 
-DROP VIEW search_dataset_view;
+DROP VIEW IF EXISTS search_dataset_view;
 
 ALTER TABLE mb_metadata ALTER COLUMN ref_system TYPE VARCHAR(150);
 CREATE OR REPLACE VIEW search_dataset_view AS 
@@ -1219,7 +1212,7 @@ WITH (
 ALTER TABLE layer_dimension
   OWNER TO postgres;
 
-DROP VIEW search_wfs_view;
+DROP VIEW IF EXISTS search_wfs_view;
 
 ALTER TABLE wfs ALTER COLUMN accessconstraints TYPE text;
 
@@ -1294,9 +1287,9 @@ ALTER TABLE mb_metadata ADD COLUMN md_proxy BOOLEAN;
 
 
 -- Loesche die abhängigen Sichten, um anschließend die Tabelle wfs_featuretype anpassen zu können
-DROP VIEW search_wfs_view;
-DROP VIEW wfs_service_metadata_new;
-DROP VIEW wfs_service_metadata;
+DROP VIEW IF EXISTS search_wfs_view;
+DROP VIEW IF EXISTS wfs_service_metadata_new;
+DROP VIEW IF EXISTS wfs_service_metadata;
 
 -- Änderung Tabellenspalte auf varchar(200)
 alter table wfs_featuretype alter column featuretype_title TYPE varchar(200);
@@ -1538,7 +1531,7 @@ ALTER TABLE mb_metadata ADD COLUMN searchable BOOLEAN DEFAULT true;
 --Alter view to react on searchable = true field
 -- View: search_dataset_view
 
-DROP VIEW search_dataset_view;
+DROP VIEW IF EXISTS search_dataset_view;
 
 CREATE OR REPLACE VIEW search_dataset_view AS 
  SELECT DISTINCT ON (datasets.metadata_id) datasets.user_id, datasets.dataset_id, datasets.metadata_id, datasets.dataset_srs, datasets.title, datasets.dataset_abstract, datasets.accessconstraints, datasets.isopen, datasets.termsofuse, datasets.searchtext, datasets.dataset_timestamp, datasets.department, datasets.mb_group_name, datasets.mb_group_title, datasets.mb_group_country, datasets.load_count, datasets.mb_group_stateorprovince, datasets.md_inspire_cats, datasets.md_custom_cats, datasets.md_topic_cats, datasets.the_geom, datasets.bbox, datasets.preview_url, datasets.fileidentifier, datasets.coupled_resources, datasets.mb_group_logo_path, datasets.timebegin, datasets.timeend
@@ -1607,7 +1600,7 @@ ALTER TABLE wfs_featuretype ADD COLUMN featuretype_schema_problem boolean;
 -- solve multiple results for wfs_conf - fixing bug!
 -- View: search_wfs_view
 
-DROP VIEW search_wfs_view;
+DROP VIEW IF EXISTS search_wfs_view;
 
 CREATE OR REPLACE VIEW search_wfs_view AS 
  SELECT wfs_without_geom.wfs_id, wfs_without_geom.wfs_title, wfs_without_geom.wfs_abstract, wfs_without_geom.administrativearea, wfs_without_geom.country, wfs_without_geom.accessconstraints, wfs_without_geom.termsofuse, wfs_without_geom.isopen, wfs_without_geom.wfs_owner, wfs_without_geom.featuretype_id, wfs_without_geom.featuretype_srs, wfs_without_geom.featuretype_title, wfs_without_geom.featuretype_abstract, wfs_without_geom.searchtext, wfs_without_geom.element_type, wfs_without_geom.wfs_conf_id, wfs_without_geom.wfs_conf_abstract, wfs_without_geom.wfs_conf_description, wfs_without_geom.modultype, wfs_without_geom.wfs_timestamp, wfs_without_geom.department, wfs_without_geom.mb_group_name, wfs_without_geom.mb_group_logo_path, wfs_without_geom.wfs_network_access, wfs_without_geom.wfs_pricevolume, wfs_without_geom.wfs_proxylog, wfs_without_geom.featuretype_latlon_bbox, wfs_without_geom.featuretype_latlon_array, geometryfromtext(((((((((((((((((((('POLYGON(('::text || wfs_without_geom.featuretype_latlon_array[1]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[2]) || ','::text) || wfs_without_geom.featuretype_latlon_array[1]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[4]) || ','::text) || wfs_without_geom.featuretype_latlon_array[3]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[4]) || ','::text) || wfs_without_geom.featuretype_latlon_array[3]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[2]) || ','::text) || wfs_without_geom.featuretype_latlon_array[1]) || ' '::text) || wfs_without_geom.featuretype_latlon_array[2]) || '))'::text, 4326) AS the_geom, (((((wfs_without_geom.featuretype_latlon_array[1] || ','::text) || wfs_without_geom.featuretype_latlon_array[2]) || ','::text) || wfs_without_geom.featuretype_latlon_array[3]) || ','::text) || wfs_without_geom.featuretype_latlon_array[4] AS bbox
@@ -1630,7 +1623,7 @@ ALTER TABLE search_wfs_view
 
 -- View: groups_for_publishing
 
-DROP VIEW groups_for_publishing;
+DROP VIEW IF EXISTS groups_for_publishing;
 
 CREATE OR REPLACE VIEW groups_for_publishing AS 
 
@@ -1647,7 +1640,7 @@ ALTER TABLE groups_for_publishing
 
 -- View: users_for_publishing
 
-DROP VIEW users_for_publishing;
+DROP VIEW IF EXISTS users_for_publishing;
 
 CREATE OR REPLACE VIEW users_for_publishing AS 
 
@@ -1720,7 +1713,7 @@ ALTER FUNCTION f_get_geometry_type(integer)
 
 -- View: search_wfs_view_2
 
-DROP VIEW search_wfs_view;
+DROP VIEW IF EXISTS search_wfs_view;
 
 CREATE OR REPLACE VIEW search_wfs_view AS 
 
@@ -1781,7 +1774,7 @@ ALTER FUNCTION f_collect_searchtext_dataset(integer)
 
 -- View: groups_for_publishing
 
-DROP VIEW groups_for_publishing CASCADE;
+DROP VIEW IF EXISTS groups_for_publishing CASCADE;
 
 CREATE OR REPLACE VIEW groups_for_publishing AS 
  SELECT mb_group.mb_group_id AS fkey_mb_group_id, mb_group.*
@@ -1795,7 +1788,7 @@ ALTER TABLE groups_for_publishing
 
 --View: users_for_publishing
 
-DROP VIEW users_for_publishing CASCADE;
+DROP VIEW IF EXISTS users_for_publishing CASCADE;
 
 CREATE OR REPLACE VIEW users_for_publishing AS 
  SELECT DISTINCT f.fkey_mb_user_id, f.fkey_mb_group_id AS primary_group_id
@@ -1905,7 +1898,7 @@ ALTER TABLE search_dataset_view
 
 -- View: search_wfs_view_2
 
-DROP VIEW search_wfs_view;
+DROP VIEW IF EXISTS search_wfs_view;
 
 CREATE OR REPLACE VIEW search_wfs_view AS 
 
@@ -2033,51 +2026,52 @@ ALTER TABLE mb_group ADD COLUMN mb_group_ckan_catalogues text;
 
 ALTER TABLE mb_group ADD COLUMN mb_group_registry_url character varying(1024);
 
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_metadata',1,1,'Metadata plugin','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','','../extensions/jquery.metadata.2.1/jquery.metadata.min.js','','','http://plugins.jquery.com/project/metadata');
 
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_ui_datepicker',5,1,'Datepicker from jQuery UI framework','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','../plugins/jq_ui_datepicker.js','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.datepicker.js','','jq_ui','');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_ui_tabs',5,1,'horizontal tabs from the jQuery UI framework','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.tabs.min.js','','jq_ui,jq_ui_widget','');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_upload',1,1,'Allows to upload files into Mapbender''s temporary files folder','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','','../plugins/jq_upload.js','','','');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_validate',1,1,'The jQuery validation plugin','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','../javascripts/jq_validate.js','../extensions/jquery-validate/jquery.validate.min.js','','','http://docs.jquery.com/Plugins/Validation');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('admin_metadata', 'jq_validate', 'css', 'label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }', '' ,'text/css');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_geodata_import',1,0,'Allows to upload files into Mapbender''s temporary files folder','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','../plugins/mb_metadata_import.js','','','','');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_md_showMetadataAddon',2,1,'Show addon editor for metadata','Metadata Addon Editor','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'display:none;','','div','../plugins/mb_metadata_showMetadataAddon.js','','','jq_ui_dialog','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('admin_metadata', 'mb_md_showMetadataAddon', 'differentFromOriginalCss', '.differentFromOriginal{
-background-color:#FFFACD;
-}', 'css for class differentFromOriginal' ,'text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('admin_metadata', 'mb_md_showMetadataAddon', 'inputs', '[
-    {
-        "method": "init",
-        "title": "initialize",
-        "linkedTo": [
-            {
-                "id": "mb_md_edit",
-                "event": "showOriginalMetadata",
-                "attr": "data" 
-            } 
-        ] 
-    },
-    {
-        "method": "initLayer",
-        "title": "initialize",
-        "linkedTo": [
-            {
-                "id": "mb_md_layer",
-                "event": "showOriginalLayerMetadata",
-                "attr": "data" 
-            } 
-        ] 
-    }
-]', '' ,'var');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_metadata_gml_import',1,1,'','','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','div','../plugins/mb_metadata_gml_import.js','','','','');
-
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_metadata_xml_import',1,1,'','','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','div','../plugins/mb_metadata_xml_import.js','','','','');
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('inspire_category_description_enadmin_metadata','jq_metadata',1,1,'Metadata plugin','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','','../extensions/jquery.metadata.2.1/jquery.metadata.min.js','','','http://plugins.jquery.com/project/metadata');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_ui_datepicker',5,1,'Datepicker from jQuery UI framework','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','../plugins/jq_ui_datepicker.js','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.datepicker.js','','jq_ui','');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_ui_tabs',5,1,'horizontal tabs from the jQuery UI framework','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.tabs.min.js','','jq_ui,jq_ui_widget','');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_upload',1,1,'Allows to upload files into Mapbender''s temporary files folder','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','','../plugins/jq_upload.js','','','');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','jq_validate',1,1,'The jQuery validation plugin','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','../javascripts/jq_validate.js','../extensions/jquery-validate/jquery.validate.min.js','','','http://docs.jquery.com/Plugins/Validation');
+-- INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('admin_metadata', 'jq_validate', 'css', 'label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }', '' ,'text/css');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_geodata_import',1,0,'Allows to upload files into Mapbender''s temporary files folder','','','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','','../plugins/mb_metadata_import.js','','','','');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_md_showMetadataAddon',2,1,'Show addon editor for metadata','Metadata Addon Editor','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'display:none;','','div','../plugins/mb_metadata_showMetadataAddon.js','','','jq_ui_dialog','');
+-- INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('admin_metadata', 'mb_md_showMetadataAddon', 'differentFromOriginalCss', '.differentFromOriginal{
+-- background-color:#FFFACD;
+-- }', 'css for class differentFromOriginal' ,'text/css');
+-- INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('admin_metadata', 'mb_md_showMetadataAddon', 'inputs', '[
+--     {
+--         "method": "init",
+--         "title": "initialize",
+--         "linkedTo": [
+--             {
+--                 "id": "mb_md_edit",
+--                 "event": "showOriginalMetadata",
+--                 "attr": "data"
+--             }
+--         ]
+--     },
+--     {
+--         "method": "initLayer",
+--         "title": "initialize",
+--         "linkedTo": [
+--             {
+--                 "id": "mb_md_layer",
+--                 "event": "showOriginalLayerMetadata",
+--                 "attr": "data"
+--             }
+--         ]
+--     }
+-- ]', '' ,'var');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_metadata_gml_import',1,1,'','','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','div','../plugins/mb_metadata_gml_import.js','','','','');
+--
+-- INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('admin_metadata','mb_metadata_xml_import',1,1,'','','div','','',NULL ,NULL ,NULL ,NULL ,NULL ,'','','div','../plugins/mb_metadata_xml_import.js','','','','');
 
 
 -- add possibility to store wfs monitoring information in database
@@ -2403,7 +2397,7 @@ ALTER FUNCTION f_get_status_of_ressource(integer, character varying)
 
 -- View: search_wfs_view
 
-DROP VIEW search_wfs_view;
+DROP VIEW IF EXISTS search_wfs_view;
 
 CREATE OR REPLACE VIEW search_wfs_view AS 
 
@@ -2619,8 +2613,8 @@ ALTER TABLE mb_user ADD COLUMN timestamp_dsgvo_accepted bigint;
 
 -- Column: inspire_category_description_en
 
-ALTER TABLE inspire_category DROP COLUMN inspire_category_description_en;
-ALTER TABLE inspire_category DROP COLUMN inspire_category_uri;
+ALTER TABLE inspire_category DROP COLUMN IF EXISTS inspire_category_description_en;
+ALTER TABLE inspire_category DROP COLUMN IF EXISTS inspire_category_uri;
 
 ALTER TABLE inspire_category ADD COLUMN inspire_category_description_en text;
 ALTER TABLE inspire_category ADD COLUMN inspire_category_uri text;
@@ -2736,8 +2730,8 @@ UPDATE inspire_category SET inspire_category_description_en = 'Mineral resources
 UPDATE inspire_category SET inspire_category_uri = 'http://inspire.ec.europa.eu/theme/mr' WHERE inspire_category_key = '3.21';
 
 --topic category
-ALTER TABLE md_topic_category DROP COLUMN md_topic_category_description_en;
-ALTER TABLE md_topic_category DROP COLUMN md_topic_category_uri;
+ALTER TABLE md_topic_category DROP COLUMN IF EXISTS md_topic_category_description_en;
+ALTER TABLE md_topic_category DROP COLUMN IF EXISTS md_topic_category_uri;
 
 ALTER TABLE md_topic_category ADD COLUMN md_topic_category_description_en text;
 ALTER TABLE md_topic_category ADD COLUMN md_topic_category_uri text;

@@ -79,7 +79,7 @@ class SearchData
      * @param $activePage
      * @return mixed
      */
-    private function calculateEndPage($data = array(), $name, $activePage) {
+    private function calculateEndPage($data, $name, $activePage) {
         /** @Todo: Move to pagination module for calculation the endpage based an different params */
         $resultsPerPage = $data[$name][$name][$name]['md']['rpp'];
         if ( ($activePage + 6) > $resultsPerPage ) {

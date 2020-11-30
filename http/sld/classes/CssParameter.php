@@ -83,7 +83,7 @@ class CssParameter
 		$temp .= $offset."   CssParameter<br>\n";
 		$temp .= $offset."   <input type=\"hidden\" name=\"".$id."\" value=\"cssparameter\">\n";
 		
-		$number = split("_", $id);
+		$number = explode("_", $id);
 		$number = $number[count($number)-1];
 		
 		$temp .= $offset."   <a class='edit' href=\"sld_function_handler.php?function=deletecssparameter&id=".$this->parent."&number=".$number."\">l&ouml;schen</a>\n";

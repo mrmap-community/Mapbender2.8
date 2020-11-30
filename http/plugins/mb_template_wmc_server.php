@@ -78,7 +78,7 @@ SQL;
 
 		while ($row = db_fetch_row($res)) {
 			// convert NULL to '', NULL values cause datatables to crash
-			$walk = array_walk($row, create_function('&$s', '$s=strval($s);'));
+            $row = array_map('strval', $row);
 			$link = "<a class='cancelClickEvent' target='_blank' href='../php/mod_showMetadata.php?".
 					"languageCode=".Mapbender::session()->get("mb_lang")."&resource=wmc&id=".$row[0]."'>"._mb("Metadata")."</a>";
 			array_push($row, $link);

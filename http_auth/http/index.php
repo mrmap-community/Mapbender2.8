@@ -142,7 +142,7 @@ if ($wfsId !== false) {
     } else {
         /**
           * typename not requested - so check accessability for each featuretype of the service
-          * 
+          *
           * only if all are accessable, give anonymous access to getcapabilities and other requests, that don't need a typename(s) parameter
          **/
         $sql = "SELECT featuretype_name FROM wfs_featuretype WHERE fkey_wfs_id = $1";
@@ -181,7 +181,7 @@ if ($anonymousAccess == true) {
                     '",qop="auth",nonce="' . getNonce() . '",opaque="' . md5(REALM) . '"');
                 die('Text to send if user hits Cancel button');
             }
-            
+
             //read out the header in an array
             $requestHeaderArray = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
             //error if header could not be read
@@ -200,7 +200,7 @@ if ($anonymousAccess == true) {
             if ($userInformation[0] == '-1') {
                 die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!');
             }
-            if ($userInformation[1] == '') { 
+            if ($userInformation[1] == '') {
                 die('User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!');
             }
             //first check the stale!
@@ -472,7 +472,7 @@ switch (strtolower($reqParams['request'])) {
         $query->setOnlineResource($arrayOnlineresources['wfs_getfeature']);
         $request = $query->getRequest();
         $request = stripslashes($request);
-        
+
         //TODO - what if storedquery are used ? log storedquery_id?
         if ($n->getWfsLogTag($arrayOnlineresources['wfs_id']) == 1) {
             $price = intval($n->getWfsPrice($arrayOnlineresources['wfs_id']));
@@ -759,7 +759,7 @@ function getImage($log_id, $or, $auth = false, $mask = false)
 
 /**
  * fetchs and returns the content of the FeatureInfo Response
- * 
+ *
  * @param string the url of the FeatureInfoRequest
  * @return string the content of the FeatureInfo document
  */
@@ -775,7 +775,7 @@ function getFeatureInfo($log_id, $url, $auth = false)
 
 /**
  * fetchs and returns the content of WFS GetFeature response
- * 
+ *
  * @param string the url of the GetFeature request
  * @return echo the content of the GetFeature document
  */
@@ -792,7 +792,7 @@ function getFeature($log_id, $url, $auth = false)
 
 /**
  * fetchs and returns the content of WFS DescribeFeaturetype response
- * 
+ *
  * @param string the url of the DescribeFeaturetype request
  * @return echo the content of the DescribeFeaturetype document
  */
@@ -804,7 +804,7 @@ function describeFeaturetype($url, $auth = false)
 
 /**
  * fetchs and returns the content of WFS 2.0+ ListStoredQueries response
- * 
+ *
  * @param string the url of the ListStoredQueries request
  * @return echo the content of the ListStoredQueries document
  */
@@ -816,7 +816,7 @@ function listStoredQueries($url, $auth = false)
 
 /**
  * fetchs and returns the content of WFS 2.0+ DescribeStoredQueries response
- * 
+ *
  * @param string the url of the DescribeStoredQueries request
  * @return echo the content of the DescribeStoredQueries document
  */
@@ -828,7 +828,7 @@ function describeStoredQueries($url, $auth = false)
 
 /**
  * simulates a post request to host
- * 
+ *
  * @param string host to send the request to
  * @param string port of host to send the request to
  * @param string method to send data (should be "POST")
@@ -857,7 +857,7 @@ function sendToHost($host, $port, $method, $path, $data)
 
 /**
  * get wfs featurenames that are touched by a tansaction request defined in XML $data
- * 
+ *
  * @param string XML that contains the tansaction request
  * @return array array of touched feature names
  */
@@ -913,9 +913,9 @@ function getWfsFeaturesFromTransaction($data)
 
 /**
  * sends the data of WFS Transaction and echos the response
- * 
- *  @param string url to send the WFS Transaction to
- *  @param string WFS Transaction data
+ *
+ * @param string url to send the WFS Transaction to
+ * @param string WFS Transaction data
  */
 function doTransaction($url, $data)
 {
@@ -1053,8 +1053,6 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
                 $err = new mb_exception("http_auth/index.php: " . $error->message);
             }
             throw new Exception("http_auth/index.php: " . 'Cannot parse Metadata XML!');
-            echo "<error>http_auth/index.php: Cannot parse Capabilities XML!</error>";
-            die();
         }
     } catch (Exception $e) {
         $err = new mb_exception("http_auth/index.php: " . $e->getMessage());
@@ -1238,8 +1236,6 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
                 $err = new mb_exception("http_auth/index.php: " . $error->message);
             }
             throw new Exception("http_auth/index.php: " . 'Cannot parse Metadata XML!');
-            echo "<error>http_auth/index.php: Cannot parse WFS Capabilities XML!</error>";
-            die();
         }
     } catch (Exception $e) {
         $err = new mb_exception("http_auth/index.php: " . $e->getMessage());
@@ -1258,12 +1254,12 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     }
     header("Content-Type: application/xml");
     echo $capFromFascadeXmlObject->asXML();
-    
+
 }
 
 /**
  * gets the original url of the requested legend graphic
- * 
+ *
  * @param string owsproxy md5
  * @return string url to legend graphic
  */
@@ -1310,7 +1306,7 @@ function getLegendUrl($wmsId)
 
 /**
  * validated access permission on requested wms
- * 
+ *
  * @param wmsId integer, userId - integer
  * @return array array with detailed information about requested wms
  */
@@ -1348,7 +1344,7 @@ function checkWmsPermission($wmsOws, $userId)
 /**
  * validates the access permission by getting the appropriate wfs_conf
  * to each feature requested and check the wfs_conf permission
- * 
+ *
  * @param string owsproxy md5
  * @param array array of requested featuretype names
  * @return array array with detailed information on reqested wfs
@@ -1415,7 +1411,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
 /**
  * validates the access permission by getting the appropriate wfs_conf
  * to each feature requested and check the wfs_conf permission
- * 
+ *
  * @param string owsproxy md5
  * @param array array of requested featuretype names
  * @return array array with detailed information on reqested wfs
@@ -1671,16 +1667,12 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 }
                 switch ($reqParams['version']) {
                     case "1.0.0":
-                        //get # of features from counting features
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-                        $numberOfFeatures = count($numberOfFeatures);
-                        break;
                     case "1.1.0":
                         //get # of features from counting features
                         $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
                         $numberOfFeatures = count($numberOfFeatures);
                         break;
-                        //for wfs 2.0 - don't count features
+					//for wfs 2.0 - don't count features
                     default:
                         //get # of features from attribut
                         $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');

@@ -25,25 +25,25 @@ class _database {
 	function connect() {
 		if (!$this->link) {
 			$this->link = ($this->settings["persist"]) ? 
-				mysql_pconnect(
+				mysqli_connect('p:' .
 					$this->settings["servername"].":".$this->settings["serverport"], 
 					$this->settings["username"], 
 					$this->settings["password"]
 				) : 
-				mysql_connect(
+				mysqli_connect(
 					$this->settings["servername"].":".$this->settings["serverport"], 
 					$this->settings["username"], 
 					$this->settings["password"]
 				) or $this->error();
 		}
-		if (!mysql_select_db($this->settings["database"], $this->link)) $this->error();
-		if($this->link) mysql_query("SET NAMES 'utf8'");
+		if (!mysqli_select_db($this->link, $this->settings["database"])) $this->error();
+		if($this->link) mysqli_query($this->link, "SET NAMES 'utf8'");
 		return ($this->link) ? true : false;
 	}
 
 	function query($sql) {
 		if (!$this->link && !$this->connect()) $this->error();
-		if (!($this->result = mysql_query($sql, $this->link))) $this->error($sql);
+		if (!($this->result = mysqli_query($this->link, $sql))) $this->error($sql);
 		return ($this->result) ? true : false;
 	}
 	
@@ -53,7 +53,7 @@ class _database {
 			return false;
 		}
 		unset($this->row);
-		$this->row = mysql_fetch_array($this->result, MYSQL_BOTH);
+		$this->row = mysqli_fetch_array($this->result, MYSQLI_BOTH);
 		return ($this->row) ? true : false ;
 	}
 
@@ -101,18 +101,18 @@ class _database {
 			$this->error("No query pending");
 			return false;
 		}
-		if(!mysql_data_seek($this->result, $row)) $this->error();
+		if(!mysqli_data_seek($this->result, $row)) $this->error();
 	}
 
 	function nf() {
-		if ($numb = mysql_num_rows($this->result) === false) $this->error();
-		return mysql_num_rows($this->result);
+		if ($numb = mysqli_num_rows($this->result) === false) $this->error();
+		return mysqli_num_rows($this->result);
 	}
 	function af() {
-		return mysql_affected_rows();
+		return mysqli_affected_rows($this->link);
 	}
 	function error($string="") {
-		$error = mysql_error();
+		$error = mysqli_error($this->link);
 		if($this->settings["show_error"]) echo $error;
 		if($this->settings["error_file"] !== false) {
 			$handle = @fopen($this->settings["error_file"], "a+");
@@ -122,23 +122,23 @@ class _database {
 			}
 		}
 		if($this->settings["dieonerror"]) {
-			if(isset($this->result)) mysql_free_result($this->result);
-			mysql_close($this->link);
+			if(isset($this->result)) mysqli_free_result($this->result);
+			mysqli_close($this->link);
 			die();
 		}
 	}
 	function insert_id() {
 		if(!$this->link) return false;
-		return mysql_insert_id();
+		return mysqli_insert_id($this->link);
 	}
 	function escape($string){
 		if(!$this->link) return addslashes($string);
-		return mysql_real_escape_string($string);
+		return mysqli_real_escape_string($string);
 	}
 
 	function destroy(){
-		if (isset($this->result)) mysql_free_result($this->result);
-		if (isset($this->link)) mysql_close($this->link);
+		if (isset($this->result)) mysqli_free_result($this->result);
+		if (isset($this->link)) mysqli_close($this->link);
 	}
 
 

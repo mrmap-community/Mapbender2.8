@@ -32,10 +32,10 @@
 	/* 
 	 * MySQL connection
 	 */
-	$gaSql['link'] =  mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
+	$gaSql['link'] =  mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
 		die( 'Could not open connection to server' );
 	
-	mysql_select_db( $gaSql['db'], $gaSql['link'] ) or 
+	mysqli_select_db($gaSql['link'] ,  $gaSql['db']) or 
 		die( 'Could not select database '. $gaSql['db'] );
 	
 	
@@ -45,8 +45,8 @@
 	$sLimit = "";
 	if ( isset( $_POST['iDisplayStart'] ) && $_POST['iDisplayLength'] != '-1' )
 	{
-		$sLimit = "LIMIT ".mysql_real_escape_string( $_POST['iDisplayStart'] ).", ".
-			mysql_real_escape_string( $_POST['iDisplayLength'] );
+		$sLimit = "LIMIT ".mysqli_real_escape_string( $_POST['iDisplayStart'] ).", ".
+			mysqli_real_escape_string( $_POST['iDisplayLength'] );
 	}
 	
 	
@@ -61,7 +61,7 @@
 			if ( $_POST[ 'bSortable_'.intval($_POST['iSortCol_'.$i]) ] == "true" )
 			{
 				$sOrder .= $aColumns[ intval( $_POST['iSortCol_'.$i] ) ]."
-				 	".mysql_real_escape_string( $_POST['sSortDir_'.$i] ) .", ";
+				 	".mysqli_real_escape_string( $_POST['sSortDir_'.$i] ) .", ";
 			}
 		}
 		
@@ -85,7 +85,7 @@
 		$sWhere = "WHERE (";
 		for ( $i=0 ; $i<count($aColumns) ; $i++ )
 		{
-			$sWhere .= $aColumns[$i]." LIKE '%".mysql_real_escape_string( $_POST['sSearch'] )."%' OR ";
+			$sWhere .= $aColumns[$i]." LIKE '%".mysqli_real_escape_string( $_POST['sSearch'] )."%' OR ";
 		}
 		$sWhere = substr_replace( $sWhere, "", -3 );
 		$sWhere .= ')';
@@ -104,7 +104,7 @@
 			{
 				$sWhere .= " AND ";
 			}
-			$sWhere .= $aColumns[$i]." LIKE '%".mysql_real_escape_string($_POST['sSearch_'.$i])."%' ";
+			$sWhere .= $aColumns[$i]." LIKE '%".mysqli_real_escape_string($_POST['sSearch_'.$i])."%' ";
 		}
 	}
 	
@@ -120,14 +120,14 @@
 		$sOrder
 		$sLimit
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
 	
 	/* Data set length after filtering */
 	$sQuery = "
 		SELECT FOUND_ROWS()
 	";
-	$rResultFilterTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-	$aResultFilterTotal = mysql_fetch_array($rResultFilterTotal);
+	$rResultFilterTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+	$aResultFilterTotal = mysqli_fetch_array($rResultFilterTotal);
 	$iFilteredTotal = $aResultFilterTotal[0];
 	
 	/* Total data set length */
@@ -135,8 +135,8 @@
 		SELECT COUNT(".$sIndexColumn.")
 		FROM   $sTable
 	";
-	$rResultTotal = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-	$aResultTotal = mysql_fetch_array($rResultTotal);
+	$rResultTotal = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+	$aResultTotal = mysqli_fetch_array($rResultTotal);
 	$iTotal = $aResultTotal[0];
 	
 	
@@ -148,7 +148,7 @@
 	$sOutput .= '"iTotalRecords": '.$iTotal.', ';
 	$sOutput .= '"iTotalDisplayRecords": '.$iFilteredTotal.', ';
 	$sOutput .= '"aaData": [ ';
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		$sOutput .= "[";
 		for ( $i=0 ; $i<count($aColumns) ; $i++ )

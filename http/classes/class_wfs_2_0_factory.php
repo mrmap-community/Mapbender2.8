@@ -362,7 +362,7 @@ class Wfs_2_0_Factory extends WfsFactory {
 				//some debug
 				//$e = new mb_notice("XML string from memory: ".$wfs20Cap->asXML());
 
-                $xpath = new \DOMXPath($wfs20Cap);
+                $xpath = new DOMXPath($wfs20Cap);
                 $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
                 foreach ($xpath->query('namespace::*', $this->doc->documentElement) as $node) {
                     $nsPrefix = $node->prefix;

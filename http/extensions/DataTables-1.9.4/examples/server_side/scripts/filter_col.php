@@ -15,12 +15,12 @@
 	/* 
 	 * MySQL connection
 	 */
-	if ( ! $gaSql['link'] = mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) )
+	if ( ! $gaSql['link'] = mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) )
 	{
 		fatal_error( 'Could not open connection to server' );
 	}
 
-	if ( ! mysql_select_db( $gaSql['db'], $gaSql['link'] ) )
+	if ( ! mysqli_select_db($gaSql['link'] ,  $gaSql['db']) )
 	{
 		fatal_error( 'Could not select database ' );
 	}
@@ -39,10 +39,10 @@
 	if ( isset( $_GET['iSortCol_0'] ) )
 	{
 		$sOrder = "ORDER BY  ";
-		for ( $i=0 ; $i<mysql_real_escape_string( $_GET['iSortingCols'] ) ; $i++ )
+		for ( $i=0 ; $i<mysqli_real_escape_string( $_GET['iSortingCols'] ) ; $i++ )
 		{
-			$sOrder .= fnColumnToField(mysql_real_escape_string( $_GET['iSortCol_'.$i] ))."
-			 	".mysql_real_escape_string( $_GET['sSortDir_'.$i] ) .", ";
+			$sOrder .= fnColumnToField(mysqli_real_escape_string( $_GET['iSortCol_'.$i] ))."
+			 	".mysqli_real_escape_string( $_GET['sSortDir_'.$i] ) .", ";
 		}
 		$sOrder = substr_replace( $sOrder, "", -2 );
 	}
@@ -54,11 +54,11 @@
 	$sWhere = "";
 	if ( $_GET['sSearch'] != "" )
 	{
-		$sWhere = "WHERE ( engine LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "browser LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "platform LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "version LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' OR ".
-		                "grade LIKE '%".mysql_real_escape_string( $_GET['sSearch'] )."%' )";
+		$sWhere = "WHERE ( engine LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "browser LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "platform LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "version LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' OR ".
+		                "grade LIKE '%".mysqli_real_escape_string( $_GET['sSearch'] )."%' )";
 	}
 	
 	for ( $i=0 ; $i<$_GET['iColumns'] ; $i++ )
@@ -73,7 +73,7 @@
 			{
 				$sWhere .= "WHERE ";
 			}
-			$sWhere .= fnColumnToField($i) ." LIKE '%".mysql_real_escape_string( $_GET['sSearch_'.$i] )."%'";
+			$sWhere .= fnColumnToField($i) ." LIKE '%".mysqli_real_escape_string( $_GET['sSearch_'.$i] )."%'";
 		}
 	}
 	
@@ -84,21 +84,21 @@
 		$sOrder
 		$sLimit
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or fatal_error( 'MySQL Error: ' . mysql_errno() );
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or fatal_error( 'MySQL Error: ' . mysqli_errno($gaSql['link']) );
 	
 	$sQuery = "
 		SELECT FOUND_ROWS()
 	";
-	$rResultFilterTotal = mysql_query( $sQuery, $gaSql['link'] ) or fatal_error( 'MySQL Error: ' . mysql_errno() );
-	$aResultFilterTotal = mysql_fetch_array($rResultFilterTotal);
+	$rResultFilterTotal = mysqli_query($gaSql['link'] ,  $sQuery) or fatal_error( 'MySQL Error: ' . mysqli_errno($gaSql['link']) );
+	$aResultFilterTotal = mysqli_fetch_array($rResultFilterTotal);
 	$iFilteredTotal = $aResultFilterTotal[0];
 	
 	$sQuery = "
 		SELECT COUNT(id)
 		FROM   ajax
 	";
-	$rResultTotal = mysql_query( $sQuery, $gaSql['link'] ) or fatal_error( 'MySQL Error: ' . mysql_errno() );
-	$aResultTotal = mysql_fetch_array($rResultTotal);
+	$rResultTotal = mysqli_query($gaSql['link'] ,  $sQuery) or fatal_error( 'MySQL Error: ' . mysqli_errno($gaSql['link']) );
+	$aResultTotal = mysqli_fetch_array($rResultTotal);
 	$iTotal = $aResultTotal[0];
 	
 	$sOutput = '{';
@@ -106,7 +106,7 @@
 	$sOutput .= '"iTotalRecords": '.$iTotal.', ';
 	$sOutput .= '"iTotalDisplayRecords": '.$iFilteredTotal.', ';
 	$sOutput .= '"aaData": [ ';
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		$sOutput .= "[";
 		$sOutput .= '"'.str_replace('"', '\"', $aRow['engine']).'",';

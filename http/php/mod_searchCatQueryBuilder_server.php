@@ -161,9 +161,8 @@ function getrecords_build_query($getrecords_url,$type,$command){
 			$xml = build_getrecords_xml();
 			$e = new mb_exception("mod_searchCatQueryBuilder_server:url:".$url);
 			break;
-		case 'soap':
-			break;
-		default:
+        case 'soap':
+        default:
 			break;
 	}
 	

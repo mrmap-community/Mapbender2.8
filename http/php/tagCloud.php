@@ -149,15 +149,8 @@ if ($type == 'topicCategories' || $type == 'inspireCategories') {
 	$sql .= ") as a";
 	$sql .= " WHERE a.".$categoryFilter."_code_".$languageCode." <> '' GROUP BY a.".$categoryFilter."_code_".$languageCode.", a.".$categoryFilter."_description_".$languageCode.", a.".$categoryFilter."_uri, a.".$categoryFilter."_id, a.".$categoryFilter."_symbol ";
  		$sql .= "ORDER BY ";
-	switch ($orderBy) {
-		case "rank":
-			$sql .= "sum";
-			break;
-		case "":
-			break;
-		default:
-			$sql .= "sum";
-			break;
+	if ($orderBy != "") {
+		$sql .= "sum";
 	}
 
 	$sql .= " DESC LIMIT $1";
@@ -265,7 +258,7 @@ if ($outputFormat == 'json'){
 			$tagCloudJSON->tagCloud->tags[$i]->keepColor = true;
 			break;
 	 	    case "topicCategories":
-			$tagCloudJSON->tagCloud->tags[$i]->info = $tags[$i]['info'];		
+			$tagCloudJSON->tagCloud->tags[$i]->info = $tags[$i]['info'];
 			//$tagCloudJSON->tagCloud->tags[$i]->inspireThemeId = end(explode('/', $tagCloudJSON->tagCloud->tags[$i]->info));
 			$tagCloudJSON->tagCloud->tags[$i]->description = $tags[$i]['description'];
 			//symbol

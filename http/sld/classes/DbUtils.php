@@ -104,7 +104,7 @@ class DbUtils
 		$t = array('s');
 		$res = db_prep_query($sql,$v,$t);
 		if ( $res ) {
-			$row = db_fetch_array($res, 0); 
+			$row = db_fetch_array($res); 
 			$previewMapSrs .= "&SRS=".$row["srs"]."&BBOX=".$row["minx"].",".$row["miny"].",".$row["maxx"].",".$row["maxy"];
 		} else {
 			return false;
@@ -119,7 +119,7 @@ class DbUtils
 		$res = db_prep_query($sql,$v,$t);
 		$previewMapUrl = "";
 		if ( $res ) {
-			$row = db_fetch_array($res, 0); 
+			$row = db_fetch_array($res); 
 			$previewMapUrl .= $row["mapurl"]."SERVICE=WMS&REQUEST=GetMap&VERSION=".$row["version"];
 			$previewMapUrl .= "&LAYERS=".$row["layer_name"]."&STYLES=";
 			$previewMapUrl .= $previewMapSrs;

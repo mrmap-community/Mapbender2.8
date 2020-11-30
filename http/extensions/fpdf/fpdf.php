@@ -1071,7 +1071,7 @@ function _dochecks()
 	if(ini_get('mbstring.func_overload') & 2)
 		$this->Error('mbstring overloading must be disabled');
 	//Disable runtime magic quotes
-	if(get_magic_quotes_runtime())
+	if(get_magic_quotes_runtime() && version_compare(PHP_VERSION, '5.3.0', '<'))
 		@set_magic_quotes_runtime(0);
 }
 
@@ -1540,8 +1540,8 @@ function _putfonts()
 			//Descriptor
 			$this->_newobj();
 			$s='<</Type /FontDescriptor /FontName /'.$name;
-			foreach($font['desc'] as $k=>$v)
-				$s.=' /'.$k.' '.$v;
+			foreach($font['desc'] as $k_inner=>$v_inner)
+				$s.=' /'.$k_inner.' '.$v_inner;
 			$file=$font['file'];
 			if($file)
 				$s.=' /FontFile'.($type=='Type1' ? '' : '2').' '.$this->FontFiles[$file]['n'].' 0 R';

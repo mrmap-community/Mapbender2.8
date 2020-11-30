@@ -245,15 +245,16 @@ else{
 	$cnt = 0;
 
 	while(pg_fetch_row($res)){
-		$table[$cnt] = pg_result($res,$cnt,"identificationinfo"); # Tabellen, Abfragenname
-		$minscale[$cnt] = pg_result($res,$cnt,"minscale");	
-		$md_fileidentifier[$cnt] = pg_result($res,$cnt,"md_fileidentifier"); # Layername
-		$layername[$cnt] = pg_result($res,$cnt,"md_fileidentifier"); # Layername in der Mapdatei
-		$result_title[$cnt] = pg_result($res,$cnt,"\"".$title."\""); # layer_deutsch Ergebnisname
-		$search_columns[$cnt] = pg_result($res,$cnt,"search_columns"); # Suchspalten, Trennung über ,
-		$search_result[$cnt] = pg_result($res,$cnt,"search_result"); # Ergebnisspalte
-		$search_keywords[$cnt] = pg_result($res,$cnt,"search_keywords"); # Ergebnisspalte
-		$wms_title[$cnt] = pg_result($res,$cnt,"wms_title"); # WMS tile
+		$table[$cnt] = pg_fetch_result($res,$cnt,"identificationinfo"); # Tabellen, Abfragenname
+		$minscale[$cnt] = pg_fetch_result($res,$cnt,"minscale");	
+		$md_fileidentifier[$cnt] = pg_fetch_result($res,$cnt,"md_fileidentifier"); # Layername
+		$layername[$cnt] = pg_fetch_result($res,$cnt,"md_fileidentifier"); # Layername in der Mapdatei
+		$result_title[$cnt] = pg_fetch_result($res,$cnt,"\"".$title."\""); # layer_deutsch Ergebnisname
+		$search_columns[$cnt] = pg_fetch_result($res,$cnt,"search_columns"); # Suchspalten, Trennung über ,
+		$search_result[$cnt] = pg_fetch_result($res,$cnt,"search_result"); # Ergebnisspalte
+		$search_keywords[$cnt] = pg_fetch_result($res,$cnt,"search_keywords"); # Ergebnisspalte
+		$wms_title[$cnt] = pg_fetch_result($res,$cnt,"wms_title"); # WMS title
+
            
 		# if one of the searchkeywords is found the data of the whole table is displayed as the result
 		if($search_keywords[$cnt] != '') { 
@@ -278,7 +279,7 @@ else{
 		 */
 		$sql = "Select GeometryType(the_geom) as type FROM ".pg_escape_string($table[$i])." LIMIT 1";
 		$res = pg_query($con,$sql);
-		$type = pg_result($res,0,"type");
+		$type = pg_fetch_result($res,0,"type");
 
 		$sql = "Select * FROM ".pg_escape_string($table[$i])." LIMIT 1";
 		$res = pg_query($con,$sql);
@@ -323,7 +324,7 @@ else{
 		$res1 = pg_query($con,$sql1);
 		$cnt = 0;
 		if(pg_fetch_row($res1)>0){
-			$sel_lay = pg_result($res1,$cnt,"fkey_md_fileidentifier"); 
+			$sel_lay = pg_fetch_result($res1,$cnt,"fkey_md_fileidentifier");
       
 			if($minscale[$i] > 0){$scale = $minscale[$i]+100; }
 
@@ -333,17 +334,16 @@ else{
 					echo "<div class='header'>".$result_title[$i]. "</div>";
 				}
 				if($backlink=='parent'){
-					echo "<nobr><a href='javascript:hideHighlight();parent.parent.mb_repaintScale(\"mapframe1\"," .pg_result($res1,$cnt,"x"). ",".pg_result($res1,$cnt,"y"). ",$scale);'";
+					echo "<nobr><a href='javascript:hideHighlight();parent.parent.mb_repaintScale(\"mapframe1\"," .pg_fetch_result($res1,$cnt,"x"). ",".pg_fetch_result($res1,$cnt,"y"). ",$scale);'";
 				}
 				else{
-					echo "<nobr><a href='javascript:hideHighlight();parent.mb_repaintScale(\"mapframe1\"," .pg_result($res1,$cnt,"x"). ",".pg_result($res1,$cnt,"y"). ",$scale);'";
+					echo "<nobr><a href='javascript:hideHighlight();parent.mb_repaintScale(\"mapframe1\"," .pg_fetch_result($res1,$cnt,"x"). ",".pg_fetch_result($res1,$cnt,"y"). ",$scale);'";
 				}
-
-				echo " onmouseover='showHighlight(" .pg_result($res1,$cnt,"x"). "," .pg_result($res1,$cnt,"y"). ")' ";
+				echo " onmouseover='showHighlight(" .pg_fetch_result($res1,$cnt,"x"). "," .pg_fetch_result($res1,$cnt,"y"). ")' ";
 				echo "onmouseout='hideHighlight();' ";
-				echo "onclick='handleLayer(\"" .pg_result($res1,$cnt,"fkey_md_fileidentifier"). "\",\"".pg_result($res1,$cnt,"wms_title")."\")'>";
-
-				echo pg_result($res1,$cnt,$search_result[$i])."</a></nobr><br>";
+				echo "onclick='handleLayer(\"" .pg_fetch_result($res1,$cnt,"fkey_md_fileidentifier"). "\",\"".pg_fetch_result($res1,$cnt,"wms_title")."\")'>";
+				
+				echo pg_fetch_result($res1,$cnt,$search_result[$i])."</a></nobr><br>";
 				$has_result = true;
 			}
 		}

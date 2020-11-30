@@ -56,7 +56,7 @@ DELETE FROM gui WHERE gui_id IN ('Geoportal-RLP', 'Owsproxy_csv', 'admin_wms_met
 --psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_
 psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_Geoportal-RLP.sql -- problem: too long entry ...
 psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_Owsproxy_csv.sql
-psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_admin_wms_metadata.sql
+psql -d mapbender -f /home/armin/GDI-RP/devel/Gmapbenderdbusereoportal/mapbender_trunk/resources/db/gui_admin_wms_metadata.sql
 psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_admin_wfs_metadata.sql
 psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_admin_wmc_metadata.sql
 psql -d mapbender -f /home/armin/GDI-RP/devel/Geoportal/mapbender_trunk/resources/db/gui_admin_metadata.sql
@@ -549,7 +549,7 @@ mb_metadata_2.fkey_mapviewer_id,
 ALTER TABLE search_application_view
   OWNER TO postgres;
 GRANT ALL ON TABLE search_application_view TO postgres;
-GRANT ALL ON TABLE search_application_view TO mapbenderdbuser;
+--GRANT ALL ON TABLE search_application_view TO mapbenderdbuser;
 
 -- create indices:
 --UPDATE search_application_view SET load_count=0 WHERE load_count is NULL;

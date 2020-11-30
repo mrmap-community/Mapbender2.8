@@ -58,7 +58,7 @@ class _database {
 			return false;
 		}
 		unset($this->row);
-		$this->row = $this->result->fetch_array(MYSQL_BOTH);
+		$this->row = $this->result->fetch_array(MYSQLI_BOTH);
 		return ($this->row) ? true : false ;
 	}
 

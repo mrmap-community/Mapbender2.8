@@ -157,13 +157,12 @@ class searchMetadata
 		switch ($this->languageCode) {
 			case "de":
 				$this->resourceClassifications[2]['title'] = "Sonstige"; //TODO: define the translations somewhere? - This is done in call_metadata.php before. Maybe we can get them from there? - It will be shown in the rightside categories table
-				break;
-			case "en":
-				$this->resourceClassifications[2]['title'] = "Custom";
-				break;
+			break;
 			case "fr":
-				$this->resourceClassifications[2]['title'] = "Personnaliser";
-				break;
+				$this->resourceClassifications[2]['title'] = "Personnaliser"; 
+			break;
+			case "en":
+				// fall through
 			default:
 				$this->resourceClassifications[2]['title'] = "Custom";
 				break;
@@ -186,8 +185,7 @@ class searchMetadata
 				$this->resourceClassifications[3]['title'] = "Organisationen";
 				break;
 			case "en":
-				$this->resourceClassifications[3]['title'] = "Organizations";
-				break;
+				// fall through
 			default:
 				$this->resourceClassifications[3]['title'] = "Organizations";
 				break;
@@ -276,10 +274,8 @@ class searchMetadata
 				$this->searchView = 'wfs_search_table';
 				$this->whereStrCatExtension = " AND custom_category.custom_category_hidden = 0";
 				switch ($this->orderBy) {
-					case "rank":
-						$this->orderBy = " ORDER BY wfs_id,featuretype_id,wfs_conf_id ";
-						break;
 					case "id":
+					case "rank":
 						$this->orderBy = " ORDER BY wfs_id,featuretype_id,wfs_conf_id ";
 						break;
 					case "title":
@@ -1679,8 +1675,6 @@ class searchMetadata
 							$this->catJSON->searchMD->category[$i]->title = "Organisationen";
 							break;
 						case "en":
-							$this->catJSON->searchMD->category[$i]->title = "Organizations";
-							break;
 						default:
 							$this->catJSON->searchMD->category[$i]->title = "Organizations";
 							break;
@@ -2094,7 +2088,7 @@ class searchMetadata
 			$queryStringNew = str_replace($str2search, $str2exchange, $queryString);
 			$queryStringNew = str_replace("&&", "&", $queryStringNew);
 		} else {
-			//there are more than one filter - reduce the filter  
+			//there are more than one filter - reduce the filter
 			$objectList = "";
 			for ($i = 0; $i < count($queryArray); $i++) {
 				if ($queryArray[$i] != $string) {
@@ -2120,7 +2114,7 @@ class searchMetadata
 		}
 	}
 
-	// function to add a new variable or complete parameter to a GET parameter query url 
+	// function to add a new variable or complete parameter to a GET parameter query url
 	private function addToQuery($paramName, $queryString, $string, $queryList)
 	{
 		//test if string was part of query before, if so, don't extent the query
@@ -2150,7 +2144,7 @@ class searchMetadata
 		}
 	}
 
-	// function to delete one GET parameter totally from a query url 
+	// function to delete one GET parameter totally from a query url
 	private function delTotalFromQuery($paramName, $queryString)
 	{
 		$queryString = "&" . $queryString;

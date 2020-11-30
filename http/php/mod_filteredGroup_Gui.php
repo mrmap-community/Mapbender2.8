@@ -91,7 +91,7 @@ if($insert){
 		for($i=0; $i<count($selected_gui); $i++){
 			$exists = false;
 			if($selected_group == NULL || $selected_group == '' || $selected_group < 0){
-				$selected_group == "NULL";
+				$selected_group = "NULL";
 			}
 			$sql_insert = "SELECT * from gui_mb_group where fkey_mb_group_id = $1 and fkey_gui_id = $2 ";
 			$v = array($selected_group,$selected_gui[$i]);

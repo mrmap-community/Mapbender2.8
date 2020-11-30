@@ -85,7 +85,7 @@ if (isset($_REQUEST["function"]))
 		} //Used for mapbender integration - old deprecated
 			else if ( isset($_REQUEST["layer_names"]) && isset($_REQUEST["user_id"]) )
 		{
-			$layer_names = split(",", urldecode($_REQUEST["layer_names"]));
+			$layer_names = explode(",", urldecode($_REQUEST["layer_names"]));
 			
 			$con = db_connect($DBSERVER,$OWNER,$PW);
 			db_select_db($DB,$con);

@@ -2,10 +2,10 @@
   /* MySQL connection */
 	include( $_SERVER['DOCUMENT_ROOT']."/datatables/mysql.php" ); /* ;-) */
 	
-	$gaSql['link'] =  mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
+	$gaSql['link'] =  mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
 		die( 'Could not open connection to server' );
 	
-	mysql_select_db( $gaSql['db'], $gaSql['link'] ) or 
+	mysqli_select_db($gaSql['link'] ,  $gaSql['db']) or 
 		die( 'Could not select database '. $gaSql['db'] );
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -76,8 +76,8 @@
 		FROM   testData
 		LIMIT  2000
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		echo '<tr>';
 		echo '<td><a href="1">'.$aRow['id'].'</a></td>';

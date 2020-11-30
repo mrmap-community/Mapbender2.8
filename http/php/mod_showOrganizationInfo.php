@@ -21,8 +21,7 @@ if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
 }
 
 if (isset($_REQUEST["uuid"]) & $_REQUEST["uuid"] != "") {
-	$uuidClass = new Uuid();
-	if ($uuidClass->isValid($_REQUEST["uuid"])) {
+	if (Uuid::isuuid($_REQUEST["uuid"])) {
 		$uuid = $_REQUEST["uuid"];
 	} else {
 		echo 'Parameter <b>uuid</b> is not a valid mapbender uuid.<br/>'; 

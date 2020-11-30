@@ -32,10 +32,10 @@
 	/* 
 	 * MySQL connection
 	 */
-	$gaSql['link'] =  mysql_pconnect( $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
+	$gaSql['link'] =  mysqli_connect('p:' .  $gaSql['server'], $gaSql['user'], $gaSql['password']  ) or
 		die( 'Could not open connection to server' );
 	
-	mysql_select_db( $gaSql['db'], $gaSql['link'] ) or 
+	mysqli_select_db($gaSql['link'] ,  $gaSql['db']) or 
 		die( 'Could not select database '. $gaSql['db'] );
 	
 	
@@ -45,8 +45,8 @@
 	$sLimit = "";
 	if ( isset( $_GET['iStart'] ) && isset( $_GET['iLength'] ) )
 	{
-		$sLimit = "LIMIT ".mysql_real_escape_string( $_GET['iStart'] ).", ".
-			mysql_real_escape_string( $_GET['iLength'] );
+		$sLimit = "LIMIT ".mysqli_real_escape_string( $_GET['iStart'] ).", ".
+			mysqli_real_escape_string( $_GET['iLength'] );
 	}
 	else
 	{
@@ -64,14 +64,14 @@
 		ORDER BY name ASC
 		$sLimit
 	";
-	$rResult = mysql_query( $sQuery, $gaSql['link'] ) or die(mysql_error());
+	$rResult = mysqli_query($gaSql['link'] ,  $sQuery) or die(mysqli_error($gaSql['link']));
 	
 	/*
 	 * Output
 	 */
 	$sOutput = '{';
 	$sOutput .= '"aaData": [ ';
-	while ( $aRow = mysql_fetch_array( $rResult ) )
+	while ( $aRow = mysqli_fetch_array( $rResult ) )
 	{
 		$sOutput .= "[";
 		for ( $i=0 ; $i<count($aColumns) ; $i++ )

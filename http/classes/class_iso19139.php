@@ -554,7 +554,7 @@ XML;
 					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
 			        $epsgId = $crsObject->identifierCode;
 			        $this->refSystem = "EPSG:".$epsgId;
-				} 
+				}
 			}
 			//debug output of keywords:
 			/*$iKeyword = 0;
@@ -799,7 +799,7 @@ XML;
 	}
 
 	public function transformToHtml3($layout,$languageCode){
-		
+		return '';
 	}
 
 	public function transformToHtml($layout, $languageCode, $serviceInformation=false){
@@ -812,7 +812,6 @@ XML;
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML (transformToHtml)!');
-				return "error";
 			}
 		}
 		catch (Exception $e) {
@@ -1031,7 +1030,7 @@ XML;
 						$html .= $t_a."<img src='../img/dj_".$service->serviceType.".png'/> ".$t_b."<a href='".$accessUrl."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
 					} else {
 						$html .= $t_a."<b>".$service->serviceType."</b>: ".$t_b."<a href='".$_SERVER['PHP_SELF']."?url=".urlencode($service->metadataUrl)."' target='_blank'>".$service->serviceTitle."</a>".$t_c;
-			
+
 					}
 				}
 				$html .= $tableEnd;
@@ -1343,13 +1342,7 @@ XML;
 			//***************************************************************************
 			switch ($layout) {
 				case "accordion":
-					$html .= '</div>';
-					$html .= '</div>';
-					break;
 				case "tabs":
-					$html .= '</div>';
-					$html .= '</div>';
-					break;
 				case "plain":
 					$html .= '</div>';
 					$html .= '</div>';
@@ -1432,7 +1425,6 @@ XML;
         				$err = new mb_exception("class_Iso19139:".$error->message);
     				}
 				throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
@@ -1507,7 +1499,6 @@ XML;
         						$err = new mb_exception("class_Iso19139:".$error->message);
     						}
 						throw new Exception("class_Iso19139:".'Cannot parse Metadata XML!');
-						return false;
 					}
 				}
 				catch (Exception $e) {
@@ -2710,7 +2701,6 @@ SQL;
 			}
 			return true;
 		}
-		return true;
 	}
 
 	public function getExtentGraphic($layer_4326_box) {

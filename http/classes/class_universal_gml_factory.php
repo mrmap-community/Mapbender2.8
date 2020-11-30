@@ -55,7 +55,6 @@ class UniversalGmlFactory extends GmlFactory {
 		}
 
 		return "2";
-		throw new Exception("GML version could not be determined from XML.");
 	}
 
 	/**

@@ -224,7 +224,7 @@ $startWmcId = $input["id"];
 WMS
 */
 $e = new mb_notice("javascripts/initWmcObj.php: check WMS API");
-//private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven 
+//private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is gioven
 if ($getParams['WMS']) {
 	// WMS param given as array
 	if (is_array($getParams['WMS'])) {
@@ -287,7 +287,7 @@ if ($getParams['WMS']) {
 				else if (is_string($val)) {
 					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);		
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
-					//Set zoom to extent of wms 
+					//Set zoom to extent of wms
 					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
 					//$e = new mb_exception("javascripts/initWmcObj.php: first layer layer_epsg: ".json_encode($currentWms->objLayer[0]->layer_epsg[0]));
 					//find layer epsg of service where epsg=EPSG:4326
@@ -302,8 +302,8 @@ if ($getParams['WMS']) {
 								$bbox->transform($wmcGetApi->mainMap->getEpsg());
 							}
 							$wmcGetApi->mainMap->setExtent($bbox);
-							//overwrite zoom to parameter 
-							break;	
+							//overwrite zoom to parameter
+							break;
 						}
 					}
 					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
@@ -326,7 +326,7 @@ if ($getParams['WMS']) {
 								}
 								break;
 							}
-						
+
 						}
 					}
 				}
@@ -643,7 +643,7 @@ if (true) {
 	        $applicationMetadata->metadataUrl = MAPBENDER_PATH."/php/mod_iso19139ToHtml.php?url=".urlencode(MAPBENDER_PATH."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$applicationMetadata->fileIdentifier);
 	        $applicationMetadataJson = json_encode($applicationMetadata);
 	        //$e = new mb_exception(json_encode($applicationMetadata));
-	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json"); 
+	        //$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
 	    }
     } else {
         $e = new mb_notice("Found no mapbender application metadata!");
@@ -652,7 +652,7 @@ if (true) {
 //*******************************************************************************************************
 // TODO test following
 // workaround to have a fully merged WMC for loading
-$xml = $wmcGetApi->toXml();
+$xml = utf8_encode($wmcGetApi->toXml());
 //$e = new mb_notice("javascripts/initWmcObj.php: WMC document after reading information from GET-API: ".$xml);
 //$e = new mb_notice("");
 //die();
@@ -807,7 +807,6 @@ if ($gml_string) {
 				$err = new mb_exception("javascripts/mod_renderGML.php: ".$error->message);
 	    	}
 			throw new Exception("javascripts/initWmcObj.php: ".'Cannot parse GML from session!');
-			return false;
 		}
 	}
 	catch (Exception $e) {
@@ -1047,7 +1046,7 @@ if ($saveInSession == false) {
 	Mapbender::session()->delete("mb_wmc");
 	//delete also the current gui - this is handled by revertGui...
 } else {
-	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client 
+	//TODO: do the following only if wmc id was given by GET parameter or always - write wmc to session before initialize the client
 	if (isset($wmc_filename) && $wmc_filename != ""){
 	    $admin->putToStorage($wmc_filename, $wmcGetApi->toXml(), TMP_WMC_SAVE_STORAGE, 3600);
         //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc to storage - filename: ".$wmc_filename);

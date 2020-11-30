@@ -443,7 +443,7 @@ $ckanPackage->license_id = "odc-odbl";
 	//TODO - choose right department!!!!
 	//get array index 
 	$index = 0;
-	$idFound == false;
+	$idFound = false;
 
 $e = new mb_exception("classes/class_syncCkan.php: parameter departmentId: ".$departmentId);
 

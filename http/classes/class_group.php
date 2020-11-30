@@ -61,13 +61,10 @@ class Group implements RPCObject {
 	 */
 	public function __construct ($groupId) {
 		//check if id is uuid or integer
-		$uuid = new Uuid();
-		if ($uuid->isValid($groupId)) {
+		if (Uuid::isuuid($groupId)) {
 			$this->uuid = $groupId;
-		} else {
-			if (!is_numeric($groupId)) {
-				return;
-			}
+		} else if (!is_numeric($groupId)) {
+			return;
 		}
 		$this->id = $groupId;
 		try{
@@ -149,7 +146,6 @@ class Group implements RPCObject {
 			catch (Exception $E)	{
 				$newE = new Exception("Could not set inital values of new group");
 				throw $newE;
-				return false;
 			}
 			return false;
 		}
@@ -236,7 +232,6 @@ class Group implements RPCObject {
 			$update_result = db_prep_query($sql_update,$v,$t);
 			if(!$update_result)	{
 				throw new Exception("Database error updating Group");
-				return false;
 			}
 			spatial_security\database_write("group", $this->id, $this->spatialSecurity);
 		return true;
@@ -304,7 +299,6 @@ class Group implements RPCObject {
 				$this->spatialSecurity = spatial_security\database_read("group", $this->id);
 			} else {
 			 	throw new Exception("Group with ID " . $this->id . " does not exist.");
-			 	return false;
 			}
 			return true;
 		} else {

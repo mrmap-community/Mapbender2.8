@@ -38,8 +38,6 @@ class Cache {
 				$this->cacheType = MAPBENDER_CACHE_TYPE;
 				switch ($this->cacheType) {
 					case 'apc':
-						$this->isActive = true;
-					break;
 					case 'apcu':
 						$this->isActive = true;
 					break;
@@ -114,7 +112,6 @@ class Cache {
 				return false;
 			break;
 		}
-		return false;
 	}
 
 	final public function cachedVariableAdd($key, $value, $ttl = 0) {

@@ -200,44 +200,24 @@ if($_REQUEST['action'] == "getForm"){
     //begin serviceType handling**********
     $mb_user_id = $_SESSION['mb_user_id'];
     $export = "export dummy";
-    switch ($serviceType) {
-        case "wms":
-	    $serviceLog = OwsLogCsv::create($mb_user_id, $function, $userId, $serviceId,
-                $listType, $timeFrom, $timeTo, $withContactData, $serviceType);
-	    $serviceLog->handle();
-            switch ($_REQUEST['action']) {
-                case "getCsv":            
-		    header("Content-Type: text/csv; charset=".CHARSET);
-            	    header("Content-Disposition: attachment; filename=csv_export.csv");
-            	    header("Pragma: no-cache");
-            	    header("Expires: 0");
-		    $export = $serviceLog->getAsCsv();
-                    break;
-                case "getJson":
-		    $export = json_encode($serviceLog->getAsArray($function));
-                    break;
-            }
-            break;
-        case "wfs":
-	    $serviceLog = OwsLogCsv::create($mb_user_id, $function, $userId, $serviceId,
-                $listType, $timeFrom, $timeTo, $withContactData, $serviceType);
-	    $serviceLog->handle();
-            switch ($_REQUEST['action']) {
-                case "getCsv":            
-		    header("Content-Type: text/csv; charset=".CHARSET);
-            	    header("Content-Disposition: attachment; filename=csv_export.csv");
-            	    header("Pragma: no-cache");
-            	    header("Expires: 0");
-		    $export = $serviceLog->getAsCsv();
-                    break;
-                case "getJson":
-		    $export = json_encode($serviceLog->getAsArray($function));
-                    break;
-            }
-            break;
-        default:
-	    die ("Der 'serviceType' ".$serviceType." ist nicht unterstuetzt.");
-            break;
+    if ($serviceType == "wfs" || $serviceType == "wms") {
+        $serviceLog = OwsLogCsv::create($mb_user_id, $function, $userId, $serviceId,
+            $listType, $timeFrom, $timeTo, $withContactData, $serviceType);
+        $serviceLog->handle();
+        switch ($_REQUEST['action']) {
+            case "getCsv":
+                header("Content-Type: text/csv; charset=" . CHARSET);
+                header("Content-Disposition: attachment; filename=csv_export.csv");
+                header("Pragma: no-cache");
+                header("Expires: 0");
+                $export = $serviceLog->getAsCsv();
+                break;
+            case "getJson":
+                $export = json_encode($serviceLog->getAsArray($function));
+                break;
+        }
+    } else {
+        die ("Der 'serviceType' " . $serviceType . " ist nicht unterstuetzt.");
     }
     print $export;
     die();
