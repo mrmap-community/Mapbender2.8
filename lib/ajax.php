@@ -180,9 +180,10 @@ class AjaxResponse extends AjaxRequest {
 	public function setSuccess ($trueOrFalse, $code = null) {
 		$this->success = $trueOrFalse;
 		
-		if (!$this->success && is_numeric($code)) {
+		if (!$this->success) {
+			$code = is_numeric($code) ? intval($code) : 500;
 			$this->error = array(
-				"code" => intval($code)
+				"code" => $code
 			);
 		}
 	}
