@@ -246,12 +246,18 @@ function addKeywords($metadataXml, $keywordsArray) {
 //extract attribute schemaLocation - alter it if it has only one uri entry for gmd!
 $MD_MetadataNodeList = $xpath->query("//gmd:MD_Metadata[@xsi:schemaLocation = 'http://www.isotc211.org/2005/gmd']");
 if ($MD_MetadataNodeList->item(0) != null) {
-    $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd');
+    $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd');
     logMessages("schemaLocation attribute extended!!!!");
 } else {
     logMessages("schemaLocation attribute is not http://www.isotc211.org/2005/gmd. Nothing will be done!");
 }
-
+$MD_MetadataNodeList = $xpath->query("//gmd:MD_Metadata[@xsi:schemaLocation = 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd']");
+if ($MD_MetadataNodeList->item(0) != null) {
+    $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd');
+    logMessages("schemaLocation attribute extended!!!!");
+} else {
+    logMessages("schemaLocation attribute is not http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd. Nothing will be done!");
+}
 //Qualify schemaLocation end *******************************************************************************************************************************************
 //check for empty keyword
 //check for right date formats

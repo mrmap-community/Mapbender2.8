@@ -690,7 +690,7 @@ if (!$updateMetadataOnly) {
 		}
 		$harvestMetadataUrl = true;
 		foreach($urlsToExclude as $urlToExclude) {
-			if (strpos($mbMetadata->href, $urlToExclude) !== 0) {
+			if (strpos($mbMetadata->href, $urlToExclude) !== false) {
 				$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
 				$harvestMetadataUrl = false;
 				break;

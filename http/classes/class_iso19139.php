@@ -693,8 +693,11 @@ XML;
 			$valueToCheck = $this->{$dateField};
 			//validate to iso date format YYYY-MM-DD
 			$testMatch = $valueToCheck;
-			$pattern = '/^(19|20)[0-9]{2}[-](0[1-9]|1[012])[-](0[1-9]|[12][0-9]|3[01])$/';		
- 			if (!preg_match($pattern,$testMatch)){ 
+			$pattern = '/^(19|20)[0-9]{2}[-](0[1-9]|1[012])[-](0[1-9]|[12][0-9]|3[01])$/';	
+			//https://stackoverflow.com/questions/12756159/regex-and-iso8601-formatted-datetime
+			$patternDateTime = '/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$/';
+			$patternDateTime2 = '/^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/';
+ 			if (!preg_match($pattern,$testMatch) || !preg_match($patternDateTime,$testMatch) || !preg_match($patternDateTime2,$testMatch)){ 
 				$e = new mb_exception("classes/class_iso19139.php: invalid date format for attribute ".$dateField." - found: ".$valueToCheck.". Set it to 1900-01-01!");
 				$this->{$dateField} = "1900-01-01";
 				$this->harvestException = $this->harvestException."\nInvalid date format for attribute ".$dateField." - found: ".$valueToCheck.". Set it to 1900-01-01!";	
