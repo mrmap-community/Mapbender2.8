@@ -10,6 +10,7 @@ global $rewritePath;
 global $behindRewrite;
 global $linkedDataProxyUrl;
 global $nonceLife;
+global $restrictToOpenData;
 /*
  * examples:
  * get
@@ -82,7 +83,11 @@ if (isset ( $configObject ) && isset ( $configObject->rewrite_path ) && $configO
 } else {
 	$rewritePath = "linkedDataProxy";
 }
-
+if (isset ( $configObject ) && isset ( $configObject->open_data_filter ) && $configObject->open_data_filter == true) {
+    $restrictToOpenData = true;
+} else {
+    $restrictToOpenData = false;	
+}
 // textual data:
 $textualDataArray = array (
 		"title",
@@ -1107,9 +1112,11 @@ $returnObject = new stdClass ();
  * GET list of wfs which are published with an open license - they don't need autorization control
  * 
  */
-$sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
-// all wfs - without open filter!
-// $sql = "SELECT wfs_id, wfs_abstract, wfs_version, wfs_title, wfs_owsproxy, wfs_getcapabilities, providername, fees FROM wfs";
+if ($restrictToOpenData == true) {
+    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+} else {
+    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id";
+} 
 $v = array ();
 $t = array ();
 $res = db_prep_query ( $sql, $v, $t );
