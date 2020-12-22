@@ -13,5 +13,6 @@
   "initial_bbox": [48, 6, 51, 9],
   "map_position": "below_filter",
   "behind_rewrite": false,
-  "rewrite_path": "spatial-objects"
+  "rewrite_path": "spatial-objects",
+  "open_data_filter": "false"
 }
