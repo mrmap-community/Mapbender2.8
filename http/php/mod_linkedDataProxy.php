@@ -2459,8 +2459,15 @@ switch ($f) {
 		$js1 .= $newline . '</script>' . $newline;
 		
 		$js2 = '<script>' . $newline;
+		//remove mapbox osm and add bkg topplus web open
+		$js2 .= "var map = L.map('map', {center: [50, 7.44], zoom: 7, crs: L.CRS.EPSG4326});";
+		$js2 .= "L.tileLayer.wms('https://sgx.geodatenzentrum.de/wms_topplus_open?',{";
+        $js2 .= "	layers: 'web',";
+        $js2 .= "	format: 'image/png',";
+        $js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
+        $js2 .= "}).addTo(map);";
+		/*
 		$js2 .= "	var map = L.map('map').setView([50, 7.44], 7);";
-		
 		$js2 .= "	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?";
 		$js2 .= "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {";
 		$js2 .= "		maxZoom: 18,";
@@ -2468,7 +2475,8 @@ switch ($f) {
 		$js2 .= "			'<a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, ' +";
 		$js2 .= "			'Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>',";
 		$js2 .= "		id: 'mapbox.light'";
-		$js2 .= "	}).addTo(map);";
+		$js2 .= "	}).addTo(map);";*/
+
 		if (! isset ( $wfsid ) || ! isset ( $ft )) {
 			$js2 .= 'document.getElementById("map").style.display = "none"; ';
 			// $js2 .= 'document.getElementById("bboxButtons").style.display = "none"; ';
@@ -3092,8 +3100,15 @@ switch ($f) {
 				$js1 .= $newline . '    </script>' . $newline;
 				$html .= '<!-- functions to initialize map -->' . $newline;
 				$js2 = '    <script>' . $newline;
+				//remove mapbox osm and add bkg topplus web open
+				$js2 .= "var map = L.map('map', {center: [50, 7.44], zoom: 7, crs: L.CRS.EPSG4326});";
+				$js2 .= "L.tileLayer.wms('https://sgx.geodatenzentrum.de/wms_topplus_open?',{";
+        		$js2 .= "	layers: 'web',";
+        		$js2 .= "	format: 'image/png',";
+        		$js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
+        		$js2 .= "}).addTo(map);";
+				/*
 				$js2 .= "	var map = L.map('map').setView([50, 7.44], 7);";
-				
 				$js2 .= "	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?";
 				$js2 .= "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {";
 				$js2 .= "		maxZoom: 18,";
@@ -3101,7 +3116,7 @@ switch ($f) {
 				$js2 .= "			'<a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, ' +";
 				$js2 .= "			'Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>',";
 				$js2 .= "		id: 'mapbox.light'";
-				$js2 .= "	}).addTo(map);";
+				$js2 .= "	}).addTo(map);";*/
 				if (! isset ( $wfsid ) || ! isset ( $collection )) {
 					$js2 .= 'document.getElementById("map").style.display = "none"; ';
 					// $js2 .= 'document.getElementById("bboxButtons").style.display = "none"; ';
