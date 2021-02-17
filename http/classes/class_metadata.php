@@ -640,10 +640,11 @@ class searchMetadata
 			$this->datasetJSON->dataset->srv[$i]->loadCount = $datasetMatrix[$i]['load_count'];
 			$this->datasetJSON->dataset->srv[$i]->respOrg = $datasetMatrix[$i]['mb_group_name'];
 			$this->datasetJSON->dataset->srv[$i]->logoUrl = $datasetMatrix[$i]['mb_group_logo_path'];
-			list($hasConstraints, $symbolLink) = $this->hasConstraints("dataset", $datasetMatrix[$i]['dataset_id']);
+			list($hasConstraints, $symbolLink, $termsOfUseId) = $this->hasConstraints("dataset", $datasetMatrix[$i]['dataset_id']);
 			$this->datasetJSON->dataset->srv[$i]->hasConstraints = $hasConstraints;
 			$this->datasetJSON->dataset->srv[$i]->isopen = $datasetMatrix[$i]['isopen'];
 			$this->datasetJSON->dataset->srv[$i]->symbolLink = $symbolLink;
+			$this->datasetJSON->dataset->srv[$i]->license_id = $termsOfUseId;
 			//TODO: other url - to metadata uuid!
 			$this->datasetJSON->dataset->srv[$i]->mdLink = $this->protocol . "://" . $this->hostName . "/mapbender/php/mod_iso19139ToHtml.php?url=" . urlencode($this->protocol . "://" . $this->hostName . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=") . $datasetMatrix[$i]['fileidentifier'];
 			//TODO: preview?
@@ -2075,7 +2076,12 @@ class searchMetadata
 			$symbolLink = $this->protocol . "://" . $this->hostName . "/mapbender/img/icn_ok.png";
 			$hasConstraints = false;
 		}
-		return array($hasConstraints, $symbolLink);
+		if (isset($row['termsofuse_id'])) {
+			$termsOfUseId = $row['name']; //export license identifier to allow easier exchange with opendata portals
+		} else {
+			$termsOfUseId = false;
+		}
+		return array($hasConstraints, $symbolLink, $termsOfUseId);
 	}
 
 	//function to delete one of the comma separated values from a HTTP-GET request
