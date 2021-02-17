@@ -657,6 +657,11 @@ class searchMetadata
 			} else {
 				$spatialSource = $datasetMatrix[$i]['mb_group_stateorprovince'];
 			}
+			//create element with iso topic category codes (mapbender ids)
+			if (isset($datasetMatrix[$i]['md_topic_cats']) && $datasetMatrix[$i]['md_topic_cats'] != "") {
+				$md_topic_categoriesArray = explode(",",trim(str_replace("}{",",",$datasetMatrix[$i]['md_topic_cats']),"{}"));
+				$this->datasetJSON->dataset->srv[$i]->isoCategories = $md_topic_categoriesArray;
+			}
 			$this->datasetJSON->dataset->srv[$i]->iso3166 = $spatialSource;
 			$this->datasetJSON->dataset->srv[$i]->bbox = array($datasetMatrix[$i]['bbox']); //TODO: read out bbox from wmc $datasetMatrix[$i][''];
 			$this->datasetJSON->dataset->srv[$i]->timeBegin = date("Y-m-d", strtotime($datasetMatrix[$i]['timebegin']));
