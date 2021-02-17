@@ -484,9 +484,10 @@ class searchMetadata
 			}
 			$this->wfsJSON->wfs->srv[$i - $j]->iso3166 = $spatialSource;
 			//check if a disclaimer has to be shown and give the relevant symbol
-			list($hasConstraints, $symbolLink) = $this->hasConstraints("wfs", $wfsMatrix[$i]['wfs_id']);
+			list($hasConstraints, $symbolLink, $termsOfUseId) = $this->hasConstraints("wfs", $wfsMatrix[$i]['wfs_id']);
 			$this->wfsJSON->wfs->srv[$i - $j]->hasConstraints = $hasConstraints;
 			$this->wfsJSON->wfs->srv[$i - $j]->symbolLink = $symbolLink;
+			$this->wfsJSON->wfs->srv[$i - $j]->license_id = $termsOfUseId;
 			//TODO check the field accessconstraints - which should be presented?
 			$this->wfsJSON->wfs->srv[$i - $j]->status = $wfsMatrix[$i]['status'];
 			$this->wfsJSON->wfs->srv[$i - $j]->avail = $wfsMatrix[$i]['availability'];
@@ -887,10 +888,11 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->respOrg = $subLayers[$rootIndex]['mb_group_name'];
 					$this->wmsJSON->wms->srv[$j]->logoUrl = $subLayers[$rootIndex]['mb_group_logo_path'];
 					//check if a disclaimer has to be shown and give the relevant symbol
-					list($hasConstraints, $symbolLink) = $this->hasConstraints("wms", $subLayers[$rootIndex]['wms_id']);
+					list($hasConstraints, $symbolLink, $termsOfUseId) = $this->hasConstraints("wms", $subLayers[$rootIndex]['wms_id']);
 					$this->wmsJSON->wms->srv[$j]->hasConstraints = $hasConstraints;
 					$this->wmsJSON->wms->srv[$j]->isopen = $subLayers[$rootIndex]['isopen'];
 					$this->wmsJSON->wms->srv[$j]->symbolLink = $symbolLink;
+					$this->wmsJSON->wms->srv[$j]->license_id = $termsOfUseId;
 					//TODO check the field accessconstraints - which should be presented?
 					$this->wmsJSON->wms->srv[$j]->status = $subLayers[$rootIndex]['status']; //$wmsMatrix[$i][''];
 					$this->wmsJSON->wms->srv[$j]->avail = $subLayers[$rootIndex]['availability']; //$wmsMatrix[$i][''];
