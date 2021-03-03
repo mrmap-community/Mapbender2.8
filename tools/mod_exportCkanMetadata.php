@@ -13,7 +13,7 @@ $orgaListResult = $connector->load($mapbenderBaseUrl . "php/mod_showOrganization
 $orgaListObject = json_decode($orgaListResult);
 $orgaIdArray = array();
 
-$maxOrgaCount = 2;
+$maxOrgaCount = 300;
 $orgaCount = 1;
 foreach ($orgaListObject->organizations as $orga) {
     if ($orgaCount > $maxOrgaCount) {
@@ -22,9 +22,12 @@ foreach ($orgaListObject->organizations as $orga) {
     $orgaIdArray[] = (integer)$orga->id;
     //invoke crawler from shell
     //echo (integer)$orga->id . "\n";
-    $cmd = "nohup nice -n 10 php mod_exportCkanMetadataSingleOrgaFile.php orgaId=" . $orga->id . " > /dev/null &";
+    $cmd = "nohup nice -n 10 php mod_exportCkanMetadataSingleOrgaFile.php orgaId=" . $orga->id . " > /dev/null & echo $!";
     $pid = exec($cmd);
     echo "Generator started for organization " . (integer)$orga->id . " with shell pid " . $pid . "\n";
+    //wait 2 seconds between invocation of the scripts - otherwise some firewalls and webservers may become problems
+    echo "Wait 2 seconds ;-) \n";
+    sleep(2);
     $orgaCount++;
 }
 
