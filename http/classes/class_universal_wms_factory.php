@@ -10,6 +10,7 @@ require_once dirname(__FILE__) . "/class_administration.php";
 require_once dirname(__FILE__) . "/class_ows_factory.php";
 require_once dirname(__FILE__) . "/class_wms_factory.php";
 require_once dirname(__FILE__) . "/class_wms_1_1_1_factory.php";
+require_once dirname(__FILE__) . "/class_wms_1_3_0_factory.php";
 
 /**
  * 
@@ -26,20 +27,34 @@ class UniversalWmsFactory extends WmsFactory {
 	 * @param $xml String
 	 */
 	private function getVersionFromXml ($xml) {
+	    
 		// of course to be refactored. Up to now, the same factory 
 		// handles just 1.1.1 and below
-		return "1.1.1 or older";
-/*
-		$admin = new administration();
-		$values = $admin->parseXml($xml);
-		
-		foreach ($values as $element) {
-			if($this->sepNameSpace(strtoupper($element['tag'])) == "WFS_CAPABILITIES" && $element['type'] == "open"){
-				return $element['attributes'][version];
-			}
-		}
-		throw new Exception("WFS version could not be determined from XML.");
-*/
+		//$wms = new Wms();
+		//$wms->createObjFromXML($url, $auth=false, $datasetId=false){
+		//parse xml and extract version 
+	    $wmsCap = new DOMDocument();
+	    if (!$wmsCap->loadXML($xml)) {
+	        throw new Exception("Cannot parse WMS Capabilities!");
+	    } else {
+	        $xpath = new \DOMXPath($wmsCap);
+	        $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
+	        foreach ($xpath->query('namespace::*', $this->doc->documentElement) as $node) {
+	            $nsPrefix = $node->prefix;
+	            $nsUri    = $node->nodeValue;
+	            if ($nsPrefix == "" && $nsUri == "http://www.opengis.net/wms") {
+	                $nsPrefix = "wms";
+	            }
+	            $xpath->registerNamespace($nsPrefix, $nsUri);
+	        }
+	        
+	        $wmsVersion = $this->getValue($xpath, '/wms:WMS_Capabilities/@version', $wmsCap);
+	    }
+	    if ($wmsVersion == "1.3.0") {
+		    return "1.3.0";
+	    } else {
+	        return "1.1.1 or older";
+	    }
 	}
 
 	/**
@@ -59,6 +74,9 @@ class UniversalWmsFactory extends WmsFactory {
 				case "1.1.1 or older":
 					$factory = new Wms_1_1_1_Factory();
 					break;
+				case "1.3.0":
+				    $factory = new Wms_1_3_0_Factory();
+				    break;
 				default:
 					throw new Exception("Unknown WMS version " . $version);
 					break;
@@ -94,6 +112,9 @@ class UniversalWmsFactory extends WmsFactory {
 			case "1.1.1":
 				return new Wms_1_1_1_Factory();
 				break;
+			case "1.3.0":
+			    return new Wms_1_3_0_Factory();
+			    break;
 			default:
 				throw new Exception("Unknown WMS version " . $version);
 				break;

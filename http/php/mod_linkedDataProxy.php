@@ -10,6 +10,7 @@ global $rewritePath;
 global $behindRewrite;
 global $linkedDataProxyUrl;
 global $nonceLife;
+global $restrictToOpenData;
 /*
  * examples:
  * get
@@ -82,7 +83,11 @@ if (isset ( $configObject ) && isset ( $configObject->rewrite_path ) && $configO
 } else {
 	$rewritePath = "linkedDataProxy";
 }
-
+if (isset ( $configObject ) && isset ( $configObject->open_data_filter ) && $configObject->open_data_filter == true) {
+    $restrictToOpenData = true;
+} else {
+    $restrictToOpenData = false;	
+}
 // textual data:
 $textualDataArray = array (
 		"title",
@@ -1107,9 +1112,11 @@ $returnObject = new stdClass ();
  * GET list of wfs which are published with an open license - they don't need autorization control
  * 
  */
-$sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
-// all wfs - without open filter!
-// $sql = "SELECT wfs_id, wfs_abstract, wfs_version, wfs_title, wfs_owsproxy, wfs_getcapabilities, providername, fees FROM wfs";
+if ($restrictToOpenData == true) {
+    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+} else {
+    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id";
+} 
 $v = array ();
 $t = array ();
 $res = db_prep_query ( $sql, $v, $t );
@@ -1124,9 +1131,11 @@ unset($i);
 if (! isset ( $wfsid ) || $wfsid == "") {
 	// list all public available wfs which are classified as opendata!
 	$returnObject->service = array ();
-	$sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
-	// all wfs - without open filter!
-	// $sql = "SELECT wfs_id, wfs_abstract, wfs_version, wfs_title, wfs_owsproxy, wfs_getcapabilities, providername, fees FROM wfs";
+	if ($restrictToOpenData == true) {
+	    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+	} else {// all wfs - without open filter!
+	    $sql = "SELECT wfs_id, wfs_abstract, wfs_version, wfs_title, wfs_owsproxy, wfs_getcapabilities, providername, fees FROM wfs";
+	}
 	$v = array ();
 	$t = array ();
 	$res = db_prep_query ( $sql, $v, $t );
@@ -2450,8 +2459,15 @@ switch ($f) {
 		$js1 .= $newline . '</script>' . $newline;
 		
 		$js2 = '<script>' . $newline;
+		//remove mapbox osm and add bkg topplus web open
+		$js2 .= "var map = L.map('map', {center: [50, 7.44], zoom: 7, crs: L.CRS.EPSG4326});";
+		$js2 .= "L.tileLayer.wms('https://sgx.geodatenzentrum.de/wms_topplus_open?',{";
+        $js2 .= "	layers: 'web',";
+        $js2 .= "	format: 'image/png',";
+        $js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
+        $js2 .= "}).addTo(map);";
+		/*
 		$js2 .= "	var map = L.map('map').setView([50, 7.44], 7);";
-		
 		$js2 .= "	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?";
 		$js2 .= "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {";
 		$js2 .= "		maxZoom: 18,";
@@ -2459,7 +2475,8 @@ switch ($f) {
 		$js2 .= "			'<a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, ' +";
 		$js2 .= "			'Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>',";
 		$js2 .= "		id: 'mapbox.light'";
-		$js2 .= "	}).addTo(map);";
+		$js2 .= "	}).addTo(map);";*/
+
 		if (! isset ( $wfsid ) || ! isset ( $ft )) {
 			$js2 .= 'document.getElementById("map").style.display = "none"; ';
 			// $js2 .= 'document.getElementById("bboxButtons").style.display = "none"; ';
@@ -3083,8 +3100,15 @@ switch ($f) {
 				$js1 .= $newline . '    </script>' . $newline;
 				$html .= '<!-- functions to initialize map -->' . $newline;
 				$js2 = '    <script>' . $newline;
+				//remove mapbox osm and add bkg topplus web open
+				$js2 .= "var map = L.map('map', {center: [50, 7.44], zoom: 7, crs: L.CRS.EPSG4326});";
+				$js2 .= "L.tileLayer.wms('https://sgx.geodatenzentrum.de/wms_topplus_open?',{";
+        		$js2 .= "	layers: 'web',";
+        		$js2 .= "	format: 'image/png',";
+        		$js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
+        		$js2 .= "}).addTo(map);";
+				/*
 				$js2 .= "	var map = L.map('map').setView([50, 7.44], 7);";
-				
 				$js2 .= "	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?";
 				$js2 .= "access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {";
 				$js2 .= "		maxZoom: 18,";
@@ -3092,7 +3116,7 @@ switch ($f) {
 				$js2 .= "			'<a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, ' +";
 				$js2 .= "			'Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>',";
 				$js2 .= "		id: 'mapbox.light'";
-				$js2 .= "	}).addTo(map);";
+				$js2 .= "	}).addTo(map);";*/
 				if (! isset ( $wfsid ) || ! isset ( $collection )) {
 					$js2 .= 'document.getElementById("map").style.display = "none"; ';
 					// $js2 .= 'document.getElementById("bboxButtons").style.display = "none"; ';

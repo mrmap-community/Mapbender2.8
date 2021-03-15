@@ -484,9 +484,10 @@ class searchMetadata
 			}
 			$this->wfsJSON->wfs->srv[$i - $j]->iso3166 = $spatialSource;
 			//check if a disclaimer has to be shown and give the relevant symbol
-			list($hasConstraints, $symbolLink) = $this->hasConstraints("wfs", $wfsMatrix[$i]['wfs_id']);
+			list($hasConstraints, $symbolLink, $termsOfUseId) = $this->hasConstraints("wfs", $wfsMatrix[$i]['wfs_id']);
 			$this->wfsJSON->wfs->srv[$i - $j]->hasConstraints = $hasConstraints;
 			$this->wfsJSON->wfs->srv[$i - $j]->symbolLink = $symbolLink;
+			$this->wfsJSON->wfs->srv[$i - $j]->license_id = $termsOfUseId;
 			//TODO check the field accessconstraints - which should be presented?
 			$this->wfsJSON->wfs->srv[$i - $j]->status = $wfsMatrix[$i]['status'];
 			$this->wfsJSON->wfs->srv[$i - $j]->avail = $wfsMatrix[$i]['availability'];
@@ -640,10 +641,11 @@ class searchMetadata
 			$this->datasetJSON->dataset->srv[$i]->loadCount = $datasetMatrix[$i]['load_count'];
 			$this->datasetJSON->dataset->srv[$i]->respOrg = $datasetMatrix[$i]['mb_group_name'];
 			$this->datasetJSON->dataset->srv[$i]->logoUrl = $datasetMatrix[$i]['mb_group_logo_path'];
-			list($hasConstraints, $symbolLink) = $this->hasConstraints("dataset", $datasetMatrix[$i]['dataset_id']);
+			list($hasConstraints, $symbolLink, $termsOfUseId) = $this->hasConstraints("dataset", $datasetMatrix[$i]['dataset_id']);
 			$this->datasetJSON->dataset->srv[$i]->hasConstraints = $hasConstraints;
 			$this->datasetJSON->dataset->srv[$i]->isopen = $datasetMatrix[$i]['isopen'];
 			$this->datasetJSON->dataset->srv[$i]->symbolLink = $symbolLink;
+			$this->datasetJSON->dataset->srv[$i]->license_id = $termsOfUseId;
 			//TODO: other url - to metadata uuid!
 			$this->datasetJSON->dataset->srv[$i]->mdLink = $this->protocol . "://" . $this->hostName . "/mapbender/php/mod_iso19139ToHtml.php?url=" . urlencode($this->protocol . "://" . $this->hostName . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=") . $datasetMatrix[$i]['fileidentifier'];
 			//TODO: preview?
@@ -654,6 +656,11 @@ class searchMetadata
 				$spatialSource = $datasetMatrix[$i]['mb_group_country'];
 			} else {
 				$spatialSource = $datasetMatrix[$i]['mb_group_stateorprovince'];
+			}
+			//create element with iso topic category codes (mapbender ids)
+			if (isset($datasetMatrix[$i]['md_topic_cats']) && $datasetMatrix[$i]['md_topic_cats'] != "") {
+				$md_topic_categoriesArray = explode(",",trim(str_replace("}{",",",$datasetMatrix[$i]['md_topic_cats']),"{}"));
+				$this->datasetJSON->dataset->srv[$i]->isoCategories = $md_topic_categoriesArray;
 			}
 			$this->datasetJSON->dataset->srv[$i]->iso3166 = $spatialSource;
 			$this->datasetJSON->dataset->srv[$i]->bbox = array($datasetMatrix[$i]['bbox']); //TODO: read out bbox from wmc $datasetMatrix[$i][''];
@@ -886,10 +893,11 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->respOrg = $subLayers[$rootIndex]['mb_group_name'];
 					$this->wmsJSON->wms->srv[$j]->logoUrl = $subLayers[$rootIndex]['mb_group_logo_path'];
 					//check if a disclaimer has to be shown and give the relevant symbol
-					list($hasConstraints, $symbolLink) = $this->hasConstraints("wms", $subLayers[$rootIndex]['wms_id']);
+					list($hasConstraints, $symbolLink, $termsOfUseId) = $this->hasConstraints("wms", $subLayers[$rootIndex]['wms_id']);
 					$this->wmsJSON->wms->srv[$j]->hasConstraints = $hasConstraints;
 					$this->wmsJSON->wms->srv[$j]->isopen = $subLayers[$rootIndex]['isopen'];
 					$this->wmsJSON->wms->srv[$j]->symbolLink = $symbolLink;
+					$this->wmsJSON->wms->srv[$j]->license_id = $termsOfUseId;
 					//TODO check the field accessconstraints - which should be presented?
 					$this->wmsJSON->wms->srv[$j]->status = $subLayers[$rootIndex]['status']; //$wmsMatrix[$i][''];
 					$this->wmsJSON->wms->srv[$j]->avail = $subLayers[$rootIndex]['availability']; //$wmsMatrix[$i][''];
@@ -2075,7 +2083,12 @@ class searchMetadata
 			$symbolLink = $this->protocol . "://" . $this->hostName . "/mapbender/img/icn_ok.png";
 			$hasConstraints = false;
 		}
-		return array($hasConstraints, $symbolLink);
+		if (isset($row['termsofuse_id'])) {
+			$termsOfUseId = $row['name']; //export license identifier to allow easier exchange with opendata portals
+		} else {
+			$termsOfUseId = false;
+		}
+		return array($hasConstraints, $symbolLink, $termsOfUseId);
 	}
 
 	//function to delete one of the comma separated values from a HTTP-GET request
