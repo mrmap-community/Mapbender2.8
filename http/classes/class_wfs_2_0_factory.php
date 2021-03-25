@@ -161,7 +161,13 @@ class Wfs_2_0_Factory extends WfsFactory {
 			if($namespaceNode->nodeValue == $targetNamespace){
 				$targetNamespaceNode = $namespaceNode;
 			}
-			$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
+			if ($newFeatureType->getNamespace($namespaceNode->localName) === null) {
+				$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
+			} else {
+				new mb_notice("Skipping $namespaceNode->localName " . 
+				"- $namespaceNode->nodeValue, because an entry for " . 
+				"$namespaceNode->localName already exists.");
+			}
 		}
 	
 		list($ftLocalname,$ftTypePrefix) = array_reverse(explode(":",$featureTypeName));
