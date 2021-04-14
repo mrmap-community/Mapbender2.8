@@ -1545,15 +1545,21 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
     global $reqParams, $n, $postData, $query;
     $startTime = microtime();
     if ($postData == false) {
+        $d = new connector();
+        if (strtoupper($reqParams["resulttype"] == "HITS")) {
+            $d->set("timeOut", "200");
+        }
         //check POST/GET
         if ($query->reqMethod !== 'POST') {
             if ($auth) {
-                $d = new connector($url, $auth);
+                #$d = new connector($url, $auth);
+                $d->load($url, $auth);
             } else {
-                $d = new connector($url);
+                #$d = new connector($url);
+                $d->load($url);
             }
         } else {
-            $d = new connector();
+            #$d = new connector();
             $d->set('httpType', 'POST');
             $d->set('httpPostData', $query->getPostQueryString()); //as array
             //TODO maybe delete some params from querystring which are already in post array
