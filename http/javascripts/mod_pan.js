@@ -25,6 +25,12 @@
  * http://svn.osgeo.org/mapbender/trunk/mapbender/license/license.txt
  */
 
+if (options.deactivateOnOpenDialog == "true") {
+    options.deactivateOnOpenDialog = true;
+} else {
+    options.deactivateOnOpenDialog = false;
+}
+
 var that = this;
 
 Mapbender.events.init.register(function () {
@@ -108,8 +114,11 @@ Mapbender.events.init.register(function () {
 		}
 	});
     
-    // deactivate if ui-dialog opens
-    // $(document).bind('dialogopen', function () {
-    //    button.stop()
-    // });
+    // deactivate if ui-dialog opens and this behaviour is defined as element var:
+    // deactivateOnOpenDialog
+    if (options.deactivateOnOpenDialog == true) {
+        $(document).bind('dialogopen', function () {
+            button.stop()
+        });
+    }
 });
