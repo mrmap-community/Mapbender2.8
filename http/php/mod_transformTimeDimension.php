@@ -404,8 +404,8 @@ if ($operation == 'snapToGrid') {
 				$result->options->editable = false;
 			}
 			//use first and last entry as borders
-			$result->options->min = $extentArray[0];
-			$result->options->max = $extentArray[count($extentArray) - 1];
+			//$result->options->min = $extentArray[0];
+			//$result->options->max = $extentArray[count($extentArray) - 1];
 			//$result->options->editable = false;
 			$result->result->error = false;
 			$result->result->message = "All done";
