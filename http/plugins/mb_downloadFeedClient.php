@@ -57,6 +57,7 @@ $localeObj->setCurrentLocale($languageCode);
 <link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css" />
 <link rel="stylesheet" href="../extensions/bootstrap-select-1.9.3/dist/css/bootstrap-select.css" type="text/css" />
 <style type="text/css">
+body {max-width: 921px;}
 body,td, form, input, select{
   font-size: 12px;
   line-height: 16px;
@@ -94,18 +95,22 @@ select {max-width: 100%;}
   position: absolut;
   top: 0;
   left: 0;
-  max-width: 350px;
+  width: 100%;
+  max-width: 800px;
   margin-bottom:10px !important;
-  height: 250px;
+  height: calc(100vh - 300px);
+  max-height: 600px;
   border: 1px solid #ccc;
 }
 #mapframe {
 }
 
 #mapframe_file_list {
-  max-width: 350px;
+  width: 100%;
+  max-width: 800px;
   margin-bottom:10px !important;
-  height: 225px;
+  height: calc(100vh - 300px);
+  max-height: 600px;
   border: 1px solid #ccc;
 }
 .bootstrap-select {
