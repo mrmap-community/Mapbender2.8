@@ -129,7 +129,7 @@ if ($wfsId !== false) {
         $testMatch = NULL;
     }
 }
-//check authorization
+//check authorization - set allowed anonymous access initially to false 
 $anonymousAccess = false;
 if ($layerId !== false) {
     $user = new user(PUBLIC_USER);
@@ -167,8 +167,42 @@ if ($wfsId !== false) {
     }
 }
 
-//first check if anonymous user has rights to access ressource - if so - don't use authentication
-if ($anonymousAccess == true) {
+
+//check if proxy is enabled for requested resource
+$layerId = $_REQUEST['layer_id'];
+$wfsId = $_REQUEST['wfs_id'];
+$withChilds = false;
+if (isset($_REQUEST["withChilds"]) && $_REQUEST["withChilds"] === "1") {
+    $withChilds = true;
+}
+//$e = new mb_exception("http_auth/http/index.php: wfsId: ".$wfsId);
+$n = new administration();
+if (!(isset($reqParams['service'])) and (strtolower($reqParams['request']) == 'getmap' || strtolower($reqParams['request']) == 'getlegendgraphic')) {
+    $reqParams['service'] = 'wms';
+}
+//check for type of ows requested
+switch (strtolower($reqParams['service'])) {
+    case 'wms':
+        $wmsId = getWmsIdByLayerId($layerId);
+        $owsproxyString = $n->getWMSOWSstring($wmsId);
+        $auth = $n->getAuthInfoOfWMS($wmsId);
+        break;
+    case 'wfs':
+        $owsproxyString = $n->getWFSOWSstring($wfsId);
+        $auth = $n->getAuthInfoOfWFS($wfsId);
+        break;
+}
+
+//check if proxy is activated
+
+if (isset($owsproxyString) && $owsproxyString != "" && $owsproxyString != false) {
+    $proxyEnabled = true;
+} else {
+    $proxyEnabled = false;
+}
+
+//next check if anonymous user has rights to access ressource - if so - don't use authentication
+if ($anonymousAccess == true || $proxyEnabled == false) {
     $userId = PUBLIC_USER;
 } else {
     switch ($authType) {
@@ -261,33 +295,11 @@ if ($anonymousAccess == true) {
     }
 }
 
-$layerId = $_REQUEST['layer_id'];
-$wfsId = $_REQUEST['wfs_id'];
-$withChilds = false;
-if (isset($_REQUEST["withChilds"]) && $_REQUEST["withChilds"] === "1") {
-    $withChilds = true;
-}
 
-$n = new administration();
-if (!(isset($reqParams['service'])) and (strtolower($reqParams['request']) == 'getmap' || strtolower($reqParams['request']) == 'getlegendgraphic')) {
-    $reqParams['service'] = 'wms';
-}
-//check for type of ows requested
-switch (strtolower($reqParams['service'])) {
-    case 'wms':
-        $wmsId = getWmsIdByLayerId($layerId);
-        $owsproxyString = $n->getWMSOWSstring($wmsId);
-        $auth = $n->getAuthInfoOfWMS($wmsId);
-        break;
-    case 'wfs':
-        $owsproxyString = $n->getWFSOWSstring($wfsId);
-        $auth = $n->getAuthInfoOfWFS($wfsId);
-        break;
-}
-
-if (!$owsproxyString) {
-    die('The requested resource does not exists or the routing through mapbenders owsproxy is not activated!');
-}
+//$e = new mb_exception("http_auth/http/index.php: proxyEnabled: ".$proxyEnabled." - anonymousAccess: ".$anonymousAccess);
+//if ($proxyEnabled == false && $anonymousAccess == false) {
+//    die('The requested resource does not exists or the routing through mapbenders owsproxy is not activated and anonymous access is not allowed!');
+//}
 //get authentication infos if they are available in wms table! if not $auth = false
 if ($auth['auth_type'] == '') {
     unset($auth);
@@ -300,7 +312,28 @@ switch (strtolower($reqParams['request'])) {
     case 'getcapabilities':
         switch (strtolower($reqParams['service'])) {
             case 'wfs':
-                $arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
+                if ($proxyEnabled == true) {
+                    $arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
+                } else {
+                    //get wfs info by id
+                    $sql = "SELECT * FROM wfs WHERE wfs_id = $1";
+                    $v = array($wfsId);
+                    $t = array("i");
+                    $res = db_prep_query($sql, $v, $t);
+                    $service = array();
+                    if ($row = db_fetch_array($res)) {
+                        $service["wfs_id"] = $row["wfs_id"];
+                        $service["wfs_getcapabilities"] = $row["wfs_getcapabilities"];
+                        $service["wfs_getfeature"] = $row["wfs_getfeature"];
+                        $service["wfs_describefeaturetype"] = $row["wfs_describefeaturetype"];
+                        $service["wfs_transaction"] = $row["wfs_transaction"];
+                        $service["wfs_getcapabilities_doc"] = $row["wfs_getcapabilities_doc"];
+                    } else {
+                        throwE(array("No wfs data available."));
+                        die();
+                    }
+                    $arrayOnlineresources = $service;
+                }
                 $query->setOnlineResource($arrayOnlineresources['wfs_getcapabilities']);
                 $request = $query->getRequest();
                 $request = str_replace('?&', '?', $request);
@@ -319,6 +352,7 @@ switch (strtolower($reqParams['request'])) {
                 if (isset($auth)) {
                     getWfsCapabilities($request, $extraParameter, $auth);
                 } else {
+                    //$e = new mb_exception("http_auth/http/index.php: try to load get capabilities");
                     getWfsCapabilities($request, $extraParameter);
                 }
                 break;
@@ -1118,6 +1152,8 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     global $arrayOnlineresources, $postData, $query;
     global $sid, $serviceId, $wfsId;
     global $reqParams;
+    global $proxyEnabled, $anonymousAccess;
+    //$e = new mb_exception("http_auth/http/index.php: in function getWfsCapabilities - request=".$request);
     $urlsToChange = array();
     switch ($reqParams['version']) {
         case "2.0.0":
@@ -1251,14 +1287,14 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
         $capFromFascadeXmlObject->registerXPathNamespace($key, $value);
     }
     $test = $capFromFascadeXmlObject->xpath("");
-
-    foreach ($urlsToChange as $xpath) {
-        $href = $capFromFascadeXmlObject->xpath($xpath);
-        $href[0][0] = $new;
+    if ($proxyEnabled) {
+        foreach ($urlsToChange as $xpath) {
+            $href = $capFromFascadeXmlObject->xpath($xpath);
+            $href[0][0] = $new;
+        }
     }
     header("Content-Type: application/xml");
-    echo $capFromFascadeXmlObject->asXML();
-    
+    echo $capFromFascadeXmlObject->asXML();  
 }
 
 /**

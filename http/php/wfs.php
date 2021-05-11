@@ -33,7 +33,37 @@ foreach($_GET as $key => $val) {
 $requestType = $_GET["REQUEST"];
 $version = $_GET["VERSION"];
 $service = strtoupper($_GET["SERVICE"]);
-$featuretypeId = $_GET["FEATURETYPE_ID"];
+
+//check for integer value WFS_ID
+if (isset($_REQUEST["WFS_ID"]) & $_REQUEST["WFS_ID"] != "") {
+    //validate integer 
+    $testMatch = $_REQUEST["WFS_ID"];
+    //give max 99 entries - more will be to slow
+    $pattern = '/[0-9]*+/';
+    if (!preg_match($pattern,$testMatch)){
+        //echo 'maxResults: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo 'Parameter <b>WFS_ID</b> is not valid integer.<br/>';
+        die();
+    }
+    $wfsId = $testMatch;
+    $testMatch = NULL;
+}
+
+//check for integer value FEATURETYPE_ID
+if (isset($_REQUEST["FEATURETYPE_ID"]) & $_REQUEST["FEATURETYPE_ID"] != "") {
+    //validate integer
+    $testMatch = $_REQUEST["FEATURETYPE_ID"];
+    //give max 99 entries - more will be to slow
+    $pattern = '/[0-9]*+/';
+    if (!preg_match($pattern,$testMatch)){
+        //echo 'maxResults: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo 'Parameter <b>FEATURETYPE_ID</b> is not valid integer.<br/>';
+        die();
+    }
+    $featuretypeId = $testMatch;
+    $testMatch = NULL;
+}
+
 $updateSequence = intval($_GET["UPDATESEQUENCE"]);
 $inspire = $_GET["INSPIRE"];
 $withChilds = false;
@@ -129,27 +159,40 @@ if (!isset($version) || $version === "" || ($service == "WFS" && !($version == "
 // check if featuretype id is set
 //
 if (!isset($featuretypeId) || !is_numeric($featuretypeId)) {
-	// TO DO: create exception XML
-	header("Content-type: application/xhtml+xml; charset=UTF-8");
-	echo createExceptionXml("Featuretype not defined", "Unknown featuretype id " . $featuretypeId);
-	die;
-}
-
-//
-// check if featuretype is stored in database
-//
-$wfs_sql = "SELECT * FROM wfs AS w, wfs_featuretype AS f " . 
-	"where f.featuretype_id = $1 AND f.fkey_wfs_id = w.wfs_id LIMIT 1";
-$v = array($featuretypeId);
-$t = array("i");
-$res_wfs_sql = db_prep_query($wfs_sql, $v, $t);
-$wfs_row = db_fetch_array($res_wfs_sql);
-
-if (!$wfs_row["wfs_id"]) {
-	// TODO: create exception XML
-	header("Content-type: application/xhtml+xml; charset=UTF-8");
-	echo createExceptionXml("Featuretype not defined", "Unknown featuretype id " . $featuretypeId);
-	die;
+    //check if WFS_ID is set instead
+    if (isset($wfsId) || is_numeric($wfsId)) {
+        $wfs_sql = "SELECT * FROM wfs WHERE wfs_id = $1 LIMIT 1";
+        $v = array($wfsId);
+        $t = array("i");
+        $res_wfs_sql = db_prep_query($wfs_sql, $v, $t);
+        $wfs_row = db_fetch_array($res_wfs_sql);
+        if (!$wfs_row["wfs_id"]) {
+            // TODO: create exception XML
+            header("Content-type: application/xhtml+xml; charset=UTF-8");
+            echo createExceptionXml("WFS does not exist", "Unknown wfs id ");
+            die;
+        } else {
+            $featuretypeId = false;
+        }
+    } else {
+	    // TO DO: create exception XML
+	    header("Content-type: application/xhtml+xml; charset=UTF-8");
+	    echo createExceptionXml("Featuretype or wfs not defined", "Unknown featuretype or wfs id ");
+	    die;
+    }
+} else {
+    $wfs_sql = "SELECT * FROM wfs AS w, wfs_featuretype AS f " .
+        "where f.featuretype_id = $1 AND f.fkey_wfs_id = w.wfs_id LIMIT 1";
+    $v = array($featuretypeId);
+    $t = array("i");
+    $res_wfs_sql = db_prep_query($wfs_sql, $v, $t);
+    $wfs_row = db_fetch_array($res_wfs_sql);
+    if (!$wfs_row["wfs_id"]) {
+        // TODO: create exception XML
+        header("Content-type: application/xhtml+xml; charset=UTF-8");
+        echo createExceptionXml("Featuretype not defined", "Unknown featuretype id " . $featuretypeId);
+        die;
+    }
 }
 
 //Get Geometry Type if featuretype info was requested
@@ -193,13 +236,21 @@ $doc = new DOMDocument('1.0');
 $doc->encoding = 'UTF-8';
 $doc->standalone = false;
 
-#Load existing XML from database
-$xml_sql = "SELECT w.wfs_getcapabilities_doc as doc,f.featuretype_name as fname FROM wfs AS w, wfs_featuretype AS f " .
-		"WHERE f.featuretype_id = $1 AND f.fkey_wfs_id = w.wfs_id;";
-$v = array($featuretypeId);
-$t = array("i");
-$res_xml_sql = db_prep_query($xml_sql, $v, $t);
-$xml_row = db_fetch_array($res_xml_sql);
+
+if ($featuretypeId != false) {
+    #Load existing XML from database
+    $xml_sql = "SELECT w.wfs_getcapabilities_doc as doc,f.featuretype_name as fname FROM wfs AS w, wfs_featuretype AS f " .
+    		"WHERE f.featuretype_id = $1 AND f.fkey_wfs_id = w.wfs_id;";
+    $v = array($featuretypeId);
+    $t = array("i");
+    $res_xml_sql = db_prep_query($xml_sql, $v, $t);
+    $xml_row = db_fetch_array($res_xml_sql);
+} else {
+    $xml_row = $wfs_row["wfs_getcapabilities_doc"];
+}
+//TODO: alter script to allow also wfs capabilities for service not only for featuretype
+//echo $xml_row;
+//die();
 
 $doc->loadXML($xml_row["doc"]);
 $xpath = new DOMXPath($doc);
