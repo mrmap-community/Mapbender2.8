@@ -26,6 +26,26 @@ require_once dirname(__FILE__) . "/../classes/class_Uuid.php";
 require_once(dirname(__FILE__)."/../classes/class_owsConstraints.php"); 
 require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 require_once dirname(__FILE__) . "/../extensions/phpqrcode/phpqrcode.php";
+
+if (file_exists ( dirname ( __FILE__ ) . "/../../conf/linkedDataProxy.json" )) {
+    $configObject = json_decode ( file_get_contents ( "../../conf/linkedDataProxy.json" ) );
+}
+if (isset ( $configObject ) && isset ( $configObject->behind_rewrite ) && $configObject->behind_rewrite == true) {
+    $behindRewrite = true;
+} else {
+    $behindRewrite = false;
+}
+if (isset ( $configObject ) && isset ( $configObject->rewrite_path ) && $configObject->rewrite_path != "") {
+    $rewritePath = $configObject->rewrite_path;
+} else {
+    $rewritePath = "linkedDataProxy";
+}
+if (! empty ( $_SERVER ['HTTPS'] )) {
+    $schema = "https";
+} else {
+    $schema = "http";
+}
+$linkedDataProxyUrl = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . $rewritePath;
 //GET:
 //resource: wms, layer, wfs, featuretype, wfs-conf, wmc
 //id: integer
@@ -217,6 +237,7 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWithSubLayer'] = "Zugriffspunkt mit Unterebenen";
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Zugriffspunkt WFS-Gesamt";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Zugriffspunkt WFS-Objektart";
+		$translation['mapbenderOGCApiFeatures'] = "Zugriffspunkt OGC API Features Proxy (experimental)";
 		break;
 	case "en":
 		$translation['overview'] = 'Overview';
@@ -301,6 +322,7 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWithSubLayer'] = "Access point (sublayer included)";
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Access point WFS level";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Access point WFS-Featuretype";
+		$translation['mapbenderOGCApiFeatures'] = "Access point OGC API Features Proxy (experimental)";
 		break;
 	case "fr":
 		$translation['overview'] = 'Vue générale';
@@ -385,6 +407,7 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWithSubLayer'] = "Zugriffspunkt mit Unterebenen";
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Access point WFS level";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Access point WFS-Featuretype";
+		$translation['mapbenderOGCApiFeatures'] = "Access point OGC API Features Proxy (experimental)";
 		break;
 	default: #to english
 		$translation['overview'] = 'Overview';
@@ -467,6 +490,7 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWithSubLayer'] = "Access point (sublayer included)";
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Access point WFS level";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Access point WFS-Featuretype";
+		$translation['mapbenderOGCApiFeatures'] = "Access point OGC API Features Proxy (experimental)";
 }
 
 //Array with infos about the different elements which are shown in the tabs
@@ -1497,10 +1521,20 @@ if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf')
         $html .= $t_a1.$translation['mapbenderCapabilitiesSingleFeaturetype'].$t_b1.'<img class="normalizeicon" src="../img/gnome/edit-select-all.png"><a class="linkjs" href ="../php/'.$wfsuri.'" target="_blank">'.$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF'].'/../'.$wfsuri."\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>".$translation['showLink']."</a>".$t_c;
     }
     $html .= $t_a1.$translation['mapbenderCapabilitiesWfsLevel'].$t_b1.'<img class="normalizeicon" src="../img/gnome/edit-select-all.png"><a class="linkjs" href ="'.$mapbenderBaseUrl.'/registry/wfs/'.$serviceId.'?REQUEST=GetCapabilities&VERSION=1.1.0&SERVICE=WFS" target="_blank">'.$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.'/registry/wfs/'.$serviceId.'?REQUEST=GetCapabilities&VERSION=1.1.0&SERVICE=WFS'."\",\"".$translation['mapbenderCapabilitiesWfsLevel']."\");'>".$translation['showLink']."</a>".$t_c;
-	$html .= "</table>";
+    
+    $html .= "</table>";
 	$html .= $t_c;
-    	$capUrl = $resourceMetadata['wfs_getcapabilities'].getConjunctionCharacter($resourceMetadata['wfs_getcapabilities']).$gcWfsParams;
-
+    $capUrl = $resourceMetadata['wfs_getcapabilities'].getConjunctionCharacter($resourceMetadata['wfs_getcapabilities']).$gcWfsParams;
+    //ogc api features proxy
+    if ($resource == 'wfs' || $resource == 'featuretype' || $resource == 'wfs-conf') {
+        if ($resource == 'wfs') {
+            $ogcApiFeaturesUrl = $linkedDataProxyUrl."/".$serviceId;
+    	} else {
+    	    $ogcApiFeaturesUrl = $linkedDataProxyUrl."/".$serviceId."/collections/".$resourceMetadata['contentname'];
+    	}
+        $html .= $t_a.$translation['mapbenderOGCApiFeatures'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$ogcApiFeaturesUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$ogcApiFeaturesUrl."\",\"".$translation['mapbenderOGCApiFeatures']."\");'>".$translation['showLink']."</a>".$t_c;
+    }
+    
 	//show only original url if the resource is not secured!
 	if (!$resourceSecured) {	
 		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['mapbenderCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
