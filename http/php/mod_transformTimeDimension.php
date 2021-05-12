@@ -97,9 +97,11 @@ if (isset($_REQUEST["extent"]) & $_REQUEST["extent"] != "") {
 			}
 		}
 		$kindOfExtent = "intervalWithDuration";
-	} elseif (!preg_match($iso8601Pattern,$testMatch)) {
-
+	} else {
+		if (!preg_match($iso8601Pattern,$testMatch)) {
 			abort("The value for the extent parameter is not a valid iso8601 dateTime string."); 
+		}
+		$kindOfExtent = "singleValue";
 	}
 	//everything is allright
 	$extent = $testMatch;
@@ -410,9 +412,13 @@ if ($operation == 'snapToGrid') {
 			$result->result->error = false;
 			$result->result->message = "All done";
 			break;
-		case "singleValue":
-				//push json values
-				echo $extent;
+			case "singleValue":
+				$result->data[0]->id = 0;
+				$result->data[0]->content = $extent;
+				$result->data[0]->start = $extent;
+				$result->options->editable->updateTime = false;
+				$result->result->error = false;
+				$result->result->message = "All done";
 			break;
 	} 
 }
