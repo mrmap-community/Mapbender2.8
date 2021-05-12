@@ -40,7 +40,7 @@ function abort($message) {
 }
 $iso8601Pattern = '/^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/i';
 $singleYearPattern = '/^\d{4}$/';
-//$iso8601Pattern = '/^(?:[1-9]\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:Z|[+-][01]\d:[0-5]\d)$/i';
+
 if (isset($_REQUEST["default"]) & $_REQUEST["default"] != "") {
 	$testMatch = urldecode($_REQUEST["default"]);
 	if (!preg_match($iso8601Pattern,$testMatch) && $testMatch !== 'current'){
@@ -48,6 +48,7 @@ if (isset($_REQUEST["default"]) & $_REQUEST["default"] != "") {
  	}
 	$default = $testMatch;
 }
+
 if (isset($_REQUEST["operation"]) & $_REQUEST["operation"] != "") {
 	$testMatch = urldecode($_REQUEST["operation"]);
 	if (!$testMatch == 'snapToGrid' && !$testMatch == 'configureTimeline'){ 
@@ -56,6 +57,7 @@ if (isset($_REQUEST["operation"]) & $_REQUEST["operation"] != "") {
  	}
 	$operation = $testMatch;
 }	
+
 if (isset($_REQUEST["userValue"]) & $_REQUEST["userValue"] != "") {
 	$testMatch = urldecode($_REQUEST["userValue"]);
 	if (!preg_match($iso8601Pattern,$testMatch)){
@@ -63,6 +65,7 @@ if (isset($_REQUEST["userValue"]) & $_REQUEST["userValue"] != "") {
  	}
 	$userValue = $testMatch;
 }	
+
 if (isset($_REQUEST["extent"]) & $_REQUEST["extent"] != "") {
 	$testMatch = urldecode($_REQUEST["extent"]);
 	//search for comma
@@ -103,7 +106,6 @@ if (isset($_REQUEST["extent"]) & $_REQUEST["extent"] != "") {
 		}
 		$kindOfExtent = "singleValue";
 	}
-	//everything is allright
 	$extent = $testMatch;
 	$testMatch = NULL;
 }
@@ -119,7 +121,7 @@ function quicksearch($element, $searchArray) {
 	}
 	while ($numberOfValues > 2) {
 		if ($element == $searchArray[ceil($numberOfValues / 2) - 1]) {
-			return $element; //return value is no array!
+			return $element;
 		} else {
 			if ($element >= $searchArray[ceil($numberOfValues / 2) - 1]) {
 				$numberOfValues = count($searchArray);
@@ -147,19 +149,17 @@ function getNearestValue($userValue, $discreteValues) {
 	$discreteDateTimes = array();
 	$numberOfValues = count($discreteValues);
 	$userValueDateTime = new DateTime($userValue);
+
 	//transform discrete strings to time
 	foreach ($discreteValues as $discreteValue) {
 		$discreteDateTimes[] = new DateTime($discreteValue);
 	}
-	//do quicksearch
-	//check if current value is less than first entry
 	if ($userValueDateTime <= $discreteDateTimes[0]) {
 		return ($discreteDateTimes[0]);
 	} else {
 		if ($userValueDateTime >= $discreteDateTimes[$numberOfValues-1]) {
 			return ($discreteDateTimes[$numberOfValues-1]);
 		} else {
-			//do a quicksearch in array
 			$result = quicksearch($userValueDateTime, $discreteDateTimes);
 			if (is_array($result) && count($result) == 2) {
 				//test the length of the interval
@@ -171,7 +171,6 @@ function getNearestValue($userValue, $discreteValues) {
 					return $result[0];
 				}
 			} else {
-				//return value itself
 				return $result;
 			}
 		}
@@ -201,14 +200,9 @@ if ($operation == 'snapToGrid') {
 		$discreteValues = explode(',',$extent);
 		if (preg_match($singleYearPattern,$interval[0])) {
 			$fullYearExtent = true;
-			//$e = new mb_exception("single year pattern for snapping");
-			//set to middle of the year
-			//$interval[0] = $interval[0]."-07-02";
-			//$interval[1] = $interval[1]."-07-02";
 		}
 		//ordered??? - define discrete values to be ordered !!	
 		$newValue = getNearestValue($userValue, $discreteValues);
-		//$e = new mb_exception("newtime: ".$newTime->format('c'));
 		if ($fullYearExtent == true) {
 			$result->data[0]->value = $newValue->format('Y');
 		} else {
@@ -219,41 +213,24 @@ if ($operation == 'snapToGrid') {
 	} else {
 		$interval = explode('/',$extent);
 		$startTime = new DateTime($interval[0]);
+		
 		//check full year extent for snapping
 		if (preg_match($singleYearPattern,$interval[0])) {
 			$fullYearExtent = true;
-			//$e = new mb_exception("single year pattern for snapping");
-			//set to middle of the year
 			$interval[0] = $interval[0]."-07-02";
-			//$interval[1] = $interval[1]."-07-02";
 		}
-		//$e = new mb_exception("default timezone: ".date_default_timezone_get());
+
 		$timezone = $startTime->getTimezone();
-		//timezone from starttime:	
-		//test if timezone was found in starttime:
-		//$e = new mb_exception("timezone found in starttime: ".$timezone->getName());
-		//$e = new mb_exception("start timezone: ".$startTime->getTimezone());
 		$defaultTimeZone = timezone_open('UTC');
-		//$e = new mb_exception("timezone from starttime: ".date_default_timezone_get($timezone));
-		//problem - if no timezone is set use default GMT!!
-		//$endTime = new DateTime($interval[1]);
 		$duration = new DateInterval($interval[2]);
 		$userValueDateTime = new DateTime($userValue);
 		$diffTime = $startTime->diff($userValueDateTime); //creates php datetime interval object
 		$diffTimeSeconds = $diffTime->s + $diffTime->i * 60 + $diffTime->h * 3600 + $diffTime->days * (3600*24);
-		//$e = new mb_exception("days: ".$diffTime->days);
 		$seconds = $duration->s + $duration->i * 60 + $duration->h * 3600 + $duration->d * (3600*24)  + $duration->m * (30.436875*3600*24) + $duration->y * (365*3600*24);
-		//$e = new mb_exception("durationdays: ".$duration->d);
 		$fullDiffInSteps = round($diffTimeSeconds / $seconds);
-		/*$e = new mb_exception("start: ".$interval[0]);
-		$e = new mb_exception("wish to select: ".$userValue);
-		$e = new mb_exception("steps: ".$fullDiffInSteps);
-		$e = new mb_exception("seconds: ".$seconds);*/
 		$dateIntervalNew = new DateInterval('PT'.$fullDiffInSteps * $seconds.'S');
 		$newTime = $startTime->add($dateIntervalNew);
-		//$newTime = $newTime->setTimezone($timezone);
 		$newTime = $newTime->setTimezone($defaultTimeZone);
-		//$e = new mb_exception("newtime: ".$newTime->format('c'));
 		if ($fullYearExtent == true) {
 			$result->data[0]->value = $newTime->format('Y');
 		} else {
@@ -270,19 +247,15 @@ if ($operation == 'snapToGrid') {
 			//check extent for single year entries
 			if (preg_match($singleYearPattern,$interval[0]) && preg_match($singleYearPattern,$interval[1])) {
 				$fullYearExtent = true;
-				//$e = new mb_exception("single year pattern");
 				//set to middle of the year
 				$interval[0] = $interval[0]."-07-02";
 				$interval[1] = $interval[1]."-07-02";
 			}
 			//parse one single year as date of the  
-			//$e = new mb_exception("extent representation of starttime: ".$interval[0]);
 			$startTime = new DateTime($interval[0]);
-			//$e = new mb_exception("date representation of starttime: ".$startTime->format('c'));
 			$endTime = new DateTime($interval[1]);
 			$duration = new DateInterval($interval[2]);
 			$timezone = $startTime->getTimezone();
-			//$e = new mb_exception("timezone of starttime: ".$timezone->getName());
 			$diffTime = $startTime->diff($endTime); //creates php datetime interval object
 			$diffTimeSeconds = $diffTime->s + $diffTime->i * 60 + $diffTime->h * 3600 + $diffTime->days * (3600*24);
 			//Problem: DateInterval cannot be directly converted into seconds - only days are possible
@@ -292,10 +265,10 @@ if ($operation == 'snapToGrid') {
 			} else {
 				$seconds = $duration->s + $duration->i * 60 + $duration->h * 3600 + $duration->days * (3600*24); 
 			}
+
 			$numberOfDiscreteValues = $diffTimeSeconds / $seconds;
+
 			if ($numberOfDiscreteValues > $maxEntries) {
-				//abort("Number of possible discrete values: ".$numberOfDiscreteValues." exeeds max allowed number for visualization of timeline: ".$maxEntries."!");
-				//use the default value or the userValue if given
 				if ($userValue !== false || $default !== false) {
 					if ($userValue !== false) {
 						$result->data[0]->id = 0;
@@ -315,14 +288,8 @@ if ($operation == 'snapToGrid') {
 							$result->data[0]->start = $default;
 						}
 					}
-					//set options to make a moving of value possible
 					$result->options->editable->updateTime = true;
-					//$result->options->configure = true;
-					//$result->options->timeAxis->scale = 'minute';
-					//$result->options->timeAxis->step = 5;
-					//better do snapping in callback function!
 				} else {					
-					//set options to make a moving of value possible
 					$result->options->editable->updateTime = true;
 				}
 			} else {
@@ -338,7 +305,6 @@ if ($operation == 'snapToGrid') {
 				$result->data[0]->start = $startTime->format('c');
 				for ($i=1; $i < $numberOfDiscreteValues+1; $i++) {
 					$time = $startTime->add($duration);
-					//$time->setTimezone($timezone);
 					$result->data[$i]->id = $i;
 					if ($fullYearExtent == true) {
 						$result->data[$i]->content = $time->format('Y');
@@ -348,8 +314,6 @@ if ($operation == 'snapToGrid') {
 						$result->data[$i]->start = $time->format('c');
 					}
 				}	
-				//$result->options->editable->updateTime = false;
-				//$result->options->editable->updateTime = false;
 				$result->options->editable = false;
 			}	
 			//re-initialize starttime because in case of a interval the time is incremented in the else loop before	
@@ -361,12 +325,8 @@ if ($operation == 'snapToGrid') {
 			$result->result->message = "All done";
 			break;
 		case "discreteValues":
-			//$e = new mb_exception("discrete values");
 			if (count(explode(',',$extent)) > $maxEntries) {
 				$extentArray = explode(',',$extent);
-				//abort("Number of discrete values: ".count(explode(',',$extent))." exeeds max allowed number for visualization of timeline: ".$maxEntries."!");
-				//todo
-				//use the default value or the userValue if given
 				if ($userValue !== false || $default !== false) {
 					if ($userValue !== false) {
 						$result->data[0]->id = 0;
@@ -386,14 +346,8 @@ if ($operation == 'snapToGrid') {
 							$result->data[0]->start = $default;
 						}
 					}
-					//set options to make a moving of value possible
 					$result->options->editable->updateTime = true;
-					//$result->options->configure = true;
-					//$result->options->timeAxis->scale = 'minute';
-					//$result->options->timeAxis->step = 5;
-					//better do snapping in callback function!
 				} else {
-					//set options to make a moving of value possible
 					$result->options->editable->updateTime = true;
 				}
 			} else {
@@ -405,10 +359,6 @@ if ($operation == 'snapToGrid') {
 				}
 				$result->options->editable = false;
 			}
-			//use first and last entry as borders
-			//$result->options->min = $extentArray[0];
-			//$result->options->max = $extentArray[count($extentArray) - 1];
-			//$result->options->editable = false;
 			$result->result->error = false;
 			$result->result->message = "All done";
 			break;
@@ -425,4 +375,3 @@ if ($operation == 'snapToGrid') {
 
 header('Content-Type: application/json');
 echo json_encode($result);
-?>
