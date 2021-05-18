@@ -24,6 +24,12 @@ require_once(dirname(__FILE__) . "/../../http/classes/class_mb_exception.php");
 require_once(dirname(__FILE__) . "/../../http/classes/class_user.php");
 require(dirname(__FILE__) . "/../../owsproxy/http/classes/class_QueryHandler.php");
 
+//store global variable as local, cause it may be overwritten somewhen ;-)
+//$PHP_AUTH_DIGEST = $_SERVER['PHP_AUTH_DIGEST'];
+/*$numberOfTest = 0;
+$numberOfTest++;
+$e = new mb_exception($numberOfTest.". test - index.php PHP_AUTH_DIGEST: ".$_SERVER['PHP_AUTH_DIGEST']);*/
+
 $urlsToExclude = array();
 $postData = false;
 $authType = 'digest';
@@ -129,8 +135,9 @@ if ($wfsId !== false) {
         $testMatch = NULL;
     }
 }
-//check authorization - set allowed anonymous access initially to false 
+//check authorization - set allowed anonymous access initially to false and check if an anonymous user may have access to the resources
 $anonymousAccess = false;
+
 if ($layerId !== false) {
     $user = new user(PUBLIC_USER);
     $anonymousAccess = $user->isLayerAccessible($layerId);
@@ -167,6 +174,13 @@ if ($wfsId !== false) {
     }
 }
 
+/*if ($anonymousAccess == true){
+    $numberOfTest++;
+    $e = new mb_notice($numberOfTest.". test -  anonymousAccessAllowed is true"); 
+} else {
+    $numberOfTest++;
+    $e = new mb_notice($numberOfTest.". test - anonymousAccessAllowed is false");
+}*/
 
 //check if proxy is enabled for requested resource
 $layerId = $_REQUEST['layer_id'];
@@ -201,21 +215,35 @@ if (isset($owsproxyString) && $owsproxyString != "" && $owsproxyString != false)
     $proxyEnabled = false;
 }
 
+/*if ($proxyEnabled){
+    $numberOfTest++;
+    $e = new mb_notice($numberOfTest.". test - index.php proxyEnabled is true");
+} else {
+    $numberOfTest++;
+    $e = new mb_notice($numberOfTest.". test - index.php proxyEnabled is false");
+}*/
+
 //next check if anonymous user has rights to access ressource - if so - don't use authentication
-if ($anonymousAccess == true || $proxyEnabled == false) {
+if (($anonymousAccess && $proxyEnabled) || $proxyEnabled = false) {
     $userId = PUBLIC_USER;
+    /*$numberOfTest++;
+    $e = new mb_notice($numberOfTest.". test - index.php use public user");*/
 } else {
     switch ($authType) {
-        case 'digest':
+        case 'digest': 
+            /*$numberOfTest++;
+            $e = new mb_notice($numberOfTest.". test - index.php don't use public user - force auth digest");*/
             //special for type of authentication ******************************
             //control if digest auth is set, if not set, generate the challenge with getNonce()
+            //$e = new mb_exception("test: SERVER vars:".json_encode($_SERVER));
+            //$e = new mb_exception("test: getallheaders() vars:".json_encode(getallheaders()));
             if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
+            //if (empty($PHP_AUTH_DIGEST)) {
                 header('HTTP/1.1 401 Unauthorized');
                 header('WWW-Authenticate: Digest realm="' . REALM .
                     '",qop="auth",nonce="' . getNonce() . '",opaque="' . md5(REALM) . '"');
                 die('Text to send if user hits Cancel button');
-            }
-            
+            }  
             //read out the header in an array
             $requestHeaderArray = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
             //error if header could not be read
@@ -224,7 +252,6 @@ if ($anonymousAccess == true || $proxyEnabled == false) {
                 echo $_SERVER['PHP_AUTH_DIGEST'] . '<br>';
                 die();
             }
-
             //get mb_username and email out of http_auth username string
             $userIdentification = explode(';', $requestHeaderArray['username']);
             $mbUsername = $userIdentification[0];
@@ -265,6 +292,8 @@ if ($anonymousAccess == true || $proxyEnabled == false) {
             $userId = $userInformation[0];
             break;
         case 'basic':
+            /*$numberOfTest++;
+            $e = new mb_exception($numberOfTest.". test - index.php auth basic");*/
             if (!isset($_SERVER['PHP_AUTH_USER'])) {
                 header('WWW-Authenticate: Basic realm="' . REALM . '"');
                 header('HTTP/1.1 401 Unauthorized');
@@ -295,7 +324,6 @@ if ($anonymousAccess == true || $proxyEnabled == false) {
     }
 }
 
-
 //$e = new mb_exception("http_auth/http/index.php: proxyEnabled: ".$proxyEnabled." - anonymousAccess: ".$anonymousAccess);
 //if ($proxyEnabled == false && $anonymousAccess == false) {
 //    die('The requested resource does not exists or the routing through mapbenders owsproxy is not activated and anonymous access is not allowed!');
@@ -304,7 +332,11 @@ if ($anonymousAccess == true || $proxyEnabled == false) {
 if ($auth['auth_type'] == '') {
     unset($auth);
 }
-
+/*if ($proxyEnabled) {
+    $e = new mb_exception("test - index.php owsproxy active!");
+}
+$numberOfTest++;
+$e = new mb_notice($numberOfTest.". test - index.php userId: ".$userId);*/
 /* ************ main workflow *********** */
 
 switch (strtolower($reqParams['request'])) {
@@ -312,7 +344,7 @@ switch (strtolower($reqParams['request'])) {
     case 'getcapabilities':
         switch (strtolower($reqParams['service'])) {
             case 'wfs':
-                if ($proxyEnabled == true) {
+                if ($proxyEnabled) {
                     $arrayOnlineresources = checkWfsPermission($owsproxyString, false, $userId);
                 } else {
                     //get wfs info by id
@@ -1393,6 +1425,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
 {
     global $con, $n;
     $myconfs = $n->getWfsConfByPermission($userId);
+    $e = new mb_exception(json_encode($myconfs));
     if ($features !== false) {
         //check if we know the features requested
         if (count($features) == 0) {
