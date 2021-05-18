@@ -224,7 +224,7 @@ if (isset($owsproxyString) && $owsproxyString != "" && $owsproxyString != false)
 }*/
 
 //next check if anonymous user has rights to access ressource - if so - don't use authentication
-if (($anonymousAccess && $proxyEnabled) || $proxyEnabled = false) {
+if (($anonymousAccess && $proxyEnabled) || ($proxyEnabled == false)) {
     $userId = PUBLIC_USER;
     /*$numberOfTest++;
     $e = new mb_notice($numberOfTest.". test - index.php use public user");*/
