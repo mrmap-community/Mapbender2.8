@@ -86,6 +86,113 @@ function init(){
 	//initialize mapframes
 	mapframe_dataset_list.setCenter(new OpenLayers.LonLat(<?php echo $olCentreLon; ?>, <?php echo $olCentreLat; ?>), <?php echo $olScale; ?>);
 	mapframe_file_list.setCenter(new OpenLayers.LonLat(<?php echo $olCentreLon; ?>, <?php echo $olCentreLat; ?>), <?php echo $olScale; ?>);
+
+	/*
+	* generate gazetteer search form
+	*/
+	var options = {
+		id: "search_field",
+		inputWidth: 300,
+		searchEpsg: "4326",
+		maxResults: 15,
+		gazetteerUrl: "https://www.geoportal.rlp.de/mapbender/geoportal/gaz_geom_mobile.php?",
+		isGeonames: false,
+		minLength: 3,
+		delay: 3,
+		drawCentrePoint: true,
+		latLonZoomExtension: 0.1,
+		zIndex: 100,
+		gazetteerFrontImageOn: "../img/button_blue_red/gazetteer3_on.png"
+	}
+	
+	var formContainer = $(document.createElement('form')).attr({'id':'json-autocomplete-gazetteer'}).appendTo('#' + options.id);
+	formContainer.submit(function() {
+		return false;
+	});
+	if (options.isDraggable){
+		//formContainer.draggable();//problem with print module
+	}
+	var symbolForInput = $(document.createElement('img')).appendTo(formContainer);
+	symbolForInput.attr({'id':'symboldForInputId'});
+	symbolForInput.attr({'src':options.gazetteerFrontImageOn});
+	symbolForInput.attr({'title':'<?php echo "Geographic names";?>'});
+	/*$("#symboldForInputId").click(function() {
+		that.toggleInput();
+	});*/
+	var inputAddress = $(document.createElement('input')).appendTo(formContainer);
+	inputAddress.attr({'id':'geographicName'});
+	//default value
+	inputAddress.val('Search for addresses');
+	inputAddress.click(function() {
+		inputAddress.val('');
+	});
+	inputAddress.css('width',options.inputWidth);
+	
+	$(function() {
+		$( "#geographicName" ).autocomplete({
+			source: function( request, response ) {
+				$.ajax({
+					url: options.gazetteerUrl,
+					dataType: "jsonp",
+					data: {
+						outputFormat: 'json',
+						resultTarget: 'web',
+						searchEPSG: options.searchEpsg,
+						maxResults: options.maxResults,
+						maxRows: options.maxResults,
+						searchText: request.term,
+						featureClass: "P",
+						style: "full",
+						name_startsWith: request.term
+					},
+					success: function( data ) {
+						if (options.isGeonames) {
+							response( $.map( data.geonames, function( item ) {
+								return {
+									label: item.name+" - "+item.fclName+" - "+item.countryName,
+									minx: item.lng-options.latLonZoomExtension,
+									miny: item.lat-options.latLonZoomExtension,
+									maxx: item.lng+options.latLonZoomExtension,
+									maxy: item.lat+options.latLonZoomExtension
+								}
+							}));
+						} else {
+							response( $.map( data.geonames, function( item ) {
+								return {
+									label: item.title,
+									minx: item.minx,
+									miny: item.miny,
+									maxx: item.maxx,
+									maxy: item.maxy
+								}
+							}));
+						}
+					}
+				});
+			},
+			minLength: options.minLength,
+			delay: options.delay,
+			select: function( event, ui ) {
+				//that.zoomToExtent("EPSG:"+options.searchEpsg,ui.item.minx,ui.item.miny,ui.item.maxx,ui.item.maxy);
+				var bounds= new OpenLayers.Bounds(ui.item.minx,ui.item.miny,ui.item.maxx,ui.item.maxy);
+                mapframe_file_list.zoomToExtent(bounds);
+			},
+			open: function() {
+				$( "#search_field" ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+				//set zindex of ui-autocomplete to high value to show text above map widget
+				$('.ui-autocomplete').css('z-index', 99999999999999);
+			},
+			close: function() {
+				$( "#search_field" ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+				
+			}
+		});
+	});	
+	/*
+	* end of search form
+	*/
+
+
 	resetForm();
 	//start parsing when no empty string was found in input for url
 	if ($('#download_feed_url').val() != "") {
@@ -287,6 +394,7 @@ function showDatasetEntryList(featureCollection, id) {
 	for(var i=0; i<featureCollection.features.length; ++i) {
 		selectROptions = selectROptions+"<option value='"+i+"' url='"+featureCollection.features[i].properties.datasetFeedLink+"'>"+featureCollection.features[i].properties.title+"</option>";
 	}
+	//show number of found representations in header
 	$("#tab_header_number_representations").text(" "+"("+featureCollection.features.length+")");
 	datasetEntrySelect.append(selectROptions);
 	//following has to be enabled for boootstrap selectboxes
@@ -302,12 +410,14 @@ function showDatasetEntryList(featureCollection, id) {
 }
 
 function fillSectionList(featureCollection, k) {
+        //delete existing features from canvas
 		bboxFiles.removeAllFeatures();
 		$('#section_option').remove();
 		//initialize option string
 		var selectFOptions = "";
 		//count number of links in representation
 		var numberOfLinks = featureCollection.features[k].properties.link.length;
+		//alert("links: "+numberOfLinks);
 		if (numberOfLinks >= 1 || numberOfLinks === undefined) {
 			//show list 
 			$("#representation_select").css("display","block");
@@ -377,40 +487,80 @@ function fillSectionList(featureCollection, k) {
 			//Add polygon layer from mb_metadata tables bounding_geom column
 			mapframe_file_list.zoomToExtent(bound);
 			//set number of tiles
-			bboxFiles.features.length
-			bboxFiles.events.on({
-   				featureselected: function(event) {
-        				var feature = event.feature;
-        				var id = feature.attributes.id;
-					var url = feature.attributes.url;
-					$("#download_link").remove();
-					//show Downloadlink
-					downloadLink = $(document.createElement('a')).appendTo('#section_list');
-					downloadLink.attr({'href':url});
-					downloadLink.attr({'target':'_blank'});
-					downloadLink.attr({'id':'download_link'});
-					if (feature.attributes.length == '' || feature.attributes.length === undefined) {
-						downloadLink.text(feature.attributes.title);
-					} else {
-						downloadLink.text(feature.attributes.title+" - (~"+feature.attributes.length / 1000000+" MB)");
-					}
-					//$('#section_option option').removeAttr('selected')
-					//$("#section_option option[value='"+id+"']").attr('selected',true);
-					//window.open(url,'download_window');
-
-					/*if ($('#multi_select').is(':checked')) {
-						alert("checked");
-					} else {
-						alert("un-checked");
-					}
-					alert(url);*/				
-    				}
-			});
-		
-                	sf = new OpenLayers.Control.SelectFeature(bboxFiles);
-                	mapframe_file_list.addControl(sf);
-                	sf.activate();
-		}
+			/*
+			* Add controls - TODO: adopt to use multiselect - set max selectable features in conf !
+			*/
+			var multiSelect = false;
+			if (multiSelect == true) {
+    			bboxFiles.events.on({
+                    'featureselected': function(feature) {
+                        document.getElementById('number_of_selected_tiles').innerHTML = this.selectedFeatures.length;
+                    },
+                    'featureunselected': function(feature) {
+                        document.getElementById('number_of_selected_tiles').innerHTML = this.selectedFeatures.length;
+                    }
+                    
+                });
+    			//
+    			drawControls = {
+    			    select: new OpenLayers.Control.SelectFeature(
+                        bboxFiles,
+                        {
+                            clickout: true, toggle: false,
+                            multiple: true, hover: false,
+                            toggleKey: "ctrlKey", // ctrl key removes from selection
+                            multipleKey: "shiftKey", // shift key adds to selection
+                            onBeforeSelect: function(e) {
+                                //this should pretend the selection of mor than x features when using the async download option ;-)
+                                if (e.layer.selectedFeatures.length >= 20) {
+                            		//alert("onBeforeSelect more than 20 selected features - don't add more ;-) : "+e.layer.selectedFeatures.length);
+                            		return false;
+                            	}
+                            	//console.log(e);
+                            	
+                            },
+                            box: true,
+                            maxFeatures: 20
+                        }
+                    )
+    			};
+    			mapframe_file_list.addControl(drawControls['select']);
+    			var control = drawControls['select'];
+    			control.activate();
+			} else {
+    			//bboxFiles.features.length;
+    			bboxFiles.events.on({
+       				featureselected: function(event) {
+            			var feature = event.feature;
+            			var id = feature.attributes.id;
+    					var url = feature.attributes.url;
+    					$("#download_link").remove();
+    					//show Downloadlink
+    					downloadLink = $(document.createElement('a')).appendTo('#section_list');
+    					downloadLink.attr({'href':url});
+    					downloadLink.attr({'target':'_blank'});
+    					downloadLink.attr({'id':'download_link'});
+    					if (feature.attributes.length == '' || feature.attributes.length === undefined) {
+    						downloadLink.text(feature.attributes.title);
+    					} else {
+    						downloadLink.text(feature.attributes.title+" - (~"+feature.attributes.length / 1000000+" MB)");
+    					}
+    					//$('#section_option option').removeAttr('selected')
+    					//$("#section_option option[value='"+id+"']").attr('selected',true);
+    					//window.open(url,'download_window');
+    					/*if ($('#multi_select').is(':checked')) {
+    						alert("checked");
+    					} else {
+    						alert("un-checked");
+    					}
+    				alert(url);*/				
+        			}
+    			});
+    		sf = new OpenLayers.Control.SelectFeature(bboxFiles);
+            mapframe_file_list.addControl(sf);
+            sf.activate();
+    	}
+	}
 }
 
 function drawMetadataPolygons(featureCollection) {

@@ -53,7 +53,10 @@ $localeObj->setCurrentLocale($languageCode);
 <meta http-equiv="content-style-type" content="text/css" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="../extensions/OpenLayers-2.13.1/theme/default/style.css" type="text/css" />
-<link type="text/css" href="../extensions/jquery-ui-1.8.16.custom/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="Stylesheet" />
+
+<!-- <link type="text/css" href="../extensions/jquery-ui-1.8.16.custom/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="Stylesheet" />-->
+<link type="text/css" href="../extensions/jquery-ui-1.12.1/jquery-ui.min.css" rel="Stylesheet" />
+
 <link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css" />
 <link rel="stylesheet" href="../extensions/bootstrap-select-1.9.3/dist/css/bootstrap-select.css" type="text/css" />
 <style type="text/css">
@@ -125,6 +128,9 @@ select {max-width: 100%;}
 <!--<script src="../extensions/OpenLayers-2.13.1/OpenLayers.mobile.js"></script>//TODO: bugs with control panels-->
 <script src="../extensions/OpenLayers-2.13.1/OpenLayers.js"></script>
 <script src="../extensions/jquery-1.12.0.min.js"></script>
+
+<script src="../extensions/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+
 <script src="../extensions/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script src="../extensions/bootstrap-select-1.9.3/dist/js/bootstrap-select.min.js"></script>
 <script src="../extensions/bootstrap-select-1.9.3/dist/js/i18n/defaults-de_DE.js"></script>
@@ -252,6 +258,7 @@ select {max-width: 100%;}
     </div>
     <div id="representation_info">
       <p><?php echo _mb("Select to download dataset")." - "._mb("click on single orange box generate download link below map (if seen)!");?><span id="number_of_tiles"></span></p>
+      <div id="search_field"></div>
       <div id="mapframe_file_list"></div>
       <!--<label for="section_list"><?php echo _mb("List of files");?>:</label>-->
       <div id="section_list"></div>
@@ -259,6 +266,7 @@ select {max-width: 100%;}
       <!--<input type="button" title="Download selected files" value="Download selection"/>-->
       <!--</fieldset>	-->
       <div id="dialog-modal" title="Download Link"></div>
+      <div id="number_of_selected_tiles" title="Number of selected tiles"></div>
     </div>	
   </div>
 </div>
