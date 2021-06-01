@@ -44,7 +44,7 @@ function getrgb($cor_x, $cor_y)
     $x = (int) getrgb_x($cor_x);
     $y = (int) getrgb_y($cor_y);
     $rgb = imagecolorat($im, $x, $y);
-    return (int)  ((695.0 / 255) * $rgb);
+    return (int) (4 * $rgb);
 }
 
 for ($i = 0; $i < count($array); $i = $i + 3) {
@@ -52,3 +52,4 @@ for ($i = 0; $i < count($array); $i = $i + 3) {
 }
 
 echo json_encode($array);
+?>

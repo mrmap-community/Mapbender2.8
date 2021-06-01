@@ -22,36 +22,40 @@
    height: 288px;
  }
 
+ h1,h2,h3,h4,h5,h6 {
+  color: #444;
+ }
+
  a {
-  color: #871d33;
+  color: #d51f28;
  }
  a.hover {
-  color: #871d33;
+  color: #d51f28;
  }
 
  .page-link {
-   color: #871d33;
+   color: #d51f28;
  }
 
  .page-link:hover {
-   color: #871d33;
+   color: #d51f28;
  }
 
  .page-item.active .page-link {
-   background-color: #871d33;
-   border-color: #871d33;
+   background-color: #d51f28;
+   border-color: #d51f28;
  }
 
 .btn-primary:hover {
     color: #fff;
     background-color: #6c757d;
-    border-color: #871d33;
+    border-color: #d51f28;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #871d33;
-    border-color: #871d33;
+    background-color: #d51f28;
+    border-color: #d51f28;
 }
 
 .btn.disabled, .btn:disabled {
@@ -61,8 +65,8 @@
 .btn-primary.disabled, .btn-primary:disabled {
 
     color: #fff;
-    background-color: #871d33;
-    border-color: #871d33;
+    background-color: #d51f28;
+    border-color: #d51f28;
 
 }
 .list-comma-separated
