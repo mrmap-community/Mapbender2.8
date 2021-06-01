@@ -41,9 +41,12 @@ var MeasureApi = function (o) {
 		measureDialog = $(informationHtml);
 		measureDialog.dialog({
 			autoOpen: false,
-			position: [5,5],
-                        width : 700,
-                        heigth: 300
+			position: [20,80],
+                        width : 'auto',
+                        heigth: 'auto',
+                        title: 'Höhenprofil',
+                        open: function() {$('#toolsContainer').hide() && $('a.toggleToolsContainer').removeClass('activeToggle');},
+                        close: function() {$('#altitudeProfile').removeClass("myOnClass");button.stop();}
                         
 		}).bind("dialogclose", function () {
 			button.stop();

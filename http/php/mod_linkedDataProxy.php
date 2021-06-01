@@ -1340,7 +1340,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			$returnObject->provider = $wfs->providerName;
 			$returnObject->providerEmail = $wfs->electronicMailAddress;
 			// $returnObject->providerHomepage = $wfs->homepage; //TODO add to ows class!
-			$returnObject->providerHomepage = "https://www.geoportal.rlp.de/";
+			//$returnObject->providerHomepage = "https://www.geoportal.rlp.de/";
+			$returnObject->providerHomepage = METADATA_DEFAULT_CODESPACE;
 			$returnObject->license = $wfs->fees;
 			
 			// get contraints
@@ -3216,7 +3217,7 @@ switch ($f) {
 		$html .= '    <div class="container d-flex flex-row justify-content-between align-items-center w-100">' . $newline;
 		$html .= '        <span>' . $newline;
 		$html .= '            <span class="text-muted small mr-2">powered by</span>' . $newline;
-		$html .= '            <a class="navbar-brand" href="https://git.osgeo.org/gitea/armin11/GeoPortal.rlp" target="_blank">GeoPortal.rlp</a>' . $newline;
+		$html .= '            <a class="navbar-brand" href="https://git.osgeo.org/gitea/GDI-HE/Geoportal-Hessen" target="_blank">Geoportal-Hessen</a>' . $newline;
 		$html .= '        </span>' . $newline;
 		$html .= '        <span>' . $newline;
 		if (! isset ( $collections ) || $collection == 'all') {

@@ -70,7 +70,7 @@ if(myIsNumeric(options.maxResults)) {
     options.maxResults = 6;
 }
 //debugging - TODO alter later on
-options.maxResults = 6;
+//options.maxResults = 6;
 if(myIsNumeric(options.slidesPerSide)) {   
 } else {
     options.slidesPerSide = 3;

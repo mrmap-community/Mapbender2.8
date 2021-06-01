@@ -38,19 +38,21 @@ var IframePopup = function(o) {
 			var $this = $(this);
 			var horizontalPadding = 30;
 			var verticalPadding = 30;
-	        $('<iframe src="' + this.href + '" />').dialog({
+			var wWidth = $(window).width();
+			var dWidth = wWidth * 0.95;
+			var wHeight = $(window).height();
+			var dHeight = wHeight - 60;
+	        $('<iframe class="override-dialog-iframe-resize" src="' + this.href + '" />').dialog({
 	            title: ($this.attr('title')) ? $this.attr('title') : 'External Site',
 	            autoOpen: true,
-	            width: 850,
-	            height: 550,
+		    position: [15,15],
+	            width: dWidth,
+	            height: dHeight,
 	            modal: true,
-	            resizable: true,
-				autoResize: true,
-	            overlay: {
-	                opacity: 0.5,
-	                background: "black"
-	            }
-	        }).width(850 - horizontalPadding).height(550 - verticalPadding);	        
+	            resizable: false,
+		    draggable: false,
+		    dialogClass: "override-dialog-resize"
+	        }).width(dWidth - horizontalPadding).height(dHeight - verticalPadding);	        
 		});
 	};
 
