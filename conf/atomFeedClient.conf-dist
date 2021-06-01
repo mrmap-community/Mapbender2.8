@@ -22,4 +22,5 @@ $metadataPolygonLayer = "var wms222 = new OpenLayers.Layer.WMS( \"Exterior polyg
 $olCentreLon = "7";
 $olCentreLat = "50";
 $olScale = "7";
+//$maxTiles=20;
 ?>
