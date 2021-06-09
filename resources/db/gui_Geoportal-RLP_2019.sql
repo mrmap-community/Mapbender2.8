@@ -1115,7 +1115,7 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapsContainer','css','/* INSERT body -> mapsContainer -> css(text/css) */
 #mapsContainer {
    position:relative;
-   display: none;
+   display: block;
    float: left;
    border-bottom:1px solid transparent;
 }
