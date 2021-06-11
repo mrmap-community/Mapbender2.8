@@ -177,11 +177,13 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
-                    icons = data;
-                    var kml = $('#mapframe1').data('kml');
-                    kml.icons = icons;
+                    setTimeout(() => {
+                        var kml = $('#mapframe1').data('kml');
+                        kml.icons = data;
+                        icons = data;
+                    }, 1000);
                 },
-                timeout: 2000
+                timeout: 500
             });
 
             //
@@ -380,11 +382,18 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
           editFeatureStyles([feature], getFeatureType(feature), collection, menu);
         }
 
-      function editFeatureStyles (features, featureType, collection, menu) {
-          var referenceFeature = features[0];
+        function editFeatureStyles (features, featureType, collection, menu) {
+            var icons = $.parseJSON($.ajax({
+                url: '/mapbender/extensions/makiicons/selection.json',
+                dataType: 'json',
+                async: false,
+                timeout: 500
+            }).responseText);
 
-        var classPrefix = icons.preferences.fontPref.prefix,
-          iconList = [];
+            var referenceFeature = features[0];
+
+            var classPrefix = icons.preferences.fontPref.prefix,
+            iconList = [];
 
         $.each(icons.icons, function (i, v) {
           iconList.push(classPrefix + v.properties.name);
