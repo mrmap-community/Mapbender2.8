@@ -40,8 +40,8 @@ a {color: #333;}
 .tool-view-full:active:focus{background-color:#efefef;border-color:#333;}
 .tool-view-full:active {background-image: url('../../../images/icon_he_333.png');background-color: #333;background-position: center;}
 
-.ol-scale-line {background-color:#efefef !important;background-image: linear-gradient(to bottom,#fff 0,#efefef 100%) !important;}
-.ol-scale-line-inner {color:#333;border-color: #333;}
+.ol-scale-line {background-color:#efefef !important;background-image: linear-gradient(to bottom,#efefef 0,#efefef 100%) !important;}
+.ol-scale-line-inner {color:#333 !important;border-color: #333 !important;}
 .measure-overlay {background-color:#333 !important;}
 .nav.navbar-nav > li {border-left: 1px solid #ddd;}
 .nav.navbar-nav > li:last-child {border-right: 1px solid #ddd;}
