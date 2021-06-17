@@ -1115,7 +1115,7 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapsContainer','css','/* INSERT body -> mapsContainer -> css(text/css) */
 #mapsContainer {
    position:relative;
-   dislay: none;
+   display: block;
    float: left;
    border-bottom:1px solid transparent;
 }
@@ -1155,9 +1155,6 @@ border-bottom:1px solid #d62029 !important;
   padding:0;
   list-style-type:none;
   position: absolute;
-  /*display: block;
-  width: 388px;
-  box-shadow: 0px 5px 10px -2px rgb(201, 202, 202);*/
 }
 
 #loadWMC_Button,#savewmc, #WMS_preferencesButton {
@@ -1192,7 +1189,7 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 ','','div','','',0,0,690,527,2,'overflow:hidden;background-color:#ffffff','','div','../plugins/mb_map.js','../../lib/history.js,map_obj.js,map.js,wms.js,wfs_obj.js,initWmcObj.php','','','http://www.mapbender.org/index.php/Mapframe');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','slippy','1','1 = Activates an animated, pseudo slippy map','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','skipWmsIfSrsNotSupported','1','if set to 1, it skips the WMS request if the current SRS is not supported by the WMS; if set to 0, the WMS is always queried. Default is 0, because of backwards compatibility','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','wfsConfIdString','94','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','wfsConfIdString','94','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','deleteSessionWmc',2,1,'delete Session Wmc','Kartenansicht zurücksetzen','A','../img/button_blue_red/repaint_off.png','onclick=''$("#sessionWmc").mapbender().deleteWmc();''
 onmouseover=''$(this).addClass("myOverClass");'' onmouseout=''$(this).removeClass("myOverClass");''',NULL ,NULL,NULL ,NULL,NULL ,'position:unset','<svg width="16" height="16" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M2.75736 2.75736C3.84315 1.67157 5.34315 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13C4.027 13 1.55904 10.8377 1.08296 8H3.02282C3.46921 9.78103 5.08057 11.1 7 11.1C9.26437 11.1 11.1 9.26437 11.1 7C11.1 4.73563 9.26437 2.9 7 2.9C5.86782 2.9 4.84282 3.35891 4.10086 4.10086L6 6H1V1L2.75736 2.75736Z" fill="currentColor"/>
@@ -1310,7 +1307,7 @@ SRC: ../img/button_hessen/wmcload_off.png
 Attributes: onmouseover=''this.src = this.src.replace(/_off/,"_over");''  onmouseout=''this.src = this.src.replace(/_over/, "_off");''','Meine Themen verwalten','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','mod_loadwmc.php','popup.js','mapframe1','jq_ui_dialog,jq_ui_tabs,jq_upload,jq_datatables','http://www.mapbender.org/index.php/LoadWMC');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','deleteWmc','1','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogHeight','550','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogWidth','350','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogWidth','350','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','loadFromSession','1','','php_var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','mobileUrl','1','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','mobileUrlNewWindow','0','','var');
@@ -1582,7 +1579,7 @@ Werkzeuge</a>','div','../plugins/mb_toolbar_cont.js','','changeEPSG_Button,legen
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','toolbarContainer','css','/* INSERT toolbarContainer-> elementVar -> css(text/css) */
 #toolbarContainer {
    position:relative;
-   dislay: block;
+   display: block;
    float: left;
    border-bottom:1px solid transparent;
 }
