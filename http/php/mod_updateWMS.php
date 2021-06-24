@@ -50,19 +50,22 @@ function getRootLayerId ($wms_id) {
 }
 
 ?>
+<!DOCTYPE html>
 <html>
 <head>
 <?php
-echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';	
+echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';
+echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 ?>
 <title>updateWMS</title>
+<link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css">
 <style type="text/css">
   	<!--
   	body{
       background-color: #ffffff;
   		font-family: Arial, Helvetica, sans-serif;
-  		font-size : 12px;
-  		color: #808080
+  		font-size : 14px;
+  		color: #303030
   	}
   	.list_guis{
   		font-family: Arial, Helvetica, sans-serif;
@@ -102,6 +105,12 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">'
   		color: #000000;
   	}
   	-->
+	label{margin-top:10px;}
+	#authbox {border: 1px solid #ccc;max-width: 300px;padding: 15px;border-radius: 4px;background-color: #efefef;}
+	#authbox > .radio {margin: unset;}
+	#authbox > .radio > label {margin: 0;}
+	#optionsbox,#newCapabilitiesBox {border: 1px solid #ccc;padding: 15px;border-radius: 4px;background-color: #efefef;margin-top: 30px;margin-bottom: 30px;}
+	#optionsbox > .checkbox {margin: unset;}
 </style>
 <link rel="stylesheet" href="../extensions/jquery-ui-1.7.2.custom/css/smoothness/jquery-ui-1.7.2.custom.css" />
 <?php
@@ -362,9 +371,12 @@ function sel(){
 	
 }
 </script>
+<script src="../extensions/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 </head>
 <body>
+<div class="container" style="padding-top:15px;padding-bottom:15px;">
 <form name='form1' id='form1' action='<?php echo $self; ?>' method='POST'>
+
 <?php
 
 
@@ -397,58 +409,52 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	$sql .= " ORDER BY wms_title";
 	$res = db_prep_query($sql,$v,$t);
 	$cnt = 0;
-	echo "<select name='selWMS' size='15' onchange='sel()'>";
+	echo "<div id='optionsbox' style='margin-top:0'><label for='selWMS'>Wählen Sie einen WMS aus</label><select class='form-control' name='selWMS' onchange='sel()'>";
 	while($row = db_fetch_array($res)){
 		echo "<option value='".$row['wms_id']."###".$row['wms_upload_url']."###".$row['layer_id']."###".$row['wms_auth_type']."###".$row['wms_username']."###".$row['wms_password']."'>".$row['wms_title']."</option>";
 		$cnt++;
 	}
-	echo "</select><br /><br />";
+	echo "</select>";
 	?>
-	<!--Line for showing wms metadata-->
-	view wms metadata: <a id='metadatalink' href='' onclick="window.open(this.href,'Metadaten','width=500,height=600,left=100,top=200,scrollbars=yes ,dependent=yes'); return false" target="_blank"><span id="metadatatext">no WMS selected</span></a><br><br>
 <?php
 	
-	echo "Link to the last uploaded Online Resource URL:<br><input type='text' size='100' name='capURL' id='capURL'><br />";
-	echo "<input type='hidden' name='myWMS' id='myWMS' value=''><br>";
-	echo "Add the following REQUEST to the Online Resource URL to obtain the Capabilities document:<br>";
-	echo "<i>(Triple click to select and copy)</i><br>"; 
-	echo "REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.1.1<br>";
-	echo "REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.1.0<br>";
-	echo "REQUEST=capabilities&WMTVER=1.0.0<br><br>";
-
-	echo "HTTP Authentication:<br>"; 
- 	echo "<input type='radio' name='imrHttpAuth' value='none' onclick='toggleAuthDivVis();' checked='checked' /> None<br>"; 
- 	echo "<input type='radio' name='imrHttpAuth' value='digest' onclick='toggleAuthDivVis();' /> Digest<br>"; 
- 	echo "<input type='radio' name='imrHttpAuth' value='basic' onclick='toggleAuthDivVis();' /> Basic<br>"; 
- 	echo "<input type='radio' name='imrHttpAuth' value='keep' onclick='toggleAuthDivVis();' /> Keep old values<br>"; 
- 	echo "<input type='hidden' name='imrOldAuthType' id='imrOldAuthType' />"; 
- 	echo "<input type='hidden' name='imrOldAuthName' id = 'imrOldAuthName' />"; 
- 	echo "<input type='hidden' name='imrOldAuthPassword' id = 'imrOldAuthPassword'/>"; 
-	echo "<input type='hidden' name='imrAuthType' id = 'imrAuthType'/>"; 
- 	echo "<br>"; 
- 	echo "<div id='imrAuthDiv' style='display: none;'>"; 
- 	echo "Username : <input type='text' name='imrAuthName' id='imrAuthName' /><br>"; 
- 	echo "Password : <input type='text' name='imrAuthPassword' id='imrAuthPassword'/><br><br>"; 
- 	echo "</div>"; 
- 	echo "Link to new WMS Capabilities URL:<br><input size='100' type='text' name='myURL' id='myURL'><br>"; 
-	echo"<input type='checkbox' name='harvest_dataset_metadata' id='harvest_dataset_metadata' checked='checked'>"._mb('Harvest/update dataset metadata by following existing MetadataURL tags in the capabilities')."<br>";
+	echo "<label for='capURL'>Alte URL:</label><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly>";
+	echo "<input type='hidden' name='myWMS' id='myWMS' value=''></div>";
+ 	echo "<div id='newCapabilitiesBox' class='' ><label for='myURL'>Neue URL:</label><input class='form-control' type='text' name='myURL' id='myURL'>"; 
+        echo "<span id='helpBlock' class='help-block bg-danger' style='padding:10px;margin-top:25px;word-wrap:break-word;border-radius:4px;'>Die URL muss ein valides WMS Capabilities Dokument der Version 1.1.1 liefern. In der Regel sollte folgendes in Ihrer URL enthalten sein:<p style='margin:10px 0 0 0;font-weight:bold;'>REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.1.1</p></span></div>";
+        echo "<div id='authbox' class=''><p><b>HTTP Authentication</b></p>";
+        echo "<div class='radio'><label><input type='radio' name='imrHttpAuth' value='none' onclick='toggleAuthDivVis();' checked='checked'>None</label></div>";
+        echo "<div class='radio'><label><input type='radio' name='imrHttpAuth' value='digest' onclick='toggleAuthDivVis();' />Digest</label></div>";
+        echo "<div class='radio'><label><input type='radio' name='imrHttpAuth' value='basic' onclick='toggleAuthDivVis();' />Basic</label></div>";
+        echo "<div class='radio'><label><input type='radio' name='imrHttpAuth' value='keep' onclick='toggleAuthDivVis();' />Ursprüngliche Werte</label></div>";
+        echo "<input type='hidden' name='imrOldAuthType' id='imrOldAuthType' />";
+        echo "<input type='hidden' name='imrOldAuthName' id = 'imrOldAuthName' />";
+        echo "<input type='hidden' name='imrOldAuthPassword' id = 'imrOldAuthPassword'/>";
+        echo "<input type='hidden' name='imrAuthType' id = 'imrAuthType'/>";
+        echo "<div id='imrAuthDiv' style='display: none;'>";
+        echo "<label for='imrAuthName'>Benutzername</label><input class='form-control' type='text' name='imrAuthName' id='imrAuthName'>";
+        echo "<label for='imrAuthPassword'>Passwort</label><input class='form-control' type='text' name='imrAuthPassword' id='imrAuthPassword'>";
+        echo "</div>";
+        echo "</div><div id='optionsbox' class=''><p><b>Optionen</b></p>";
+	echo "<div class='checkbox'><label><input type='checkbox' name='harvest_dataset_metadata' id='harvest_dataset_metadata' checked='checked'>Originär verknüpfte Metadaten harvesten</label></div>";
 	if (defined("TWITTER_NEWS") && TWITTER_NEWS == true) {
-		echo"<input type='checkbox' name='twitter_news' id='twitter_news' checked='checked'>Publish via Twitter<br>";
+		echo "<div class='checkbox'><label><input type='checkbox' name='twitter_news' id='twitter_news' checked='checked'>Publish via Twitter</label></div>";
 	}
 	if (defined("GEO_RSS_FILE") &&  GEO_RSS_FILE != "") {
-		echo"<input type='checkbox' name='rss_news' id='rss_news' checked='checked'>Publish via RSS<br>";
+		echo"<div class='checkbox' style='display:none'><label><input type='checkbox' name='rss_news' id='rss_news' checked='checked'>Publish via RSS</label></div>";
 	}
 	if (!MD_OVERWRITE) {
-		echo"<input type='checkbox' name='overwrite_md' id='overwrite_md'>Overwrite edited metadata - all changes wich are made via metadata editor will be lost!<br>";
+		echo "<div class='checkbox'><label><input type='checkbox' name='overwrite_md' id='overwrite_md'>Dienst-Metadaten zurücksetzen</label></div>";
 	} else {
-		echo"<input type='checkbox' name='overwrite_md' id='overwrite_md' checked='checked'>Overwrite edited metadata - all changes wich are made via metadata editor will be lost!<br>";
+		echo"<div class='checkbox'><label><input type='checkbox' name='overwrite_md' id='overwrite_md' checked='checked'>Dienst-Metadaten zurücksetzen</label></div>";
 	}
 
-	echo"<input type='checkbox' name='overwrite_categories' id='overwrite_categories'>Overwrite layer categories with categories from service (maybe avaiable from wms 1.3.0+)<br>";
-	echo"<input type='checkbox' name='compare_dialog' id='compare_dialog'><label for='compare_dialog'>Use compare dialog</label><br>";
-	echo "<input type='button' value='Preview Capabilities' onclick='window.open(this.form.myURL.value,\"\",\"\")'>&nbsp;";
-	echo "<input type='button' value='Upload Capabilities' onclick='validate()'>&nbsp;"; 
- 	echo "<input type='button' value='Reupload old service' onclick='reupload()'><br>"; 
+	echo "<div class='checkbox' style='display:none'><label><input type='checkbox' name='overwrite_categories' id='overwrite_categories'>Overwrite layer categories with categories from service (maybe avaiable from wms 1.3.0+)</label></div>";
+	echo "<div class='checkbox'><label><input type='checkbox' name='compare_dialog' id='compare_dialog'>Vergleichsdialog beim Update anzeigen</label></div></div>";
+
+	echo "<input class='btn btn-default' type='button' value='Update Simulieren' onclick='window.open(this.form.myURL.value,\"\",\"\")'>&nbsp;";
+	echo "<input class='btn btn-primary' type='button' value='Update neue URL' onclick='validate()'>&nbsp;"; 
+ 	echo "<input class='btn btn-default' type='button' value='Update alte URL' onclick='reupload()'><br>"; 
 
 
 if(isset($myURL) && $myURL != ''){
@@ -589,6 +595,7 @@ $e = new mb_exception("replyto: ". $replyto. " - from: ".$from);
 }
 
 	echo "</form>";
+	echo "</div>";
 	echo "</body>";
 }else{
 	echo "There are no wms available for this user.<br>";
