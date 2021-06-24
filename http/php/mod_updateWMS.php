@@ -410,6 +410,7 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	$res = db_prep_query($sql,$v,$t);
 	$cnt = 0;
 	echo "<div id='optionsbox' style='margin-top:0'><label for='selWMS'>Wählen Sie einen WMS aus</label><select class='form-control' name='selWMS' onchange='sel()'>";
+	echo "<option value=''></option>";
 	while($row = db_fetch_array($res)){
 		echo "<option value='".$row['wms_id']."###".$row['wms_upload_url']."###".$row['layer_id']."###".$row['wms_auth_type']."###".$row['wms_username']."###".$row['wms_password']."'>".$row['wms_title']."</option>";
 		$cnt++;
@@ -418,7 +419,7 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	?>
 <?php
 	
-	echo "<label for='capURL'>Alte URL:</label><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly>";
+	echo "<label for='capURL'>URL:</label><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly>";
 	echo "<input type='hidden' name='myWMS' id='myWMS' value=''></div>";
  	echo "<div id='newCapabilitiesBox' class='' ><label for='myURL'>Neue URL:</label><input class='form-control' type='text' name='myURL' id='myURL'>"; 
         echo "<span id='helpBlock' class='help-block bg-danger' style='padding:10px;margin-top:25px;word-wrap:break-word;border-radius:4px;'>Die URL muss ein valides WMS Capabilities Dokument der Version 1.1.1 liefern. In der Regel sollte folgendes in Ihrer URL enthalten sein:<p style='margin:10px 0 0 0;font-weight:bold;'>REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.1.1</p></span></div>";
@@ -452,9 +453,8 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	echo "<div class='checkbox' style='display:none'><label><input type='checkbox' name='overwrite_categories' id='overwrite_categories'>Overwrite layer categories with categories from service (maybe avaiable from wms 1.3.0+)</label></div>";
 	echo "<div class='checkbox'><label><input type='checkbox' name='compare_dialog' id='compare_dialog'>Vergleichsdialog beim Update anzeigen</label></div></div>";
 
-	echo "<input class='btn btn-default' type='button' value='Update Simulieren' onclick='window.open(this.form.myURL.value,\"\",\"\")'>&nbsp;";
-	echo "<input class='btn btn-primary' type='button' value='Update neue URL' onclick='validate()'>&nbsp;"; 
- 	echo "<input class='btn btn-default' type='button' value='Update alte URL' onclick='reupload()'><br>"; 
+	echo "<input class='btn btn-default' type='button' value='Simulieren' onclick='window.open(this.form.myURL.value,\"\",\"\")'>&nbsp;";
+	echo "<input class='btn btn-primary' type='button' value='Update' onclick='validate()'>&nbsp;"; 
 
 
 if(isset($myURL) && $myURL != ''){
@@ -514,7 +514,7 @@ if(isset($myURL) && $myURL != ''){
  	} 
 	
 	
-	echo "<div id='updateResult'>";
+	echo "<div id='updateResult' style='background-color: #efefef;border: 1px solid #ccc;padding: 15px;margin: 30px 0;border-radius: 4px;'>";
 	$mywms->displayWMS();
     	echo "</div>";
 
