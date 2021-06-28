@@ -104,8 +104,6 @@ function toggleAuthDivVis() {
  	}
 
 </script>
-<script src="../extensions/jquery-1.12.0.min.js"></script>
-<script src="../extensions/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 </head>
 <body>
 <div class="container" style="padding-top:15px;padding-bottom:15px;">
