@@ -106,6 +106,9 @@ echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
   	}
   	-->
 	label{margin-top:10px;}
+	#updateResult {background-color: #efefef;border: 1px solid #ccc;padding: 15px;margin: 30px 0;border-radius: 4px;}
+	#updateResult td {padding: 7px;}
+	#updateResult table {margin-top: 5px;}
 	#authbox {border: 1px solid #ccc;max-width: 300px;padding: 15px;border-radius: 4px;background-color: #efefef;}
 	#authbox > .radio {margin: unset;}
 	#authbox > .radio > label {margin: 0;}
@@ -513,7 +516,7 @@ if(isset($myURL) && $myURL != ''){
  	} 
 	
 	
-	echo "<div id='updateResult' style='background-color: #efefef;border: 1px solid #ccc;padding: 15px;margin: 30px 0;border-radius: 4px;'>";
+	echo "<div id='updateResult'>";
 	$mywms->displayWMS();
     	echo "</div>";
 
