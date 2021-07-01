@@ -33,6 +33,16 @@ if (defined("MAPBENDER_REGISTRY_UUID") && MAPBENDER_REGISTRY_UUID != "") {
     $uuid = new Uuid(MAPBENDER_REGISTRY_UUID);
     $injectRegistryUuid = $uuid->isValid();
 }
+// load translation of inspire categories from database to allow
+$sql_categories = "SELECT * FROM inspire_category";
+$v = array();
+$t = array();
+$res_categories = db_prep_query($sql_categories,$v,$t);
+$inspireCatArray = array();
+while($row = db_fetch_array($res_categories)){
+    //$mb_user_groups[$cnt_groups] = db_result($res_groups,$cnt_groups,"fkey_mb_group_id");
+    $inspireCatArray[$row["inspire_category_code_en"]] = $row["inspire_category_code_de"];
+}
 $numberOfFile = 0;
 if ($handle = opendir($metadataDir)) {
     //echo "Read files from temporary metadata folder:<br>";
@@ -102,11 +112,11 @@ if ($handle = opendir($metadataDir)) {
 				}    
                 //logMessages("count keywordsArray: ".count($keywordsArray)." - count metadataObject->keywords: ".count($metadataObject->keywords));
 				if ($debug == true) {
-					$metadataXml = addKeywords($metadataXml, $keywordsArray);
+				    $metadataXml = addKeywords($metadataXml, $keywordsArray, $inspireCatArray);
 							logMessages("Keywords will be injected without test before - debug mode!");
 				} else {
 					if (count($keywordsArray) > 0 && count($metadataObject->keywords) > 0) {
-						$metadataXml = addKeywords($metadataXml, $keywordsArray);
+					    $metadataXml = addKeywords($metadataXml, $keywordsArray, $inspireCatArray);
 								logMessages("Keywords will be injected!");
 					} else {
 						//TODO inject keyword after some other element!
@@ -141,6 +151,23 @@ if ($handle = opendir($metadataDir)) {
     $timeToBuildAll = microtime(true) - $startTimeForAll;
     logMessages("time to alter all xml: ".$timeToBuildAll);
 }
+
+/** Inserts a new node after a given reference node. Basically it is the complement to the DOM specification's
+ * insertBefore() function.
+ * @param \DOMNode $newNode The node to be inserted.
+ * @param \DOMNode $referenceNode The reference node after which the new node should be inserted.
+ * @return \DOMNode The node that was inserted.
+ * https://gist.github.com/deathlyfrantic/cd8d7ef8ba91544cdf06
+ */
+function insertAfter(\DOMNode $newNode, \DOMNode $referenceNode)
+{
+    if($referenceNode->nextSibling === null) {
+        return $referenceNode->parentNode->appendChild($newNode);
+    } else {
+        return $referenceNode->parentNode->insertBefore($newNode, $referenceNode->nextSibling);
+    }
+}
+
 function exchangeLanguageAndDeletePolygon($metadataXml) {
 	// do parsing with dom, cause we want to alter the xml which have been parsed afterwards
 	$metadataDomObject = new DOMDocument ();
@@ -209,11 +236,14 @@ function exchangeLanguageAndDeletePolygon($metadataXml) {
 	}
 	return $metadataDomObject->saveXML ();
 }
-function addKeywords($metadataXml, $keywordsArray) {
+
+function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false) {
     //logMessages("function addKeywords");
     //parse XML part
 	//do parsing with dom, cause we want to alter the xml which have been parsed afterwards
 	$metadataDomObject = new DOMDocument();
+	$metadataDomObject->preserveWhiteSpace = false;
+	$metadataDomObject->formatOutput = true;
 	libxml_use_internal_errors(true);
 	try {
 		$metadataDomObject->loadXML($metadataXml);
@@ -238,33 +268,76 @@ function addKeywords($metadataXml, $keywordsArray) {
 		$xpath->registerNamespace("gco", "http://www.isotc211.org/2005/gco");
 		$xpath->registerNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 		$xpath->registerNamespace("gts", "http://www.isotc211.org/2005/gts");
-                $xpath->registerNamespace("xsi", "http://www.w3c.org/2001/XMLSchema-instance");
+        $xpath->registerNamespace("xsi", "http://www.w3c.org/2001/XMLSchema-instance");
 		//$xpath->registerNamespace("srv", "http://www.isotc211.org/2005/srv");
 		$xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
+		
+        // Qualify schemaLocation ***********************************************************************************************************************************************
+        // extract attribute schemaLocation - alter it if it has only one uri entry for gmd!
+        $MD_MetadataNodeList = $xpath->query("//gmd:MD_Metadata[@xsi:schemaLocation = 'http://www.isotc211.org/2005/gmd']");
+        if ($MD_MetadataNodeList->item(0) != null) {
+            $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd');
+            logMessages("schemaLocation attribute extended!!!!");
+        } else {
+            logMessages("schemaLocation attribute is not http://www.isotc211.org/2005/gmd. Nothing will be done!");
+        }
+        $MD_MetadataNodeList = $xpath->query("//gmd:MD_Metadata[@xsi:schemaLocation = 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd']");
+        if ($MD_MetadataNodeList->item(0) != null) {
+            $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd');
+            logMessages("schemaLocation attribute extended!!!!");
+        } else {
+            logMessages("schemaLocation attribute is not http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd. Nothing will be done!");
+        }
+        // Qualify schemaLocation end *******************************************************************************************************************************************
 
-//Qualify schemaLocation ***********************************************************************************************************************************************
-//extract attribute schemaLocation - alter it if it has only one uri entry for gmd!
-$MD_MetadataNodeList = $xpath->query("//gmd:MD_Metadata[@xsi:schemaLocation = 'http://www.isotc211.org/2005/gmd']");
-if ($MD_MetadataNodeList->item(0) != null) {
-    $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd');
-    logMessages("schemaLocation attribute extended!!!!");
-} else {
-    logMessages("schemaLocation attribute is not http://www.isotc211.org/2005/gmd. Nothing will be done!");
-}
-$MD_MetadataNodeList = $xpath->query("//gmd:MD_Metadata[@xsi:schemaLocation = 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd']");
-if ($MD_MetadataNodeList->item(0) != null) {
-    $MD_MetadataNodeList->item(0)->setAttribute('xsi:schemaLocation', 'http://www.isotc211.org/2005/gmd http://schemas.opengis.net/csw/2.0.2/profiles/apiso/1.0.0/apiso.xsd');
-    logMessages("schemaLocation attribute extended!!!!");
-} else {
-    logMessages("schemaLocation attribute is not http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20060504/gmd/gmd.xsd. Nothing will be done!");
-}
-//Qualify schemaLocation end *******************************************************************************************************************************************
-//check for empty keyword
-//check for right date formats
-//check for empty use constraints
-//check for empty responsible party elements
-//check for wrong format description - name, version, specification
-//check ... - maybe include it into class_iso19139 - this will be easier!
+        // ****************************************************************************************
+        // 2021-07-01 - new for translation of inspire themes and missing mandatory spatialRepresentationType
+        // ****************************************************************************************
+        if ($inspireCategoriesArray != false) {
+            $inspireCategoryNodeList = $xpath->query("//gmd:MD_Metadata/gmd:identificationInfo/*/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword[../gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString='GEMET - INSPIRE themes, version 1.0']/gco:CharacterString");
+            foreach ($inspireCategoryNodeList as $inspireCategoryKeyword) {
+                if (array_key_exists($inspireCategoryKeyword->nodeValue, $inspireCategoriesArray)) {
+                    logMessages("Exchange " . $inspireCategoryKeyword->nodeValue . " with " . $inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    $newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    $inspireCategoryKeyword->parentNode->replaceChild($newElement, $inspireCategoryKeyword);
+                }
+            }
+        }
+        // first check, if hierachyLevel is dataset or series or tile
+        $hierarchyLevelNodeList = $xpath->query('//gmd:MD_Metadata/gmd:hierarchyLevel/gmd:MD_ScopeCode/@codeListValue');
+        if ($hierarchyLevelNodeList->length == 1) {
+            if (in_array($hierarchyLevelNodeList->item(0)->nodeValue, array(
+                "dataset",
+                "series",
+                "tile"
+            ))) {
+                // if gmd:spatialRepresentationType does not exists - add it to the metadata rercord for dataset metadata ;-)
+                $spatialRepresentationTypeNodeList = $xpath->query("//gmd:MD_Metadata/gmd:identificationInfo/*/gmd:spatialRepresentationType");
+                if ($spatialRepresentationTypeNodeList->length == 0) {
+                    logMessages("No spatialRepresentationType found - add a dummy one ;-)");
+                    // add it after last <gmd:resourceConstraints> node
+                    $resourceConstraintsNodeList = $xpath->query("//gmd:MD_Metadata/gmd:identificationInfo/*/gmd:resourceConstraints");
+                    if ($resourceConstraintsNodeList->length > 0) {
+                        $spatialRepresentationXMLSnippet = '<?xml version="1.0" encoding="UTF-8"?><gmd:spatialRepresentationType xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink"><gmd:MD_SpatialRepresentationTypeCode codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid" /></gmd:spatialRepresentationType>';
+                        $spatialRepresentationDomObject = new DOMDocument();
+                        $spatialRepresentationDomObject->loadXML($spatialRepresentationXMLSnippet);
+                        $xpathspatialRepresentation = new DOMXpath($spatialRepresentationDomObject);
+                        $spatialRepresentationNodeList = $xpathspatialRepresentation->query('/gmd:spatialRepresentationType');
+                        insertAfter($metadataDomObject->importNode($spatialRepresentationNodeList->item(0), true), $resourceConstraintsNodeList->item(($resourceConstraintsNodeList->length) - 1));
+                    }
+                } else {
+                    logMessages("spatialRepresentationType found - don't add one!");
+                }
+            }
+        }
+        // ****************************************************************************************
+        
+        //check for empty keyword
+        //check for right date formats
+        //check for empty use constraints
+        //check for empty responsible party elements
+        //check for wrong format description - name, version, specification
+        //check ... - maybe include it into class_iso19139 - this will be easier!
 
 		//inspire specific keywords
 		//https://webgate.ec.europa.eu/fpfis/wikis/display/InspireMIG/Spatial+scope+code+list
@@ -345,6 +418,12 @@ if ($MD_MetadataNodeList->item(0) != null) {
 			$fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gco:DateTime', $dateTimeNew);
 			$dateTimeNodeList->item(0)->parentNode->replaceChild($fragment, $dateTimeNodeList->item(0));
 		}
+		//if topiccategory is given in xml - try to exchange its value with the translation from translation array
+		if ($topicCategoriesArray != false) {
+		    $topicCategoryNodeList = $xpath->query('//gmd:MD_Metadata/gmd:identificationInfo//gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword[gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString=\'GEMET - INSPIRE themes, version 1.0\']]/gco:CharacterString');
+		    //$fragment = $metadataDomObject->createElementNS('http://www.isotc211.org/2005/gco', 'gmd:keyword', $dateTimeNew);
+		
+		}	
 	} //end for parsing xml successfully
 	return $metadataDomObject->saveXML();
 }
