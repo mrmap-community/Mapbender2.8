@@ -299,7 +299,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                         var kml = $('#mapframe1').data('kml');
                         var url = $(this).parent().parent().attr('title');
                         kml.zoomToFeature(url, idx);
-                        editObject($(this), null)(e);
+                        //editObject($(this), null)(e);
                     });
                 $('li[title="' + url + '"] > .digitize-menu-arrow').die('click').live('click', contextmenuLayer);
                 $('li[title="' + url + '"] > ul > li > .digitize-menu-arrow').die('click').live('click', contextmenuObject);
