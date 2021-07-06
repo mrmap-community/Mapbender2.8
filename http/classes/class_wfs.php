@@ -809,16 +809,30 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		} else {
 			$e = new mb_notice("classes/class_wfs.php: wfs version forced to ".$version."!");
 		}
+		$getFeatureByIdName = false;
+		//$e = new mb_exception(json_encode($this->storedQueriesArray));
 		switch ($this->getVersion()) {
 			case "2.0.2":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				$featureIdParameterName = "featureID";
+				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
+				    $getFeatureByIdName = "GetFeatureById";
+				}
+				if (in_array("urn:ogc:def:query:OGC-WFS::GetFeatureById", $this->storedQueriesArray)) {
+				    $getFeatureByIdName = "urn:ogc:def:query:OGC-WFS::GetFeatureById";
+				}
 				break;
 			case "2.0.0":
 				$typeNameParameterName = "typeNames";
 				$maxFeaturesParameterName = "COUNT";
 				$featureIdParameterName = "featureID";
+				if (in_array("GetFeatureById", $this->storedQueriesArray)) {
+				    $getFeatureByIdName = "GetFeatureById";
+				}
+				if (in_array("urn:ogc:def:query:OGC-WFS::GetFeatureById", $this->storedQueriesArray)) {
+				    $getFeatureByIdName = "urn:ogc:def:query:OGC-WFS::GetFeatureById";
+				}
 				break;
 			default:
 				$typeNameParameterName = "typeName";
@@ -826,11 +840,17 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 				$featureIdParameterName = "featureID";
 				break;
 		}
-		$getRequest = $this->getFeature .
+		if ($getFeatureByIdName != false) {
+		    $getRequest = $this->getFeature .
+		    $this->getConjunctionCharacter($this->getFeature) .
+		    "service=WFS&request=GetFeature&version=" .
+		    $this->getVersion() . "&".strtolower($typeNameParameterName)."=" . $featureTypeName."&STOREDQUERY_ID=".$getFeatureByIdName."&ID=".$id;
+		} else {		    
+		    $getRequest = $this->getFeature .
 			$this->getConjunctionCharacter($this->getFeature) . 
 			"service=WFS&request=GetFeature&version=" . 
 			$this->getVersion() . "&".strtolower($typeNameParameterName)."=" . $featureTypeName."&".$featureIdParameterName."=".$id;
-
+		}
 		if ($outputFormat != false) {
 			$getRequest .= "&outputFormat=".$outputFormat;
 		}
@@ -855,6 +875,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 					break;
 			}
 		}
+		//$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
 		return $this->get($getRequest); //from class_ows!
 	}
 	

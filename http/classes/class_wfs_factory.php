@@ -137,7 +137,14 @@ abstract class WfsFactory extends OwsFactory {
 			while($row = db_fetch_array($res_of)){
 				$aWfs->wfsOutputFormatArray[] = $row["output_format"];
 			}
-			
+			//pull stored query ids
+			$sql_sq = "SELECT stored_query_id FROM wfs_conf WHERE fkey_wfs_id = $1";
+			$v = array($aWfs->id);
+			$t = array("i");
+			$res_sq = db_prep_query($sql_sq, $v, $t);
+			while($row = db_fetch_array($res_sq)){
+			    $aWfs->storedQueriesArray[] = $row["stored_query_id"];
+			}
 			// Featuretypes
 			$sql_fe = "SELECT * FROM wfs_featuretype WHERE fkey_wfs_id = $1 ORDER BY featuretype_id";
 			$v = array($aWfs->id);
