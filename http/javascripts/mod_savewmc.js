@@ -186,7 +186,9 @@ var SaveWmcApi = function () {
             var kml = $('#mapframe1').data('kml');
             if(kml) {
                 mb_mapObj[0].kmls = kml._kmls;
-                mb_mapObj[0].kmlOrder = kml.kmlOrder;
+		//regenerate kml order before save it
+		mb_mapObj[0].kmlOrder = Object.keys(mb_mapObj[0].kmls);
+                //mb_mapObj[0].kmlOrder = kml.kmlOrder;
                 var json = JSON.stringify(kml._kmls);
                 if(Mapbender.options && Mapbender.options.MAX_WMC_LOCAL_DATA_SIZE && json && json.length > Mapbender.options.MAX_WMC_LOCAL_DATA_SIZE) {
                     alert('The maximum local data size is ' + Math.round(Mapbender.options.MAX_WMC_LOCAL_DATA_SIZE / 1024) + 'kb, your data is ' + Math.round(json.length / 1024) + 'kb, data will NOT be saved.');
