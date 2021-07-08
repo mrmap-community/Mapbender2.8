@@ -151,7 +151,7 @@ class AjaxResponse extends AjaxRequest {
         			    //    $params["domain"], $params["secure"], $params["httponly"]
     				    //);
                         $this->setSuccess(true);
-                        $this->setMessage(mb("The session has expired - there is no information for the current cookie. Read cookie params: ").json_encode($params));
+                        $this->setMessage(_mb("The session has expired - there is no information for the current cookie. Read cookie params: ").json_encode($params));
 				}
 				//return;//test if this is a problem 
 			}

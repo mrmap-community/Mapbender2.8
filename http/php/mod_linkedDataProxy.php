@@ -1672,10 +1672,11 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					// extract schema - get all elements that are strings and integers
 					$ftElementArray = $featureType->elementArray; // consists of name and type
 					                                              // get allowed attributes for filtering
+					//$e = new mb_exception("php/mod_linkedDataProxy.php: ftElementArray: ".json_encode($ftElementArray));
 					$ftAllowedAttributesArray = array ();
 					foreach ( $ftElementArray as $ftElement ) {
 						// $e = new mb_exception($ftElement->name ." - " .$ftElement->type);
-						if ($ftElement->type == "string") {
+					    if (in_array((string)$ftElement->type, array("string", "xsd:string", "int"))) {
 							$ftAllowedAttributesArray [] = $ftElement->name;
 						}
 					}
@@ -2012,6 +2013,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							 */
 						} else {
 							// $e = new mb_exception($filter);
+						    //$e = new mb_exception("php/mod_linkedDataProxy.php: supported output formats: ".json_encode($ftOutputFormats));
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", false, $wfs_http_method );
 							// transform to geojson to allow rendering !
 							// $e = new mb_exception($features);
@@ -2248,7 +2250,18 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 						}
 					} else {
-						$features = $wfs->getFeatureById ( $collection, 'text/xml; subtype=gml/3.1.1', $item, "2.0.0", "EPSG:4326" );
+					    //use outputformat if supported is not in list!
+					    //$e = new mb_exception("php/mod_linkedDataProxy.php - getfeaturebyid outputformats: ".json_encode($ftOutputFormats));
+					    if (!in_array('text/xml; subtype=gml/3.1.1', $ftOutputFormats)) {
+					        $forcedOutputFormat = false;
+					    } else {
+					        $forcedOutputFormat = 'text/xml; subtype=gml/3.1.1'; //TODO - maybe use another one ;-) 
+					    }
+					    //$e = new mb_exception("php/mod_linkedDataProxy.php item:". $item);
+					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, "2.0.0", "EPSG:4326" );
+						//$e = new mb_exception($features);
+						//use postgis to transform gml geometry to geojson - this maybe better ;-)
+						
 						// transform to geojson to allow rendering !
 						// TODO test for ows:ExceptionReport!!!!
 						$gml3Class = new Gml_3_Factory ();
@@ -2256,6 +2269,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						// create featuretype object
 						// TODO
 						$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
+
+						//$e = new mb_exception("after creation of object!");
 						$geojsonList = new stdClass ();
 						$geojsonList->type = "FeatureCollection";
 						$geojsonList->features = array ();
@@ -2270,6 +2285,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$geoJsonVariable = "";
 							$geoJsonVariable .= '<script>' . $newline;
 						}
+						//$e = new mb_exception("number of features: ".count($gml3Object->featureCollection->featureArray));
 						foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
 							// bbox
 							$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();

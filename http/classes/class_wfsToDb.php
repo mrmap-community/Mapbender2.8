@@ -577,6 +577,32 @@ if (!$updateMetadataOnly) {
 	//-----------------------------------------------------------------------	
 	
 	private static function insertFeatureTypeNamespace ($aWfsId, $aWfsFeatureTypeId, $aWfsFeatureTypeNamespace) {
+	    // only insert the namespace, if it does not already exists
+	    // check first
+	    $sql_check = "SELECT FROM wfs_featuretype_namespace WHERE fkey_wfs_id=$1 AND " .
+	   	    "fkey_featuretype_id = $2 AND namespace=$3 AND namespace_location=$4 ";
+	    
+	    $v = array(
+	        $aWfsId,
+	        $aWfsFeatureTypeId,
+	        $aWfsFeatureTypeNamespace->name,
+	        $aWfsFeatureTypeNamespace->value
+	    );
+	    $t = array("s", "s", "s", "s");
+	    $res_check = db_prep_query($sql_check, $v, $t);
+	    
+	    if ($res_check) {
+	        $ftNamepace = db_fetch_array($res_check);
+	        //$e = new mb_exception("Found namespace: $".$ftNamepace['namespace']."$");
+	        //if (count($ftNamepace) > 0 && $ftNamepace['namespace'] != "") {
+	        if (count($ftNamepace) > 0) {
+	           //$e = new mb_exception("Count ftNamespace: ".count($ftNamepace));
+	           $e = new mb_exception("Namespace ".$aWfsFeatureTypeNamespace->name." already exists for featuretype ".$aWfsFeatureTypeId." - will not be added twice!");
+	           // TODO: check why namespace maybe redefined in case of some inspire wfs???
+	           return true;
+	        }
+	    }
+	    
 		$sql = "INSERT INTO wfs_featuretype_namespace (fkey_wfs_id, " . 
 				"fkey_featuretype_id, namespace, namespace_location) " . 
 				"VALUES ($1, $2, $3, $4);"; 

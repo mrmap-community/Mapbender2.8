@@ -111,6 +111,34 @@ if (!$res) {
 $row = db_fetch_assoc($res);
 $mb_metadata = $row;
 
+if (in_array($mb_metadata['origin'], array("external", "capabilities")) && isset($mb_metadata['link']) && $mb_metadata['link'] != "") {
+    //try to update metadata from remote resource 
+    $newMetadata = new Iso19139();
+    $newMetadata->createFromUrl($mb_metadata['link']);
+    $newMetadata->origin = $mb_metadata['origin'];
+    $e = new mb_notice("classes/class_iso19139.php: try to update dataset metadata from remote!");
+    if ($newMetadata->harvestResult == "1") {
+        $e = new mb_exception("classes/class_iso19139.php: harvesting was successful - try to update cache!");
+        //check if remote metadata date is newer
+        $remoteDate = new DateTime($newMetadata->createDate);
+        $cachedDate = new DateTime($mb_metadata['createdate']);
+        if ($remoteDate > $cachedDate) {
+            $e = new mb_notice("classes/class_iso19139.php: remote metadata is newer than cache - update it!");
+            $newMetadata->updateMetadataById($mb_metadata['metadata_id'], false);
+            $res = db_prep_query($sql, $v, $t);
+            if (!$res) {
+                echo "No record with uuid " . $recordId . " found in mapbender database!";
+                die();
+            }
+            $row = db_fetch_assoc($res);
+            $mb_metadata = $row; 
+        } else {
+            $e = new mb_notice("classes/class_iso19139.php: cache is up to date give back cache!");
+        }
+        //$e = new mb_exception("classes/class_iso19139.php: Date remote: ".$remoteDate->format('Y-m-d')." date cache: ".$cachedDate->format('Y-m-d'));      
+    }
+}
+
 //parse polygon to add needed gml:id attributes for metadata validation
 $mb_metadata['boundingGmlMultiPolygon'] = false;
 if (isset($row['bounding_polygon']) && $row['bounding_polygon'] != '') {
