@@ -993,10 +993,10 @@ $html .= $aboStr;
 if ($layerAccessibility && WRAPPER_PATH != '' && ($resource == 'layer' or $resource == 'wms' )) {
 	$pos = stripos($mapbenderBaseUrl.WRAPPER_PATH, "?");
 	if ($pos>0) {
-		$showMapUrl = $mapbenderBaseUrl.WRAPPER_PATH."LAYER[zoom]=1&LAYER[id]=".$resourceMetadata['contentid']."&LAYER[visible]=0&LAYER[querylayer]=0";
+		$showMapUrl = $mapbenderBaseUrl.WRAPPER_PATH."LAYER[zoom]=1&LAYER[id]=".$resourceMetadata['contentid']."&LAYER[visible]=1&LAYER[querylayer]=1";
 	}
 	else {
-		$showMapUrl = $mapbenderBaseUrl.WRAPPER_PATH."?LAYER[zoom]=1&LAYER[id]=".$resourceMetadata['contentid']."&LAYER[visible]=0&LAYER[querylayer]=0";
+		$showMapUrl = $mapbenderBaseUrl.WRAPPER_PATH."?LAYER[zoom]=1&LAYER[id]=".$resourceMetadata['contentid']."&LAYER[visible]=1&LAYER[querylayer]=1";
 	}
 	//add hidden element for show map url
 	$html .= $t_a.$t_b.'<span hidden="hidden" property="url">'.$showMapUrl.'</span>'.$t_c;
