@@ -214,9 +214,9 @@ netgis.layers =
 			// If the coordinate reference system of the wmc is different to
 			// the one used in MobileMap2, zoom to full extent
 
-			//old if, this was always true beacause wmc.crs was buggy see above
-			//if (wmc_crs != netgis.config.MAP_PROJECTION) {
-			if (netgis.params.get( "bbox" ) == undefined ) {
+			//old if, this was always true because wmc.crs was buggy see above
+			if (wmc_crs != netgis.config.MAP_PROJECTION) {
+			//if (netgis.params.get( "bbox" ) == undefined ) {
 				netgis.map.viewFull();
 			}
 			else if ( bbox )
