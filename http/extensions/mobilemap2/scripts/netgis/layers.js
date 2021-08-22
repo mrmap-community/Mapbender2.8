@@ -210,7 +210,12 @@ netgis.layers =
 
 			//old buggfy wmc_crs declaration, always results in "E"
 			//const wmc_crs = data.wmc.crs[0];
-			const wmc_crs = data.wmc.crs;
+			if (typeof(data.wmc.crs) == 'string') {
+				var wmc_crs_var = data.wmc.crs;
+			} else {
+				var wmc_crs_var = data.wmc.crs[0];
+			}	
+			const wmc_crs = wmc_crs_var;
 			// If the coordinate reference system of the wmc is different to
 			// the one used in MobileMap2, zoom to full extent
 
