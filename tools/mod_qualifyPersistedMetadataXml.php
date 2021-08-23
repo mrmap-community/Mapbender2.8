@@ -298,8 +298,11 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
             foreach ($inspireCategoryNodeList as $inspireCategoryKeyword) {
                 if (array_key_exists($inspireCategoryKeyword->nodeValue, $inspireCategoriesArray)) {
                     logMessages("Exchange " . $inspireCategoryKeyword->nodeValue . " with " . $inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    //$newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
+                    $gco__character_string = $metadataDomObject->createElement('gco:CharacterString');
                     $newElement = $metadataDomObject->createTextNode($inspireCategoriesArray[$inspireCategoryKeyword->nodeValue]);
-                    $inspireCategoryKeyword->parentNode->replaceChild($newElement, $inspireCategoryKeyword);
+                    $gco__character_string->appendChild($newElement);
+                    $inspireCategoryKeyword->parentNode->replaceChild($gco__character_string, $inspireCategoryKeyword);
                 }
             }
         }
