@@ -14,5 +14,6 @@
   "map_position": "below_filter",
   "behind_rewrite": false,
   "rewrite_path": "spatial-objects",
-  "open_data_filter": "false"
+  "open_data_filter": "false",
+  "exclude_wfs_ids": [1,2]
 }
