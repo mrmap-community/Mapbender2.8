@@ -396,6 +396,7 @@ XML;
 						} else {
 							$this->inspireDownload = 0;
 						}
+						break;
 			                case "mapbender.2.noCswExport":
 						if ($keyword == "1") {
 							$this->export2Csw = 'f';
