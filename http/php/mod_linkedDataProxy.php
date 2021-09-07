@@ -88,6 +88,11 @@ if (isset ( $configObject ) && isset ( $configObject->open_data_filter ) && $con
 } else {
     $restrictToOpenData = false;	
 }
+if (isset ( $configObject ) && isset ( $configObject->exclude_wfs_ids ) && $configObject->exclude_wfs_ids != "") {
+    $excludeWfsIds = $configObject->exclude_wfs_ids;
+} else {
+    $excludeWfsIds = array();
+}
 // textual data:
 $textualDataArray = array (
 		"title",
@@ -1114,8 +1119,14 @@ $returnObject = new stdClass ();
  */
 if ($restrictToOpenData == true) {
     $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+    if (count($excludeWfsIds) >= 1) {
+        $sql .= " AND wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
+    }
 } else {
     $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id";
+    if (count($excludeWfsIds) >= 1) {
+        $sql .= " WHERE wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
+    }
 } 
 $v = array ();
 $t = array ();
@@ -1133,8 +1144,14 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 	$returnObject->service = array ();
 	if ($restrictToOpenData == true) {
 	    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+	    if (count($excludeWfsIds) >= 1) {
+	        $sql .= " AND wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
+	    }
 	} else {// all wfs - without open filter!
 	    $sql = "SELECT wfs_id, wfs_abstract, wfs_version, wfs_title, wfs_owsproxy, wfs_getcapabilities, providername, fees FROM wfs";
+	    if (count($excludeWfsIds) >= 1) {
+	        $sql .= " WHERE wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
+	    }
 	}
 	$v = array ();
 	$t = array ();
