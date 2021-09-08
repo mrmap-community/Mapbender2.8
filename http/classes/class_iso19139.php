@@ -396,6 +396,7 @@ XML;
 						} else {
 							$this->inspireDownload = 0;
 						}
+						break;
 			                case "mapbender.2.noCswExport":
 						if ($keyword == "1") {
 							$this->export2Csw = 'f';
@@ -581,7 +582,8 @@ XML;
 			$restrictionCodeAttributeValue = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo//gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useConstraints/gmd:MD_RestrictionCode/@codeListValue');
 			$first = $restrictionCodeAttributeValue[0];
 			$second = $restrictionCodeAttributeValue[1];
-			if ($first == 'license' && $second == 'otherRestrictions') {
+			// TODO: check the behavior
+			//if ($first == 'license' && $second == 'otherRestrictions') {
 				//search for json
 				$otherConstraints = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo//gmd:resourceConstraints/gmd:MD_LegalConstraints[gmd:useConstraints/gmd:MD_RestrictionCode/@codeListValue="otherRestrictions"]/gmd:otherConstraints/gco:CharacterString');
 				$jsonFound = false;
@@ -599,7 +601,7 @@ XML;
 					}
 				} 
 				$this->fees = rtrim($otherConstraintsFreeText, ';');
-			}
+			//}
 			$e = new mb_notice("class_iso19139.php: licenseSourceNote: ".$this->licenseSourceNote." - fees: ".$this->fees);		
 			$accessConstraints = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo//gmd:resourceConstraints/gmd:MD_LegalConstraints[gmd:accessConstraints/gmd:MD_RestrictionCode/@codeListValue="otherRestrictions"]/gmd:otherConstraints/gco:CharacterString');
 			$this->accessConstraints = $accessConstraints[0];

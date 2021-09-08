@@ -210,13 +210,18 @@ netgis.layers =
 
 			//old buggfy wmc_crs declaration, always results in "E"
 			//const wmc_crs = data.wmc.crs[0];
-			const wmc_crs = data.wmc.crs;
+			if (typeof(data.wmc.crs) == 'string') {
+				var wmc_crs_var = data.wmc.crs;
+			} else {
+				var wmc_crs_var = data.wmc.crs[0];
+			}	
+			const wmc_crs = wmc_crs_var;
 			// If the coordinate reference system of the wmc is different to
 			// the one used in MobileMap2, zoom to full extent
 
-			//old if, this was always true beacause wmc.crs was buggy see above
-			//if (wmc_crs != netgis.config.MAP_PROJECTION) {
-			if (netgis.params.get( "bbox" ) == undefined ) {
+			//old if, this was always true because wmc.crs was buggy see above
+			if (wmc_crs != netgis.config.MAP_PROJECTION) {
+			//if (netgis.params.get( "bbox" ) == undefined ) {
 				netgis.map.viewFull();
 			}
 			else if ( bbox )
