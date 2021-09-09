@@ -131,8 +131,8 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
 	}
 	//check publish attribute for geoRss and twitter attribute in class_wms.php
     	if ($wmsToUpdate[$i]['scheduler_publish'] == 1) {
-        	require_once dirname(__FILE__) . "/../http/classes/class_twitter.php";
-		$updateWms->twitterNews=true;
+        	//require_once dirname(__FILE__) . "/../http/classes/class_twitter.php";
+		$updateWms->twitterNews=false;
 		$updateWms->setGeoRss=true;
 		echo "publish = true\n";
 	}
