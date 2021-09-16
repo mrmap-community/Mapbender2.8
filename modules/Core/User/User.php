@@ -51,7 +51,6 @@ class User implements UserInterface
 
     protected function getMapbenderUser()
     {
-        session_start();
         $this->userid = \Mapbender::session()->get('mb_user_id');
         $this->username = \Mapbender::session()->get('mb_user_name');
         $this->usermail = \Mapbender::session()->get('mb_user_email');
