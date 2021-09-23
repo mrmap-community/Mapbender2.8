@@ -2773,7 +2773,7 @@ SQL;
 			$keyword_id = "";
 			
 			while ($keyword_id == "") {
-				$sql = "SELECT keyword_id FROM keyword WHERE UPPER(keyword) = UPPER($1)";
+				$sql = "SELECT keyword_id FROM keyword WHERE keyword = $1";
 				$v = array($k[$j]);
 				$t = array('s');
 				$res = db_prep_query($sql,$v,$t);
