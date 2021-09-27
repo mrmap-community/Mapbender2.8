@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mapbender\Core\Request;
 
+use ArrayObject;
 use Mapbender\Core\User\User;
 
 class Request implements RequestInterface
@@ -54,16 +55,8 @@ class Request implements RequestInterface
 
     private function extractCookies(): array
     {
-        if (!array_key_exists("COOKIES", $_SERVER)) return [];
-        if ($_SERVER["COOKIES"] === '') return [];
-        
-        $result = array();
-        $cookies = explode("; ", $_SERVER["COOKIES"]);
-        foreach ($cookies as $pair) {
-            $cookie = explode("=", $pair);
-            $result[$cookie[0]] = $cookie[1];
-        }
-        return $result;
+        $result = new ArrayObject($_COOKIE);
+        return $result->getArrayCopy();
     }
 
     private function extractRequestData(): array

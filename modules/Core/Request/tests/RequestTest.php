@@ -22,7 +22,7 @@ class RequestTest extends TestCase
 
     public function test_cookies_should_give_empty_array_for_empty_cookies_string()
     {
-        $_SERVER["COOKIES"] = "";
+        $_COOKIE = [];
         $obj = new Request();
 
         $actual = $obj->cookies();
@@ -33,7 +33,7 @@ class RequestTest extends TestCase
 
     public function test_cookies_should_create_correct_array_for_single_cookie()
     {
-        $_SERVER["COOKIES"] = "foo=1";
+        $_COOKIE = ["foo" => 1];
         $obj = new Request();
 
         $actual = $obj->cookies();
@@ -44,7 +44,7 @@ class RequestTest extends TestCase
 
     public function test_cookies_should_create_correct_array_for_multiple_cookies()
     {
-        $_SERVER["COOKIES"] = "foo=1; bar=2";
+        $_COOKIE = ["foo" => 1,  "bar" => 2];
         $obj = new Request();
 
         $actual = $obj->cookies();
