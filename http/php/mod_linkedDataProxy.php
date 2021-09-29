@@ -11,6 +11,7 @@ global $behindRewrite;
 global $linkedDataProxyUrl;
 global $nonceLife;
 global $restrictToOpenData;
+global $useGdal;
 /*
  * examples:
  * get
@@ -93,6 +94,12 @@ if (isset ( $configObject ) && isset ( $configObject->exclude_wfs_ids ) && $conf
 } else {
     $excludeWfsIds = array();
 }
+if (isset ( $configObject ) && isset ( $configObject->use_gdal ) && $configObject->use_gdal == true) {
+    $useGdal = true;
+} else {
+    $useGdal = false;
+}
+//TODO problem with single features ! 
 // textual data:
 $textualDataArray = array (
 		"title",
@@ -220,6 +227,123 @@ $allowedFormats = array (
 );
 //
 $newline = " ";
+
+function gdalGml2geojson($features) {
+    $filenameUniquePart = "ldp_gml_".time()."_".uniqid(); //will be set to new one cause ?
+    $filenameGml = TMPDIR."/".$filenameUniquePart.".gml";
+    $filenameGfs = TMPDIR."/".$filenameUniquePart.".gfs";
+    if($h = fopen($filenameGml,"w")){
+        if(!fwrite($h, $features)){
+            $e = new mb_exception("php/mod_linkedDataProxy.php: could not write gml file to tmp folder");
+        } else {
+            unset($features);
+        }
+        fclose($h);
+    }
+    $filenameGeojson = TMPDIR."/".$filenameUniquePart.".geojson";
+    exec('ogr2ogr -a_srs "EPSG:4326" -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES', $output);
+    //read geojson
+    if($h = fopen($filenameGeojson, "r")){
+        $geojson = fread($h, filesize($filenameGeojson));
+        if(!$geojson){
+            $e = new mb_exception("php/mod_linkedDataProxy.php: could not read geojson ".$filenameGeojson." from tmp folder");
+            return false;
+        } else {
+            //unklink tmp files
+            unlink($filenameGeojson);
+            unlink($filenameGml);
+            unlink($filenameGfl);  
+        }
+        fclose($h);
+    }
+    return $geojson;
+    //return str_replace('urn:ogc:def:crs:OGC:1.3:CRS84', 'EPSG:4326', $geojson);
+}
+
+function calculateBboxFromGeojsonFcObject($geojsonList) {    
+    foreach ( $geojsonList->features as $feature ) {
+        $minxF = 90;
+        $minyF = 180;
+        $maxxF = - 90;
+        $maxyF = - 180;
+        switch ($feature->geometry->type) {
+            case "Polygon" :
+                foreach ( $feature->geometry->coordinates [0] as $lonLat ) {
+                    $lon = $lonLat [0];
+                    $lat = $lonLat [1];
+                    if ($minxF > $lat) {
+                        $minxF = $lat;
+                    }
+                    if ($minyF > $lon) {
+                        $minyF = $lon;
+                    }
+                    if ($maxxF < $lat) {
+                        $maxxF = $lat;
+                    }
+                    if ($maxyF < $lon) {
+                        $maxyF = $lon;
+                    }
+                }
+                break;
+            case "Point" :
+                $lon = $feature->geometry->coordinates [0];
+                $lat = $feature->geometry->coordinates [1];
+                if ($minxF > $lat) {
+                    $minxF = $lat;
+                }
+                if ($minyF > $lon) {
+                    $minyF = $lon;
+                }
+                if ($maxxF < $lat) {
+                    $maxxF = $lat;
+                }
+                if ($maxyF < $lon) {
+                    $maxyF = $lon;
+                }
+                break;
+            case "LineString" :
+                foreach ( $feature->geometry->coordinates as $lonLat ) {
+                    $lon = $lonLat [0];
+                    $lat = $lonLat [1];
+                    if ($minxF > $lat) {
+                        $minxF = $lat;
+                    }
+                    if ($minyF > $lon) {
+                        $minyF = $lon;
+                    }
+                    if ($maxxF < $lat) {
+                        $maxxF = $lat;
+                    }
+                    if ($maxyF < $lon) {
+                        $maxyF = $lon;
+                    }
+                }
+                break;
+        }
+        if ($minxFC > $minxF) {
+            $minxFC = $minxF;
+        }
+        if ($minyFC > $minyF) {
+            $minyFC = $minyF;
+        }
+        if ($maxxFC < $maxxF) {
+            $maxxFC = $maxxF;
+        }
+        if ($maxyFC < $maxyF) {
+            $maxyFC = $maxyF;
+        }
+        /*$geojsonBbox [$geojsonIndex]->minx = $minxF;
+        $geojsonBbox [$geojsonIndex]->miny = $minyF;
+        $geojsonBbox [$geojsonIndex]->maxx = $maxxF;
+        $geojsonBbox [$geojsonIndex]->maxy = $maxyF;*/
+        $bboxFc = array($minxFC, $minyFC, $maxxFC, $maxyFC);
+        
+        //return array("bbxFc"=>$bboxFc, "bbxArray"=>);
+        return $bboxFc;
+        // $e = new mb_exception("bbox featurecollection: minxFC:".$minxFC." minyFC:".$minyFC." maxxFC:".$maxxFC." maxyFC:".$maxyFC."");
+    }
+}
+
 // for digest authentication
 // function to get relevant user information from mb db
 function getUserInfo($mbUsername, $mbEmail) {
@@ -1199,8 +1323,10 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			if (isset($row['wfs_owsproxy']) && $row['wfs_owsproxy'] != "") {
 				$proxyActivated = true;
 				$admin = new administration();
+				//$e = new mb_exception("php/linkedDataProxy.php: "."proxyIsActive");
 			} else {
-				$admin = false;
+			    $admin = false;
+			    //$e = new mb_exception("php/linkedDataProxy.php: "."proxyIsDeactive");
 			}
 		}
 		$anonymousAccess = false;
@@ -1837,9 +1963,12 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								$filter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0">' . ( string ) $filter . ( string ) $textFilter . '</fes:Filter>';
 							}
 						}
-						// test
+						//
 						// $e = new mb_exception("filter: ".$filter);
 						// write number of features to ram cache:
+						/*
+						 * Cache of feature count, cause this may take very long when more than 1 mio features are served
+						 */
 						if ($cache->isActive) {
 							// if (false) {
 							if ($cache->cachedVariableExists ( md5 ( "count_" . $wfsid . "_" . $collection . "_" . md5 ( $filter ) ) ) == false) {
@@ -1908,12 +2037,16 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$returnObject->links [2]->title = "last page";
 						// $returnObject->links[1]->href = $_SERVER['REQUEST_URI']."&p=".($page + 1);
 						$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&offset=" . $lastOffset . "&limit=" . $limit );
-						// check if outputformat geojson is available - if - gml don't need to be parsed!!!!! TODO - where to become hits ????? - has to count in a special request!!!!!
+						// number of hits per page? - how to get it from geojson result?
 						if (in_array ( 'application/json; subtype=geojson', explode ( ',', $ftOutputFormats ) ) && $nativeJson == true) {
 							// if (false) {
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", 'application/json; subtype=geojson', $wfs_http_method );
 							$gmlFeatureCache = $features;
 							$geojsonList = json_decode ( $features );
+							// native json from wfs may not have bbox and gml_id attribute !!!!!!!!!
+							// bbox has to be calculated from result!
+							// $e = new mb_exception("features from wfs: " . $features);
+							// $e = new mb_exception("bbox feature from wfs: " . json_encode($geojsonList->bbox));
 							$geojsonBbox = array ();
 							$geojsonIndex = 0;
 							$minxFC = 90;
@@ -1988,7 +2121,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 										}
 										break;
 								}
-								// $e = new mb_exception("bbox feature: minxF:".$minxF." minyF:".$minyF." maxxF:".$maxxF." maxyF:".$maxyF."");
+								//$e = new mb_exception("bbox feature: minxF:".$minxF." minyF:".$minyF." maxxF:".$maxxF." maxyF:".$maxyF."");
 								if ($minxFC > $minxF) {
 									$minxFC = $minxF;
 								}
@@ -2010,7 +2143,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 								// $e = new mb_exception("bbox featurecollection: minxFC:".$minxFC." minyFC:".$minyFC." maxxFC:".$maxxFC." maxyFC:".$maxyFC."");
 							}
 							/*
-							 * log count of features, if logging is activated
+							 * TODO: log count of features, if logging is activated - does not work if opendata is selected!
 							 */
 							if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
 								//get price out of db
@@ -2027,83 +2160,147 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							 * echo $features;
 							 * die();
 							 */
-						} else {
-							// $e = new mb_exception($filter);
+						} else { //when native geojson is not requested - gml is used 
+						    $wfsVersion = $wfs->getVersion();
+						    $e = new mb_notice("php/mod_linkedDataProxy.php: wfs version for getfeature: " . $wfsVersion);
+						    
+							$timeBeforeWfsRequest = microtime(true);
 						    //$e = new mb_exception("php/mod_linkedDataProxy.php: supported output formats: ".json_encode($ftOutputFormats));
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", false, $wfs_http_method );
+							//$features = $wfs->getFeaturePaging ( $ftName, $filter, "urn:ogc:def:crs:EPSG::4326", null, null, $limit, $startIndex, "1.1.0", false, $wfs_http_method );
+							
 							// transform to geojson to allow rendering !
-							// $e = new mb_exception($features);
-							$gmlFeatureCache = $features;
-							$gml3Class = new Gml_3_Factory ();
-							// create featuretype object
-							// TODO
-							// $e = new mb_exception("geom column type: ".$geomColumnName);
-							// $e = new mb_exception("featuretype name: ".$ftName);
-							// $memBeforeGmlParsing = memory_get_usage();
-							// $e = new mb_exception("Memory before GML Object: ".((memory_get_usage() - $startmem) / 1000)." MB");
-							//$e = new mb_exception($wfs." - ".$myFeatureType." - ".$geomColumnName);
-							$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
-							// $e = new mb_exception("Memory for GML Object: ".((memory_get_usage() - $memBeforeGmlParsing) / 1000)." MB");
-							// $e = new mb_exception("geojson from mb class: ".json_encode($gml3Object));
-							$geojsonList = new stdClass ();
-							$geojsonList->type = "FeatureCollection";
-							$geojsonList->features = array ();
-							$geojsonBbox = array ();
-							$geojsonIndex = 0;
-							$minxFC = 90;
-							$minyFC = 180;
-							$maxxFC = - 90;
-							$maxyFC = - 180;
-							// TODO write javascript object if to var if html is requested
-							if ($f == 'html') {
-								$geoJsonVariable = "";
-								$geoJsonVariable = '<script>' . $newline;
+							$timeAfterWfsRequest = microtime(true);
+							$e = new mb_notice("php/mod_linkedDataProxy.php: time for processing wfs getfeature: ". ($timeAfterWfsRequest - $timeBeforeWfsRequest));
+							//$useGdal = false;
+							//$useGdal = true;
+							if ($useGdal) {
+							    $geojson = gdalGml2geojson($features);
+							    $geojsonList = json_decode($geojson);
+							    /*
+							     *https://datatracker.ietf.org/doc/html/rfc7946:  The coordinate reference system for all GeoJSON coordinates is a
+                                   geographic coordinate reference system, using the World Geodetic
+                                   System 1984 (WGS 84) [WGS84] datum, with longitude and latitude units
+                                   of decimal degrees.  This is equivalent to the coordinate reference
+                                   system identified by the Open Geospatial Consortium (OGC) URN
+                                   urn:ogc:def:crs:OGC::CRS84.  An OPTIONAL third-position element SHALL
+                                   be the height in meters above or below the WGS 84 reference
+                                   ellipsoid.  In the absence of elevation values, applications
+                                   sensitive to height or depth SHOULD interpret positions as being at
+                                   local ground or sea level.
+							     */
+							    //$e = new mb_exception("php/mod_linkedDataProxy.php: count objects: ".count($geojsonList->features));
+							    $geojsonIndex = count($geojsonList->features);
+							    $e = new mb_notice("php/mod_linkedDataProxy.php: gdal geojson result, crs of fc: ".json_encode($geojsonList->crs));
+							    $e = new mb_notice("php/mod_linkedDataProxy.php: gdal geojson result, bbox of fc: ".json_encode($geojsonList->bbox));
+							    //lonlat - for urn.....
+							    // get geomtype
+							    $geomType = $geojsonList->geometry->type;
+							    //extract bbox from fc and features
+							    //$geojsonBbox = $geojsonList->bbox;
+							    // switch axis order if crs = 'urn:ogc:def:crs:OGC:1.3:CRS84'
+							    $minxFC = $geojsonList->bbox[1];
+							    $minyFC = $geojsonList->bbox[0];
+							    $maxxFC = $geojsonList->bbox[3];
+							    $maxyFC = $geojsonList->bbox[2];
+							    $geojsonBbox = array ();
+							    $geojsonBboxIndex = 0;
+							    foreach ($geojsonList->features as $feature) {
+							        $geojsonBbox[$geojsonBboxIndex]->minx = $feature->bbox[1];
+							        $geojsonBbox[$geojsonBboxIndex]->miny = $feature->bbox[0];
+							        $geojsonBbox[$geojsonBboxIndex]->maxx = $feature->bbox[3];
+							        $geojsonBbox[$geojsonBboxIndex]->maxy = $feature->bbox[2];
+							        $geojsonBboxIndex++;
+							    }							    
+							    // TODO write javascript object if to var if html is requested
+							    $timeAfterBuildGeojson = microtime(true);
+							    $e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson by ogr2ogr: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
+							    if ($f == 'html') {
+							        $geoJsonVariable = "";
+							        $geoJsonVariable = '<script>' . $newline;
+							    }
+							    $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000);
+							} else {
+    							// transform features from gml via mapbenders gml3 class
+    							$gmlFeatureCache = $features;
+    							$gml3Class = new Gml_3_Factory ();
+    							// create featuretype object
+    							// TODO
+    							// $e = new mb_exception("geom column type: ".$geomColumnName);
+    							// $e = new mb_exception("featuretype name: ".$ftName);
+    							// $memBeforeGmlParsing = memory_get_usage();
+    							// $e = new mb_exception("Memory before GML Object: ".((memory_get_usage() - $startmem) / 1000)." MB");
+    							//$e = new mb_exception($wfs." - ".$myFeatureType." - ".$geomColumnName);
+    							$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
+    							// $e = new mb_exception("Memory for GML Object: ".((memory_get_usage() - $memBeforeGmlParsing) / 1000)." MB");
+    							// $e = new mb_exception("geojson from mb class: ".json_encode($gml3Object));
+    							$geojsonList = new stdClass ();
+    							$geojsonList->type = "FeatureCollection";
+    							$geojsonList->features = array ();
+    							$geojsonBbox = array ();
+    							$geojsonIndex = 0;
+    							$minxFC = 90;
+    							$minyFC = 180;
+    							$maxxFC = - 90;
+    							$maxyFC = - 180;
+    							// TODO write javascript object if to var if html is requested
+    							if ($f == 'html') {
+    								$geoJsonVariable = "";
+    								$geoJsonVariable = '<script>' . $newline;
+    							}
+    							// $e = new mb_exception("size of gml3Object: ".);
+    							foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
+    								// $e = new mb_exception("geojson from mb feature exporthandler: ".json_encode($mbFeature));
+    								// $e = new mb_exception("geoJson object no.: ".$geojsonIndex." - current Memory usage: ".((memory_get_usage() - $startmem) / 1000)." MB");
+    								// bbox
+    								try {
+    									$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();
+    									// $e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
+    								} catch ( Exception $e ) {
+    									$e = new mb_exception ( 'Problem to resolve bbox from gml - set to default values!', $e->getMessage () );
+    									$geojsonBbox [$geojsonIndex]->mbBbox = "[(" . $minxFC . "," . $minyFC . ",,urn:ogc:def:crs:EPSG::4326)(" . $maxxFC . "," . $maxyFC . ",,urn:ogc:def:crs:EPSG::4326) urn:ogc:def:crs:EPSG::4326]";
+    								}
+    								// $e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
+    								// transform to simple bbox object for leaflet
+    								$bbox_new = explode ( ' ', str_replace ( ']', '', str_replace ( '[', '', $geojsonBbox [$geojsonIndex]->mbBbox ) ) );
+    								$bbox_new = explode ( '|', str_replace ( ')', '', str_replace ( '(', '', str_replace ( ')(', '|', $bbox_new [0] ) ) ) );
+    								$bbox_min = explode ( ',', $bbox_new [0] );
+    								$bbox_max = explode ( ',', $bbox_new [1] );
+    								$geojsonBbox [$geojsonIndex]->minx = $bbox_min [0];
+    								$geojsonBbox [$geojsonIndex]->miny = $bbox_min [1];
+    								$geojsonBbox [$geojsonIndex]->maxx = $bbox_max [0];
+    								$geojsonBbox [$geojsonIndex]->maxy = $bbox_max [1];
+    								if ($minxFC > $geojsonBbox [$geojsonIndex]->minx) {
+    									$minxFC = $geojsonBbox [$geojsonIndex]->minx;
+    								}
+    								if ($minyFC > $geojsonBbox [$geojsonIndex]->miny) {
+    									$minyFC = $geojsonBbox [$geojsonIndex]->miny;
+    								}
+    								if ($maxxFC < $geojsonBbox [$geojsonIndex]->maxx) {
+    									$maxxFC = $geojsonBbox [$geojsonIndex]->maxx;
+    								}
+    								if ($maxyFC < $geojsonBbox [$geojsonIndex]->maxy) {
+    									$maxyFC = $geojsonBbox [$geojsonIndex]->maxy;
+    								}
+    								// get geomtype
+    								$geomType = json_decode ( $mbFeature->toGeoJSON () )->geometry->type;
+    								$geojsonList->features [] = json_decode ( $mbFeature->toGeoJSON () );
+    								// free memory
+    								unset ( $gml3Object->featureCollection->featureArray [$geojsonIndex] );
+    								$geojsonIndex ++;
+    							}
+    							$timeAfterBuildGeojson = microtime(true);
+    							$e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson from gml by mapbender: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
+    							$e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with mapbender gml parsing: ".memory_get_usage() / 1000000);
 							}
-							// $e = new mb_exception("size of gml3Object: ".);
-							foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
-								// $e = new mb_exception("geojson from mb feature exporthandler: ".json_encode($mbFeature));
-								// $e = new mb_exception("geoJson object no.: ".$geojsonIndex." - current Memory usage: ".((memory_get_usage() - $startmem) / 1000)." MB");
-								// bbox
-								try {
-									$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();
-									// $e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
-								} catch ( Exception $e ) {
-									$e = new mb_exception ( 'Problem to resolve bbox from gml - set to default values!', $e->getMessage () );
-									$geojsonBbox [$geojsonIndex]->mbBbox = "[(" . $minxFC . "," . $minyFC . ",,urn:ogc:def:crs:EPSG::4326)(" . $maxxFC . "," . $maxyFC . ",,urn:ogc:def:crs:EPSG::4326) urn:ogc:def:crs:EPSG::4326]";
-								}
-								// $e = new mb_exception('bbox: '.$geojsonBbox[$geojsonIndex]->mbBbox);
-								// transform to simple bbox object for leaflet
-								$bbox_new = explode ( ' ', str_replace ( ']', '', str_replace ( '[', '', $geojsonBbox [$geojsonIndex]->mbBbox ) ) );
-								$bbox_new = explode ( '|', str_replace ( ')', '', str_replace ( '(', '', str_replace ( ')(', '|', $bbox_new [0] ) ) ) );
-								$bbox_min = explode ( ',', $bbox_new [0] );
-								$bbox_max = explode ( ',', $bbox_new [1] );
-								$geojsonBbox [$geojsonIndex]->minx = $bbox_min [0];
-								$geojsonBbox [$geojsonIndex]->miny = $bbox_min [1];
-								$geojsonBbox [$geojsonIndex]->maxx = $bbox_max [0];
-								$geojsonBbox [$geojsonIndex]->maxy = $bbox_max [1];
-								if ($minxFC > $geojsonBbox [$geojsonIndex]->minx) {
-									$minxFC = $geojsonBbox [$geojsonIndex]->minx;
-								}
-								if ($minyFC > $geojsonBbox [$geojsonIndex]->miny) {
-									$minyFC = $geojsonBbox [$geojsonIndex]->miny;
-								}
-								if ($maxxFC < $geojsonBbox [$geojsonIndex]->maxx) {
-									$maxxFC = $geojsonBbox [$geojsonIndex]->maxx;
-								}
-								if ($maxyFC < $geojsonBbox [$geojsonIndex]->maxy) {
-									$maxyFC = $geojsonBbox [$geojsonIndex]->maxy;
-								}
-								// get geomtype
-								$geomType = json_decode ( $mbFeature->toGeoJSON () )->geometry->type;
-								$geojsonList->features [] = json_decode ( $mbFeature->toGeoJSON () );
-								// free memory
-								unset ( $gml3Object->featureCollection->featureArray [$geojsonIndex] );
-								$geojsonIndex ++;
-							}
+							//$e = new mb_exception("php/mod_linkedDataProxy.php: " . "wfs getfeature paging invoked - number of returned objects: ".$geojsonIndex);
 							/*
 							 * log count of features, if logging is activated
 							 */
+							//$wfsLogTag = $admin->getWfsLogTag($wfsid);
+							//$e = new mb_exception("php/mod_linkedDataProxy.php: wfs log tag ".$wfsLogTag);
 							if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
+							    //$e = new mb_exception("php/mod_linkedDataProxy.php: wfs log activated for wfs ".$wfsid);
 								//get price out of db
 								$price = intval($admin->getWfsPrice($wfsid));
 								$log_id = $admin->logWfsProxyRequest($wfsid, $userId, "OGC API Features Proxy", $price, 0, $ftName);
@@ -2266,6 +2463,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$admin->updateWfsLog(1, '', '', $geojsonIndex, $log_id);
 						}
 					} else {
+					    $wfsVersion = $wfs->getVersion();
+					    $e = new mb_notice("php/mod_linkedDataProxy.php: wfs version for getfeaturebyid: " . $wfsVersion);
 					    //use outputformat if supported is not in list!
 					    //$e = new mb_exception("php/mod_linkedDataProxy.php - getfeaturebyid outputformats: ".json_encode($ftOutputFormats));
 					    if (!in_array('text/xml; subtype=gml/3.1.1', $ftOutputFormats)) {
@@ -2273,64 +2472,92 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					    } else {
 					        $forcedOutputFormat = 'text/xml; subtype=gml/3.1.1'; //TODO - maybe use another one ;-) 
 					    }
+					    //$testformat = "text/xml; subtype=gml/2.1";
 					    //$e = new mb_exception("php/mod_linkedDataProxy.php item:". $item);
-					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, "2.0.0", "EPSG:4326" );
-						//$e = new mb_exception($features);
-						//use postgis to transform gml geometry to geojson - this maybe better ;-)
-						
-						// transform to geojson to allow rendering !
-						// TODO test for ows:ExceptionReport!!!!
-						$gml3Class = new Gml_3_Factory ();
-						$gmlFeatureCache = $features;
-						// create featuretype object
-						// TODO
-						$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
-
-						//$e = new mb_exception("after creation of object!");
-						$geojsonList = new stdClass ();
-						$geojsonList->type = "FeatureCollection";
-						$geojsonList->features = array ();
-						$geojsonBbox = array ();
-						$geojsonIndex = 0;
-						$minxFC = 90;
-						$minyFC = 180;
-						$maxxFC = - 90;
-						$maxyFC = - 180;
-						// TODO write javascript object if to var if html is requested
-						if ($f == 'html') {
-							$geoJsonVariable = "";
-							$geoJsonVariable .= '<script>' . $newline;
-						}
-						//$e = new mb_exception("number of features: ".count($gml3Object->featureCollection->featureArray));
-						foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
-							// bbox
-							$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();
-							// transform to simple bbox object for leaflet
-							$bbox_new = explode ( ' ', str_replace ( ']', '', str_replace ( '[', '', $geojsonBbox [$geojsonIndex]->mbBbox ) ) );
-							$bbox_new = explode ( '|', str_replace ( ')', '', str_replace ( '(', '', str_replace ( ')(', '|', $bbox_new [0] ) ) ) );
-							$bbox_min = explode ( ',', $bbox_new [0] );
-							$bbox_max = explode ( ',', $bbox_new [1] );
-							$geojsonBbox [$geojsonIndex]->minx = $bbox_min [0];
-							$geojsonBbox [$geojsonIndex]->miny = $bbox_min [1];
-							$geojsonBbox [$geojsonIndex]->maxx = $bbox_max [0];
-							$geojsonBbox [$geojsonIndex]->maxy = $bbox_max [1];
-							if ($minxFC > $geojsonBbox [$geojsonIndex]->minx) {
-								$minxFC = $geojsonBbox [$geojsonIndex]->minx;
-							}
-							if ($minyFC > $geojsonBbox [$geojsonIndex]->miny) {
-								$minyFC = $geojsonBbox [$geojsonIndex]->miny;
-							}
-							if ($maxxFC < $geojsonBbox [$geojsonIndex]->maxx) {
-								$maxxFC = $geojsonBbox [$geojsonIndex]->maxx;
-							}
-							if ($maxyFC < $geojsonBbox [$geojsonIndex]->maxy) {
-								$maxyFC = $geojsonBbox [$geojsonIndex]->maxy;
-							}
-							// get geomtype
-							$geomType = json_decode ( $mbFeature->toGeoJSON () )->geometry->type;
-							$geojsonList->features [] = json_decode ( $mbFeature->toGeoJSON () );
-							$geojsonIndex ++;
-						}
+					    //request with registrated wfs version - don't force wfs 2.0.0
+					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, false, "EPSG:4326" );
+					    if ($useGdal) {
+					        //FIX for mapserver wfs 1.1.0 (e.g. 7.6.2) - if srs "urn:ogc:def:crs:EPSG::4326" is requested, it answers with "EPSG:4326" in returned gml. 
+					        if ($wfsVersion == "1.1.0") {
+					            $features = str_replace("EPSG:4326", "urn:ogc:def:crs:EPSG::4326", $features);
+					        }        
+					        $geojson = gdalGml2geojson($features);
+					        $geojsonList = json_decode($geojson);							    
+					        //extract bbox from geojson
+					        //$geojsonBbox = $geojsonList->bbox;
+					        $geojsonBbox[0] = $geojsonList->bbox;
+					        $minxFC = $geojsonList->bbox[1];
+					        $minyFC = $geojsonList->bbox[0];
+					        $maxxFC = $geojsonList->bbox[3];
+					        $maxyFC = $geojsonList->bbox[2];
+					        
+					        $geomType = $geojsonList->geometry->type;
+					        $e = new mb_notice("php/mod_linkedDataProxy.php: count objects: ".count($geojsonList->features));
+					        $geojsonIndex = count($geojsonList->features);
+					        $timeAfterBuildGeojson = microtime(true);
+					        $e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson by ogr2ogr: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
+					        $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000 );
+					        if ($f == 'html') {
+					            $geoJsonVariable = "";
+					            $geoJsonVariable = '<script>' . $newline;
+					        }
+					    } else {
+    						//use postgis to transform gml geometry to geojson - this maybe better ;-)
+    						// transform to geojson to allow rendering !
+    						// TODO test for ows:ExceptionReport!!!!
+    						$gml3Class = new Gml_3_Factory ();
+    						$gmlFeatureCache = $features;
+    						// create featuretype object
+    						// TODO
+    						$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
+    						//$e = new mb_exception("after creation of object!");
+    						$geojsonList = new stdClass ();
+    						$geojsonList->type = "FeatureCollection";
+    						$geojsonList->features = array ();
+    						$geojsonBbox = array ();
+    						$geojsonIndex = 0;
+    						$minxFC = 90;
+    						$minyFC = 180;
+    						$maxxFC = - 90;
+    						$maxyFC = - 180;
+    						// TODO write javascript object if to var if html is requested
+    						if ($f == 'html') {
+    							$geoJsonVariable = "";
+    							$geoJsonVariable .= '<script>' . $newline;
+    						}
+    						//$e = new mb_exception("number of features: ".count($gml3Object->featureCollection->featureArray));
+    						foreach ( $gml3Object->featureCollection->featureArray as $mbFeature ) {
+    							// bbox
+    							$geojsonBbox [$geojsonIndex]->mbBbox = $mbFeature->getBbox ();
+    							// transform to simple bbox object for leaflet
+    							$bbox_new = explode ( ' ', str_replace ( ']', '', str_replace ( '[', '', $geojsonBbox [$geojsonIndex]->mbBbox ) ) );
+    							$bbox_new = explode ( '|', str_replace ( ')', '', str_replace ( '(', '', str_replace ( ')(', '|', $bbox_new [0] ) ) ) );
+    							$bbox_min = explode ( ',', $bbox_new [0] );
+    							$bbox_max = explode ( ',', $bbox_new [1] );
+    							$geojsonBbox [$geojsonIndex]->minx = $bbox_min [0];
+    							$geojsonBbox [$geojsonIndex]->miny = $bbox_min [1];
+    							$geojsonBbox [$geojsonIndex]->maxx = $bbox_max [0];
+    							$geojsonBbox [$geojsonIndex]->maxy = $bbox_max [1];
+    							if ($minxFC > $geojsonBbox [$geojsonIndex]->minx) {
+    								$minxFC = $geojsonBbox [$geojsonIndex]->minx;
+    							}
+    							if ($minyFC > $geojsonBbox [$geojsonIndex]->miny) {
+    								$minyFC = $geojsonBbox [$geojsonIndex]->miny;
+    							}
+    							if ($maxxFC < $geojsonBbox [$geojsonIndex]->maxx) {
+    								$maxxFC = $geojsonBbox [$geojsonIndex]->maxx;
+    							}
+    							if ($maxyFC < $geojsonBbox [$geojsonIndex]->maxy) {
+    								$maxyFC = $geojsonBbox [$geojsonIndex]->maxy;
+    							}
+    							// get geomtype
+    							$geomType = json_decode ( $mbFeature->toGeoJSON () )->geometry->type;
+    							$geojsonList->features [] = json_decode ( $mbFeature->toGeoJSON () );
+    							$geojsonIndex ++;
+    						}
+    						$e = new mb_exception("php/mod_linkedDataProxy.php: memory usage with parsing gml3 by mapbender: ".memory_get_usage() / 1000000);
+    						// end gml parsing part
+					    }
 						if ($admin != false && $admin->getWfsLogTag($wfsid) == 1) {
 							//get price out of db
 							$price = intval($admin->getWfsPrice($wfsid));
@@ -2993,6 +3220,12 @@ switch ($f) {
 					$html .= '           <ul class="list-unstyled">' . $newline;
 					$objIndex = 0;
 					foreach ( $returnObject->features as $feature ) {
+					    // use the attribute gml_id if gdal will do the translation from gml to geojson
+					    if ($useGdal) {
+					        $gmlId = $feature->properties->gml_id;
+					    } else {
+					        $gmlId = $feature->id;
+					    }
 						$html .= '                <li>' . $newline;
 						$html .= '                    <div  itemscope itemtype="http://schema.org/Place">' . $newline;
 						$html .= '                        <h4 class="mt-3 mb-1"><a href="' . get2Rest ( delTotalFromQuery ( array (
@@ -3000,7 +3233,7 @@ switch ($f) {
 								'offset',
 								'limit',
 								'bbox' 
-						), $_SERVER ['REQUEST_URI'] ) . '&item=' . $feature->id ) . '" target="_blank"><span itemprop="name">' . $feature->id . '</span></a></h4><a href=""  onclick="zoomToExtent(' . $geojsonBbox [$objIndex]->minx . "," . $geojsonBbox [$objIndex]->miny . "," . $geojsonBbox [$objIndex]->maxx . "," . $geojsonBbox [$objIndex]->maxy . ');return false;">' . _mb ( 'zoom to' ) . '</a>' . $newline;
+						), $_SERVER ['REQUEST_URI'] ) . '&item=' . $gmlId ) . '" target="_blank"><span itemprop="name">' . $gmlId . '</span></a></h4><a href=""  onclick="zoomToExtent(' . $geojsonBbox [$objIndex]->minx . "," . $geojsonBbox [$objIndex]->miny . "," . $geojsonBbox [$objIndex]->maxx . "," . $geojsonBbox [$objIndex]->maxy . ');return false;">' . _mb ( 'zoom to' ) . '</a>' . $newline;
 						$html .= '                        <span class="d-none" itemprop="sameAs">https://www.ldproxy.nrw.de/topographie/collections/ax_bergbaubetrieb/items/DENWAT01D000CcF0</span>' . $newline;
 						// foreach attribute
 						foreach ( $feature->properties as $key => $value ) {
@@ -3043,13 +3276,19 @@ switch ($f) {
 					$html .= '            </ul>' . $newline;
 					$html .= $nav;
 				} else {
+				    // use the attribute gml_id if gdal will do the translation from gml to geojson
+				    if ($useGdal) {
+				        $gmlId = $feature->properties->gml_id;
+				    } else {
+				        $gmlId = $feature->id;
+				    }
 					// only one feature is found!
 					if ($map_position == "below_filter") {
 						$html .= '<div id="map"></div>' . $newline;
 					}
 					$feature = $returnObject;
 					$html .= '                    <div  itemscope itemtype="http://schema.org/Place">' . $newline;
-					$html .= '                        <h1 itemprop="name">' . $feature->id . '</h1>' . $newline;
+					$html .= '                        <h1 itemprop="name">' . $gmlId . '</h1>' . $newline;
 					$html .= '                        <span class="d-none" itemprop="url">' . $_SERVER ['REQUEST_URI'] . '</span>' . $newline;
 					// foreach attribute
 					foreach ( $feature->properties as $key => $value ) {
@@ -3136,7 +3375,7 @@ switch ($f) {
 				//remove mapbox osm and add bkg topplus web open
 				$js2 .= "var map = L.map('map', {center: [50, 7.44], zoom: 7, crs: L.CRS.EPSG4326});";
 				$js2 .= "L.tileLayer.wms('https://sgx.geodatenzentrum.de/wms_topplus_open?',{";
-        		$js2 .= "	layers: 'web',";
+        		$js2 .= "	layers: 'web_grau',";
         		$js2 .= "	format: 'image/png',";
         		$js2 .= "	attribution: 'BKG - 2021 - <a href=\'https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\'  target=\'_blank\'>Datenquellen<a>'";
         		$js2 .= "}).addTo(map);";
