@@ -283,7 +283,7 @@ class Crs {
 		}
 		//store information - maybe to cache, if it does not already exists!
 		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier)) == false) {
-			$cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo));
+			$cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo), 86400);
 			$e = new mb_notice("http/classes/class_crs.php - store crs info to cache!");
 			return true;
 		}
