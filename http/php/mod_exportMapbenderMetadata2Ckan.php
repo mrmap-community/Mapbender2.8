@@ -392,25 +392,25 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
                                 "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
                                 "format" => "Kartenviewer",
                                 "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
-                                "id" => $package[$j] . "_mapviewer_layer_" . $value1->id
+                                "id" => $package[$j]->id . "_mapviewer_layer_" . $value1->id
                             );
                             $layerViewResource_2 = array("name" => "GeoPortal.rlp",
                                 "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
                                 "format" => "GeoPortal.rlp",
                                 "url" => $mapbenderBaseUrl . "../portal/karten.html?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
-                                "id" => $package[$j]. "_geoportal_layer_" . $value1->id
+                                "id" => $package[$j]->id . "_geoportal_layer_" . $value1->id
                             );
                             $layerMetadataResource = array("name" => "Originäre Metadaten für Kartenebene",
                                 "description" => "Kartenebene: " . $layerTitle . " - Anzeige der originären Metadaten",
                                 "format" => "HTML",
                                 "url" => $mapbenderBaseUrl . "php/mod_showMetadata.php?languageCode=de&resource=layer&layout=tabs&id=" . $value1->id,
-                                "id" => $package[$j]. "_layer_metadata_" . $value1->id
+                                "id" => $package[$j]->id . "_layer_metadata_" . $value1->id
                             );
                             $layerWMSResource = array("name" => "WMS Schnittstelle",
                                 "description" => "Ebene: " . $layerTitle,
                                 "format" => "WMS",
                                 "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
-                                "id" => $package[$j]. "_wms_interface_" . $value1->id
+                                "id" => $package[$j]->id . "_wms_interface_" . $value1->id
                             );
                             $package[$j]->resource[] = $layerViewResource_1;
                             $package[$j]->resource[] = $layerViewResource_2;
@@ -437,7 +437,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
                                         "description" =>   "Objektart: " . $value1->resourceName. " - ISO19168-1:20202 API",
                                         "format" => "REST",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                        "id" => $package[$j]. "_ogc_api_interface_" . $value1->resourceName
+                                        "id" => $package[$j]->id . "_ogc_api_interface_" . $value1->resourceName
                                     );
                                     $package[$j]->resource[] = $featuretypeAccessResource_1;
                                     break;
@@ -446,7 +446,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
                                     "description" => $value1->serviceTitle,
                                     "format" => "ATOM",
                                     "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                    "id" => $package[$j]. "_atom_feed_wfs_" . $value1->resourceName
+                                    "id" => $package[$j]->id . "_atom_feed_wfs_" . $value1->resourceName
                                     );
                                     $package[$j]->resource[] = $atomFeedAccessResource_1;
                                     break;
@@ -455,7 +455,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
                                     "description" => $value1->serviceTitle,
                                     "format" => "ATOM",
                                     "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                    "id" => $package[$j]. "_atom_feed_wms_" . $value1->resourceId
+                                    "id" => $package[$j]->id . "_atom_feed_wms_" . $value1->resourceId
                                     );
                                     $package[$j]->resource[] = $atomFeedAccessResource_1;
                                     break;
