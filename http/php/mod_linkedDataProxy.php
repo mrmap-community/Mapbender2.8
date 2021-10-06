@@ -3488,7 +3488,7 @@ switch ($f) {
 		$html .= '    <div class="container d-flex flex-row justify-content-between align-items-center w-100">' . $newline;
 		$html .= '        <span>' . $newline;
 		$html .= '            <span class="text-muted small mr-2">powered by</span>' . $newline;
-		$html .= '            <a class="navbar-brand" href="https://git.osgeo.org/gitea/armin11/GeoPortal.rlp" target="_blank">GeoPortal.rlp</a>' . $newline;
+		$html .= '            <a class="navbar-brand" href="https://github.com/mrmap-community/GeoPortal.rlp" target="_blank">GeoPortal.rlp</a>' . $newline;
 		$html .= '        </span>' . $newline;
 		$html .= '        <span>' . $newline;
 		if (! isset ( $collections ) || $collection == 'all') {
