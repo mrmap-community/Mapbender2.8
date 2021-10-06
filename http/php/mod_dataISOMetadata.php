@@ -115,7 +115,7 @@ if (in_array($mb_metadata['origin'], array("external", "capabilities")) && isset
     //try to update metadata from remote resource 
     $newMetadata = new Iso19139();
     //TODO: Maybe allow metadata from other mapbender registries!
-    if (strpos($mb_metadata['link'], "/php/mod_dataISOMetadata.php") !== false) {
+    if (strpos($mb_metadata['link'], MAPBENDER_PATH . "/php/mod_dataISOMetadata.php") !== false) {
     	$e = new mb_exception("php/mod_dataISOMetadata.php: recursion found - can't invoke metadata with id: " . $mb_metadata['metadata_id']);
     	echo "Recursion exception - metadata has self reference in mapbender database!";
     	die();     
