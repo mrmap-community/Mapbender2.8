@@ -3250,7 +3250,7 @@ switch ($f) {
 		$html .= '    <div class="container d-flex flex-row justify-content-between align-items-center w-100">' . $newline;
 		$html .= '        <span>' . $newline;
 		$html .= '            <span class="text-muted small mr-2">powered by</span>' . $newline;
-		$html .= '            <a class="navbar-brand" href="https://git.osgeo.org/gitea/GDI-HE/Geoportal-Hessen" target="_blank">Geoportal-Hessen</a>' . $newline;
+		$html .= '            <a class="navbar-brand" href="https://github.com/GDI-HE" target="_blank">Geoportal-Hessen</a>' . $newline;
 		$html .= '        </span>' . $newline;
 		$html .= '        <span>' . $newline;
 		if (! isset ( $collections ) || $collection == 'all') {
