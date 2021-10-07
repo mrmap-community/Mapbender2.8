@@ -68,6 +68,8 @@ if ($handle = opendir($metadataDir)) {
 				$metadataXml = str_replace('https://www.w3.org', 'http://www.w3.org', $metadataXml);
 				$metadataXml = str_replace('https://www.opengis.net', 'http://www.opengis.net', $metadataXml);
 				$metadataXml = str_replace('https://schemas.opengis.net', 'http://schemas.opengis.net', $metadataXml);
+		    		$metadataXml = str_replace('https://schemas.opengis.net/gml/3.2', 'http://schemas.opengis.net/gml', $metadataXml);
+		    		$metadataXml = str_replace('https://schemas.opengis.net/gml', 'http://schemas.opengis.net/gml/3.2', $metadataXml);
 				try {
 					$metadataObject = $metadataClass->createMapbenderMetadataFromXML($metadataXml);
 				} catch ( Exception $e ) {
@@ -191,7 +193,7 @@ function exchangeLanguageAndDeletePolygon($metadataXml) {
 		// $e = new mb_exception($rootNamespace);
 		// $xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace ( "csw", "http://www.opengis.net/cat/csw/2.0.2" );
-		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml" );
+		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml/3.2" );
 		$xpath->registerNamespace ( "gco", "http://www.isotc211.org/2005/gco" );
 		$xpath->registerNamespace ( "gmd", "http://www.isotc211.org/2005/gmd" );
 		$xpath->registerNamespace ( "gts", "http://www.isotc211.org/2005/gts" );
@@ -264,7 +266,7 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
 		$xpath->registerNamespace('defaultns', $rootNamespace); 
 		//$xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace("csw", "http://www.opengis.net/cat/csw/2.0.2");
-		$xpath->registerNamespace("gml", "http://www.opengis.net/gml");
+		$xpath->registerNamespace("gml", "http://www.opengis.net/gml/3.2");
 		$xpath->registerNamespace("gco", "http://www.isotc211.org/2005/gco");
 		$xpath->registerNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 		$xpath->registerNamespace("gts", "http://www.isotc211.org/2005/gts");
