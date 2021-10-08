@@ -1826,6 +1826,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				}
 			}
 			if ($ftNameInWfs) {
+				//log access if defined in mapbender.conf
+			    	$administration = new administration();    
+			    	$administration->logOAFUsage ( $_SERVER['HTTP_REFERER'], $wfsid, $ftDbId );
 				$myFeatureType = $wfs->findFeatureTypeByName ( $ftName );
 				$geomColumnName = $wfs->findGeomColumnNameByFeaturetypeId ( $myFeatureType->id );
 				// check all allowed attributes to may be set by GET param
