@@ -2171,7 +2171,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						    //$e = new mb_exception("php/mod_linkedDataProxy.php: supported output formats: ".json_encode($ftOutputFormats));
 							$features = $wfs->getFeaturePaging ( $ftName, $filter, "EPSG:4326", null, null, $limit, $startIndex, "2.0.0", false, $wfs_http_method );
 							//$features = $wfs->getFeaturePaging ( $ftName, $filter, "urn:ogc:def:crs:EPSG::4326", null, null, $limit, $startIndex, "1.1.0", false, $wfs_http_method );
-							
+							$gmlFeatureCache = $features;
 							// transform to geojson to allow rendering !
 							$timeAfterWfsRequest = microtime(true);
 							$e = new mb_notice("php/mod_linkedDataProxy.php: time for processing wfs getfeature: ". ($timeAfterWfsRequest - $timeBeforeWfsRequest));
@@ -2225,7 +2225,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							    $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000);
 							} else {
     							// transform features from gml via mapbenders gml3 class
-    							$gmlFeatureCache = $features;
     							$gml3Class = new Gml_3_Factory ();
     							// create featuretype object
     							// TODO
@@ -2479,11 +2478,12 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					    //$e = new mb_exception("php/mod_linkedDataProxy.php item:". $item);
 					    //request with registrated wfs version - don't force wfs 2.0.0
 					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, false, "EPSG:4326" );
+					    $gmlFeatureCache = $features;
 					    if ($useGdal) {
 					        //FIX for mapserver wfs 1.1.0 (e.g. 7.6.2) - if srs "urn:ogc:def:crs:EPSG::4326" is requested, it answers with "EPSG:4326" in returned gml. 
 					        if ($wfsVersion == "1.1.0") {
 					            $features = str_replace("EPSG:4326", "urn:ogc:def:crs:EPSG::4326", $features);
-					        }        
+					        }   
 					        $geojson = gdalGml2geojson($features);
 					        $geojsonList = json_decode($geojson);							    
 					        //extract bbox from geojson
@@ -2509,7 +2509,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
     						// transform to geojson to allow rendering !
     						// TODO test for ows:ExceptionReport!!!!
     						$gml3Class = new Gml_3_Factory ();
-    						$gmlFeatureCache = $features;
     						// create featuretype object
     						// TODO
     						$gml3Object = $gml3Class->createFromXml ( $features, null, $wfs, $myFeatureType, $geomColumnName );
