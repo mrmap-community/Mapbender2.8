@@ -323,7 +323,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    //new 2021/10
 				    $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
 				    $downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "DIRECTWFS";
-				    $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb("OGC WFS Interface")." - "._mb("Featuretype").": ".$row['title'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb("OGC WFS Interface")." - "._mb("Featuretype").": ".$row['resource_name'];
 				    //http://localhost/mapbender/php/mod_featuretypeISOMetadata.php?SERVICE=WFS&outputFormat=iso19139&Id=24
 				    //service metadata:
 				    $downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_featuretypeISOMetadata.php?SERVICE=WFS&outputFormat=iso19139&Id=".$row['resource_id'];
@@ -335,7 +335,8 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    $downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 				    break;	
 			}
-		$j++;
+			$j++;
+			array_splice($downloadOptions->{$idList[$i]}->option, 0, 0);
 		}
 		//delete double entries - maybe url is given from dataurl - use this 
 		//get all dataurlids
