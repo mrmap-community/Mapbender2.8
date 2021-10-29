@@ -133,8 +133,8 @@ if ($handle = opendir($metadataDir)) {
 			fclose($h); //close file for read
 			
 			$metadataXml = exchangeLanguageAndDeletePolygon( $metadataXml );
-			$metadataXml = str_replace('http://schemas.opengis.net/gml/3.2', 'http://schemas.opengis.net/gml', $metadataXml);
-		    	$metadataXml = str_replace('http://schemas.opengis.net/gml', 'http://schemas.opengis.net/gml/3.2', $metadataXml);
+			$metadataXml = str_replace('http://www.opengis.net/gml/3.2', 'http://www.opengis.net/gml', $metadataXml);
+		    	$metadataXml = str_replace('http://www.opengis.net/gml', 'http://www.opengis.net/gml/3.2', $metadataXml);
 			//open same file for write and insert xml into the file!
             		$writeHandle = fopen($metadataDir."/".$file, "w+");
 			fwrite($writeHandle, $metadataXml);
