@@ -54,6 +54,20 @@ class Crs {
 			$this->resolveSuccess = true;
 		}
 	}
+	/*
+	 * https://www.binarytides.com/php-check-running-cli/
+	 */
+	public function is_cli() {
+	    $e = new mb_notice("classes/class_crs.php: php_api_name() : " . php_sapi_name());
+	    if (php_sapi_name() == 'cli') {
+	        return true;
+	    } else {
+	        return false;
+	    }
+	    //$e = new mb_exception("classes/class_crs.php: " . php_sapi_name());
+	    //return (!isset($_SERVER[‘SERVER_SOFTWARE’]) && (php_sapi_name() == ‘cli’ || (is_numeric($_SERVER[‘argc’]) && $_SERVER[‘argc’] > 0)));
+	}
+	
 /**
  * A public function whith a parameter for {owstype}_{version}. If the ows needs a swap of the crs axis order true is returned,
  * otherwise - if the axis are handled as they are defined in the epsg registry - the function returns false
@@ -140,16 +154,38 @@ class Crs {
                     $e = new mb_exception("classes/class_crs.php: identifierCode is not an integer: ".$this->identifierCode);
                     return false;
 		}
-		$cache = new Cache();
-		//try to read from cache if already exists
-		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier))) {
-			$cachedObject = json_decode($cache->cachedVariableFetch(md5($this->identifier)));
-			$this->gmlRepresentation = $cachedObject->gmlRepresentation;	
-			$this->epsgType = $cachedObject->epsgType;
-			$this->axisOrder = $cachedObject->axisOrder;
-			$this->name = $cachedObject->name;		
-			//$e = new mb_exception("http/classes/class_crs.php - read crs info from cache!");
-			return true;
+		if ($this->is_cli()) {
+		    $e = new mb_notice("http/classes/class_crs.php - invoked from cli!");
+		    // try to read from filesystem cache
+		    $admin = new administration();
+		    $filename = "/tmp" . "/crsCache_" . md5($this->identifier) . ".cache"; 
+		    $cachedObject = $admin->getFromStorage($filename, 'file');
+		    if ($cachedObject != false) {
+		        $cachedObject = json_decode($cachedObject);
+		        $this->gmlRepresentation = $cachedObject->gmlRepresentation;
+		        $this->epsgType = $cachedObject->epsgType;
+		        $this->axisOrder = $cachedObject->axisOrder;
+		        $this->name = $cachedObject->name;
+		        $e = new mb_notice("http/classes/class_crs.php - read crs info from cache!");
+		        return true;
+		    } else {
+		        $e = new mb_exception("http/classes/class_crs.php - no filesystem cache found - try to resolve crs info remote!");
+		    }
+		} else {
+		    $e = new mb_notice("http/classes/class_crs.php - invoked from http!");
+    		$cache = new Cache();
+    		//try to read from cache if already exists
+    		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier))) {
+    			$cachedObject = json_decode($cache->cachedVariableFetch(md5($this->identifier)));
+    			$this->gmlRepresentation = $cachedObject->gmlRepresentation;	
+    			$this->epsgType = $cachedObject->epsgType;
+    			$this->axisOrder = $cachedObject->axisOrder;
+    			$this->name = $cachedObject->name;		
+    			$e = new mb_notice("http/classes/class_crs.php - read crs info from cache!");
+    			return true;
+    		} else {
+    		    $e = new mb_exception("http/classes/class_crs.php - no variable cache found - try to resolve crs info remote!");
+    		}
 		}
 		//$e = new mb_exception("http/classes/class_crs.php - type: ".$this->identifierType." - code: ".$this->identifierCode);
 		//built urls to get information from registries
@@ -282,11 +318,23 @@ class Crs {
 			}
 		}
 		//store information - maybe to cache, if it does not already exists!
-		if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier)) == false) {
-			$cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo), 86400);
-			$e = new mb_notice("http/classes/class_crs.php - store crs info to cache!");
-			return true;
+		if ($this->is_cli()) {
+		    $filename = "/tmp" . "/crsCache_" . md5($this->identifier) . ".cache";
+		    $e = new mb_exception("http/classes/class_crs.php - search for file: " . $filename);
+		    if (!file_exists($filename)) {
+    		    $cachedObject = $admin->putToStorage($filename, json_encode($jsonCrsInfo), 'file', 86400);
+    		    $e = new mb_notice("http/classes/class_crs.php - store crs info to file cache!");
+		    } else {
+		        $e = new mb_notice("http/classes/class_crs.php - crs file already exists!");
+		    }
+		} else {
+		    if ($cache->isActive && $cache->cachedVariableExists(md5($this->identifier)) == false) {
+		        $cache->cachedVariableAdd(md5($this->identifier), json_encode($jsonCrsInfo), 86400);
+		        $e = new mb_notice("http/classes/class_crs.php - store crs info to cache!");
+		        return true;
+		    }
 		}
+		
 		return true;
 	}
 }
