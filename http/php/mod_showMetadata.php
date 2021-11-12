@@ -199,7 +199,7 @@ switch ($languageCode) {
 		$translation['wmccrs'] = 'Eingestelltes Koordinatenreferenzsystem';	
 		$translation['wgs84Bbox'] = 'Eckpunkte in geogr. Koordinaten';
 		$translation['wgs84BboxGraphic'] = 'Ausdehnung';
-		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
+		$translation['mapbenderCapabilities'] = 'Original Capabilities';
 		$translation['originalCapabilities'] = 'Original Capabilities';
 		$translation['describeFeaturetype'] = 'Link zum Datenschema';
 		$translation['kml'] = 'KML';
@@ -284,7 +284,7 @@ switch ($languageCode) {
 		$translation['wmccrs'] = 'Used Coordinate Reference System';
 		$translation['wgs84Bbox'] = 'Corner in geographic Coordinates';
 		$translation['wgs84BboxGraphic'] = 'Spatial Extent';
-		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
+		$translation['mapbenderCapabilities'] = 'Original Capabilities';
 		$translation['originalCapabilities'] = 'Original Capabilities';
 		$translation['inspireCapabilities'] = 'INSPIRE Capabilities URL';
 		$translation['describeFeaturetype'] = 'Dataschema';
@@ -454,7 +454,7 @@ switch ($languageCode) {
 		$translation['wmccrs'] = 'Used Coordinate Reference System';
 		$translation['wgs84Bbox'] = 'Corner in geographic Coordinates';
 		$translation['wgs84BboxGraphic'] = 'Spatial Extent';
-		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
+		$translation['mapbenderCapabilities'] = 'Original Capabilities';
 		$translation['originalCapabilities'] = 'Original Capabilities';
 		$translation['describeFeaturetype'] = 'Dataschema';
 		$translation['kml'] = 'KML';
