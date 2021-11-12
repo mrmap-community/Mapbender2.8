@@ -199,7 +199,7 @@ switch ($languageCode) {
 		$translation['wmccrs'] = 'Eingestelltes Koordinatenreferenzsystem';	
 		$translation['wgs84Bbox'] = 'Eckpunkte in geogr. Koordinaten';
 		$translation['wgs84BboxGraphic'] = 'Ausdehnung';
-		$translation['mapbenderCapabilities'] = 'Original Capabilities';
+		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
 		$translation['originalCapabilities'] = 'Original Capabilities';
 		$translation['describeFeaturetype'] = 'Link zum Datenschema';
 		$translation['kml'] = 'KML';
@@ -284,7 +284,7 @@ switch ($languageCode) {
 		$translation['wmccrs'] = 'Used Coordinate Reference System';
 		$translation['wgs84Bbox'] = 'Corner in geographic Coordinates';
 		$translation['wgs84BboxGraphic'] = 'Spatial Extent';
-		$translation['mapbenderCapabilities'] = 'Original Capabilities';
+		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
 		$translation['originalCapabilities'] = 'Original Capabilities';
 		$translation['inspireCapabilities'] = 'INSPIRE Capabilities URL';
 		$translation['describeFeaturetype'] = 'Dataschema';
@@ -454,7 +454,7 @@ switch ($languageCode) {
 		$translation['wmccrs'] = 'Used Coordinate Reference System';
 		$translation['wgs84Bbox'] = 'Corner in geographic Coordinates';
 		$translation['wgs84BboxGraphic'] = 'Spatial Extent';
-		$translation['mapbenderCapabilities'] = 'Original Capabilities';
+		$translation['mapbenderCapabilities'] = 'Geoportal Capabilities';
 		$translation['originalCapabilities'] = 'Original Capabilities';
 		$translation['describeFeaturetype'] = 'Dataschema';
 		$translation['kml'] = 'KML';
@@ -1478,7 +1478,7 @@ if ($resource == 'wms' or $resource == 'layer'){
 
 	//show only original url if the resource is not secured!
 	if (!$resourceSecured) {	
-		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['mapbenderCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
+		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['originalCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	}
 
 	$html .= $t_a.$translation['inspireCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['inspireCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
