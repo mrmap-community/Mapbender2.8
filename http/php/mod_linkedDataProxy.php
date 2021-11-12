@@ -477,15 +477,26 @@ function getJsonLdObject($feature) {
 	$returnObject->success = false;
 	$url = $feature->properties->{'json-ld_1.1_context'};
 	if (isset ( $url )) {
-		$schemaContextConnector = new Connector ();
-		$file = $schemaContextConnector->load ( $url );
-		$returnObject->schema = json_decode ( $file );
-		if ($returnObject->schema == false) {
-			$returnObject->success = false;
-		} else {
-			$returnObject->success = true;
-		}
-		$returnObject->url = $url;
+	    //check if url or inlined json
+	    if (filter_var($url, FILTER_VALIDATE_URL) !== false) {
+	        $schemaContextConnector = new Connector ();
+	        $file = $schemaContextConnector->load ( $url );
+	        $returnObject->schema = json_decode ( $file );
+	        if ($returnObject->schema == false) {
+	            $returnObject->success = false;
+	        } else {
+	            $returnObject->success = true;
+	        }
+	        $returnObject->url = $url;
+	    } else {
+	        $returnObject->schema = json_decode ( $url );
+	        if ($returnObject->schema == false) {
+	            $returnObject->success = false;
+	        } else {
+	            $returnObject->success = true;
+	        }
+	        $returnObject->url = $url;
+	    }
 		return $returnObject;
 	} else {
 		return $returnObject;
@@ -2354,7 +2365,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				} else {
 					// $e = new mb_exception("wfsid: ".$wfsid." - collection: ".$collection." - item: ".$item);
 					// ************************************************************************************************************************************
-					// item part
+					// item part!!!
 					// ************************************************************************************************************************************
 					// $e = new mb_exception("wfsid: ".$wfsid." - collection: ".$collection." - item: ".$item);
 					if (in_array ( 'application/json; subtype=geojson', explode ( ',', $ftOutputFormats ) ) && $nativeJson == true) {
@@ -2582,9 +2593,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						if ($resolveJsonSchema->success = true) {
 							$feature->{'$schema'} = $resolveJsonSchema->url;
 						}
-						if ($resolveJsonLd->success = true) {
+						/*if ($resolveJsonLd->success = true) {
 							$feature->{'$context'} = $resolveJsonLd->url;
-						}
+						}*/
 					}
 					// *****************************************************************************
 					if ($f == 'html') {
@@ -2594,6 +2605,52 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						}
 						$geoJsonVariable .= "var feature_" . $geomType . "=" . json_encode ( $geojsonList ) . ";";
 						$geoJsonVariable .= $newline . "</script>" . $newline;
+						if ($resolveJsonLd->success == true) {
+						    //$e = new mb_exception("show item - jsonld resolved ;-)");
+						    $jsonLdContent = "\n<script type=\"application/ld+json\">\n";
+						    //build json for each relevant key in geojson
+						    $geojsonListLd = $geojsonList->features [0]->properties;
+						    //$e = new mb_exception(json_encode($geojsonListLd));
+						    //$e = new mb_exception($geojsonListLd->uuid);
+						    $geojsonListLdNew = new stdClass();
+						    $geojsonListLdNew->{'@context'} = $resolveJsonLd->schema;
+						    $geojsonListLdNew->{'@type'} = "object_type";
+						    foreach ($resolveJsonLd->schema as $key => $value) {
+						        if (!in_array($key, array('schema', 'object_type'))) {
+						            $geojsonListLdNew->{$key} = $geojsonListLd->{$key};
+						        }
+						    }
+						    //add geometry 
+						    $geoShape = "";
+						    foreach ($geojsonList->features[0]->geometry->coordinates as $lonLat){
+						        //$e = new mb_exception(json_encode($lonLat));
+						        if (count($lonLat) == 1) {
+						            $geomType = "point";
+						        }
+						        foreach($lonLat as $point) {
+						            $latitude = $point[1];
+						            $longitude = $point[0];
+						            $geoShape .= $point[1] . "," . $point[0] . " ";
+						        }
+						    }
+						    $geoShape = rtrim($geoShape, " ");
+						    //$e = new mb_exception(json_encode($geoShape));
+						    if ($geomType == "point") {
+						        $geojsonListLdNew->{'latitude'} = $latitude;
+						        $geojsonListLdNew->{'longitude'} = $longitude;
+						    } else {
+						      $geojsonListLdNew->{'GeoShape'} = $geoShape;
+						    }
+						    $jsonLdContent .= json_encode($geojsonListLdNew) . "\n";
+						    //add geometry as GeoShape polygon, point, line to object ;-)
+						    
+						    
+						    //$e = new mb_exception(json_encode($geojsonListLdNew));
+						    $jsonLdContent .= "</script>\n";
+						    $e = new mb_exception("php/mod_linkedDataProxy.php: json-ld snippet: " . $jsonLdContent);
+						} else {
+						    $jsonLdContent = "";
+						}					
 					}
 					$usedProxyTime = microtime_float () - $proxyStartTime;
 					$returnObject = $geojsonList->features [0];
@@ -2756,12 +2813,9 @@ switch ($f) {
 		$html .= '<meta name="viewport" content="width=device-width, initial-scale=1.0">' . $newline;
 		// $html .= '<link rel="shortcut icon" type="image/x-icon" href="" />';
 		// leaflet css
-		//$html .= '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>' . $newline;
+		$html .= '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>' . $newline;
 		// leaflet js
-		//$html .= '<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>' . $newline;
-		// local leaflet
-		$html .= '<link rel="stylesheet" href="/mapbender/extensions/leaflet-1.5.1/leaflet.css"/>' . $newline;
-		$html .= '<script src="/mapbender/extensions/leaflet-1.5.1/leaflet.js"></script>' . $newline;
+		$html .= '<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>' . $newline;
 		// bootstrap
 		if ($useInternalBootstrap == true) {
 			if ($behindRewrite == true) {
@@ -2780,6 +2834,12 @@ switch ($f) {
 		height: 400px;
 	}
 </style>' . $newline;
+		/*
+		 * Add jsonld content, if this is not empty ;-)
+		 */
+		if ($jsonLdContent != "") {
+		    $html .= $jsonLdContent;
+		}
 		// ************************************************************************************************************************************
 		$html .= '<body>' . $newline;
 		// ************************************************************************************************************************************
@@ -3231,14 +3291,15 @@ switch ($f) {
 					    } else {
 					        $gmlId = $feature->id;
 					    }
+					    
 						$html .= '                <li>' . $newline;
-						$html .= '                    <div  itemscope itemtype="http://schema.org/Place">' . $newline;
+						$html .= '                    <div>' . $newline;
 						$html .= '                        <h4 class="mt-3 mb-1"><a href="' . get2Rest ( delTotalFromQuery ( array (
 								'items',
 								'offset',
 								'limit',
 								'bbox' 
-						), $_SERVER ['REQUEST_URI'] ) . '&item=' . $gmlId ) . '" target="_blank"><span itemprop="name">' . $gmlId . '</span></a></h4><a href=""  onclick="zoomToExtent(' . $geojsonBbox [$objIndex]->minx . "," . $geojsonBbox [$objIndex]->miny . "," . $geojsonBbox [$objIndex]->maxx . "," . $geojsonBbox [$objIndex]->maxy . ');return false;">' . _mb ( 'zoom to' ) . '</a>' . $newline;
+						), $_SERVER ['REQUEST_URI'] ) . '&item=' . $gmlId ) . '" target="_blank"><span>' . $gmlId . '</span></a></h4><a href=""  onclick="zoomToExtent(' . $geojsonBbox [$objIndex]->minx . "," . $geojsonBbox [$objIndex]->miny . "," . $geojsonBbox [$objIndex]->maxx . "," . $geojsonBbox [$objIndex]->maxy . ');return false;">' . _mb ( 'zoom to' ) . '</a>' . $newline;
 						$html .= '                        <span class="d-none" itemprop="sameAs">https://www.ldproxy.nrw.de/topographie/collections/ax_bergbaubetrieb/items/DENWAT01D000CcF0</span>' . $newline;
 						// foreach attribute
 						foreach ( $feature->properties as $key => $value ) {
@@ -3281,6 +3342,12 @@ switch ($f) {
 					$html .= '            </ul>' . $newline;
 					$html .= $nav;
 				} else {
+				    //if one item is selected
+				    //$e = new mb_exception("one item selected");
+				    /*if ($jsonLdContent != "") {
+				        //$e = new mb_exception("jsonldcontent not empty");
+				        $html .= $jsonLdContent;
+				    }*/
 				    // use the attribute gml_id if gdal will do the translation from gml to geojson
 				    if ($useGdal) {
 				        $gmlId = $feature->properties->gml_id;
@@ -3292,9 +3359,14 @@ switch ($f) {
 						$html .= '<div id="map"></div>' . $newline;
 					}
 					$feature = $returnObject;
-					$html .= '                    <div  itemscope itemtype="http://schema.org/Place">' . $newline;
+					/*$html .= '                    <div  itemscope itemtype="http://schema.org/Place">' . $newline;
 					$html .= '                        <h1 itemprop="name">' . $gmlId . '</h1>' . $newline;
 					$html .= '                        <span class="d-none" itemprop="url">' . $_SERVER ['REQUEST_URI'] . '</span>' . $newline;
+					*/
+					$html .= '                    <div">' . $newline;
+					$html .= '                        <h1>' . $gmlId . '</h1>' . $newline;
+					$html .= '                        <span class="d-none">' . $_SERVER ['REQUEST_URI'] . '</span>' . $newline;
+					
 					// foreach attribute
 					foreach ( $feature->properties as $key => $value ) {
 						
@@ -3310,8 +3382,8 @@ switch ($f) {
 						}
 						$html .= '                        <div class="row my-1">' . $newline;
 						$html .= '                            <div class="col-md-6 font-weight-bold text-truncate" title="' . $attributeDescription . '">' . $attributeTitle . '</div>' . $newline;
-						// semantic annotations
-						if (isset ( $ldObject->{'@context'}->{$key} )) {
+						// semantic annotations - if json-ld is will not be evaluated!
+						/*if (isset ( $ldObject->{'@context'}->{$key} )) {
 							$uri = $ldObject->{'@context'}->{$key};
 							$schemaOrgArray = explode ( "/", str_replace ( "https://", "", $uri ) );
 							$schemaOrgObject = $schemaOrgArray [1];
@@ -3320,7 +3392,8 @@ switch ($f) {
 							// TODO - check semantics !!!! $semAttribution = "itemscope=\"\" itemtype=\"http://schema.org/".$schemaOrgObject."\" itemprop=\"$schemaOrgAttribute\"";
 						} else {
 							$semAttribution = "";
-						}
+						}*/
+						$semAttribution = "";
 						if (gettype ( $value ) == "string") {
 							$html .= '                            <div class="col-md-6" ' . $semAttribution . '>' . string2html ( $value ) . '</div>' . $newline;
 						} else {
