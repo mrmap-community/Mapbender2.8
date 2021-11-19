@@ -109,14 +109,82 @@ class OwsContext {
 	public function export($outputFormat) {
 		switch ($outputFormat) {
 			case "atom": 
-				return $this->export2Atom(1);
+				return $this->export2atom();
 			break;
 			case "json":
+			    return $this->export2json();
 			break;
 		}
 	}
-
-	public function export2Atom($resourceId) {
+	
+	public function export2json() {
+	    $owsContextJsonObject = new stdClass();
+	    $owsContextJsonObject->type = "FeatureCollection";
+	    $owsContextJsonObject->id = "mapbenderPath/wmc/{id}";
+	    $properties = new stdClass();
+	    $properties->lang = "de";
+	    $properties->title = $this->title;
+	    $properties->subtitle = $this->abstract;
+	    $properties->updated = "";
+	    $properties->authors = array("name" => $this->author[0]['name'], "email" => $this->author[0]['email']);
+	    $properties->publisher = "";
+	    $properties->generator = array("title" => $this->creator->creatorApplication->title, "uri" => $this->creator->creatorApplication->uri, "version" => $this->creator->creatorApplication->version);
+	    $properties->display = array("pixelWidth" => (integer)$this->creator->creatorDisplay->pixelWidth, "pixelHeight" => (integer)$this->creator->creatorDisplay->pixelHeight, "mmPerPixel" => $this->creator->creatorDisplay->mmPerPixel);
+	    
+	    
+	    $properties->links->profiles = array("http://www.opengis.net/spec/owc-geojson/1.0/req/core");
+	    $owsContextJsonObject->properties = $properties;
+	    $features = array();
+	    
+	    foreach ($this->resource as $resource) {
+	        $feature = new stdClass();
+	        $feature->type = "Feature";
+	        
+	        $properties = new stdClass();
+	        $properties->title = (string)$resource->title;
+	        $properties->abstract = (string)$resource->abstract;
+	        $properties->updated = "";
+	        
+	        $properties->links->previews = array("href" => $resource->preview[0], "type" => "image/jpeg", "length" => 100 , "title" => "Preview for Layer XY");
+	        	        
+	        
+	        $feature->offerings = array();
+	        
+	        //kml
+	        
+	        //wms
+	        foreach ($resource->offering as $offering) {
+	            $jsonOffering = new stdClass();
+	            $jsonOffering->code = $offering->code;
+	            foreach ($offering->operation as $operation) {
+	                $jsonOffering->operations[] = array("code" => $operation->code, "method" => $operation->method, "type" => $operation->type, "href" => (string)$operation->href);
+	                
+	            }
+	            $feature->offerings[] = $jsonOffering;
+	        }
+	        
+	        $properties->minScaleDenominator = (double)$resource->minScaleDenominator;
+	        $properties->maxScaleDenominator = (double)$resource->maxScaleDenominator;
+	        
+	        $properties->folder = "/test/test1";
+	        $feature->properties = $properties;
+	        //wms getcapabilities
+	        
+	        //wms getmap
+	        //legend
+	        //wfs...
+	        //
+	        $features[] = $feature;
+	        
+	        
+	    }
+	    if (count($features > 1)) {
+	        $owsContextJsonObject->features = $features;  
+	    }
+	    return (json_encode($owsContextJsonObject));
+	    
+	}
+	public function export2atom() {
 		//Initialize XML document
 		$owsContextDoc = new DOMDocument('1.0');
 		$owsContextDoc->encoding = 'UTF-8';
@@ -265,9 +333,6 @@ class OwsContext {
 		return $owsContextDoc->saveXML();
 	}
 
-	public function export2Json($resourceId) {
-	}
-
 	public function readFromWmc($wmcXml) {
 	}
 	
@@ -346,6 +411,7 @@ $creator->creatorApplication->version = "2.8_trunk";
 			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
 			$owsContextResourceOfferingOperation->code = "GetCapabilities";
 			$owsContextResourceOfferingOperation->method = "GET";
+			$owsContextResourceOfferingOperation->type = "application/xml";
 			//TODO: use operations from database if wms id is given in wmc
 			
 			$owsContextResourceOfferingOperation->href = $getmap;
