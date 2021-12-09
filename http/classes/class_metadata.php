@@ -363,7 +363,7 @@ class searchMetadata
 						$this->orderBy = " ORDER BY metadata_id ASC";
 						break;
 					case "title":
-						$this->orderBy = " ORDER BY title DESC";
+						$this->orderBy = " ORDER BY title ASC";
 						break;
 					case "date":
 						$this->orderBy = " ORDER BY dataset_timestamp DESC ";
@@ -388,7 +388,7 @@ class searchMetadata
 						$this->orderBy = " ORDER BY metadata_id ASC";
 						break;
 					case "title":
-						$this->orderBy = " ORDER BY title DESC";
+						$this->orderBy = " ORDER BY title ASC";
 						break;
 					case "date":
 						$this->orderBy = " ORDER BY dataset_timestamp DESC ";

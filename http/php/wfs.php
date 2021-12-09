@@ -620,6 +620,7 @@ e>
 }
 
 header("Content-type: application/xhtml+xml; charset=UTF-8");
+header("Access-Control-Allow-Origin: *");
 echo $doc->saveXml();
 
 ?>

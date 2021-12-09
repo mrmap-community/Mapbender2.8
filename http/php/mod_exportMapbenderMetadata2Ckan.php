@@ -229,8 +229,10 @@ if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     $id = $testMatch;
     $testMatch = NULL;
 }
-
+$forceCache = true;
 $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
+$mapbenderWebserviceUrl = $mapbenderBaseUrl;
+$mapbenderWebserviceUrl = "http://localhost/mapbender/";
 
 $cache = new Cache();
 
@@ -238,8 +240,23 @@ $cacheVariableName = md5($mapbenderBaseUrl. "ckan_metadata_" . $id);
 
 $actualDate = date("Y-m-d H:i:s");
 $maxAgeInSeconds = 3600; //1hour
+$forceCache = true;
 
-if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((date_create($actualDate)->getTimestamp() - date_create(date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($cacheVariableName)))->getTimestamp()) < $maxAgeInSeconds)) {
+
+if (isset($_REQUEST["cache"]) & $_REQUEST["cache"] != "") {
+    //validate
+    $testMatch = $_REQUEST["cache"];
+    if ($testMatch != 'true' && $testMatch != 'false'){
+        echo '{"success": false, "help": "Parameter cache is not valid (true/false)"}';
+        die();
+    }
+    if ($testMatch == 'false') {
+        $forceCache = false;
+    }
+    $testMatch = NULL;
+}
+
+if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((date_create($actualDate)->getTimestamp() - date_create(date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($cacheVariableName)))->getTimestamp()) < $maxAgeInSeconds)) {
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: read " . $mapbenderBaseUrl. "ckan_metadata_" . $id . " from ".$cache->cacheType." cache!");
     //parse result and add origin cache
     $cachedObj = json_decode($cache->cachedVariableFetch($cacheVariableName));
@@ -250,7 +267,7 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
     //get organisation list from webservice
     $connector = new connector();
     
-    $orgaListResult = $connector->load($mapbenderBaseUrl . "php/mod_showOrganizationList.php");
+    $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
     
     $orgaListObject = json_decode($orgaListResult);
     $orgaIdArray = array();
@@ -270,13 +287,13 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
     
     
     //get single orga info
-    $orgaResult = $connector->load($mapbenderBaseUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
+    $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
     $orgaObject = json_decode($orgaResult);
     //echo $orgaResult;
     //die();
     $resultsPerPage = 10;
     
-    $mapbenderBaseSearchInterface = $mapbenderBaseUrl . "php/mod_callMetadata.php?";
+    $mapbenderBaseSearchInterface = $mapbenderWebserviceUrl . "php/mod_callMetadata.php?";
     $orgaId = $id;
     $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     $baseUrlCount = $baseUrl. "&maxResults=1";
@@ -300,12 +317,15 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
     $returnObject->result = array();
     $j = 0;
     $package = array();
+    $e = new mb_exception("Try to load ".$resultObject->dataset->md->nresults." datasets for ".$orgaResult);
     for ($i=1; $i <= $maxPages; $i++) {
+        $e = new mb_exception("Use SearchInterface for dataset: Page " . $i . " of ".$maxPages);
         $pageUrl = $baseUrl. "&searchPages=" . $i . "&maxPages=" . $resultsPerPage;
         //echo $pageUrl . "<br>";
         $result = $connector->load($pageUrl);
         $resultObject = json_decode($result);
         foreach($resultObject->dataset->srv as $dataset) {
+            $e = new mb_exception("Dataset uuid: ".$dataset->uuid);
             $layerArray = array();
             $featuretypeArray = array();
             $downloadArray = array();
@@ -335,10 +355,11 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
             //echo $dataset->id . " - " .$dataset->title. "<br>";
             //parse dataset metadata and extract relevant information - keywords/tags, themes and license info, actuality
             //https://www.geoportal.rlp.de/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=9ec4e052-ebd2-2c44-f258-25557de7a6b7&outputFormat=iso19139
-            $metadataResolverUrl = $mapbenderBaseUrl . "php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
+            $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
             $metadataUrl = $metadataResolverUrl.$dataset->uuid;
             //$metadataResult = $connector->load($metadataUrl);
             $iso19139Md = new Iso19139();
+            $e = new mb_exception("Parse ISO Metadata");
             $iso19139Md->createFromUrl($metadataUrl);
             //echo "Keywords: " . json_encode($iso19139Md->keywords)."<br>";
             //echo "ISO Categories: " . json_encode($iso19139Md->isoCategoryKeys)."<br>";
@@ -356,7 +377,7 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
                                       "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
             );
             $package[$j]->resource[] = $metadataResource;
-            //TODO the same for catgegories - map them to tpp categories
+            //TODO the same for categories - map them to tpp categories
             foreach ($dataset->coupledResources as $key => $value) {
                 switch($key) {
                     case "layer":
@@ -370,22 +391,26 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
                             $layerViewResource_1 = array("name" => "Online Karte",
                                 "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
                                 "format" => "Kartenviewer",
-                                "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id
+                                "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
+                                "id" => $package[$j]->id . "_mapviewer_layer_" . $value1->id
                             );
                             $layerViewResource_2 = array("name" => "GeoPortal.rlp",
                                 "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
                                 "format" => "GeoPortal.rlp",
-                                "url" => $mapbenderBaseUrl . "../portal/karten.html?LAYER[zoom]=1&LAYER[id]=" . $value1->id
+                                "url" => $mapbenderBaseUrl . "../portal/karten.html?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
+                                "id" => $package[$j]->id . "_geoportal_layer_" . $value1->id
                             );
                             $layerMetadataResource = array("name" => "Originäre Metadaten für Kartenebene",
                                 "description" => "Kartenebene: " . $layerTitle . " - Anzeige der originären Metadaten",
                                 "format" => "HTML",
-                                "url" => $mapbenderBaseUrl . "php/mod_showMetadata.php?languageCode=de&resource=layer&layout=tabs&id=" . $value1->id
+                                "url" => $mapbenderBaseUrl . "php/mod_showMetadata.php?languageCode=de&resource=layer&layout=tabs&id=" . $value1->id,
+                                "id" => $package[$j]->id . "_layer_metadata_" . $value1->id
                             );
                             $layerWMSResource = array("name" => "WMS Schnittstelle",
                                 "description" => "Ebene: " . $layerTitle,
                                 "format" => "WMS",
-                                "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"
+                                "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
+                                "id" => $package[$j]->id . "_wms_interface_" . $value1->id
                             );
                             $package[$j]->resource[] = $layerViewResource_1;
                             $package[$j]->resource[] = $layerViewResource_2;
@@ -411,7 +436,8 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
                                     $featuretypeAccessResource_1 = array("name" => "OGC API Features (REST)",
                                         "description" =>   "Objektart: " . $value1->resourceName. " - ISO19168-1:20202 API",
                                         "format" => "REST",
-                                        "url" => $value1->accessClient
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $package[$j]->id . "_ogc_api_interface_" . $value1->resourceName
                                     );
                                     $package[$j]->resource[] = $featuretypeAccessResource_1;
                                     break;
@@ -419,7 +445,8 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
                                     $atomFeedAccessResource_1 = array("name" => "Vektordownload nach EU-Standard",
                                     "description" => $value1->serviceTitle,
                                     "format" => "ATOM",
-                                    "url" => $value1->accessClient
+                                    "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                    "id" => $package[$j]->id . "_atom_feed_wfs_" . $value1->resourceName
                                     );
                                     $package[$j]->resource[] = $atomFeedAccessResource_1;
                                     break;
@@ -427,7 +454,8 @@ if ($cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((da
                                     $atomFeedAccessResource_1 = array("name" => "Rasterdownload nach EU-Standard",
                                     "description" => $value1->serviceTitle,
                                     "format" => "ATOM",
-                                    "url" => $value1->accessClient
+                                    "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                    "id" => $package[$j]->id . "_atom_feed_wms_" . $value1->resourceId
                                     );
                                     $package[$j]->resource[] = $atomFeedAccessResource_1;
                                     break;

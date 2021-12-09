@@ -427,6 +427,14 @@ define("MAPSERVER", "http://localhost/cgi-bin/mapserv");
 #define("INSPIRE_METADATA_SPEC", "1.3");
 define("INSPIRE_METADATA_SPEC", "2.0.1");
 
+# --------------------------------------------
+# Log access to OGC API Features proxy
+# --------------------------------------------
+# If set to true, the request to the OGC API Features Proxy 
+# are logged to oaf_proxy_log table. They are only counted!
+# 
+define("OAF_LOG", false);
+
 ###HACK for GLOBALS
 $DBSERVER=DBSERVER;
   $DB=DB;

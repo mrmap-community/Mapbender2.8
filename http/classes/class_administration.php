@@ -770,6 +770,66 @@ class administration {
 		return $wmc->getDocument($id);
 	}
 
+     /**
+      * functions to log referrer for external invoced ogc api feature requests to database.
+      *
+      * @param referrer			         http header referer! string
+      * @param wfs_id		             wfs_id from wfs table
+      * @param wfs_featuretype_id         id of the requested featuretype
+      * @return boolean			         true or false
+      */
+	function logOAFUsage ($referrer, $wfs_id, $wfs_featuretype_id) {
+	    // only log usage, if OAF_LOG is defined in mapbender.conf
+	    if (DEFINED("OAF_LOG") && OAF_LOG == true && isset($referrer) && $referrer !=="" && $referrer !== false) {
+	        $logId = $this->isOAFLogEntryAlreadyInDB($referrer, $wfs_id, $wfs_featuretype_id);
+	        if ($logId != false) {
+	            $sql = <<<SQL
+UPDATE oaf_proxy_log SET log_count = log_count + 1 WHERE log_id = $1
+SQL;
+	            $v = array(
+	                $logId
+	            );
+	            $t = array('i');
+	            $res = db_prep_query($sql,$v,$t);
+	            return true;
+	        } else {
+	            //create new record cause api has not been invoced so far
+	            $sql = <<<SQL
+INSERT INTO oaf_proxy_log (createdate, referrer, fkey_wfs_id, fkey_wfs_featuretype_id, log_count) VALUES (now(), $1, $2, $3, 1)
+SQL;
+	            $v = array(
+	                $referrer,
+	                $wfs_id,
+	                $wfs_featuretype_id
+	            );
+	            $t = array('s',i,i);
+	            $res = db_prep_query($sql,$v,$t);
+	            return true;
+	        }
+	    }
+	}
+	
+	function isOAFLogEntryAlreadyInDB($referrer, $wfs_id, $wfs_featuretype_id){
+	    $sql = <<<SQL
+SELECT log_id FROM oaf_proxy_log WHERE fkey_wfs_id = $2 AND fkey_wfs_featuretype_id = $3 AND referrer = $1 ORDER BY lastchanged DESC
+SQL;
+	    $v = array(
+	        $referrer,
+	        $wfs_id,
+	        $wfs_featuretype_id
+	    );
+	    $t = array('s',i,i);
+	    $res = db_prep_query($sql,$v,$t);
+	    while ($row = db_fetch_array($res)){
+	        $logId[] = $row['log_id'];
+	    }
+	    if (count($logId) > 0) {
+	        return $logId[0];
+	    } else {
+	        return false;
+	    }
+	}	
+	
     /**
      * functions to log referrer for external invoced client api to database.
      *

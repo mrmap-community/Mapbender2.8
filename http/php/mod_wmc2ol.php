@@ -465,7 +465,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 		$has_permission=$admin->getLayerPermission($wms_id, $layer_name, $userId);
 		if (($xml->LayerList->Layer[$i]->attributes()->hidden=='0' && $has_permission && $extensions->layer_parent != '') ||
 			($layer_id=='' && $xml->LayerList->Layer[$i]->attributes()->hidden=='0')){
-			$html.="	layer".$i." = new OpenLayers.Layer.WMS( \"".$xml->LayerList->Layer[$i]->Title."\",\n";
+			$html.="	layer".$i." = new OpenLayers.Layer.WMS( \"".str_replace("'","",str_replace('"','',$xml->LayerList->Layer[$i]->Title))."\",\n";
 			$getMapUrl = $xml->LayerList->Layer[$i]->Server->OnlineResource->attributes('http://www.w3.org/1999/xlink')->href;
 			if (strpos($getMapUrl, OWSPROXY) === false) {
 				if (getWmsGetMapUrl($wms_id) != false) {

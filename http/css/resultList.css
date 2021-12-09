@@ -9,4 +9,7 @@
 .buttonMargin{
 	margin:5px;
 }
+#resultList{
+	height:500px !important;
+}
 

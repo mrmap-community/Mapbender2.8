@@ -647,7 +647,55 @@ CREATE INDEX idx_wst_application_timestamp
   ON search_application_view
   USING btree
   (dataset_timestamp);
+  
 
+--new table to log invocation of mapbender ogc api features proxy
 
+-- Table: oaf_proxy_log
 
+-- DROP TABLE oaf_proxy_log;
+
+CREATE TABLE oaf_proxy_log
+(
+  log_id serial NOT NULL,
+  createdate timestamp without time zone,
+  lastchanged timestamp without time zone NOT NULL DEFAULT now(),
+  referrer text,
+  fkey_wfs_id integer,
+  fkey_wfs_featuretype_id integer,
+  log_count bigint,
+  CONSTRAINT oaf_proxy_logc_fkey_wfs_id_fkey FOREIGN KEY (fkey_wfs_id)
+      REFERENCES wfs (wfs_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE CASCADE
+  CONSTRAINT oaf_proxy_logc_fkey_wfs_featuretype_id_fkey FOREIGN KEY (fkey_wfs_featuretype_id)
+      REFERENCES wfs_featuretype (featuretype_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE CASCADE
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE oaf_proxy_log
+  OWNER TO postgres;
+
+-- Index: idx_oaf_proxy_log_referrer
+
+-- DROP INDEX idx_oaf_proxy_log_referrer;
+
+CREATE INDEX idx_oaf_proxy_log_referrer
+  ON oaf_proxy_log
+  USING btree
+  (referrer);
+
+-- Trigger: update_oaf_proxy_log_lastchanged on oaf_proxy_log
+
+-- DROP TRIGGER update_oaf_proxy_log_lastchanged ON oaf_proxy_log;
+
+CREATE TRIGGER update_oaf_proxy_log_lastchanged
+  BEFORE UPDATE
+  ON oaf_proxy_log
+  FOR EACH ROW
+  EXECUTE PROCEDURE update_lastchanged_column();
+
+GRANT ALL ON TABLE oaf_proxy_log TO mapbenderdbuser;
+GRANT ALL ON SEQUENCE oaf_proxy_log_log_id_seq TO mapbenderdbuser;
 

@@ -21,10 +21,10 @@ foreach($arguments as $value) {
 $orgaId = $real_arguments['orgaId'];
 //***************************************************************
 $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
-
+$mapbenderBaseUrl = "http://127.0.0.1/mapbender/";
 //get organisation list from webservice
 $connector = new connector();
-$generatorUrl = $mapbenderBaseUrl . "php/mod_exportMapbenderMetadata2Ckan.php?id=" . $orgaId;
+$generatorUrl = $mapbenderBaseUrl . "php/mod_exportMapbenderMetadata2Ckan.php?cache=false&id=" . $orgaId;
 $fileName = "ckan_metadata_" . $orgaId . ".json";
 
 //write file to same tmp folder as iso metadata is written

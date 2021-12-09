@@ -1,0 +1,7 @@
+/logs/*.log
+/http/tmp/*.png
+/http/tmp/*.pdf
+/http/tmp/*.xml
+/http/tmp/*.gfs
+/http/tmp/wmc/*
+/tools/tmp/*

@@ -5,7 +5,7 @@ require_once(dirname(__FILE__)."/../classes/class_owsContext.php");
 //set default request parameters
 $wmcId = null;
 $outputModel = "OWC";
-$outputEncoding = "atom";
+$outputFormat = "atom";
 
 $sessionUserId = Mapbender::session()->get("mb_user_id");
 if ($sessionUserId !== false) {
@@ -25,6 +25,20 @@ if (isset($_REQUEST["wmcId"]) & $_REQUEST["wmcId"] != "") {
         die(); 		
     }
     $wmcId = $testMatch;
+    $testMatch = NULL;
+}
+//parse request parameter
+if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
+    //validate to csv integer list
+    $testMatch = $_REQUEST["outputFormat"];
+    
+    if (!in_array($testMatch, array("atom", "json"))) {
+        
+        echo 'Parameter <b>outputFormat</b> is not  valid (atom or json).<br/>';
+        
+        die();
+    }
+    $outputFormat = $testMatch;
     $testMatch = NULL;
 }
 $wmcExists = false;
@@ -54,7 +68,16 @@ if ($wmcExists) {
     //$owsContextResource = new OwsContextResource();
     //$owsContext->addResource($owsContextResource);
     $owsContext->readFromInternalWmc($existingWmcId);
-    echo $owsContext->export("atom");
+    switch($outputFormat) {
+        case "json":
+            header("Content-Type: application/json");
+            echo $owsContext->export("json");
+            break;
+        case "atom":
+            header("Content-Type: text/xml");
+            echo $owsContext->export("atom");
+            break;
+    }
 } else {
     echo "WMC with id ".$wmcId." not found!";
 }

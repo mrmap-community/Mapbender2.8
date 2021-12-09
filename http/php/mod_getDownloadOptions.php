@@ -145,9 +145,20 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 
 	$sql .= " (select metadata_id, title, format, uuid, fkey_featuretype_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id and metadata_relation.uuid = $1";
 	//end for wfs 2.0 linked data proxy **********************************************************************************
-
-
-
+	
+	//for direct wfs interfaces
+	$sqlWfs = " union select fkey_wfs_id as service_id, service_uuid, featuretype_id as resource_id, featuretype_name as resource_name, 'directwfs' as resource_type, NULL as datalink, NULL as datalink_text, title, 'GeoJSON,GML,HTML' as format from ";
+	
+	$sqlWfs .= " (select wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, open_wfs.uuid as service_uuid, wfs_featuretype.inspire_download from wfs_featuretype inner join ";
+	
+	$sqlWfs .= " (SELECT wfs_id, wfs_version, uuid FROM wfs) as open_wfs ";
+	
+	$sqlWfs .= " on wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id where wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) as featuretype_wfs2 inner join ";
+	
+	$sqlWfs .= " (select metadata_id, title, format, uuid, fkey_featuretype_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id and metadata_relation.uuid = $1";
+	$e = new mb_exception($sqlWfs);
+	//end for wfs interfaces
+	$sql .= $sqlWfs;
 
 	/*
 	$sql = "select service_id, resource_id, resource_type, fkey_datalink_id as datalink from (select fkey_wms_id as service_id, layer_id as resource_id, 'layer' as resource_type from layer inner join (select metadata_id, uuid, fkey_layer_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) ";
@@ -258,6 +269,10 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "REST";
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('OGC API - Features (Draft)').": ".$row['title']." - "._mb("based on WFS 2.0.0+ datasource");
+					//service metadata:
+					$downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_featuretypeISOMetadata.php?SERVICETYPE=ogcapifeatures&SERVICE=WFS&outputFormat=iso19139&Id=".$row['resource_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
+
 					if (isset($configObject) && isset($configObject->behind_rewrite) && $configObject->behind_rewrite == true) {
 						if (isset($configObject) && isset($configObject->datasource_url) && $configObject->datasource_url != "") {
 							$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $configObject->datasource_url.$configObject->rewrite_path."/".$row['service_id']."/collections/".$row['resource_name'];//."/items?&f=html";
@@ -295,9 +310,33 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					}
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
-				break;
+					break;
+				case "directwfs":
+				    $downloadOptions->{$idList[$i]}->option[$j]->type = "directwfs";
+				    
+				    $downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
+				    //$downloadOptions->{$idList[$i]}->option[$j]->dataLink = $row['datalink'];
+				    //new 2021/10
+				    $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
+				    $downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "DIRECTWFS";
+				    $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb("OGC WFS Interface")." - "._mb("Featuretype").": ".$row['resource_name'];
+				    //http://localhost/mapbender/php/mod_featuretypeISOMetadata.php?SERVICE=WFS&outputFormat=iso19139&Id=24
+				    //service metadata:
+				    $downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_featuretypeISOMetadata.php?SERVICE=WFS&outputFormat=iso19139&Id=".$row['resource_id'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
+				    //FEATURETYPE_ID=32&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1
+				    $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/wfs.php?FEATURETYPE_ID=".$row['resource_id']."&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1";
+				    $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."php/wfs.php?FEATURETYPE_ID=".$row['resource_id']."&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1";
+				    $downloadOptions->{$idList[$i]}->title = $row['title'];
+				    $downloadOptions->{$idList[$i]}->uuid = $idList[$i];
+				    break;	
 			}
-		$j++;
+			$j++;
+			array_splice($downloadOptions->{$idList[$i]}->option, 0, 0);
 		}
 		//delete double entries - maybe url is given from dataurl - use this 
 		//get all dataurlids

@@ -54,7 +54,7 @@ class OwsContext {
 		$this->title = "dummy title";
 		$this->abstract = "dummy abstract";
 		//arrays
-		$this->author = "";
+		$this->author = array();
 		$this->keyword = "";
 		$this->extensions = array();
 		//relations
@@ -109,14 +109,82 @@ class OwsContext {
 	public function export($outputFormat) {
 		switch ($outputFormat) {
 			case "atom": 
-				return $this->export2Atom(1);
+				return $this->export2atom();
 			break;
 			case "json":
+			    return $this->export2json();
 			break;
 		}
 	}
-
-	public function export2Atom($resourceId) {
+	
+	public function export2json() {
+	    $owsContextJsonObject = new stdClass();
+	    $owsContextJsonObject->type = "FeatureCollection";
+	    $owsContextJsonObject->id = "mapbenderPath/wmc/{id}";
+	    $properties = new stdClass();
+	    $properties->lang = "de";
+	    $properties->title = $this->title;
+	    $properties->subtitle = $this->abstract;
+	    $properties->updated = "";
+	    $properties->authors = array("name" => $this->author[0]['name'], "email" => $this->author[0]['email']);
+	    $properties->publisher = "";
+	    $properties->generator = array("title" => $this->creator->creatorApplication->title, "uri" => $this->creator->creatorApplication->uri, "version" => $this->creator->creatorApplication->version);
+	    $properties->display = array("pixelWidth" => (integer)$this->creator->creatorDisplay->pixelWidth, "pixelHeight" => (integer)$this->creator->creatorDisplay->pixelHeight, "mmPerPixel" => $this->creator->creatorDisplay->mmPerPixel);
+	    
+	    
+	    $properties->links->profiles = array("http://www.opengis.net/spec/owc-geojson/1.0/req/core");
+	    $owsContextJsonObject->properties = $properties;
+	    $features = array();
+	    
+	    foreach ($this->resource as $resource) {
+	        $feature = new stdClass();
+	        $feature->type = "Feature";
+	        
+	        $properties = new stdClass();
+	        $properties->title = (string)$resource->title;
+	        $properties->abstract = (string)$resource->abstract;
+	        $properties->updated = "";
+	        
+	        $properties->links->previews = array("href" => $resource->preview[0], "type" => "image/jpeg", "length" => 100 , "title" => "Preview for Layer XY");
+	        	        
+	        
+	        $feature->offerings = array();
+	        
+	        //kml
+	        
+	        //wms
+	        foreach ($resource->offering as $offering) {
+	            $jsonOffering = new stdClass();
+	            $jsonOffering->code = $offering->code;
+	            foreach ($offering->operation as $operation) {
+	                $jsonOffering->operations[] = array("code" => $operation->code, "method" => $operation->method, "type" => $operation->type, "href" => (string)$operation->href);
+	                
+	            }
+	            $feature->offerings[] = $jsonOffering;
+	        }
+	        
+	        $properties->minScaleDenominator = (double)$resource->minScaleDenominator;
+	        $properties->maxScaleDenominator = (double)$resource->maxScaleDenominator;
+	        
+	        $properties->folder = $resource->folder;
+	        $feature->properties = $properties;
+	        //wms getcapabilities
+	        
+	        //wms getmap
+	        //legend
+	        //wfs...
+	        //
+	        $features[] = $feature;
+	        
+	        
+	    }
+	    if (count($features > 1)) {
+	        $owsContextJsonObject->features = $features;  
+	    }
+	    return (json_encode($owsContextJsonObject));
+	    
+	}
+	public function export2atom() {
 		//Initialize XML document
 		$owsContextDoc = new DOMDocument('1.0');
 		$owsContextDoc->encoding = 'UTF-8';
@@ -265,10 +333,21 @@ class OwsContext {
 		return $owsContextDoc->saveXML();
 	}
 
-	public function export2Json($resourceId) {
-	}
-
 	public function readFromWmc($wmcXml) {
+	
+	}
+	
+	public function getContextLayerPath($WMCDoc, $layerPath, $layerId) {
+	
+	    $parent = $WMCDoc->xpath("/wmc:ViewContext/wmc:LayerList/wmc:Layer[Extension/mapbender:layer_pos='" . $layerId . "']/Extension/mapbender:layer_parent");
+	    
+	    $e = new mb_exception("/wmc:ViewContext/wmc:LayerList/wmc:Layer[Extension/mapbender:layer_pos='" . $layerId . "']/Extension/mapbender:layer_parent"." - - "."first parent: ".json_encode($parent)." - type : ".gettype($parent) );
+	    
+	    /*while ((string)$parent != "") {
+	        $layerPath .= $parent . "/" . $layerPath;
+	        $parent = $WMCDoc->xpath("/wmc:ViewContext/wmc:LayerList/wmc:Layer[Extension/mapbender:layer_pos='".$parent."']/Extension/mapbender:layer_parent");
+	    }*/
+	    return $layerPath;
 	}
 	
 	public function readFromInternalWmc($wmcId) {
@@ -330,10 +409,21 @@ $creator->creatorApplication->version = "2.8_trunk";
 		//pull out List of layer objects
 		$layerList = $WMCDoc->xpath("/wmc:ViewContext/wmc:LayerList/wmc:Layer");
 		//pull all available server ids from mapbenders extension
+
 		//get relevant urls from database 
-		foreach ($layerList as $layer) {
+		$e = new mb_notice("classes/class_owsContext.php: number of all layers found in WMC: ".count($layerList));
+		$path = "/";
+		$pathArray = array();
+        $serviceId = 0;
+		/*
+		* each service has an empty value as layer_parent element
+		* at service level, the order extents to max layers 
+		* changing order is only possible within its own level
+		*/
+		
+		foreach ($layerList as $layer) {      
 			//pull relevant information out of xml snippet
-                	$version = $layer->Server->attributes()->version;
+            $version = $layer->Server->attributes()->version;
 			$getmap = $layer->Server->OnlineResource->attributes("xlink", true)->href;
 			//check if featureInfo active
 			$owsContextResource = new OwsContextResource();
@@ -346,6 +436,7 @@ $creator->creatorApplication->version = "2.8_trunk";
 			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
 			$owsContextResourceOfferingOperation->code = "GetCapabilities";
 			$owsContextResourceOfferingOperation->method = "GET";
+			$owsContextResourceOfferingOperation->type = "application/xml";
 			//TODO: use operations from database if wms id is given in wmc
 			
 			$owsContextResourceOfferingOperation->href = $getmap;
@@ -368,7 +459,51 @@ $creator->creatorApplication->version = "2.8_trunk";
 				$owsContextResource->addPreview(MAPBENDER_PATH."/geoportal/mod_showPreview.php?resource=layer&id=".$layer->Extension->children('http://www.mapbender.org/context')->layer_id);
 				
 			}
-			//
+			//build path
+			/* 
+			* Part for extracting the hierarchy path elements from mapbenders wmc extension
+			*/
+			$e = new mb_notice("classes/class_owsContext.php layer_path (before) = " . '/' . implode('/', $pathArray));
+			$e = new mb_notice("classes/class_owsContext.php layer:  " . (string)$layer->Title . "(".(string)$layer->Extension->children('http://www.mapbender.org/context')->layer_pos.")");
+			//Begin with index 1 instead of 0 which is used for every wms in mapbender
+			if ((string)$layer->Extension->children('http://www.mapbender.org/context')->layer_parent == '') {
+ 				$serviceId++;
+				//layer_pos will be 0 - initialize array again!
+				$pathArray = array();
+				$pathArray[] = (string)$serviceId;
+				$e = new mb_notice("classes/class_owsContext.php: Layer is service layer and will be given an id!");
+			} else {
+				//if a parent of a layer has the id of the last pathArray element, the path will be simply extended (added)
+				if ((string)$layer->Extension->children('http://www.mapbender.org/context')->layer_parent == end($pathArray)) {
+					$pathArray[] = (string)$layer->Extension->children('http://www.mapbender.org/context')->layer_pos;
+				} else {
+					//search index of parent in array for this service and delete all further ones
+					$valueToFind = (string)$layer->Extension->children('http://www.mapbender.org/context')->layer_parent;
+					//If the parent is a service level layer
+					if ($valueToFind == '0') {
+						$valueToFind = (string)$serviceId;
+						//go up to service level
+						$pathArray = array($valueToFind);
+					} else {
+						//Make a copy of the pathArray for searching
+						$e = new mb_notice("classes/class_owsContext.php value to find:  ".$valueToFind);
+						$e = new mb_notice("classes/class_owsContext.php in whole path:  " . '/' . implode('/', $pathArray));
+						$searchArray = array_slice($pathArray, 1, count($pathArray) - 1 , true);
+						$e = new mb_notice("classes/class_owsContext.php searchArray:  " . '/' . implode('/', $searchArray));
+						$arrayKey = array_search($valueToFind, $searchArray);
+						$e = new mb_notice("classes/class_owsContext.php - found key: " . $arrayKey . " for value " . $valueToFind ."" );
+						//Reduce path to found level where to add new layer from parent relation
+						array_splice($pathArray, $arrayKey + 1);
+					}					
+					$pathArray[] = (string)$layer->Extension->children('http://www.mapbender.org/context')->layer_pos;
+				}
+			}
+			$e = new mb_notice("classes/class_owsContext.php layer_path (after) = " . '/' . implode('/', $pathArray));
+			/*
+			* End of hierarchy extraction part
+			*/
+			$owsContextResource->folder = '/' . implode('/', $pathArray);
+
 			$this->addResource($owsContextResource);
 			unset($owsContextResource);
 		}

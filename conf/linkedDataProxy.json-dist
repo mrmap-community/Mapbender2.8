@@ -4,7 +4,7 @@
   "datasource_url": "",
   "legal_notice_link": "",
   "privacy_notice_link": "",
-  "memory_limit": "2000M",
+  "memory_limit": "4000M",
   "http_method": "GET",
   "use_internal_bootstrap": true,
   "own_css": "../css/linkedDataProxy.css",
@@ -15,5 +15,6 @@
   "behind_rewrite": false,
   "rewrite_path": "spatial-objects",
   "open_data_filter": "false",
-  "exclude_wfs_ids": [1,2]
+  "exclude_wfs_ids": [1,2],
+  "use_gdal": false
 }

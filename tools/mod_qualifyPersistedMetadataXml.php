@@ -133,14 +133,16 @@ if ($handle = opendir($metadataDir)) {
 			fclose($h); //close file for read
 			
 			$metadataXml = exchangeLanguageAndDeletePolygon( $metadataXml );
+			$metadataXml = str_replace('http://www.opengis.net/gml/3.2', 'http://www.opengis.net/gml', $metadataXml);
+		    	$metadataXml = str_replace('http://www.opengis.net/gml', 'http://www.opengis.net/gml/3.2', $metadataXml);
 			//open same file for write and insert xml into the file!
-            $writeHandle = fopen($metadataDir."/".$file, "w+");
+            		$writeHandle = fopen($metadataDir."/".$file, "w+");
 			fwrite($writeHandle, $metadataXml);
 			fclose($writeHandle);
 			logMessages("Number of altered file: ".($numberOfFile + 1));
 			$numberOfFile++;
 			$timeToBuild = microtime(true) - $startTime;
-            logMessages("time to alter xml: ".$timeToBuild);
+            		logMessages("time to alter xml: ".$timeToBuild);
 			//save xml to file
 			//echo $metadataDir."/".$file." will be altered!<br>";
 		} else {
@@ -191,7 +193,7 @@ function exchangeLanguageAndDeletePolygon($metadataXml) {
 		// $e = new mb_exception($rootNamespace);
 		// $xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace ( "csw", "http://www.opengis.net/cat/csw/2.0.2" );
-		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml" );
+		$xpath->registerNamespace ( "gml", "http://www.opengis.net/gml/3.2" );
 		$xpath->registerNamespace ( "gco", "http://www.isotc211.org/2005/gco" );
 		$xpath->registerNamespace ( "gmd", "http://www.isotc211.org/2005/gmd" );
 		$xpath->registerNamespace ( "gts", "http://www.isotc211.org/2005/gts" );
@@ -264,7 +266,7 @@ function addKeywords($metadataXml, $keywordsArray, $inspireCategoriesArray=false
 		$xpath->registerNamespace('defaultns', $rootNamespace); 
 		//$xpath->registerNamespace('georss','http://www.georss.org/georss');
 		$xpath->registerNamespace("csw", "http://www.opengis.net/cat/csw/2.0.2");
-		$xpath->registerNamespace("gml", "http://www.opengis.net/gml");
+		$xpath->registerNamespace("gml", "http://www.opengis.net/gml/3.2");
 		$xpath->registerNamespace("gco", "http://www.isotc211.org/2005/gco");
 		$xpath->registerNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 		$xpath->registerNamespace("gts", "http://www.isotc211.org/2005/gts");

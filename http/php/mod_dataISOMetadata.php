@@ -39,6 +39,9 @@ db_select_db(DB, $con);
 
 $admin = new administration();
 $wmsView = '';
+
+$forceCache = false;
+
 //parse request parameter
 //make all parameters available as upper case
 foreach ($_REQUEST as $key => $val) {
@@ -95,6 +98,20 @@ if (isset($_REQUEST['VALIDATE']) and $_REQUEST['VALIDATE'] != "true") {
 	echo 'Parameter validate is not valid (true).<br/>';
 	die();
 }
+
+if (isset($_REQUEST["cache"]) & $_REQUEST["cache"] != "") {
+    //validate
+    $testMatch = $_REQUEST["cache"];
+    if ($testMatch != 'true' && $testMatch != 'false'){
+        echo '{"success": false, "help": "Parameter cache is not valid (true/false)"}';
+        die();
+    }
+    if ($testMatch == 'true') {
+        $forceCache = true;
+    }
+    $testMatch = NULL;
+}
+
 //get record from mb_metadata and prohibit duplicates:
 $sql = <<<SQL
 
@@ -112,30 +129,43 @@ $row = db_fetch_assoc($res);
 $mb_metadata = $row;
 
 if (in_array($mb_metadata['origin'], array("external", "capabilities")) && isset($mb_metadata['link']) && $mb_metadata['link'] != "") {
-    //try to update metadata from remote resource 
-    $newMetadata = new Iso19139();
-    $newMetadata->createFromUrl($mb_metadata['link']);
-    $newMetadata->origin = $mb_metadata['origin'];
-    $e = new mb_notice("classes/class_iso19139.php: try to update dataset metadata from remote!");
-    if ($newMetadata->harvestResult == "1") {
-        $e = new mb_exception("classes/class_iso19139.php: harvesting was successful - try to update cache!");
-        //check if remote metadata date is newer
-        $remoteDate = new DateTime($newMetadata->createDate);
-        $cachedDate = new DateTime($mb_metadata['createdate']);
-        if ($remoteDate > $cachedDate) {
-            $e = new mb_notice("classes/class_iso19139.php: remote metadata is newer than cache - update it!");
-            $newMetadata->updateMetadataById($mb_metadata['metadata_id'], false);
-            $res = db_prep_query($sql, $v, $t);
-            if (!$res) {
-                echo "No record with uuid " . $recordId . " found in mapbender database!";
-                die();
-            }
-            $row = db_fetch_assoc($res);
-            $mb_metadata = $row; 
-        } else {
-            $e = new mb_notice("classes/class_iso19139.php: cache is up to date give back cache!");
+    //only update remote metadata, if cache=false is explicitly requested!
+    if ($forceCache == false) {
+        $e = new mb_notice("php/mod_dataISOMetadata.php: cache=false is set (default value) - try to resolve remote metadata and update it!");
+        //try to update metadata from remote resource 
+        $newMetadata = new Iso19139();
+        //TODO: Maybe allow metadata from other mapbender registries!
+        if (strpos($mb_metadata['link'], MAPBENDER_PATH . "/php/mod_dataISOMetadata.php") !== false) {
+        	$e = new mb_exception("php/mod_dataISOMetadata.php: recursion found - can't invoke metadata with id: " . $mb_metadata['metadata_id']);
+        	echo "Recursion exception - metadata has self reference in mapbender database!";
+        	die();     
         }
-        //$e = new mb_exception("classes/class_iso19139.php: Date remote: ".$remoteDate->format('Y-m-d')." date cache: ".$cachedDate->format('Y-m-d'));      
+        $newMetadata->createFromUrl($mb_metadata['link']);
+        $newMetadata->origin = $mb_metadata['origin'];
+        $e = new mb_notice("classes/class_iso19139.php: try to update dataset metadata from remote!");
+        if ($newMetadata->harvestResult == "1") {
+            $e = new mb_notice("classes/class_iso19139.php: harvesting was successful - try to update cache!");
+            //check if remote metadata date is newer
+            $remoteDate = new DateTime($newMetadata->createDate);
+            $cachedDate = new DateTime($mb_metadata['createdate']);
+            if ($remoteDate > $cachedDate) {
+                $e = new mb_notice("classes/class_iso19139.php: remote metadata is newer than cache - update it!");
+                $newMetadata->updateMetadataById($mb_metadata['metadata_id'], false);
+                $res = db_prep_query($sql, $v, $t);
+                if (!$res) {
+                    echo "No record with uuid " . $recordId . " found in mapbender database!";
+                    die();
+                }
+                $row = db_fetch_assoc($res);
+                $mb_metadata = $row; 
+            } else {
+                $e = new mb_notice("classes/class_iso19139.php: cache is up to date give back cache!");
+            }
+            //$e = new mb_exception("classes/class_iso19139.php: Date remote: ".$remoteDate->format('Y-m-d')." date cache: ".$cachedDate->format('Y-m-d'));      
+        }
+    } else {
+        $cachedDate = new DateTime($mb_metadata['createdate']);
+        $e = new mb_notice("php/mod_dataISOMetadata.php: cache=true is explicitly set - give back cached metadata from " . $cachedDate->format('Y-m-d'));
     }
 }
 
