@@ -666,7 +666,7 @@ CREATE TABLE oaf_proxy_log
   log_count bigint,
   CONSTRAINT oaf_proxy_logc_fkey_wfs_id_fkey FOREIGN KEY (fkey_wfs_id)
       REFERENCES wfs (wfs_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE CASCADE
+      ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT oaf_proxy_logc_fkey_wfs_featuretype_id_fkey FOREIGN KEY (fkey_wfs_featuretype_id)
       REFERENCES wfs_featuretype (featuretype_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE
