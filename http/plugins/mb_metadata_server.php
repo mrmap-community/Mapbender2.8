@@ -589,6 +589,7 @@ SQL;
 		$ajaxResponse->setSuccess(true);
 	break;
 	case "getLayerByWms" :
+	    // https://www.sitepoint.com/hierarchical-data-database/
 		$wmsId = $ajaxResponse->getParameter("id");
 		$sql = <<<SQL
 
@@ -601,15 +602,133 @@ SQL;
 		while ($row = db_fetch_assoc($res)) {
 			$rows[] = $row;
 		}
+		// initialize left to one
 		$left = 1;
-
+		
+        /*
+         * Functions for converting adjacense model to mptt model
+         */
+        /*
+         * Function to iterate over unclosed parent leafs of the tree. It sets the mptt - rgt values if subtrees are completed.
+         *
+         * @param integer $parent_id - ID/index of the first parent where the closure should start
+         * @param array $adjacense_array - The original adjacense array where pos and parent elements are given. This should be ordered!
+         * @param reference &$mptt_array - The reference to the result array with the lft and rgt columns of mptt model
+         * @param integer $adjacense_index - The index of the leaf where the closure begin - only higher values (unprocessed) are tested
+         * @param reference &$left - The reference to the left value of the mptt leaf where closer of parents will start. This will be incremented.
+         */
+		function close_parents_recursive($parent_id, $adjacense_array, &$mptt_array, $adjacense_index, &$left) {
+		    //get id of the next upper parent leaf
+		    $parent_id_new = $adjacense_array[$parent_id]['parent'];
+		    //print "Recursive invocation: Parent ID: ".$parent_id . " Title: " . $adjacense_array[$parent_id]['title'] . "\n";
+		    //Variable to check, if all childs are already processed - then the right value for the leaf maybe calculated
+		    $allChildsProcessed = true;
+		    //debug
+		    //print json_encode($adjacense_array[$parent_id])."\n";
+		    //get all unprocessed entries that has the same parent
+		    $reducedArray = array();
+		    foreach ($adjacense_array as $entry) {
+		        if ($entry['parent'] == $parent_id && $entry['pos'] > $adjacense_index) {
+		            $reducedArray[] = $entry;
+		        }
+		    }
+		    //print "Variable reducedArray: ".json_encode($reducedArray)." - parent_id: ".$parent_id." - left (from invocation of function): ".  $left ."\n";
+		    if (count($reducedArray) > 0 ) {
+		        // Some siblings of parent are not already processed
+		        $allChildsProcessed = false;
+		    } else {
+		        //print "No unprocessed childs found for parent - set right value!"."\n";
+		    }
+		    // stop condition - if not all
+		    if ($allChildsProcessed == false || $parent_id == 0) {
+		        //print "Stop condition reached"."\n";
+		        //print "Give back for : ". ($left + 1) ."\n";
+		        $left = $left + 1;
+		        return;
+		    } else {
+		        $left = $left + 1 ;
+		        //print "Set rgt for ". $mptt_array[$parent_id]['title'] . " to ". ($left + 1) ."\n";
+		        $mptt_array[$parent_id]['rgt'] = $left + 1;
+		        close_parents_recursive($parent_id_new, $adjacense_array, $mptt_array, $adjacense_index, $left);
+		    }
+		}
+		
+		/*
+		 * Function to built up the mptt lft and rgt values from a given adjacense tree array with pos and parent values.
+		 * The function is called recursively and will iterate from top to down. The tree must be ordered!
+		 *
+		 * @param array $adjacense_array - The original adjacense array where pos and parent elements are given. This should be ordered!
+		 * @param reference &$mptt_array - The reference to the result array with the lft and rgt columns of mptt model
+		 * @param integer $adjacense_index - The index of the leaf where the closure begin - only higher values (unprocessed) are tested
+		 * @param reference &$left - The reference to the left value of the mptt leaf where closer of parents will start. This will be incremented.
+		 */
+		function built_mptt_elements_recursive($adjacense_index, $adjacense_array, $left, &$mptt_array){
+		    while ($adjacense_index < count($adjacense_array)) {
+		        $mptt_entry = array();
+		        //print "Index: " . $adjacense_index . " - Title: " . $adjacense_array[$adjacense_index]['title'] . "\n";
+		        //initialize default values
+		        $mptt_array[$adjacense_index]['title'] = $adjacense_array[$adjacense_index]['title'];
+		        $mptt_array[$adjacense_index]['pos'] = $adjacense_array[$adjacense_index]['pos'];
+		        $mptt_array[$adjacense_index]['parent'] = $adjacense_array[$adjacense_index]['parent'];
+		        $mptt_array[$adjacense_index]['lft'] = $left;
+		        //begin with root node - set rgt to null
+		        if ($adjacense_array[$adjacense_index]['parent'] === null) {
+		            $mptt_array[$adjacense_index]['rgt'] = null;
+		            $left = $left + 1;
+		        } else {
+		            //check if leaf is not last leaf - if it is the last one - try to close tree
+		            if (($adjacense_index + 1) == count($adjacense_array)) {
+		                $mptt_array[$adjacense_index]['rgt']  = $mptt_array[$adjacense_index]['lft'] + 1;
+		                $left = $left + 1;
+		                //get index of parent leaf
+		                close_parents_recursive($adjacense_array[$adjacense_index]['parent'], $adjacense_array, $mptt_array, $adjacense_index, $left);
+		            } else {
+		                // if the leaf has childs, right is rgt also null, cause first all childs have to bee selected
+		                if ($adjacense_array[$adjacense_index + 1]['parent'] == $adjacense_array[$adjacense_index]['pos']) {
+		                    //print "Leaf is parent of a next leaf!\n";
+		                    $mptt_array[$adjacense_index]['rgt']  = null;
+		                } else {
+		                    //print "Leaf has no childs - it may have siblings - in all cases the lft and rgt will be simply incremented!\n";
+		                    $mptt_array[$adjacense_index]['rgt']  = $mptt_array[$adjacense_index]['lft'] + 1;
+		                    //if next leaf is not at the same level (last sibling) close the parent leaf with incremented right value
+		                    if ($adjacense_array[$adjacense_index + 1]['parent'] !== $adjacense_array[$adjacense_index]['parent']) {
+		                        //print "Next leaf is not at the same level - go up and set rgt of its parent!\n";
+		                        //get index of parent leaf
+		                        close_parents_recursive($adjacense_array[$adjacense_index]['parent'], $adjacense_array, $mptt_array, $adjacense_index, $left);
+		                    }
+		                }
+		            }
+		            $left = $left + 1;
+		        }
+		        $adjacense_index++;
+		        built_mptt_elements_recursive($adjacense_index, $adjacense_array, $left, $mptt_array);
+		        return true;
+		    }
+		}
+		
+		/*
+		 * Main function to transform an adjacense tree array to a mptt tree array
+		 */
+		
+		function adjacense2mptt($adjacense_array) {
+		    $left = 1;
+		    $adjacense_index = 0;
+		    $mptt_array = array();
+		    built_mptt_elements_recursive($adjacense_index, $adjacense_array, $left, $mptt_array);
+		    $mptt_array[0]['rgt'] = count($mptt_array) * 2;
+		    return $mptt_array;
+		}
+		/*
+		 * End of mptt functions
+		 */
+		
 		function createNode ($left, $right, $row) {
 			$inspireCatsArray = explode(",",str_replace("}","",str_replace("{","",$row["inspire_cats"])));
 			if (count($inspireCatsArray) >= 0) {
 				$inspireCats = 1;
 			} else {
 				$inspireCats = 0;
-				}
+			}
 			return array(
 				"left" => $left,
 				"right" => $right,
@@ -638,6 +757,8 @@ SQL;
 				// first node of subtree
 				if ($addNewNode) {
 					$nodeArray[]= createNode($left, null, $row);
+					//$e = new mb_exception("plugins/mb_metadata_server.php: root node: ". json_encode($row) ." with left: ". $left);
+					//$e = new mb_exception("plugins/mb_metadata_server.php: group node: ". $row['layer_id']. " - " .$row['layer_title'] . " - ".$left);
 					$addNewNode = false;
 				}
 				else {
@@ -655,6 +776,8 @@ SQL;
 					elseif ($parent === $nodeArray[count($nodeArray)-1]["parent"]) {
 						$nodeArray[count($nodeArray)-1]["right"] = ++$left;
 						$nodeArray[]= createNode(++$left, null, $row);
+						//test
+						//$addNewNode = false;
 					}
 				}
 			}
@@ -663,7 +786,30 @@ SQL;
 			}
 			return $nodeArray;
 		}
-		$nodeArray = addSubTree($rows, 0, 1);
+		
+		// initialize function
+		$nodeArray = addSubTree($rows, 0, $left);
+		
+		//alternative approach
+		//$e = new mb_exception("plugins/mb_metadata_server.php: count nodeArray: " . count($nodeArray));
+		$adjacenseArray = array();
+		$entry = array();
+		foreach ($nodeArray as $node) {
+		    $entry['pos'] =  $node['pos'];
+		    $entry['parent'] = $node['parent'];
+		    $entry['title'] = $node['attr']['layer_title'];
+		    $adjacenseArray[] = $entry;
+		}
+		/*$e = new mb_exception("plugins/mb_metadata_server.php: count adjacenseArray: " . count($adjacenseArray));
+		$e = new mb_exception("plugins/mb_metadata_server.php: adjacenseArray: " . json_encode($adjacenseArray));*/
+		$mpttArray = adjacense2mptt($adjacenseArray);
+		
+		//$e = new mb_exception("plugins/mb_metadata_server.php: mpttArray: " . json_encode($mpttArray));
+		for ($j = 0; $j < count($nodeArray); $j++) {
+		    $nodeArray[$j]['left'] = $mpttArray[$j]['lft'];
+		    $nodeArray[$j]['right'] = $mpttArray[$j]['rgt'];
+		}
+		//$e = new mb_exception("plugins/mb_metadata_server.php: nodeArray: " . json_encode($nodeArray));
 		$resultObj = array(
 			"nestedSets" => $nodeArray
 			);
