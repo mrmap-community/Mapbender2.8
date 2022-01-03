@@ -37,6 +37,7 @@ class OwsContext {
 	var $creator; //[0..1] OwsContextResourceCreator
 	var $rights; //[0..1]
 	var $areaOfInterest; //[0..1]
+	var $geojsonBbox; 
 	var $timeIntervalOfInterest; //[0..1]
 	var $keyword; //[0..*]
 	var $extension; //[0..*]
@@ -125,12 +126,13 @@ class OwsContext {
 	    $properties->lang = "de";
 	    $properties->title = $this->title;
 	    $properties->subtitle = $this->abstract;
-	    $properties->updated = "";
+	    $properties->updated = $this->updateDate;
 	    $properties->authors = array("name" => $this->author[0]['name'], "email" => $this->author[0]['email']);
 	    $properties->publisher = "";
 	    $properties->generator = array("title" => $this->creator->creatorApplication->title, "uri" => $this->creator->creatorApplication->uri, "version" => $this->creator->creatorApplication->version);
 	    $properties->display = array("pixelWidth" => (integer)$this->creator->creatorDisplay->pixelWidth, "pixelHeight" => (integer)$this->creator->creatorDisplay->pixelHeight, "mmPerPixel" => $this->creator->creatorDisplay->mmPerPixel);
-	    
+		//see http://www.owscontext.org/owc_user_guide/C0_userGuide.html
+        $properties->bbox = $this->bbox;
 	    
 	    $properties->links->profiles = array("http://www.opengis.net/spec/owc-geojson/1.0/req/core");
 	    $owsContextJsonObject->properties = $properties;
@@ -157,21 +159,27 @@ class OwsContext {
 	            $jsonOffering = new stdClass();
 	            $jsonOffering->code = $offering->code;
 	            foreach ($offering->operation as $operation) {
-	                $jsonOffering->operations[] = array("code" => $operation->code, "method" => $operation->method, "type" => $operation->type, "href" => (string)$operation->href);
-	                
+                    $operationsArray = array("code" => $operation->code, "method" => $operation->method, "type" => $operation->type, "href" => (string)$operation->href);
+					if (isset($operation->extension)) {
+						$operationsArray["extension"] = $operation->extension;
+					}
+	                $jsonOffering->operations[] = $operationsArray;
 	            }
+				foreach ($offering->styleSet as $style) {
+					$jsonOffering->styles[] = array("name" => $style->name, "title" => $style->title, "legendURL" => $style->legendURL, "default" => $style->default);
+				}
+				foreach ($offering->extension as $extension) {
+					$jsonOffering->extension[] = $extension;
+				}
+
 	            $feature->offerings[] = $jsonOffering;
 	        }
-	        
 	        $properties->minScaleDenominator = (double)$resource->minScaleDenominator;
 	        $properties->maxScaleDenominator = (double)$resource->maxScaleDenominator;
 	        
 	        $properties->folder = $resource->folder;
 	        $feature->properties = $properties;
-	        //wms getcapabilities
-	        
-	        //wms getmap
-	        //legend
+
 	        //wfs...
 	        //
 	        $features[] = $feature;
@@ -371,16 +379,21 @@ class OwsContext {
 		$res = db_query($sql);
 		$georssGmlPolygon = db_fetch_row($res);	
 		$this->areaOfInterest = $georssGmlPolygon[0];
+		//http://www.owscontext.org/owc_user_guide/C0_userGuide.html#truegeojson-encoding-5
+		$sql = "SELECT BOX2D(ST_TRANSFORM(ST_GeomFromText('POLYGON(( $minx $miny , $maxx $miny , $maxx $maxy , $minx $maxy , $minx $miny ))',".str_replace('EPSG:','',$myWmc->wmc_srs)."),4326));";
+		$res = db_query($sql);
+		$bbox2d = db_fetch_row($res);
+		$this->bbox = array_map('floatval', explode(",", str_replace(" ", ",", str_replace(")", "", str_replace("BOX(", "", $bbox2d[0])))));
 		//define creator
 		$creator = new OwsContextResourceCreator();
 		$creator->creatorApplication = new OwsContextResourceCreatorApplication();
-$creator->creatorApplication->title = "testgeoportal";
-$creator->creatorApplication->uri = "http://localhost/mapbender";
-$creator->creatorApplication->version = "2.8_trunk";
-                $creatorDisplay = new OwsContextResourceCreatorDisplay();
-                $creatorDisplay->pixelWidth = $myWmc->mainMap->getWidth();
-                $creatorDisplay->pixelHeight = $myWmc->mainMap->getHeight();
-                $creatorDisplay->mmPerPixel = 0.28;
+		$creator->creatorApplication->title = "testgeoportal";
+		$creator->creatorApplication->uri = "http://localhost/mapbender";
+		$creator->creatorApplication->version = "2.8_trunk";
+        $creatorDisplay = new OwsContextResourceCreatorDisplay();
+        $creatorDisplay->pixelWidth = $myWmc->mainMap->getWidth();
+        $creatorDisplay->pixelHeight = $myWmc->mainMap->getHeight();
+        $creatorDisplay->mmPerPixel = 0.28;
 		$creator->creatorDisplay = $creatorDisplay;
 		//add creator to object
 		$this->setCreator($creator);
@@ -420,11 +433,14 @@ $creator->creatorApplication->version = "2.8_trunk";
 		* at service level, the order extents to max layers 
 		* changing order is only possible within its own level
 		*/
-		
 		foreach ($layerList as $layer) {      
 			//pull relevant information out of xml snippet
             $version = $layer->Server->attributes()->version;
 			$getmap = $layer->Server->OnlineResource->attributes("xlink", true)->href;
+			$layerDoc = simplexml_load_string($layer->asXml());
+			//get current format
+			$currentFormat = $layerDoc->xpath("/Layer/FormatList/Format[@current='1']");
+			$currentFormat = (string)$currentFormat[0];
 			//check if featureInfo active
 			$owsContextResource = new OwsContextResource();
 			$owsContextResource->title = $layer->Title;
@@ -432,16 +448,102 @@ $creator->creatorApplication->version = "2.8_trunk";
 			//add offering
 			$owsContextResourceOffering = new OwsContextResourceOffering();
 			$owsContextResourceOffering->code = "http://www.opengis.net/spec/owc-atom/1.0/req/wms";
-			//add operation for getcapabilities
+			//add operation for WMS GetCapabilities operation
 			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
 			$owsContextResourceOfferingOperation->code = "GetCapabilities";
 			$owsContextResourceOfferingOperation->method = "GET";
 			$owsContextResourceOfferingOperation->type = "application/xml";
 			//TODO: use operations from database if wms id is given in wmc
-			
-			$owsContextResourceOfferingOperation->href = $getmap;
+			if (isset($layer->Extension->children('http://www.mapbender.org/context')->layer_id)) {
+				$owsContextResourceOfferingOperation->href = "http://localhost/mapbender/php/wms.php?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1&layer_id=" . $layer->Extension->children('http://www.mapbender.org/context')->layer_id;
+			} else {
+				$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=GetCapabilities&VERSION=" . $version . "&SERVICE=WMS";
+			}
 			$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
 			$owsContextResource->addOffering($owsContextResourceOffering);
+			//Add offering operation for WMS GetMap operation
+			/*
+			* FORMAT=image/png&VERSION=1.1.1&STYLES=&SRS=EPSG:4326&WIDTH=1680&HEIGHT=885&BBOX=-154.30193347887,-20.206335142339,57.363088142915,91.295774461995
+			*/
+			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
+			$owsContextResourceOfferingOperation->code = "GetMap";
+			$owsContextResourceOfferingOperation->method = "GET";
+			$owsContextResourceOfferingOperation->type = $currentFormat; //default
+			$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=" . $owsContextResourceOfferingOperation->code . "&VERSION=" . $version . "&SERVICE=WMS&LAYERS=" . $layer->Name . "&format=" . $owsContextResourceOfferingOperation->type . "&HEIGHT=" . $creatorDisplay->pixelHeight . "&WIDTH=" . $creatorDisplay->pixelWidth . "&SRS=EPSG:4326" . "&BBOX=" . implode(',', $this->bbox) ."&STYLES=" ;
+			//check if operation is activated
+			if ($layer->attributes()->hidden == "0") {
+				$owsContextResourceOfferingOperation->extension = array("active" => true);
+			}
+			$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
+			if ($layer->attributes()->queryable == "1") {
+				//Add offering operation for WMS GetMap operation
+				/*
+				* FORMAT=image/png&VERSION=1.1.1&STYLES=&SRS=EPSG:4326&WIDTH=1680&HEIGHT=885&BBOX=-154.30193347887,-20.206335142339,57.363088142915,91.295774461995
+				*/
+				$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
+				$owsContextResourceOfferingOperation->code = "GetFeatureInfo";
+				$owsContextResourceOfferingOperation->method = "GET";
+				$owsContextResourceOfferingOperation->type = "text/html"; //default
+				$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=" . $owsContextResourceOfferingOperation->code . "&VERSION=" . $version . "&SERVICE=WMS&LAYERS=" . $layer->Name . "&format=" . $owsContextResourceOfferingOperation->type ;
+				//check if operation is activated
+				if ($layer->Extension->children('http://www.mapbender.org/context')->querylayer == "1") {
+					$owsContextResourceOfferingOperation->extension = array("active" => true);
+				}
+				$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
+			}
+
+			//styles
+			foreach ($layer->StyleList->Style as $style) {
+				//$e = new mb_exception(json_encode($style));
+				if ((string)$style->Name != "") {
+					$styleSet = new OwsContextResourceOfferingStyleSet();
+					$styleSet->name = (string)$style->Name;
+					$styleSet->title = (string)$style->Title;
+					if ($style->LegendURL->OnlineResource->attributes("http://www.w3.org/1999/xlink")->href != "") {
+						$styleSet->legendURL = (string)$style->LegendURL->OnlineResource->attributes("http://www.w3.org/1999/xlink")->href;
+					}
+					if ($style->attributes()->current == '1') {
+						$styleSet->default = true;
+					} else {
+						$styleSet->default = false;
+					}
+					$owsContextResourceOffering->addStyleSet($styleSet);
+				}
+			}
+			/*
+			* Extensions
+			*
+			* Dimension info
+			*
+			* Compare https://github.com/dlr-eoc/ukis-frontend-libraries/blob/master/projects/services-ogc/README.md
+			*/
+			/*
+			  dimensions: [{
+				display: 'P1D',
+				name: 'time',
+				units: 'ISO8601',
+				value: '2017-01-01/2017-01-01/P1D'
+			  }],
+
+			* and https://portal.ogc.org/files/?artifact_id=8618 6.4.1.6.1
+			*/
+			if (isset($layer->DimensionList)) {
+				$owsContextResourceOfferingExtDimensions = new OwsContextResourceOfferingExtDimensions();
+			}
+
+			foreach ($layer->DimensionList->Dimension as $dimension) {
+				if ((string)$dimension->attributes()->name != "") {
+					$owsContextResourceOfferingExtDimension = new OwsContextResourceOfferingExtDimensionsDimension();
+					foreach ($dimension->attributes() as $key => $value) {
+					    $owsContextResourceOfferingExtDimension->{$key} = (string)$value;
+					}
+					$owsContextResourceOfferingExtDimensions->addDimension($owsContextResourceOfferingExtDimension);
+				}
+			}
+			if (isset($layer->DimensionList)) {
+				$owsContextResourceOffering->extension = array();
+				$owsContextResourceOffering->extension[] = $owsContextResourceOfferingExtDimensions;
+			}
 			//active
 			if ($layer->attributes()->hidden == "0") {
 				$owsContextResource->active = true;
@@ -500,15 +602,14 @@ $creator->creatorApplication->version = "2.8_trunk";
 			}
 			$e = new mb_notice("classes/class_owsContext.php layer_path (after) = " . '/' . implode('/', $pathArray));
 			/*
-			* End of hierarchy extraction part
+			* End of hierarchy extraction part - TODO check it!
 			*/
 			$owsContextResource->folder = '/' . implode('/', $pathArray);
 
 			$this->addResource($owsContextResource);
 			unset($owsContextResource);
 		}
-	}
-	
+	}	
 }
 
 class OwsContextResource {
@@ -530,10 +631,18 @@ class OwsContextResource {
 	var $maxScaleDenominator; //[0..1] Double
 	var $minScaleDenominator; //[0..1] Double
 	var $folder; //[0..1]
-	var $extension; //[0..*] Any	
+	var $extension; //[0..*] Any
 	//relations	
-	var $resourceMetadata; //[0..*] MD_Metadata		
-	
+	var $resourceMetadata; //[0..*] MD_Metadata	
+
+	/*
+	* Mapbender Extensions
+	*/
+	var $opacity; // real between 0 and 1
+	var $selectActive; // [0..1] Boolean
+	var $editActive;
+	var $temporalFilter; //see dimension aat 
+		
 	public function __construct() {
 		//mandatory
 		$this->id = new uuid();
@@ -612,9 +721,45 @@ class OwsContextResourceOffering {
 	public function addStyleSet($aStyleSet) {
 		array_push($this->styleSet, $aStyleSet);	
 	}
+}
 
+/*
+* Extensions
+*/
+class OwsContextResourceOfferingExtDimensions {
+	var $dimension; //[1..n] OwsContextResourceOfferingExtDimensionsDimension
 
+	public function __construct() {
+		//mandatory element
+		$this->dimension = array();		
+	}
 
+	public function addDimension($aDimension) {
+		array_push($this->dimension, $aDimension);	
+	}
+}
+
+class OwsContextResourceOfferingExtDimensionsDimension {
+	var $name; //mandatory
+	var $units; //{'ISO8601'|}
+	var $unitSymbol; //string
+	var $default; //string - "current"
+	var $multipleValues; //string
+	var $nearestValue; //string
+	var $extent; //string - "2021-11-16T07:45:00.000Z/2021-11-30T09:45:00.000Z/PT5M" 
+	var $userValue; //string ""
+
+	public function __construct() {
+		//mandatory
+		$this->name = "dummy dimension name";	
+		/*$this->units = "";
+		$this->unitSymbol = "";
+		$this->default = "";
+		$this->multipleValues = "";
+		$this->nearestValue = "";
+		$this->extent = "";
+		$this->userValue = "";*/
+	}
 }
 
 class OwsContextResourceOfferingOperation {
