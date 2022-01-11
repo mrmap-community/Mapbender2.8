@@ -402,7 +402,18 @@ class OwsContext {
 		    $bbox2d = db_fetch_row($res);
 		    $projection = new OwsContextExtProjection();
 		    $projection->code = "EPSG:" . $srsEntry;
-		    $projection->unit = 'm';
+		    $crs = new Crs($srsEntry);
+		    switch ($crs->epsgType) {
+		        case "projected":
+		            $projection->unit = 'm';
+		            break;
+		        case "geographic 2d":
+		            $projection->unit = 'd';
+		            break;		        
+		        case "geographic 2D":
+		            $projection->unit = 'd';
+		                break;
+		    }
 		    $projection->bbox = array_map('floatval', explode(",", str_replace(" ", ",", str_replace(")", "", str_replace("BOX(", "", $bbox2d[0])))));
 		    if ($srsEntry == str_replace('EPSG:','',$myWmc->wmc_srs)) {
 		        $projection->default = true;
