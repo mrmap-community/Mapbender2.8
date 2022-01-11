@@ -43,7 +43,7 @@ class OwsContext {
 	var $extension; //[0..*]
 	//relations
 	var $resource; //[0..*] OwsContextResource (ordered)
-	var $resourceMetadata; //[0..*] MD_Metadata
+	var $contextMetadata; //[0..*] MD_Metadata
 	//internal
 	var $version; //1.0
 	
@@ -57,10 +57,10 @@ class OwsContext {
 		//arrays
 		$this->author = array();
 		$this->keyword = "";
-		$this->extensions = array();
+		$this->extension = array();
 		//relations
 		$this->resource = array();
-		$this->resourceMetadata = array();
+		$this->contextMetadata = array();
 		//internal
 		$this->version = "1.0";	
 	}	
@@ -133,9 +133,12 @@ class OwsContext {
 	    $properties->display = array("pixelWidth" => (integer)$this->creator->creatorDisplay->pixelWidth, "pixelHeight" => (integer)$this->creator->creatorDisplay->pixelHeight, "mmPerPixel" => $this->creator->creatorDisplay->mmPerPixel);
 		//see http://www.owscontext.org/owc_user_guide/C0_userGuide.html
         $properties->bbox = $this->bbox;
-	    
+        $properties->contextMetadata = $this->contextMetadata;
 	    $properties->links->profiles = array("http://www.opengis.net/spec/owc-geojson/1.0/req/core");
+	    $properties->extension = $this->extension;
+	    
 	    $owsContextJsonObject->properties = $properties;
+	    
 	    $features = array();
 	    
 	    foreach ($this->resource as $resource) {
@@ -384,12 +387,37 @@ class OwsContext {
 		$res = db_query($sql);
 		$bbox2d = db_fetch_row($res);
 		$this->bbox = array_map('floatval', explode(",", str_replace(" ", ",", str_replace(")", "", str_replace("BOX(", "", $bbox2d[0])))));
+		$this->contextMetadata[] = MAPBENDER_PATH . "/php/mod_showMetadata.php?languageCode=de&resource=wmc&layout=tabs&id=" . $wmcId;
+		
+		/*
+		 * Extension für different alternative projections
+		 */
+		// Use supported defined crs or alternatively use all common crs is known or may be resolved
+		// First use crs defined in mapbender.conf 
+		$srsArray = explode(',' ,SRS_ARRAY);
+		$projections = new OwsContextExtProjections();
+		foreach ($srsArray as $srsEntry) {
+		    $sql = "SELECT BOX2D(ST_TRANSFORM(ST_GeomFromText('POLYGON(( $minx $miny , $maxx $miny , $maxx $maxy , $minx $maxy , $minx $miny ))',".str_replace('EPSG:','',$myWmc->wmc_srs).")," . $srsEntry . "));";
+		    $res = db_query($sql);
+		    $bbox2d = db_fetch_row($res);
+		    $projection = new OwsContextExtProjection();
+		    $projection->code = "EPSG:" . $srsEntry;
+		    $projection->unit = 'm';
+		    $projection->bbox = array_map('floatval', explode(",", str_replace(" ", ",", str_replace(")", "", str_replace("BOX(", "", $bbox2d[0])))));
+		    if ($srsEntry == str_replace('EPSG:','',$myWmc->wmc_srs)) {
+		        $projection->default = true;
+		    } else {
+		        unset($projection->default);
+		    }
+		    $projections->addProjection($projection);
+		}
+		array_push($this->extension, $projections);
 		//define creator
 		$creator = new OwsContextResourceCreator();
 		$creator->creatorApplication = new OwsContextResourceCreatorApplication();
-		$creator->creatorApplication->title = "testgeoportal";
-		$creator->creatorApplication->uri = "http://localhost/mapbender";
-		$creator->creatorApplication->version = "2.8_trunk";
+		$creator->creatorApplication->title = "Mapbender";
+		$creator->creatorApplication->uri = MAPBENDER_PATH;
+		$creator->creatorApplication->version = MB_VERSION_NUMBER . " (" . date('c', MB_RELEASE_DATE) . ")";
         $creatorDisplay = new OwsContextResourceCreatorDisplay();
         $creatorDisplay->pixelWidth = $myWmc->mainMap->getWidth();
         $creatorDisplay->pixelHeight = $myWmc->mainMap->getHeight();
@@ -433,6 +461,7 @@ class OwsContext {
 		* at service level, the order extents to max layers 
 		* changing order is only possible within its own level
 		*/
+        // Initialize an array of layer ids - cause we want to pull rights/author/publisher/updateDate from mapbender registry
 		foreach ($layerList as $layer) {      
 			//pull relevant information out of xml snippet
             $version = $layer->Server->attributes()->version;
@@ -455,7 +484,7 @@ class OwsContext {
 			$owsContextResourceOfferingOperation->type = "application/xml";
 			//TODO: use operations from database if wms id is given in wmc
 			if (isset($layer->Extension->children('http://www.mapbender.org/context')->layer_id)) {
-				$owsContextResourceOfferingOperation->href = "http://localhost/mapbender/php/wms.php?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1&layer_id=" . $layer->Extension->children('http://www.mapbender.org/context')->layer_id;
+			    $owsContextResourceOfferingOperation->href = MAPBENDER_PATH . "/php/wms.php?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1&layer_id=" . $layer->Extension->children('http://www.mapbender.org/context')->layer_id;
 			} else {
 				$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=GetCapabilities&VERSION=" . $version . "&SERVICE=WMS";
 			}
@@ -464,35 +493,42 @@ class OwsContext {
 			//Add offering operation for WMS GetMap operation
 			/*
 			* FORMAT=image/png&VERSION=1.1.1&STYLES=&SRS=EPSG:4326&WIDTH=1680&HEIGHT=885&BBOX=-154.30193347887,-20.206335142339,57.363088142915,91.295774461995
-			*/
-			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
-			$owsContextResourceOfferingOperation->code = "GetMap";
-			$owsContextResourceOfferingOperation->method = "GET";
-			$owsContextResourceOfferingOperation->type = $currentFormat; //default
-			$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=" . $owsContextResourceOfferingOperation->code . "&VERSION=" . $version . "&SERVICE=WMS&LAYERS=" . $layer->Name . "&format=" . $owsContextResourceOfferingOperation->type . "&HEIGHT=" . $creatorDisplay->pixelHeight . "&WIDTH=" . $creatorDisplay->pixelWidth . "&SRS=EPSG:4326" . "&BBOX=" . implode(',', $this->bbox) ."&STYLES=" ;
-			//check if operation is activated
-			if ($layer->attributes()->hidden == "0") {
-				$owsContextResourceOfferingOperation->extension = array("active" => true);
+			*/   
+			//$e = new mb_exception("layer name: " . $layer->Name);
+			//Add operation only, if a named layer is given - unnamed layer have got a layer name which begin with 'unnamed_layer:...' in mapbender
+			// $e = new mb_exception("strgpos...: " . strpos((string)$layer->Name, 'unnamed_layer:'));
+			if (strpos((string)$layer->Name, 'unnamed_layer:') !== 0 && $layer->Name !== "") {
+			    //$e = new mb_exception("layer name: " . $layer->Name == "");
+    			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
+    			$owsContextResourceOfferingOperation->code = "GetMap";
+    			$owsContextResourceOfferingOperation->method = "GET";
+    			$owsContextResourceOfferingOperation->type = $currentFormat; //default
+    			$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=" . $owsContextResourceOfferingOperation->code . "&VERSION=" . $version . "&SERVICE=WMS&LAYERS=" . $layer->Name . "&format=" . $owsContextResourceOfferingOperation->type . "&HEIGHT=" . $creatorDisplay->pixelHeight . "&WIDTH=" . $creatorDisplay->pixelWidth . "&SRS=EPSG:4326" . "&BBOX=" . implode(',', $this->bbox) ."&STYLES=" ;
+    			//check if operation is activated
+    			if ($layer->attributes()->hidden == "0") {
+    				$owsContextResourceOfferingOperation->extension = array("active" => true);
+    			}
+    			$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
+    			if ($layer->attributes()->queryable == "1") {
+    				//Add offering operation for WMS GetMap operation
+    				/*
+    				* FORMAT=image/png&VERSION=1.1.1&STYLES=&SRS=EPSG:4326&WIDTH=1680&HEIGHT=885&BBOX=-154.30193347887,-20.206335142339,57.363088142915,91.295774461995
+    				*/
+    				$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
+    				$owsContextResourceOfferingOperation->code = "GetFeatureInfo";
+    				$owsContextResourceOfferingOperation->method = "GET";
+    				$owsContextResourceOfferingOperation->type = "text/html"; //default
+    				$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=" . $owsContextResourceOfferingOperation->code . "&VERSION=" . $version . "&SERVICE=WMS&LAYERS=" . $layer->Name . "&format=" . $owsContextResourceOfferingOperation->type ;
+    				//check if operation is activated
+    				if ($layer->Extension->children('http://www.mapbender.org/context')->querylayer == "1") {
+    					$owsContextResourceOfferingOperation->extension = array("active" => true);
+    				}
+    				$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
+    			}
 			}
-			$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
-			if ($layer->attributes()->queryable == "1") {
-				//Add offering operation for WMS GetMap operation
-				/*
-				* FORMAT=image/png&VERSION=1.1.1&STYLES=&SRS=EPSG:4326&WIDTH=1680&HEIGHT=885&BBOX=-154.30193347887,-20.206335142339,57.363088142915,91.295774461995
-				*/
-				$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
-				$owsContextResourceOfferingOperation->code = "GetFeatureInfo";
-				$owsContextResourceOfferingOperation->method = "GET";
-				$owsContextResourceOfferingOperation->type = "text/html"; //default
-				$owsContextResourceOfferingOperation->href = $getmap . "REQUEST=" . $owsContextResourceOfferingOperation->code . "&VERSION=" . $version . "&SERVICE=WMS&LAYERS=" . $layer->Name . "&format=" . $owsContextResourceOfferingOperation->type ;
-				//check if operation is activated
-				if ($layer->Extension->children('http://www.mapbender.org/context')->querylayer == "1") {
-					$owsContextResourceOfferingOperation->extension = array("active" => true);
-				}
-				$owsContextResourceOffering->addOperation($owsContextResourceOfferingOperation);
-			}
-
-			//styles
+			//styles			
+			/*$currentStyle = $layerDoc->xpath("/Layer/StyleList/Style[@current='1']");
+			$currentStyle = (string)$currentStyle[0];*/
 			foreach ($layer->StyleList->Style as $style) {
 				//$e = new mb_exception(json_encode($style));
 				if ((string)$style->Name != "") {
@@ -502,6 +538,7 @@ class OwsContext {
 					if ($style->LegendURL->OnlineResource->attributes("http://www.w3.org/1999/xlink")->href != "") {
 						$styleSet->legendURL = (string)$style->LegendURL->OnlineResource->attributes("http://www.w3.org/1999/xlink")->href;
 					}
+					// TODO: Check standard - OWS Context defines: "Whether this Styleset is the one to be used as default (initial display)" - Table 6
 					if ($style->attributes()->current == '1') {
 						$styleSet->default = true;
 					} else {
@@ -610,6 +647,42 @@ class OwsContext {
 			unset($owsContextResource);
 		}
 	}	
+}
+
+/*
+ * Extensions
+ */
+class OwsContextExtProjections {
+    // https://github.com/dlr-eoc/ukis-frontend-libraries/blob/master/projects/services-ogc/README.md
+    var $projections; //[1..n] OwsContextExtProjectionsProjection
+    
+    public function __construct() {
+        //mandatory element
+        $this->projections = array();
+    }
+    
+    public function addProjection($aProjection) {
+        array_push($this->projections, $aProjection);
+    }
+}
+
+class OwsContextExtProjection {
+    var $code; //mandatory
+    var $unit; //{'m'|'d'}
+    var $bbox; //array minx, miny, maxx, maxy
+    var $default; //boolean
+    
+    public function __construct() {
+        //mandatory
+        $this->code = "EPSG:4326";
+        /*$this->units = "";
+         $this->unitSymbol = "";
+         $this->default = "";
+         $this->multipleValues = "";
+         $this->nearestValue = "";
+         $this->extent = "";
+         $this->userValue = "";*/
+    }
 }
 
 class OwsContextResource {
