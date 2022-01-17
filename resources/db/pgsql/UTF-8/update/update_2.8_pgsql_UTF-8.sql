@@ -699,3 +699,8 @@ CREATE TRIGGER update_oaf_proxy_log_lastchanged
 GRANT ALL ON TABLE oaf_proxy_log TO mapbenderdbuser;
 GRANT ALL ON SEQUENCE oaf_proxy_log_log_id_seq TO mapbenderdbuser;
 
+-- Column: mb_group_ckan_api_key_text
+
+-- ALTER TABLE mb_group DROP COLUMN mb_group_ckan_api_key_text;
+
+ALTER TABLE mb_group ADD COLUMN mb_group_ckan_api_key_text text;
