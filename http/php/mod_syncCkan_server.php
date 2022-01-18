@@ -457,7 +457,7 @@ if (isset($orgaId)){
 				//create user
 				$requestPost = new stdClass();
 				$requestPost->{'name'} = $editingUserName;
-				$requestPost->{'email'} = "kontakt@geoportal.rlp.de";
+				$requestPost->{'email'} = $editingUserName . "@example.com";
 				$requestPost->{'password'} = "1234".$editingUserName."5678";
 				$requestPostJson = json_encode($requestPost);
 				$ckanResultUser = $syncCkanClass->createRemoteCkanUser($requestPostJson);
