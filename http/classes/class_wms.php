@@ -1369,7 +1369,8 @@ class wms {
 			}
 			if($this->objLayer[$i]->layer_name == ""){
 				//TODO: Check if this handling is ok - maybe we need another handling of layer without names (category layer)!
-				$this->objLayer[$i]->layer_name = $this->objLayer[$i]->layer_title;
+				$this->objLayer[$i]->layer_name = "unnamed_layer:" . md5($this->objLayer[$i]->layer_title);
+				//$this->objLayer[$i]->layer_name = $this->objLayer[$i]->layer_title;
 			}
 			if($this->objLayer[$i]->layer_minscale == ""){
 				$this->objLayer[$i]->layer_minscale = 0;
@@ -1858,7 +1859,7 @@ class wms {
 			echo "wms_add_data_type_format('". $this->data_type[$i] ."','". $this->data_format[$i] ."');";		
 		}
 		for($i=0; $i<count($this->objLayer); $i++){
-			if($this->objLayer[$i]->layer_name == $layer_name|| $this->objLayer[$i]->layer_pos == 0){
+			if($this->objLayer[$i]->layer_name == $layer_name || $this->objLayer[$i]->layer_pos == 0){
 			
 				if($parent){
 					echo "parent.";
