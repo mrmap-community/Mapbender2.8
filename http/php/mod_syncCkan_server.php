@@ -189,7 +189,7 @@ $syncCkanClass->mapbenderUserId = $userId;
 $syncCkanClass->compareTimestamps = $compareTimestamps;
 
 if (isset($syncDepartment)) {
-        //write requested orga id to class to prohibit invocation of other orga comparism if one orga should be synced
+    //write requested orga id to class to prohibit invocation of other orga comparism if one orga should be synced
 	$syncCkanClass->syncOrgaId = $syncDepartment;
 }
 
@@ -198,7 +198,6 @@ if ($operation == 'syncCkanOrganizations') {
 		echo "You are not root user and therefor not allowed to sync organizations with ckan!";
 		die();
 	}
-
 	
 	$sql = <<<SQL
 
@@ -252,7 +251,6 @@ SQL;
 if (isset($orgaId)){
 	$sql3 .= " AND mb_group_id = ".$orgaId."";
 } 
-
 
 	$sql4 = <<<SQL
 
@@ -445,8 +443,10 @@ if (isset($orgaId)){
 				//get id from user if already exists - is needed for update since ckan 2.8+!
 				$requestPost->{'id'} = $ckanResultUserObject->result->id;
 				$requestPost->{'name'} = $editingUserName;
-				$requestPost->{'email'} = "kontakt@geoportal.rlp.de";
+				//$requestPost->{'email'} = "kontakt@geoportal.rlp.de";
+				$requestPost->{'email'} = $editingUserName . "@example.com";
 				$requestPost->{'password'} = "1234".$editingUserName."5678";
+				
 				//groups for rlp:(transparenzgesetz,opendata), TODO configure this in ckan.conf
 				//$requestPost->groups[0]->name = "transparenzgesetz";
 				//$requestPost->groups[1]->name = "opendata";
@@ -457,7 +457,7 @@ if (isset($orgaId)){
 				//create user
 				$requestPost = new stdClass();
 				$requestPost->{'name'} = $editingUserName;
-				$requestPost->{'email'} = "kontakt@geoportal.rlp.de";
+				$requestPost->{'email'} = $editingUserName . "@example.com";
 				$requestPost->{'password'} = "1234".$editingUserName."5678";
 				$requestPostJson = json_encode($requestPost);
 				$ckanResultUser = $syncCkanClass->createRemoteCkanUser($requestPostJson);
@@ -470,7 +470,7 @@ if (isset($orgaId)){
 				$apiKey = $ckanResultUserObject->result->apikey;
 				$userId = $ckanResultUserObject->result->id;
 				//store key into mapbender group table
-				$sql = "UPDATE mb_group SET mb_group_ckan_api_key = $1 WHERE mb_group_id = $2";
+				$sql = "UPDATE mb_group SET mb_group_ckan_api_key_text = $1 WHERE mb_group_id = $2";
 				$v = array($apiKey, $orga->serialId);		
 				$t = array('s', 'i');
 				$update_result = db_prep_query($sql,$v,$t);
@@ -589,13 +589,13 @@ if ($operation == 'syncCsw') {
 	if ($syncList->success = true) {
     		foreach ($syncList->result->external_csw as $orga) {
         		//TODO try to sync single orga - the class has already set the syncOrgaId if wished!
-			//if ($syncDepartment == $orga->id) {
+			    //if ($syncDepartment == $orga->id) {
             			//overwrite result with result from sync process
             			//$syncList = json_decode($syncCkanClass->syncSingleCsw(json_encode($orga)));
 				//new function
 				
 				$syncList = json_decode($syncCkanClass->syncSingleDataSource(json_encode($orga), "portalucsw"));
-			//}
+			    //}
     		}
 	}
 	//create new syncListJson
@@ -614,11 +614,11 @@ $syncList = json_decode($syncListJson);
 if ($syncList->success = true) {
     foreach ($syncList->result->geoportal_organization as $orga) {
         //try to sync single orga - the class has already set the syncOrgaId if wished!
-	if ($syncDepartment == $orga->id) {
-            //overwrite result with result from sync process
-            //$syncList = json_decode($syncCkanClass->syncSingleOrga(json_encode($orga)));
-	    $syncList = json_decode($syncCkanClass->syncSingleDataSource(json_encode($orga), "mapbender", true));
-	}
+    	if ($syncDepartment == $orga->id) {
+                //overwrite result with result from sync process
+                //$syncList = json_decode($syncCkanClass->syncSingleOrga(json_encode($orga)));
+    	    $syncList = json_decode($syncCkanClass->syncSingleDataSource(json_encode($orga), "mapbender", true));
+    	}
     }
 }
 //create new syncListJson

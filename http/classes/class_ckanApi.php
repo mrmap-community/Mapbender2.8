@@ -1271,7 +1271,7 @@ curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
 	}
 
 	/**
-	 * Parse the response from the CKAN API.
+	 * Parse the json response from the CKAN API.
 	 *
 	 * @access	private
 	 * @param	string	Data returned from the CKAN API.
@@ -1279,17 +1279,19 @@ curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
 	 * @return	mixed	If success, either an array or object. Otherwise FALSE.
 
 	 */
-	private function parse_response($data = FALSE, $format = FALSE)
-	{
-		if ($data)
-		{
-			if ($format == 'json')
-			{
-				return json_decode($data);
-			}
-			else
-			{
-				throw new Exception('Unable to parse this data format.');
+	private function parse_response($data = FALSE, $format = FALSE) {
+		if ($data) {
+			if ($format == 'json') {
+			    try {
+			        $result = json_decode($data);
+			    }
+			    catch (Exception $e) {
+			        $e = new mb_exception("classes/classCkanApi.php: " . $e->getMessage()); 
+			        return FALSE;
+			    }
+			    return $result;
+			} else {
+			    $e = new mb_exception("classes/classCkanApi.php: parse_repsonse: Unable to parse the data format " . $format . " - got back: " . $data);
 			}
 		}
 		return FALSE;

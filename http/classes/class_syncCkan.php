@@ -171,7 +171,32 @@ $this->frequencyMap = array(
         $result = $ckan->action_organization_update($orgaJson);
         return json_encode($result);
    }
-
+   
+   //function for group management
+   public function getRemoteCkanGroup($groupId) {
+       $ckan = new ckanApi($this->ckanApiKey, CKAN_SERVER_IP);
+       $ckan->base_url = $this->ckanApiProtocol.'://'.$this->ckanApiUrl.'/api/3/';
+       $ckan->api_version = $this->ckanApiVersion;
+       $result = $ckan->action_group_show($groupId);
+       return json_encode($result);
+   }
+   
+   public function createRemoteCkanGroup($groupJson) {
+       $ckan = new ckanApi($this->ckanApiKey, CKAN_SERVER_IP);
+       $ckan->base_url = $this->ckanApiProtocol.'://'.$this->ckanApiUrl.'/api/3/';
+       $ckan->api_version = $this->ckanApiVersion;
+       $result = $ckan->action_group_create($groupJson);
+       return json_encode($result);
+   }
+   
+   public function updateRemoteCkanGroup($groupJson) {
+       $ckan = new ckanApi($this->ckanApiKey, CKAN_SERVER_IP);
+       $ckan->base_url = $this->ckanApiProtocol.'://'.$this->ckanApiUrl.'/api/3/';
+       $ckan->api_version = $this->ckanApiVersion;
+       $result = $ckan->action_group_update($groupJson);
+       return json_encode($result);
+   }
+   
    //function to get user info
    public function getRemoteCkanUser ($userJson) {
 	$ckan = new ckanApi($this->ckanApiKey, CKAN_SERVER_IP);
@@ -364,11 +389,11 @@ $ckanPackage->license_id = "odc-odbl";
 
         if (isset($this->mapbenderUserId) && (integer)$this->mapbenderUserId > 0) {
             if (isset($this->syncOrgaId) && (integer)$this->syncOrgaId > 0) {
-	        $sql = "SELECT DISTINCT mb_group_id, mb_group_title, mb_group_name, mb_group_title, mb_group_email, mb_group_ckan_uuid, mb_group_ckan_api_key, mb_group_csw_catalogues, mb_group_ckan_catalogues, mb_user_mb_group.mb_user_mb_group_type FROM mb_group JOIN mb_user_mb_group ON mb_group_id = fkey_mb_group_id AND fkey_mb_user_id = $1 AND mb_group_id = $2 AND mb_user_mb_group_type IN (2,3)";
+	        $sql = "SELECT DISTINCT mb_group_id, mb_group_title, mb_group_name, mb_group_title, mb_group_email, mb_group_ckan_uuid, mb_group_ckan_api_key_text, mb_group_csw_catalogues, mb_group_ckan_catalogues, mb_user_mb_group.mb_user_mb_group_type FROM mb_group JOIN mb_user_mb_group ON mb_group_id = fkey_mb_group_id AND fkey_mb_user_id = $1 AND mb_group_id = $2 AND mb_user_mb_group_type IN (2,3)";
 	        $v = array($this->mapbenderUserId, $this->syncOrgaId);
 	        $t = array('i','i');
             } else {
-	        $sql = "SELECT DISTINCT mb_group_id, mb_group_title, mb_group_name, mb_group_title, mb_group_email, mb_group_ckan_uuid, mb_group_ckan_api_key, mb_group_csw_catalogues, mb_group_ckan_catalogues, mb_user_mb_group.mb_user_mb_group_type FROM mb_group JOIN mb_user_mb_group ON mb_group_id = fkey_mb_group_id AND fkey_mb_user_id = $1 AND mb_user_mb_group_type IN (2,3)";
+	        $sql = "SELECT DISTINCT mb_group_id, mb_group_title, mb_group_name, mb_group_title, mb_group_email, mb_group_ckan_uuid, mb_group_ckan_api_key_text, mb_group_csw_catalogues, mb_group_ckan_catalogues, mb_user_mb_group.mb_user_mb_group_type FROM mb_group JOIN mb_user_mb_group ON mb_group_id = fkey_mb_group_id AND fkey_mb_user_id = $1 AND mb_user_mb_group_type IN (2,3)";
 	        $v = array($this->mapbenderUserId);
 	        $t = array('i');
             }
@@ -386,7 +411,7 @@ $ckanPackage->license_id = "odc-odbl";
                     $departmentsArray[$countDepArray]["title"] = "dummy contact title";
                 }
                 $departmentsArray[$countDepArray]["ckan_uuid"] = $row["mb_group_ckan_uuid"];
-                $departmentsArray[$countDepArray]["ckan_api_key"] = $row["mb_group_ckan_api_key"];
+                $departmentsArray[$countDepArray]["ckan_api_key"] = $row["mb_group_ckan_api_key_text"];
 		//if ($row["mb_group_csw_catalogues"] !== null && $row["mb_group_csw_catalogues"] !== '') {
 			$departmentsArray[$countDepArray]["csw_catalogues"] = $row["mb_group_csw_catalogues"];
 			$departmentsArray[$countDepArray]["ckan_catalogues"] = $row["mb_group_ckan_catalogues"];
@@ -1044,7 +1069,7 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
             return json_encode($resultObject);
 	} else {
 	    //read ckan api-key from database again, because we wont transfer it via json thru the web ;-)
-	    $sql = "SELECT mb_group_ckan_api_key FROM mb_group WHERE mb_group_id = $1"; 
+	    $sql = "SELECT mb_group_ckan_api_key_text FROM mb_group WHERE mb_group_id = $1"; 
             $v = array($this->syncOrgaId);
 	    $t = array('s');
 	    $res = db_prep_query($sql, $v, $t);
@@ -1054,7 +1079,7 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
 
 	    if ($res) {
 	        $row = db_fetch_assoc($res);
-	        $ckanApiKey = $row['mb_group_ckan_api_key'];
+	        $ckanApiKey = $row['mb_group_ckan_api_key_text'];
 	        $ckan = new ckanApi($ckanApiKey, CKAN_SERVER_IP);
                 $ckan->base_url = $this->ckanApiProtocol.'://'.$this->ckanApiUrl.'/api/3/';
                 $ckan->api_version = $this->ckanApiVersion;
