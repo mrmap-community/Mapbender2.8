@@ -123,6 +123,7 @@ class OwsContext {
 	    $owsContextJsonObject = new stdClass();
 	    $owsContextJsonObject->type = "FeatureCollection";
 	    $owsContextJsonObject->id = "mapbenderPath/wmc/{id}";
+		
 	    $properties = new stdClass();
 	    $properties->lang = "de";
 	    $properties->title = $this->title;
@@ -133,9 +134,9 @@ class OwsContext {
 	    $properties->rights = $this->rights;
 	    $properties->generator = array("title" => $this->creator->creatorApplication->title, "uri" => $this->creator->creatorApplication->uri, "version" => $this->creator->creatorApplication->version);
 	    $properties->display = array("pixelWidth" => (integer)$this->creator->creatorDisplay->pixelWidth, "pixelHeight" => (integer)$this->creator->creatorDisplay->pixelHeight, "mmPerPixel" => $this->creator->creatorDisplay->mmPerPixel);
-		//see http://www.owscontext.org/owc_user_guide/C0_userGuide.html
-        $properties->bbox = $this->bbox;
-        $properties->contextMetadata = $this->contextMetadata;
+            //see http://www.owscontext.org/owc_user_guide/C0_userGuide.html
+            $owsContextJsonObject->bbox = $this->bbox;
+            $properties->contextMetadata = $this->contextMetadata;
 	    $properties->links->profiles = array("http://www.opengis.net/spec/owc-geojson/1.0/req/core");
 	    $properties->extension = $this->extension;
 	    
