@@ -225,7 +225,7 @@ SQL;
 	$countLayer++;
 }
 //export application metadata
-$sql_app = "select uuid, export2csw from mb_metadata where type = 'application' and searchable = true;";
+$sql_app = "select uuid, export2csw from mb_metadata where type = 'application' and searchable = true and export2csw = true;";
 $v = array();
 $t = array();
 $res_app = db_prep_query($sql_app, $v, $t);
