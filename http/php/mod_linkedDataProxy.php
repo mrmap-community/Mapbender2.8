@@ -99,6 +99,11 @@ if (isset ( $configObject ) && isset ( $configObject->use_gdal ) && $configObjec
 } else {
     $useGdal = false;
 }
+if (isset ( $configObject ) && isset ( $configObject->cors_header ) && $configObject->cors_header != "") {
+    $corsHeader = $configObject->cors_header;
+} else {
+    $corsHeader = false;
+}
 //TODO problem with single features ! 
 // textual data:
 $textualDataArray = array (
@@ -2715,6 +2720,9 @@ switch ($f) {
 			header ( "Content-type: application/json" );
 		} else {
 			header ( "Content-type: application/vnd.geo+json" );
+		}
+		if ($corsHeader != false) {
+			header ( "Access-Control-Allow-Origin: " . $corsHeader);
 		}
 		echo json_encode ( $returnObject );
 		break;
