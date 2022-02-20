@@ -17,7 +17,8 @@ $numberOfCsw = 0;
 while($row = db_fetch_array($res)){
     $jsonOutput->catalogues[$numberOfCsw]->{'id'} = $row['cat_id'];
     $jsonOutput->catalogues[$numberOfCsw]->{'title'} = $row['cat_title'];
-}
+    $numberOfCsw++;
+   }
 $json = json_encode($jsonOutput);
 header('Content-Type: application/json');
 echo $json;
