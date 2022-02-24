@@ -123,7 +123,6 @@ class OwsContext {
 	    $owsContextJsonObject = new stdClass();
 	    $owsContextJsonObject->type = "FeatureCollection";
 	    $owsContextJsonObject->id = "mapbenderPath/wmc/{id}";
-		
 	    $properties = new stdClass();
 	    $properties->lang = "de";
 	    $properties->title = $this->title;
@@ -134,9 +133,9 @@ class OwsContext {
 	    $properties->rights = $this->rights;
 	    $properties->generator = array("title" => $this->creator->creatorApplication->title, "uri" => $this->creator->creatorApplication->uri, "version" => $this->creator->creatorApplication->version);
 	    $properties->display = array("pixelWidth" => (integer)$this->creator->creatorDisplay->pixelWidth, "pixelHeight" => (integer)$this->creator->creatorDisplay->pixelHeight, "mmPerPixel" => $this->creator->creatorDisplay->mmPerPixel);
-            //see http://www.owscontext.org/owc_user_guide/C0_userGuide.html
-            $owsContextJsonObject->bbox = $this->bbox;
-            $properties->contextMetadata = $this->contextMetadata;
+		//see http://www.owscontext.org/owc_user_guide/C0_userGuide.html
+        $properties->bbox = $this->bbox;
+        $properties->contextMetadata = $this->contextMetadata;
 	    $properties->links->profiles = array("http://www.opengis.net/spec/owc-geojson/1.0/req/core");
 	    $properties->extension = $this->extension;
 	    
@@ -501,6 +500,7 @@ class OwsContext {
 		    }
 		    $kmlData = $mergedKml->mergeKMLDocuments($kmlArray);   
 		}
+		//add level 0 vector overlay with digitized objects
 		if ($kmlData != false) {
 		    $owsContextResource = new OwsContextResource();
 		    $owsContextResource->title = "Local data";
@@ -572,6 +572,7 @@ class OwsContext {
 		$e = new mb_notice("classes/class_owsContext.php: number of all layers found in WMC: ".count($layerList));
 		$path = "/";
 		$pathArray = array();
+		//initialize serviceId - most top layers
         $serviceId = 0;
 		/*
 		* Each service has an empty value as layer_parent element
@@ -767,6 +768,30 @@ class OwsContext {
 
 			$this->addResource($owsContextResource);
 			unset($owsContextResource);
+		}
+		//$e = new mb_exception("classes/class_owsContext.php number of found services: " . $serviceId);
+		//switch order of services in context path e.g.  1-10 -> 10-1
+		$oldOrderArray = range(1, $serviceId, 1);
+		$newOrderArray = range($serviceId, 1, -1);
+		foreach ($this->resource as $resource) {  
+		    for ($l = 0; $l < count($oldOrderArray); $l++) {
+		        $search = '/^\/' . (string)$oldOrderArray[$l] . '\//';
+		        $replace = '/' . (string)$newOrderArray[$l] . '/';
+		        $strSearch = '/' . (string)$oldOrderArray[$l] . '/';
+		        $strFolder = (string)$resource->folder;
+		        //$e = new mb_exception("classes/class_owsContext.php search for : " . $strSearch . " in: " . $strFolder);
+		        // for root folder
+		        if ((string)$resource->folder == "/" .(string)$oldOrderArray[$l]) {
+		            $resource->folder = '/' . (string)$newOrderArray[$l];
+		            break;
+		        }
+		        // for subfolder
+		        if (strpos($strFolder, $strSearch) === 0) {
+		            $str = preg_replace($search, $replace, $resource->folder);
+		            $resource->folder = $str;
+		            break;
+		        }
+		    }
 		}
 	}	
 }
