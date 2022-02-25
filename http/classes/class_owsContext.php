@@ -793,6 +793,12 @@ class OwsContext {
 		        }
 		    }
 		}
+		//reorder resources in folder alphabetical order
+		// different approachs
+		//usort($this->resource, function ($a, $b) { return strcmp($a->folder, $b->folder); });
+		//usort($this->resource, function ($a, $b) { $a = explode("/", $a->folder)[0]; $b = explode("/", $b->folder)[0];return strcmp($a, $b); });
+		//usort($this->resource, function ($a, $b) { $a = (integer)explode("/", $a->folder)[0]; $b = (integer)explode("/", $b->folder)[0];($a-$b) ? ($a-$b)/abs($a-$b) : 0; });
+		usort($this->resource, function ($a, $b) { return strnatcmp($a->folder, $b->folder); });
 	}	
 }
 
