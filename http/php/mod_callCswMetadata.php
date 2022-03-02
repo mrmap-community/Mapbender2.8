@@ -913,16 +913,25 @@ foreach ($searchResourcesArray as $searchResource) {
 			//organization name
 			$resourceResponsibleParty = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString');
 			$resourceResponsibleParty = $resourceResponsibleParty[0];
-$resultObject->{$searchResource}->srv[$k-1]->respOrg = (string)$resourceResponsibleParty;
+            $resultObject->{$searchResource}->srv[$k-1]->respOrg = (string)$resourceResponsibleParty;
 			//box
+            $minx = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:westBoundLongitude/gco:Decimal');
+            $minx = $minx[0];
+            $miny = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:southBoundLatitude/gco:Decimal');
+            $miny = $miny[0];
+            $maxx = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:eastBoundLongitude/gco:Decimal');
+            $maxx = $maxx[0];
+            $maxy = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:northBoundLatitude/gco:Decimal');
+            $maxy = $maxy[0];
+            $resultObject->{$searchResource}->srv[$k-1]->bbox = implode(',', array($minx,$miny,$maxx,$maxy)); 
 			//title
 			$title = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString');
 			$title = $title[0];
-$resultObject->{$searchResource}->srv[$k-1]->title = (string)$title;
+            $resultObject->{$searchResource}->srv[$k-1]->title = (string)$title;
 			//abstract
 			$abstract = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:abstract/gco:CharacterString');
 			$abstract = $abstract[0];
-$resultObject->{$searchResource}->srv[$k-1]->abstract = substr((string)$abstract,0,250);
+            $resultObject->{$searchResource}->srv[$k-1]->abstract = substr((string)$abstract,0,250);
 			//mdLink
 			//geturl for get recordbyid request
 			if (isset($csw->cat_op_values['getrecordbyid']['get'])) {
