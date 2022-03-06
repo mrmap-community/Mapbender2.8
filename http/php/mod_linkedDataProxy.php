@@ -1789,7 +1789,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						"properties" 
 				); // TODO: relations, resolve, offsetList, crs, bbox-crs, maxAllowedOffset
 				                                                                                                           // first draft - set only json based api description and give it back
-				header ( "application/json" );
+				header ( "Content-type: application/openapi+json;version=3.0" );
 				echo json_encode ( $apiDescriptionJson, JSON_UNESCAPED_SLASHES );
 				die ();
 			}
