@@ -573,7 +573,7 @@ class WfsToDb {
 	private static function insertFeatureTypeNamespace ($aWfsId, $aWfsFeatureTypeId, $aWfsFeatureTypeNamespace) {
 	    // only insert the namespace, if it does not already exists
 	    // check first
-	    $sql_check = "SELECT FROM wfs_featuretype_namespace WHERE fkey_wfs_id=$1 AND " .
+	    $sql_check = "SELECT * FROM wfs_featuretype_namespace WHERE fkey_wfs_id=$1 AND " .
 	   	    "fkey_featuretype_id = $2 AND namespace=$3 AND namespace_location=$4 ";
 	    
 	    $v = array(
@@ -582,16 +582,17 @@ class WfsToDb {
 	        $aWfsFeatureTypeNamespace->name,
 	        $aWfsFeatureTypeNamespace->value
 	    );
-	    $t = array("s", "s", "s", "s");
+	    $e = new mb_notice("classes/class_wfsToDb.php: look for namespaces in db: " . json_encode($v) . " - sql: " . $sql_check );
+	    $t = array("i", "i", "s", "s");
 	    $res_check = db_prep_query($sql_check, $v, $t);
 	    
 	    if ($res_check) {
 	        $ftNamepace = db_fetch_array($res_check);
 	        //$e = new mb_exception("Found namespace: $".$ftNamepace['namespace']."$");
 	        //if (count($ftNamepace) > 0 && $ftNamepace['namespace'] != "") {
-	        if (count($ftNamepace) > 0) {
+	        if (count($ftNamepace) > 0 && $ftNamepace != false) {
 	           //$e = new mb_exception("Count ftNamespace: ".count($ftNamepace));
-	           $e = new mb_exception("Namespace ".$aWfsFeatureTypeNamespace->name." already exists for featuretype ".$aWfsFeatureTypeId." - will not be added twice!");
+	           $e = new mb_notice("Namespace ".$aWfsFeatureTypeNamespace->name." already exists for featuretype ".$aWfsFeatureTypeId." - will not be added twice!");
 	           // TODO: check why namespace maybe redefined in case of some inspire wfs???
 	           return true;
 	        }
@@ -607,7 +608,7 @@ class WfsToDb {
 			$aWfsFeatureTypeNamespace->name, 
 			$aWfsFeatureTypeNamespace->value
 		);
-		$t = array("s", "s", "s", "s");
+		$t = array("i", "i", "s", "s");
 		$e = new mb_notice("class_wfsToDb.php: INSERTING Featuretype Namespace for WFS-ID $aWfsId, FT: $aWfsFeatureTypeId, NS: $aWfsFeatureTypeNamespace->name");
 		$res = db_prep_query($sql, $v, $t);
 
