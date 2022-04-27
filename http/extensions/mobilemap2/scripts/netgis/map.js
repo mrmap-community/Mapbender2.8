@@ -32,11 +32,14 @@ netgis.map =
 		
 		var popupContainer;
 		var popupContent;
+		var popupControls;
 		var popupOverlay;
 		
 		var positionActive;
 		var positionCenter;
 		var positionOverlay;
+		
+		var markerLayer;
 		
 		var measureSource;
 		var measureFeature;
@@ -136,9 +139,9 @@ netgis.map =
 					{
 						if ( zxy === null ) return undefined;
 						
-						//return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + zxy[ 2 ] + ".jpeg";
 						// Hybrid layer has different grid coords
 						var y = -zxy[ 2 ] - 1;
+						
 						return netgis.config.URL_BACKGROUND_HYBRID + "/" + zxy[ 0 ] + "/" + zxy[ 1 ] + "/" + y + ".jpeg";
 					}
 				}
@@ -188,6 +191,32 @@ netgis.map =
 				}
 			);
 	
+			// Marker Point
+			var markerStyle = new ol.style.Style
+			(
+				{
+					image: new ol.style.Circle
+					(
+						{
+							radius: netgis.config.MARKER_POINT_RADIUS,
+							fill: new ol.style.Fill( { color: netgis.config.MARKER_POINT_FILL_COLOR } ),
+							stroke: new ol.style.Stroke( { color: netgis.config.MARKER_POINT_STROKE_COLOR, width: netgis.config.MARKER_POINT_STROKE_WIDTH } )
+						}
+					)
+				}
+			);
+	
+			markerLayer = new ol.layer.Vector
+			(
+				{
+					source: new ol.source.Vector(),
+					style: markerStyle,
+					zIndex: 1000
+				}
+			);
+	
+			map.addLayer( markerLayer );
+	
 			// Measure
 			measureSource = new ol.source.Vector();
 			
@@ -205,7 +234,7 @@ netgis.map =
 				{
 					source: measureSource,
 					style: measureStyle,
-					zIndex: 1000
+					zIndex: 1010
 				}
 			);
 	
@@ -295,6 +324,7 @@ netgis.map =
 			// Popup
 			popupContainer = $( "#popup-container" );
 			popupContent = $( "#popup-content" );
+			popupControls = $( "#popup-controls" );
 			
 			popupOverlay = new ol.Overlay
 			(
@@ -339,6 +369,9 @@ netgis.map =
 			
 			map.updateSize();
 			
+			// Additional Size Update, just to be sure
+			setTimeout( function() { map.updateSize(); }, 50 );
+			
 			// Parameters
 			var center = getCenter();
 			var zoom = getZoom();
@@ -350,6 +383,28 @@ netgis.map =
 			setView( center, zoom );
 			
 			if ( netgis.params.getInt( "scale_bar" ) === 0 ) setScaleBarVisible( false );
+			
+			if ( netgis.params.get( "point" ) )
+			{
+				var coords = netgis.params.getString( "point" );
+				coords = coords.split( "," );
+				coords[ 0 ] = parseFloat( coords[ 0 ] );
+				coords[ 1 ] = parseFloat( coords[ 1 ] );
+				
+				addMarkerPoint( coords );
+			}
+			
+			if ( netgis.params.get( "point_lonlat" ) )
+			{
+				var coords = netgis.params.getString( "point_lonlat" );
+				coords = coords.split( "," );
+				coords[ 0 ] = parseFloat( coords[ 0 ] );
+				coords[ 1 ] = parseFloat( coords[ 1 ] );
+				
+				coords = ol.proj.fromLonLat( coords, netgis.config.MAP_PROJECTION );
+				
+				addMarkerPoint( coords );
+			}
 		};
 		
 		var setScaleBarVisible = function( on )
@@ -469,8 +524,19 @@ netgis.map =
 			viewExtent( 174681, 5417732, 585042, 5654678 );
 		};
 		
-		var viewExtent = function( minx, miny, maxx, maxy )
+		var viewExtent = function( minx, miny, maxx, maxy, isLonLat )
 		{
+			if ( isLonLat )
+			{
+				var minLonLat = proj4( "EPSG:4326", netgis.config.MAP_PROJECTION, [ minx, miny ] );
+				var maxLonLat = proj4( "EPSG:4326", netgis.config.MAP_PROJECTION, [ maxx, maxy ] );
+				
+				minx = minLonLat[ 0 ];
+				miny = minLonLat[ 1 ];
+				maxx = maxLonLat[ 0 ];
+				maxy = maxLonLat[ 1 ];
+			}
+			
 			view.fit( [ minx, miny, maxx, maxy ] );
 			
 			addHistory( view.getCenter(), view.getZoom() );
@@ -734,7 +800,7 @@ netgis.map =
 				},
 				function( data ) { onFeatureInfoResponse( data, layer ); }
 			);
-		}
+		};
 		
 		var updateSize = function()
 		{
@@ -875,6 +941,7 @@ netgis.map =
 		{
 			// Clear
 			popupContent.empty();
+			popupControls.hide();
 			
 			popupContent.append( content );
 			
@@ -925,7 +992,8 @@ netgis.map =
 		
 		var onMapClick = function( event )
 		{
-			//popupContent.empty();
+			popupContent.empty();
+			popupControls.show();
 			
 			netgis.menu.clearSideContent();
 			netgis.menu.toggleSideMenu( true );
@@ -1150,6 +1218,7 @@ netgis.map =
 			   
 				map.getLayers().clear();
 				
+				map.addLayer( markerLayer );
 				map.addLayer( measureLayer );
 			}
 			else
@@ -1635,6 +1704,18 @@ netgis.map =
 
 				return style;
 			}
+		};
+		
+		var addMarkerPoint = function( coords )
+		{
+			var feature = new ol.Feature
+			(
+				{
+					geometry: new ol.geom.Point( coords )
+				}
+			);
+	
+			markerLayer.getSource().addFeature( feature );
 		};
 		
 		// Public Interface
