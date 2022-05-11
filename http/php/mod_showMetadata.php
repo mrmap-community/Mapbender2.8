@@ -1433,10 +1433,10 @@ if ($layout == 'plain') {
 $html .= $tableBegin;
 if ($resource != 'wmc') {
 	switch ($serviceQuality['last_status']) {
-		case '0':
+		case '1':
 			$html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/go.bmp' height='24px' width='24px' alt='".$translation['statusOK']."' title='".$translation['statusOK']."'>".$t_c;
 			break;
-		case '1':
+		case '0':
 		    $html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/wait.bmp' height='24px' width='24px'  alt='".$translation['statusChanged']."' title='".$translation['statusChanged']."'>".$t_c;
 			if (isset($serviceQuality['availability'])) {
 			    $html .= $t_a.$translation['changes'].$t_b."<input type=button value='" . $translation['show'] . "' onclick=\"var newWindow = window.open('../php/mod_showCapDiff.php?serviceType=" . $serviceType . "&id=" . $resourceMetadata['serviceid'] . "','Capabilities Diff','width=700,height=300,scrollbars');newWindow.focus();\">".$t_c; 
@@ -1453,7 +1453,7 @@ if ($resource != 'wmc') {
 	    $dateMonitoring = new DateTime();
 	    $dateMonitoring->setTimestamp($serviceQuality['fkey_upload_id']);
 	    $interval = $dateService->diff($dateMonitoring);
-	    $html .= $t_a.$translation['metadataAge'].$t_b.displayText($interval->format('%d ') . $translation['days']).$t_c;
+	    $html .= $t_a.$translation['metadataAge'].$t_b.displayText($interval->format('%a ') . $translation['days']).$t_c;
 	}
 	if (isset($serviceQuality['availability'])) {
 		$html .= $t_a.$translation['availability'].$t_b.$serviceQuality['availability']." %".$t_c;
