@@ -1361,7 +1361,7 @@ class searchMetadata
 		}
 		//search filter for isopen - open data classification of the managed termsofuse
 		//
-		if ($this->restrictToOpenData) {
+		if (strtolower($this->searchResources) !== "wmc" && $this->restrictToOpenData) {
 			array_push($whereCondArray, '(isopen = 1)');
 		}
 		//search filter for md_topic_categories
