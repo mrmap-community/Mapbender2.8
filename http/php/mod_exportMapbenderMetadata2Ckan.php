@@ -355,7 +355,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
             //echo $dataset->id . " - " .$dataset->title. "<br>";
             //parse dataset metadata and extract relevant information - keywords/tags, themes and license info, actuality
             //https://www.geoportal.rlp.de/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=9ec4e052-ebd2-2c44-f258-25557de7a6b7&outputFormat=iso19139
-            $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
+            $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
             $metadataUrl = $metadataResolverUrl.$dataset->uuid;
             //$metadataResult = $connector->load($metadataUrl);
             $iso19139Md = new Iso19139();
