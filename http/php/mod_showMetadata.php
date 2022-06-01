@@ -238,6 +238,11 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Zugriffspunkt WFS-Gesamt";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Zugriffspunkt WFS-Objektart";
 		$translation['mapbenderOGCApiFeatures'] = "Zugriffspunkt OGC API Features Proxy (experimental)";
+		$translation['changes'] = "Änderungen";
+		$translation['show'] = "Anzeige";
+		$translation['resourceTimestamp'] = "Aktualität";
+		$translation['metadataAge'] = "Letzte Aktualisierung";
+		$translation['days'] = "Tage";
 		break;
 	case "en":
 		$translation['overview'] = 'Overview';
@@ -323,6 +328,11 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Access point WFS level";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Access point WFS-Featuretype";
 		$translation['mapbenderOGCApiFeatures'] = "Access point OGC API Features Proxy (experimental)";
+		$translation['changes'] = "Changes";
+		$translation['show'] = "Show";
+		$translation['resourceTimestamp'] = "Actuality";
+		$translation['metadataAge'] = "Last update";
+		$translation['days'] = "days";
 		break;
 	case "fr":
 		$translation['overview'] = 'Vue générale';
@@ -408,6 +418,11 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Access point WFS level";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Access point WFS-Featuretype";
 		$translation['mapbenderOGCApiFeatures'] = "Access point OGC API Features Proxy (experimental)";
+		$translation['changes'] = "Changes";
+		$translation['show'] = "Show";
+		$translation['resourceTimestamp'] = "Actuality";
+		$translation['metadataAge'] = "Last Update";
+		$translation['days'] = "days";
 		break;
 	default: #to english
 		$translation['overview'] = 'Overview';
@@ -491,6 +506,11 @@ switch ($languageCode) {
 		$translation['mapbenderCapabilitiesWfsLevel'] = "Access point WFS level";
 		$translation['mapbenderCapabilitiesSingleFeaturetype'] = "Access point WFS-Featuretype";
 		$translation['mapbenderOGCApiFeatures'] = "Access point OGC API Features Proxy (experimental)";
+		$translation['changes'] = "Changes";
+		$translation['show'] = "Show";
+		$translation['resourceTimestamp'] = "Actuality";
+		$translation['metadataAge'] = "Last update";
+		$translation['days'] = "days";
 }
 
 //Array with infos about the different elements which are shown in the tabs
@@ -683,7 +703,7 @@ if ($resource == 'wmc') {
 }
 //db select for service quality
 if ($resource == 'wms' or $resource == 'layer') {
-	$sql = "SELECT availability, last_status FROM mb_wms_availability WHERE fkey_wms_id = $1";
+	$sql = "SELECT availability, last_status, fkey_upload_id FROM mb_wms_availability WHERE fkey_wms_id = $1";
 	$v = array($serviceId);
 	$t = array('i');
 	$res = db_prep_query($sql, $v, $t);
@@ -691,7 +711,7 @@ if ($resource == 'wms' or $resource == 'layer') {
 }
 //db select for service quality
 if ($resource == 'wfs' or $resource == 'featuretype' or $resource == 'wfs-conf') {
-	$sql = "SELECT availability, last_status FROM mb_wfs_availability WHERE fkey_wfs_id = $1";
+	$sql = "SELECT availability, last_status, fkey_upload_id FROM mb_wfs_availability WHERE fkey_wfs_id = $1";
 	$v = array($serviceId);
 	$t = array('i');
 	$res = db_prep_query($sql, $v, $t);
@@ -895,6 +915,16 @@ if ($resourceMetadata['contenttitle'] !='') {
 } else {
 	$html .= $t_a.$translation['resourceTitle'].$t_b.'<span property="name"><em>'.displayText($resourceMetadata['servicetitle']).'</em></span>'.$t_c;
 }
+
+
+if ($resourceMetadata['timestamp'] != '') {
+    $date = new DateTime();
+    $date->setTimestamp($resourceMetadata['timestamp']);
+    
+    $html .= $t_a.$translation['resourceTimestamp'].$t_b.displayText($date->format('Y-m-d H:i:s')).$t_c;
+    
+}
+
 //decide if a root layer have been found - then the type will be a server
 #$html .= "<br>".$resourceMetadata['contentpos']."<br>";
 #$html .= "<br>".$resource."<br>";
@@ -1407,11 +1437,23 @@ if ($resource != 'wmc') {
 			$html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/go.bmp' height='24px' width='24px' alt='".$translation['statusOK']."' title='".$translation['statusOK']."'>".$t_c;
 			break;
 		case '0':
-			$html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/wait.bmp' height='24px' width='24px'  alt='".$translation['statusChanged']."' title='".$translation['statusChanged']."'>".$t_c;
+		    $html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/wait.bmp' height='24px' width='24px'  alt='".$translation['statusChanged']."' title='".$translation['statusChanged']."'>".$t_c;
+			if (isset($serviceQuality['availability'])) {
+			    $html .= $t_a.$translation['changes'].$t_b."<input type=button value='" . $translation['show'] . "' onclick=\"var newWindow = window.open('../php/mod_showCapDiff.php?serviceType=" . $serviceType . "&id=" . $resourceMetadata['serviceid'] . "','Capabilities Diff','width=700,height=300,scrollbars');newWindow.focus();\">".$t_c; 
+			}
 			break;
 		case '-1':
 			$html .= $t_a.$translation['status'].$t_b."<img src='../img/trafficlights/stop.bmp' height='24px' width='24px'  alt='".$translation['statusProblem']."' title='".$translation['statusChanged']."'>".$t_c;
 			break;
+	}
+	//calculate age of metadata in days
+	if (isset($serviceQuality['fkey_upload_id'])) {
+	    $dateService = new DateTime();
+	    $dateService->setTimestamp($resourceMetadata['timestamp']);
+	    $dateMonitoring = new DateTime();
+	    $dateMonitoring->setTimestamp($serviceQuality['fkey_upload_id']);
+	    $interval = $dateService->diff($dateMonitoring);
+	    $html .= $t_a.$translation['metadataAge'].$t_b.displayText($interval->format('%a ') . $translation['days']).$t_c;
 	}
 	if (isset($serviceQuality['availability'])) {
 		$html .= $t_a.$translation['availability'].$t_b.$serviceQuality['availability']." %".$t_c;
@@ -1478,7 +1520,7 @@ if ($resource == 'wms' or $resource == 'layer'){
 
 	//show only original url if the resource is not secured!
 	if (!$resourceSecured) {	
-		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['originalCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
+		$html .= $t_a.$translation['originalCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '".$capUrl."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$capUrl."\",\"".$translation['mapbenderCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
 	}
 
 	$html .= $t_a.$translation['inspireCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '../php/wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$mapbenderBaseUrl.$_SERVER['PHP_SELF']."/../wms.php?layer_id=".$layerId."&PHPSESSID=".session_id()."&INSPIRE=1&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS"."\",\"".$translation['inspireCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;

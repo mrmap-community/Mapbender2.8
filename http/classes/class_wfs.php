@@ -94,7 +94,7 @@ abstract class Wfs extends Ows {
 		return null;
 	}
 
-	public static function findGeomColumnNameByFeaturetypeId($ftId) {
+	public static function findGeomColumnNameByFeaturetypeId ($ftId) {
 		$geomTypesArray = array('GeometryPropertyType','PointPropertyType','LineStringPropertyType','PolygonPropertyType','MultiPointPropertyType','MultiLineStringPropertyType','MultiPolygonPropertyType','SurfacePropertyType','MultiSurfacePropertyType');
 		$sql = "SELECT element_name, element_type FROM wfs_element WHERE fkey_featuretype_id = $1";
 		$res = db_prep_query($sql, array($ftId), array("i"));
@@ -105,6 +105,48 @@ abstract class Wfs extends Ows {
 			}
 		}
 		return null;
+	}
+	
+	public function getElementInfoByIds ($ftId, $ftElementId) {
+	    $sql = "select element_name, featuretype_name, fkey_wfs_id from wfs_element inner join wfs_featuretype on wfs_element.fkey_featuretype_id = wfs_featuretype.featuretype_id where element_id = $1 and featuretype_id = $2";
+	    $res = db_prep_query($sql, array($ftElementId, $ftId), array("i", "i"));
+	    $row = db_fetch_assoc($res);
+	    if ($row) {
+	        //check if wfs matches
+	        $wfsId = $this->id;
+	        if ($row['fkey_wfs_id'] != $wfsId) {
+	            $e = new mb_exception("classes/class_wfs.php: getElementInfoByIds - element is not defined in this wfs!");
+	            return false;
+	        }
+	        $elementName = $row['element_name'];
+	        $featuretypeName = $row['featuretype_name'];
+	        //get optional namespace from element name
+	        //$e = new mb_exception("classes/class_wfs.php: ".$elementName); 
+	        if (strpos($row['featuretype_name'], ":") !== false) {
+	            $featuretypeArray = explode(":", $row['featuretype_name']);
+	            $namespace = $featuretypeArray[0];
+	            //get namespace url from 
+	            $sql = "select namespace_location from wfs_featuretype_namespace where namespace = $1 and fkey_featuretype_id = $2";
+	            $res = db_prep_query($sql, array($namespace, $ftId), array("s", "i"));
+	            $row = db_fetch_assoc($res);
+	            if ($row) {
+	                $namespaceLocation = $row["namespace_location"];
+	            } else {
+	               $namespaceLocation = false;
+	            }
+	        } else {
+	            $namespace = false;
+	        }
+	        //build return object
+	        $returnObject = new stdClass();
+	        $returnObject->element_name = $elementName;
+	        $returnObject->featuretype_name = $featuretypeName;
+	        $returnObject->namespace = $namespace;
+	        $returnObject->namespace_location = $namespaceLocation;
+	        return $returnObject;
+	    } else {
+	        return false;
+	    }   
 	}
 	
 	protected function getFeatureGet ($featureTypeName, $filter, $maxFeatures=null, $version="2.0.0") {
@@ -515,8 +557,123 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		}
 	}
 
+	public function getFeatureElementList($featureTypeName, $featureTypeElementName, $namespace, $namespaceLocation, $filter=null, $version=false, $method="GET") {
+	    if ($version == false) {
+	        $version = $this->getVersion();
+	    } else {
+	        $e = new mb_notice("classes/class_wfs.php: wfs version forced to ".$version."!");
+	    }
+	    if ($destSrs != false) {
+	        //check crs representation
+	        $crs = new Crs($destSrs);
+	        $alterAxisOrder = $crs->alterAxisOrder("wfs_".$version);
+	        $srsId = $crs->identifierCode;
+	        //add srs to request
+	    }
+	    switch ($version) {
+	        case "2.0.2":
+	            $typeNameParameterName = "typeNames";
+	            $maxFeaturesParameterName = "COUNT";
+	            break;
+	        case "2.0.0":
+	            $typeNameParameterName = "typeNames";
+	            $maxFeaturesParameterName = "COUNT";
+	            break;
+	        default:
+	            $typeNameParameterName = "typeName";
+	            $maxFeaturesParameterName = "MAXFEATURES";
+	            break;
+	    }
+	    if ($version == "1.0.0") {
+	        $e = new mb_exception("classes/class_wfs.php: Get elements from features not possible in wfs <= 1.0.0!");
+	        return false;
+	    }
+	    switch ($method) {
+	        case "POST":
+	            $e = new mb_exception("classes/class_wfs.php: getFeatureElementList only implements GET method!");
+	            $resultList = False;
+	            break;
+	        case "GET":
+	            $url = $this->getFeature.$this->getConjunctionCharacter($this->getFeature)."service=WFS&request=GetFeature&version=".$version."&".strtolower($typeNameParameterName)."=".$featureTypeName."&PropertyName=".$featureTypeElementName;
+	            if ($filter != null) {
+	                $url .= "&FILTER=".urlencode($filter);
+	            }
+	            //auth is already integrated in ows class
+	            //do request
+	            $resultList = $this->get($url); //from class_ows!
+	            break;
+	    }
+	    //parse resultList and give back array of entries
+	    //path for elements: "/wfs:FeatureCollection/gml:featureMember/{ft_ns}:{ft_name}/{property_ns}:{property_name}"
+	    $e = new mb_notice("classes/class_wfs.php: getFeatureElementList invoked - parse elements");
+	    if ($resultList != False) {
+    	    libxml_use_internal_errors(true);
+    	    try {
+    	        $featureCollectionXml = simplexml_load_string($resultList);
+    	        if ($featureCollectionXml === false) {
+    	            foreach (libxml_get_errors() as $error) {
+    	                $err = new mb_exception("classes/class_wfs.php:" . $error->message);
+    	            }
+    	            throw new Exception("classes/class_wfs.php:" . 'Cannot parse featureCollection XML!');
+    	            //TODO give error message
+    	        }
+    	    } catch (Exception $e) {
+    	        $err = new mb_exception("classes/class_wfs.php:" . $e->getMessage());
+    	        //TODO give error message
+    	    }
+    	    if ($featureCollectionXml !== false) {
+    	        $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
+    	        if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
+    	            $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
+    	        } else {
+    	            $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
+    	        }
+    	        $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
+    	        $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
+    	        $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
+    	        $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+    	        $featureCollectionXml->registerXPathNamespace("default", "");
+    	        //register targetNamespace location of featuretype xsd
+    	        if ($namespaceLocation != false && $namespace != false) {
+    	           $featureCollectionXml->registerXPathNamespace($namespace, $namespaceLocation);
+    	        }
+    	        preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
+    	        if (!$reqParams['version']) {
+    	            $e = new mb_notice("classes/class_wfs.php: No version for wfs request given in reqParams!");
+    	        }
+    	        /*switch ($reqParams['version']) {
+    	            case "1.0.0":
+    	                //get # of features from counting features
+    	                $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+    	                $numberOfFeatures = count($numberOfFeatures);
+    	                break;
+    	            case "1.1.0":
+    	                //get # of features from counting features
+    	                $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+    	                $numberOfFeatures = count($numberOfFeatures);
+    	                break;
+    	                //for wfs 2.0 - don't count features
+    	            default:
+    	                //get # of features from attribut
+    	                $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
+    	                $numberOfFeatures = $numberOfFeatures[0];
+    	                break;
+    	        }*/
+    	        $xpathString = '//wfs:FeatureCollection/wfs:member/' . $featureTypeName . '/' . $namespace . ':' . $featureTypeElementName;
+    	        $e = new mb_notice("classes/class_wfs.php: xpathString: " . $xpathString);
+    	        $values = $featureCollectionXml->xpath($xpathString);
+    	        $result = array();
+    	        foreach ($values as $value) {
+    	            $result[] = (string)$value[0];
+    	        }
+    	        $e = new mb_notice("classes/class_wfs.php: " . count($result) . " found values.");
+    	        return $result;
+    	    }
+	    }
+	}
+	
 	public function countFeatures($featureTypeName, $filter=null, $destSrs=false, $version=false, $outputFormat=false, $method="POST") {
-//$e = new mb_exception("testwfs");
+#$e = new mb_exception("testwfs");
 		if ($version == false) {
 			$version = $this->getVersion();
 		} else {
@@ -549,63 +706,63 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		}
 		switch ($method) {
 		    case "POST":
-			if($version == "2.0.0" || $version == "2.0.2") {
-				$postData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
-					"<wfs:GetFeature service=\"WFS\" version=\"" . $version . "\" " .
-					"xmlns:wfs=\"http://www.opengis.net/wfs/2.0\" ".
-					"xmlns:fes=\"http://www.opengis.net/fes/2.0\" ".
-					"xmlns:gml=\"http://www.opengis.net/gml/3.2\" ".
-					"xmlns:ogc=\"http://www.opengis.net/ogc\" " .
-					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " .
-					"xsi:schemaLocation=\"http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd\" resultType=\"hits\"";
-				if (isset($outputFormat) && $outputFormat != '') {
-					$postData .= "outputFormat=\"".$outputFormat."\" "; //tag ends later	
-				} else {
-					$postData .= ">";
-				}
-			}//TODO: not already implemented - maybe usefull for older geoserver/mapserver implementations
-			else if($version == "1.1.0") {
-				$postData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
-						"<wfs:GetFeature service=\"WFS\" version=\"" . $version . "\" " .
-						"xmlns:wfs=\"http://www.opengis.net/wfs\" " .
-						"xmlns:gml=\"http://www.opengis.net/gml\" " .
-						"xmlns:ogc=\"http://www.opengis.net/ogc\" " .
-						"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " .
-						"xsi:schemaLocation=\"http://www.opengis.net/wfs ../wfs/1.1.0/WFS.xsd\"";
-				if (isset($outputFormat) && $outputFormat != '') {
-					$postData .= "outputFormat=\"".$outputFormat."\" "; //tag ends later
-				} else {
-					$postData .= ">";
-				}
-			}
-			$postData .="<wfs:Query ";
-			if($destSrs) {
-				$postData .= "srsName=\"" . $srsName . "\" ";
-			}
-			//add namespace
-			if (strpos($featureTypeName, ":") !== false) {
-				$ft = $this->findFeatureTypeByName($featureTypeName);
-				$ns = $this->getNamespace($featureTypeName);
-				$url = $ft->getNamespace($ns);
-				$postData .= "xmlns:" . $ns . "=\"" . $url . "\" ";	
-			}
-			$postData .= $typeNameParameterName."=\"" . $featureTypeName . "\"  >";
-			$postData .= $filter ."</wfs:Query>";
-			$postData .= "</wfs:GetFeature>";		
-			$resultOfCount = $this->post($this->getFeature, $postData); //from class_ows!
+    			if($version == "2.0.0" || $version == "2.0.2") {
+    				$postData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
+    					"<wfs:GetFeature service=\"WFS\" version=\"" . $version . "\" " .
+    					"xmlns:wfs=\"http://www.opengis.net/wfs/2.0\" ".
+    					"xmlns:fes=\"http://www.opengis.net/fes/2.0\" ".
+    					"xmlns:gml=\"http://www.opengis.net/gml/3.2\" ".
+    					"xmlns:ogc=\"http://www.opengis.net/ogc\" " .
+    					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " .
+    					"xsi:schemaLocation=\"http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd\" resultType=\"hits\"";
+    				if (isset($outputFormat) && $outputFormat != '') {
+    					$postData .= "outputFormat=\"".$outputFormat."\" "; //tag ends later	
+    				} else {
+    					$postData .= ">";
+    				}
+    			}//TODO: not already implemented - maybe usefull for older geoserver/mapserver implementations
+    			else if($version == "1.1.0") {
+    				$postData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
+    						"<wfs:GetFeature service=\"WFS\" version=\"" . $version . "\" " .
+    						"xmlns:wfs=\"http://www.opengis.net/wfs\" " .
+    						"xmlns:gml=\"http://www.opengis.net/gml\" " .
+    						"xmlns:ogc=\"http://www.opengis.net/ogc\" " .
+    						"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " .
+    						"xsi:schemaLocation=\"http://www.opengis.net/wfs ../wfs/1.1.0/WFS.xsd\"";
+    				if (isset($outputFormat) && $outputFormat != '') {
+    					$postData .= "outputFormat=\"".$outputFormat."\" "; //tag ends later
+    				} else {
+    					$postData .= ">";
+    				}
+    			}
+    			$postData .="<wfs:Query ";
+    			if($destSrs) {
+    				$postData .= "srsName=\"" . $srsName . "\" ";
+    			}
+    			//add namespace
+    			if (strpos($featureTypeName, ":") !== false) {
+    				$ft = $this->findFeatureTypeByName($featureTypeName);
+    				$ns = $this->getNamespace($featureTypeName);
+    				$url = $ft->getNamespace($ns);
+    				$postData .= "xmlns:" . $ns . "=\"" . $url . "\" ";	
+    			}
+    			$postData .= $typeNameParameterName."=\"" . $featureTypeName . "\"  >";
+    			$postData .= $filter ."</wfs:Query>";
+    			$postData .= "</wfs:GetFeature>";		
+    			$resultOfCount = $this->post($this->getFeature, $postData); //from class_ows!
                 	break;
 		    case "GET":
-			$url = $this->getFeature.$this->getConjunctionCharacter($this->getFeature)."service=WFS&request=GetFeature&version=".$version."&".strtolower($typeNameParameterName)."=".$featureTypeName."&resultType=hits";
-			if ($filter != null) {
-			    $url .= "&FILTER=".urlencode($filter);
-			}
-			//auth is already integrated in ows class
-			//do request
-			$resultOfCount = $this->get($url); //from class_ows!
-			break;
+    			$url = $this->getFeature.$this->getConjunctionCharacter($this->getFeature)."service=WFS&request=GetFeature&version=".$version."&".strtolower($typeNameParameterName)."=".$featureTypeName."&resultType=hits";
+    			if ($filter != null) {
+    			    $url .= "&FILTER=".urlencode($filter);
+    			}
+    			//auth is already integrated in ows class
+    			//do request
+    			$resultOfCount = $this->get($url); //from class_ows!
+    			break;
 		}
-//$e = new mb_exception($url);
-//$e = new mb_exception($resultOfCount);
+//$e = new mb_exception("count: ".$url);
+//$e = new mb_exception("count: ".$resultOfCount);
 		try {
 			$exceptionTest =  new SimpleXMLElement($resultOfCount);
 			if ($exceptionTest == false) {
@@ -876,7 +1033,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 					break;
 			}
 		}
-		$e = new mb_notice("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
+		$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
 		return $this->get($getRequest); //from class_ows!
 	}
 	

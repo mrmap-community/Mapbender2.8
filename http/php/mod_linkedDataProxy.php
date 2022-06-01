@@ -99,6 +99,11 @@ if (isset ( $configObject ) && isset ( $configObject->use_gdal ) && $configObjec
 } else {
     $useGdal = false;
 }
+if (isset ( $configObject ) && isset ( $configObject->cors_header ) && $configObject->cors_header != "") {
+    $corsHeader = $configObject->cors_header;
+} else {
+    $corsHeader = false;
+}
 //TODO problem with single features ! 
 // textual data:
 $textualDataArray = array (
@@ -195,13 +200,17 @@ if (is_array($acceptedHeaderFormatArray) && count($acceptedHeaderFormatArray) > 
 } else {
 	//$f = "html"; //default value
 }
+
+
 /*
  * For debugging purposes only
  */
-// $e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
-// $e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
-// $e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
-
+/*$e = new mb_exception("php/mod_linkedDataProxy.php: HTTP ACCEPT HEADER found: ".$_SERVER ["HTTP_ACCEPT"]);
+$e = new mb_exception("php/mod_linkedDataProxy.php: REQUEST PARAMETER: ".json_encode($_REQUEST));
+$e = new mb_exception("php/mod_linkedDataProxy.php: requested format: ".$f);
+$e = new mb_exception("php/mod_linkedDataProxy.php: query: " . $_SERVER['QUERY_STRING']);
+*/
+$formatFromHeader = $f;
 // parameter to control if the native json should be requested from the server, if support for geojson is available!
 $nativeJson = false;
 // default outputFormat for wfs objects:
@@ -883,7 +892,6 @@ JSON;
 // TODO - built function to map get parameters back to combined rest/get uri
 // wfsid=...&collection=....&item=...&f=html -> /linkedDataProxy/{wfsid}/collections/{collectionId}/items/{itemId}?f=html
 // uri of proxy have to be given absolute? -
-
 // http://localhost/linkedDataProxy/19/collections/TEHG_RLP%3Atehg_anlagen_2013_gesamt/items
 // http://localhost/linkedDataProxy/19/
 // preg_grep()
@@ -997,6 +1005,7 @@ if (isset ( $_REQUEST ["api"] ) && $_REQUEST ["api"] != "") {
 					$_REQUEST ["collections"] = "all";
 				} else {
 					echo 'URI not valid! {wfsid}/collection or {wfsid}/api<br/>';
+					$e = new mb_exception("php/mod_linkedDataProxy.php: URI not valid! {wfsid}/collection or {wfsid}/api");
 					die ();
 				}
 			}
@@ -1008,6 +1017,7 @@ if (isset ( $_REQUEST ["api"] ) && $_REQUEST ["api"] != "") {
 				$_REQUEST ["items"] = "all";
 			} else {
 				echo 'URI not valid! {wfsid}/collections/{collectionId} <br/>';
+				$e = new mb_exception("php/mod_linkedDataProxy.php: URI not valid! {wfsid}/collections/{collectionId}");
 				die ();
 			}
 			break;
@@ -1018,6 +1028,7 @@ if (isset ( $_REQUEST ["api"] ) && $_REQUEST ["api"] != "") {
 				$_REQUEST ["items"] = "all";
 			} else {
 				echo 'URI not valid! {wfsid}/collections/{collectionId}/items <br/>';
+				$e = new mb_exception("php/mod_linkedDataProxy.php: URI not valid! {wfsid}/collections/{collectionId}/items");
 				die ();
 			}
 			break;
@@ -1028,12 +1039,12 @@ if (isset ( $_REQUEST ["api"] ) && $_REQUEST ["api"] != "") {
 				$_REQUEST ["item"] = $requestParams [4];
 			} else {
 				echo 'URI not valid! {wfsid}/collections/{collectionId}/items/{itemId} <br/>';
+				$e = new mb_exception("php/mod_linkedDataProxy.php: URI not valid! {wfsid}/collections/{collectionId}/items/{itemId}");
 				die ();
 			}
 			break;
 	}
 }
-
 // TODO - built function to map get parameters back to combined rest/get uri
 // wfsid=...&collection=....&item=...&f=html -> /linkedDataProxy/{wfsid}/collections/{collectionId}/items/{itemId}?f=html
 
@@ -1045,6 +1056,7 @@ if (isset ( $_REQUEST ["wfsid"] ) & $_REQUEST ["wfsid"] != "") {
 	if (! preg_match ( $pattern, $testMatch )) {
 		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>wfsid</b> is not valid (integer or cs integer list).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter wfsid is not valid (integer or cs integer list)");
 		die ();
 	}
 	$wfsid = $testMatch;
@@ -1056,7 +1068,8 @@ if (isset ( $_REQUEST ["fid"] ) & $_REQUEST ["fid"] != "") {
 	$pattern = '/^[0-9a-zA-Z\.\-_:]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
 		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
-		echo 'Parameter <b>id</b> is not valid (integer or cs integer list).<br/>';
+		echo 'Parameter <b>fid</b> is not valid.<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter fid is not valid ");
 		die ();
 	}
 	$fid = $testMatch;
@@ -1069,6 +1082,7 @@ if (isset ( $_REQUEST ["p"] ) & $_REQUEST ["p"] != "") {
 	if (! preg_match ( $pattern, $testMatch )) {
 		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>p</b> is not valid (integer).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter p is not valid ");
 		die ();
 	}
 	$page = $testMatch;
@@ -1080,6 +1094,7 @@ if (isset ( $_REQUEST ["limit"] ) & $_REQUEST ["limit"] != "") {
 	$testMatch = $_REQUEST ["limit"];
 	if (! in_array ( $testMatch, $allowedLimits )) {
 		echo 'Parameter <b>limit</b> is not valid - must be one of: ' . implode ( ',', $allowedLimits ) . '<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter limit is not valid - must be one of: " . implode ( ',', $allowedLimits ));
 		die ();
 	}
 	$limit = ( integer ) $testMatch;
@@ -1092,6 +1107,7 @@ if (isset ( $_REQUEST ["offset"] ) & $_REQUEST ["offset"] != "") {
 	if (! preg_match ( $pattern, $testMatch )) {
 		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>offset</b> is not valid (integer).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter offset is not valid ");
 		die ();
 	}
 	$offset = ( integer ) $testMatch;
@@ -1105,6 +1121,7 @@ _:]*$/';
 	if (! preg_match ( $pattern, $testMatch )) {
 		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>collection</b> is not valid (ogc resource name or id).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter collection is not valid ");
 		die ();
 	}
 	$collection = $testMatch;
@@ -1118,6 +1135,7 @@ if (isset ( $_REQUEST ["collections"] ) & $_REQUEST ["collections"] != "") {
 			"api" 
 	) )) {
 		echo 'Parameter <b>collections</b> is not valid (maybe all or api).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter collections is not valid ");
 		die ();
 	}
 	$collections = $testMatch;
@@ -1130,6 +1148,7 @@ if (isset ( $_REQUEST ["items"] ) & $_REQUEST ["items"] != "") {
 			"all" 
 	) )) {
 		echo 'Parameter <b>items</b> is not valid (maybe all).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter items is not valid ");
 		die ();
 	}
 	$items = $testMatch;
@@ -1142,6 +1161,7 @@ if (isset ( $_REQUEST ["item"] ) & $_REQUEST ["item"] != "") {
 	if (! preg_match ( $pattern, $testMatch )) {
 		// echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
 		echo 'Parameter <b>item</b> is not valid (/^[0-9a-zA-Z\.\-_:]*$/).<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter item is not valid ");
 		die ();
 	}
 	$item = $testMatch;
@@ -1153,21 +1173,27 @@ if (isset ( $_REQUEST ["outputFormat"] ) & $_REQUEST ["outputFormat"] != "") {
 	
 	if (! in_array ( $testMatch, $allowedOutputFormats )) {
 		echo 'Parameter <b>outputFormat</b> is not valid - must be one of: ' . implode ( ',', $allowedOutputFormats ) . '<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter outputFormat is not valid ");
 		die ();
 	}
 	$outputFormat = $testMatch;
 	$testMatch = NULL;
 }
+// TODO: check against content negotiation
 if (isset ( $_REQUEST ["f"] ) & $_REQUEST ["f"] != "") {
 	// validate to csv integer list
 	$testMatch = $_REQUEST ["f"];
 	if (! in_array ( $testMatch, $allowedFormats )) {
 		echo 'Parameter <b>f</b> is not valid - must be one of: ' . implode ( ',', $allowedFormats ) . '<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter f is not valid ");
 		die ();
 	}
 	$f = $testMatch;
 	$testMatch = NULL;
 }
+
+//$e = new mb_exception("php/mod_linkedDataProxy.php: used format: ". $f);
+
 if (isset ( $_REQUEST ["bbox"] ) & $_REQUEST ["bbox"] != "") {
 	// validate to float/integer
 	$testMatch = $_REQUEST ["bbox"];
@@ -1176,11 +1202,13 @@ if (isset ( $_REQUEST ["bbox"] ) & $_REQUEST ["bbox"] != "") {
 	$testMatchArray = explode ( ',', $testMatch );
 	if (count ( $testMatchArray ) != 4) {
 		echo 'Parameter <b>bbox</b> has a wrong amount of entries.<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter bbox has a wrong amount of entries");
 		die ();
 	}
 	for($i = 0; $i < count ( $testMatchArray ); $i ++) {
 		if (! preg_match ( $pattern, $testMatchArray [$i] )) {
 			echo 'Parameter <b>bbox</b> is not a valid coordinate value.<br/>';
+			$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter bbox is not a valid coordinate value");
 			die ();
 		}
 	}
@@ -1198,6 +1226,7 @@ if (isset ( $_REQUEST ["nativeJson"] ) & $_REQUEST ["nativeJson"] != "") {
 				"true",
 				"false" 
 		) ) . '<br/>';
+		$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter nativeJson has a wrong value");
 		die ();
 	}
 	if ($testMatch == "true") {
@@ -1205,7 +1234,6 @@ if (isset ( $_REQUEST ["nativeJson"] ) & $_REQUEST ["nativeJson"] != "") {
 	}
 	$testMatch = NULL;
 }
-
 // merge together all request parameters to new global available query_string which is needed for further href's
 // this string holds parts from rest url and the further parameters in case of rewrite (rest) and simple invocation via php script
 $wholeQueryArray = $_REQUEST;
@@ -1355,7 +1383,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						if (empty ( $_SERVER ['PHP_AUTH_DIGEST'] )) {
 							header ( 'HTTP/1.1 401 Unauthorized' );
 							header ( 'WWW-Authenticate: Digest realm="' . REALM . '",qop="auth",nonce="' . getNonce () . '",opaque="' . md5 ( REALM ) . '"' );
+							$e = new mb_exception("php/mod_linkedDataProxy.php: Login cancelled by user!");
 							die ( 'Login cancelled by user!' );
+							
 						}
 						// read out the header in an array
 						$requestHeaderArray = http_digest_parse ( $_SERVER ['PHP_AUTH_DIGEST'] );
@@ -1363,6 +1393,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						if (! ($requestHeaderArray)) {
 							echo 'Following Header information cannot be validated - check your clientsoftware!<br>';
 							echo $_SERVER ['PHP_AUTH_DIGEST'] . '<br>';
+							$e = new mb_exception("php/mod_linkedDataProxy.php: Header information cannot be validated - check your clientsoftware!");
 							die ();
 						}
 						// get mb_username and email out of http_auth username string
@@ -1377,10 +1408,12 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						 * $result[3] = $row['password'];
 						 */
 						if ($userInformation [0] == '-1') {
+						    $e = new mb_exception("php/mod_linkedDataProxy.php: User with name: " . $mbUsername . " and email: " . $mbEmail . " not known to security proxy!");
 							die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!' );
 						}
 						if ($userInformation [1] == '') { // check if digest exists in db - if no digest exists it should be a null string!
-							die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!' );
+						    $e = new mb_exception("php/mod_linkedDataProxy.php: User with name: " . $mbUsername . " and email: " . $mbEmail . " has no digest - please set a new password and try again!");
+						    die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no digest - please set a new password and try again!' );
 						}
 						// first check the stale!
 						if ($requestHeaderArray ['nonce'] == getNonce ()) {
@@ -1400,7 +1433,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$valid_response .= ':' . $requestHeaderArray ['cnonce'] . ':' . $requestHeaderArray ['qop'] . ':' . $A2;
 						$valid_response = md5 ( $valid_response );
 						if ($requestHeaderArray ['response'] != $valid_response) { // the user have to authenticate new - cause something in the authentication went wrong
-							die ( 'Authentication failed - sorry, you have to authenticate once more!' );
+						    $e = new mb_exception("php/mod_linkedDataProxy.php: Authentication failed - sorry, you have to authenticate once more!");
+						    die ( 'Authentication failed - sorry, you have to authenticate once more!' );
 						}
 						// if we are here - authentication has been done well!
 						// let's do the proxy things (came from owsproxy.php):
@@ -1413,6 +1447,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						if (! isset ( $_SERVER ['PHP_AUTH_USER'] )) {
 							header ( 'WWW-Authenticate: Basic realm="' . REALM . '"' );
 							header ( 'HTTP/1.1 401 Unauthorized' );
+							$e = new mb_exception("php/mod_linkedDataProxy.php: Authentication failed - sorry, you have to authenticate once more!");
 							die ( 'Authentication failed - sorry, you have to authenticate once more!' );
 						} else {
 							// get mb_username and email out of http_auth username string
@@ -1427,6 +1462,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							 * $result[3] = $row['password'];
 							 */
 							if ($userInformation [0] == '-1') {
+							    $e = new mb_exception("php/mod_linkedDataProxy.php: User with name: " . $mbUsername . " and email: " . $mbEmail . " not known to security proxy!");
 								die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' not known to security proxy!' );
 							}
 							/*
@@ -1436,12 +1472,14 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							 */
 							// check password - new since 06/2019 - secure password !!!!!
 							if ($userInformation [3] == '' || $userInformation [3] == null) {
+							    $e = new mb_exception("php/mod_linkedDataProxy.php: User with name: " . $mbUsername . " and email: " . $mbEmail . " has no password which is stored in a secure way. - Please login at the portal to generate one!");
 								die ( 'User with name: ' . $mbUsername . ' and email: ' . $mbEmail . ' has no password which is stored in a secure way. - Please login at the portal to generate one!' );
 							}
 							if (password_verify ( $_SERVER ['PHP_AUTH_PW'], $userInformation [3] )) {
 								$userId = $userInformation [0];
 							} else {
 								$userId = $userInformation [0];
+								$e = new mb_exception("php/mod_linkedDataProxy.php: HTTP Authentication failed for user: " . $mbUsername);
 								die ( 'HTTP Authentication failed for user: ' . $mbUsername . '!' );
 							}
 						}
@@ -1455,6 +1493,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			$accessAllowed = $user->areFeaturetypesAccessible ( $collection, $wfsid );
 			if ($accessAllowed == false) {
 				header('HTTP/1.0 403 Forbidden');
+				$e = new mb_exception("php/mod_linkedDataProxy.php: Access to requested collection is not allowed to current user - log out and try again!");				
 				die("Access to requested collection is not allowed to current user - log out and try again!"); // give http 403!
 			} /*else {
 				echo "Access to " . $collection . " allowed for requesting user"; // give http 403!
@@ -1751,7 +1790,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						"properties" 
 				); // TODO: relations, resolve, offsetList, crs, bbox-crs, maxAllowedOffset
 				                                                                                                           // first draft - set only json based api description and give it back
-				header ( "application/json" );
+				header ( "Content-type: application/openapi+json;version=3.0" );
 				echo json_encode ( $apiDescriptionJson, JSON_UNESCAPED_SLASHES );
 				die ();
 			}
@@ -1856,6 +1895,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$pattern = '/^[0-9a-zA-Z\.\-_:*]*$/';
 						if (! preg_match ( $pattern, $testMatch )) {
 							echo 'Parameter <b>' . $ftAllowedAttribute . '</b> is not valid (allowed string).<br/>';
+							$e = new mb_exception("php/mod_linkedDataProxy.php: Parameter " . $ftAllowedAttribute . " is not valid (allowed string)");
 							die ();
 						}
 						$stringFilterActive [] = $ftAllowedAttribute;
@@ -1896,8 +1936,6 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$returnObject->extent->spatial = $myFeatureType->latLonBboxArray;
 						$returnObject->extent->temporal = array ();
 						
-						
-						
 						$returnObject->type = "FeatureCollection";
 						$returnObject->links = array ();
 						$returnObject->links [0]->rel = "self";
@@ -1906,6 +1944,12 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						$returnObject->links [0]->href = get2Rest ( $_SERVER ['REQUEST_URI'] );
 						// TODO alternate
 						// check for given spatialFilter (bbox)
+						// TODO - check for ESRI problem of interpreting axis order 
+						/*
+						 * <fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX><fes:ValueReference>SHAPE</fes:ValueReference><gml:Envelope xmlns:gml="http://www.opengis.net/gml/3.2" srsName="urn:ogc:def:crs:EPSG::4326"><gml:lowerCorner>6.4324951171875042 48.2354736328125042</gml:lowerCorner><gml:upperCorner>9.7283935546875042 50.4327392578125042</gml:upperCorner></gml:Envelope></fes:BBOX></fes:Filter>
+						 * should be lat / lon - as defined in epsg registry - not lon / lat 
+						 * 
+						 */
 						if (isset ( $bbox ) && $bbox != '') {
 							$filter = $wfs->bbox2spatialFilter ( $bbox, $geomColumnName, $srs = "EPSG:4326", $version = '2.0.0' );
 						} else {
@@ -1979,7 +2023,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							}
 						}
 						//
-						// $e = new mb_exception("filter: ".$filter);
+						//$e = new mb_exception("filter: ".$filter);
 						// write number of features to ram cache:
 						/*
 						 * Cache of feature count, cause this may take very long when more than 1 mio features are served
@@ -2005,11 +2049,15 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						if ($numberOfObjects == 0 || $numberOfObjects == false) {
 							$returnObject->success = false;
 							$returnObject->message = "No results found or an error occured - see server logs - please try it again! Use the back button!";
-							// if ($f == "json") {
-							header ( "application/json" );
-							echo json_encode ( $returnObject );
-							// }
-							die ();
+							$returnObject->features = array();
+							$e = new mb_exception("php/mod_linkedDataProxy.php: Feature count was not successful - nothing returned!");
+							
+							if ($f == "json") {
+							     header ( "application/json" );
+							     echo json_encode ( $returnObject );
+							     die ();
+							}
+							
 						}
 						// $e = new mb_exception("number of objects: ".$numberOfObjects);
 						// request first object and metadata
@@ -2026,12 +2074,13 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 						// calculate offset for requested page
 						if ($page >= $numberOfPages) {
 							$returnObject->success = false;
-							$returnObject->message = "Requested page exeeds number of max pages!";
+							$returnObject->message = "Requested page exceeds number of max pages!";
 							if ($f == "json") {
 								header ( "application/json" );
 								echo json_encode ( $returnObject );
 							}
-							die ();
+							$e = new mb_exception("php/mod_linkedDataProxy.php: Requested page exceeds number of max pages!");
+							//die ();
 						} else {
 							$startIndex = $page * $limit;
 						}
@@ -2716,6 +2765,9 @@ switch ($f) {
 			header ( "Content-type: application/json" );
 		} else {
 			header ( "Content-type: application/vnd.geo+json" );
+		}
+		if ($corsHeader != false) {
+		    header ( "Access-Control-Allow-Origin: " . $corsHeader);
 		}
 		echo json_encode ( $returnObject );
 		break;

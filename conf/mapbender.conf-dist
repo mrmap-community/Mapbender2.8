@@ -153,7 +153,7 @@ $mailPassword =  MAILPASSWORD;
 # wms monitoring
 # --------------------------------------------
 define("AUTO_UPDATE", "0");
-define("TIME_LIMIT", "300");
+define("TIME_LIMIT", "30");
 define("PHP_PATH", "/usr/bin/");
 
 # --------------------------------------------

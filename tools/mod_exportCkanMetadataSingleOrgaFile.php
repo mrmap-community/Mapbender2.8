@@ -21,7 +21,7 @@ foreach($arguments as $value) {
 $orgaId = $real_arguments['orgaId'];
 //***************************************************************
 $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
-$mapbenderBaseUrl = "http://127.0.0.1/mapbender/";
+$mapbenderBaseUrl = "http://localhost/mapbender/";
 //get organisation list from webservice
 $connector = new connector();
 $generatorUrl = $mapbenderBaseUrl . "php/mod_exportMapbenderMetadata2Ckan.php?cache=false&id=" . $orgaId;

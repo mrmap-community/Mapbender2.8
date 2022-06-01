@@ -168,13 +168,13 @@ class WfsToDb {
 		return true;		
 	}
 	
-/**
+    /**
 	 * Updates an existing WFS in the database.
 	 *
 	 * @return Boolean
 	 * @param $aWfs Wfs
 	 */
-	public static function update ($aWfs,$updateMetadataOnly=false) {
+	public static function update ($aWfs, $updateMetadataOnly=false) {
 		//get some things out from database if not already given thru metadata editor: wfs_network_access
 		//they don't come from the capabilities!
 		if (!$updateMetadataOnly) {
@@ -315,32 +315,29 @@ class WfsToDb {
 
 		// delete all metadata relations which come capabilities
 
-if (!$updateMetadataOnly) {
-		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
-		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
-		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
-		$v = array($aWfs->id);
-		$t = array("i");
-		$res = db_prep_query($sql,$v,$t);
-
-
-
-		// delete and refill WFS operations
-		$sql = "DELETE FROM wfs_operation WHERE fkey_wfs_id = $1 ";
-		$v = array($aWfs->id);
-		$t = array('i');
-		$res = db_prep_query($sql,$v,$t);
-		if(!$res){
-			db_rollback();
-		}
-		for ($i = 0; $i < count($aWfs->operationsArray); $i++) {
-			$currentOp = $aWfs->operationsArray[$i];
-			if (!WfsToDb::insertOperation($aWfs->id, $currentOp)) {
-				db_rollback();
-				return false;
-			}
-		}
-}	
+        if (!$updateMetadataOnly) {
+        		$sql = "DELETE FROM ows_relation_metadata WHERE fkey_featuretype_id IN " ;
+        		$sql .= "(SELECT featuretype_id FROM wfs_featuretype WHERE fkey_wfs_id = $1)";
+        		$sql .= " AND ows_relation_metadata.relation_type = 'capabilities'";
+        		$v = array($aWfs->id);
+        		$t = array("i");
+        		$res = db_prep_query($sql,$v,$t);     
+        		// delete and refill WFS operations
+        		$sql = "DELETE FROM wfs_operation WHERE fkey_wfs_id = $1 ";
+        		$v = array($aWfs->id);
+        		$t = array('i');
+        		$res = db_prep_query($sql,$v,$t);
+        		if(!$res){
+        			db_rollback();
+        		}
+        		for ($i = 0; $i < count($aWfs->operationsArray); $i++) {
+        			$currentOp = $aWfs->operationsArray[$i];
+        			if (!WfsToDb::insertOperation($aWfs->id, $currentOp)) {
+        				db_rollback();
+        				return false;
+        			}
+        		}
+        }	
 		// delete and refill WFS outputFormats
 		$sql = "DELETE FROM wfs_output_formats WHERE fkey_wfs_id = $1 ";
 		$v = array($aWfs->id);
@@ -375,8 +372,7 @@ if (!$updateMetadataOnly) {
 		$t = array('i');
 		$c = 2;
 		$sql = "SELECT featuretype_id, featuretype_name, featuretype_title, featuretype_abstract, inspire_download, featuretype_schema, featuretype_schema_problem FROM wfs_featuretype WHERE fkey_wfs_id = $1 AND NOT featuretype_name IN(";
-		$e = new mb_notice("class_wfsToDb.php: WFS_UPDATE: count featuretypeArray: ".count($aWfs->featureTypeArray));
-	
+		$e = new mb_notice("class_wfsToDb.php: WFS_UPDATE: count featuretypeArray: ".count($aWfs->featureTypeArray));	
 		for($i=0; $i<count($aWfs->featureTypeArray); $i++){
 			if($i>0){$sql .= ',';}
 			$sql .= "$".$c;
@@ -449,29 +445,28 @@ if (!$updateMetadataOnly) {
 		if(count($aWfs->storedQueriesArray) > 0) {
 			if (!$updateMetadataOnly) {
 				$storedQueryIdArray = array();
-					
 				for ($i = 0; $i < count($aWfs->storedQueriesArray); $i++) {
 					$currentStoredQuery = $aWfs->storedQueriesArray[$i];
 					array_push($storedQueryIdArray, $currentStoredQuery);
 					$storedQueryWfsConfId = WfsToDb::storedQueryExists($aWfs->id, $currentStoredQuery->description['Id']);
 					if ($storedQueryWfsConfId && $storedQueryWfsConfId != "") {
 						// update existing WFS stored query
-						$e = new mb_notice("class_wfsToDb.php: Stored query exists");
+						$e = new mb_notice("class_wfsToDb.php: Stored query exists - try to update");
 						if (!WfsToDb::updateStoredQuery($storedQueryWfsConfId, $currentStoredQuery)) {
-							db_rollback();
-							return false;
+							//db_rollback();
+							//return false;
+						    $e = new mb_exception("class_wfsToDb.php: Stored query " . $currentStoredQuery->description['Id'] . " could not be updated - check configuration of wfs!");
 						}
-					}
-					else {
-						$e = new mb_notice("class_wfsToDb.php: Stored query ne pas exists");
+					} else {
+						$e = new mb_exception("class_wfsToDb.php: Stored query ne pas exists - try to insert");
 						// insert new WFS stored query
 						if (!WfsToDb::insertStoredQuery($aWfs->id, $currentStoredQuery)) {
-							db_rollback();
-							return false;
+							//db_rollback();
+							//return false;
+						    $e = new mb_notice("class_wfsToDb.php: Stored query " . $currentStoredQuery->description['Id'] . " could not be inserted - check configuration of wfs!");
 						}
 					}
-				}
-					
+				}	
 				// delete obsolete WFS stored queries
 				$v = array($aWfs->id);
 				$t = array("i");
@@ -496,8 +491,7 @@ if (!$updateMetadataOnly) {
 				}
 				$e = new mb_notice("class_wfsToDb.php: Number of stored queries not to delete: ".count($storedQueryIdArray));
 			}
-		}	
-		
+		}			
 		db_commit();
 		return true;
 	}
@@ -579,7 +573,7 @@ if (!$updateMetadataOnly) {
 	private static function insertFeatureTypeNamespace ($aWfsId, $aWfsFeatureTypeId, $aWfsFeatureTypeNamespace) {
 	    // only insert the namespace, if it does not already exists
 	    // check first
-	    $sql_check = "SELECT FROM wfs_featuretype_namespace WHERE fkey_wfs_id=$1 AND " .
+	    $sql_check = "SELECT * FROM wfs_featuretype_namespace WHERE fkey_wfs_id=$1 AND " .
 	   	    "fkey_featuretype_id = $2 AND namespace=$3 AND namespace_location=$4 ";
 	    
 	    $v = array(
@@ -588,16 +582,17 @@ if (!$updateMetadataOnly) {
 	        $aWfsFeatureTypeNamespace->name,
 	        $aWfsFeatureTypeNamespace->value
 	    );
-	    $t = array("s", "s", "s", "s");
+	    $e = new mb_notice("classes/class_wfsToDb.php: look for namespaces in db: " . json_encode($v) . " - sql: " . $sql_check );
+	    $t = array("i", "i", "s", "s");
 	    $res_check = db_prep_query($sql_check, $v, $t);
 	    
 	    if ($res_check) {
 	        $ftNamepace = db_fetch_array($res_check);
 	        //$e = new mb_exception("Found namespace: $".$ftNamepace['namespace']."$");
 	        //if (count($ftNamepace) > 0 && $ftNamepace['namespace'] != "") {
-	        if (count($ftNamepace) > 0) {
+	        if (count($ftNamepace) > 0 && $ftNamepace != false) {
 	           //$e = new mb_exception("Count ftNamespace: ".count($ftNamepace));
-	           $e = new mb_exception("Namespace ".$aWfsFeatureTypeNamespace->name." already exists for featuretype ".$aWfsFeatureTypeId." - will not be added twice!");
+	           $e = new mb_notice("Namespace ".$aWfsFeatureTypeNamespace->name." already exists for featuretype ".$aWfsFeatureTypeId." - will not be added twice!");
 	           // TODO: check why namespace maybe redefined in case of some inspire wfs???
 	           return true;
 	        }
@@ -613,7 +608,7 @@ if (!$updateMetadataOnly) {
 			$aWfsFeatureTypeNamespace->name, 
 			$aWfsFeatureTypeNamespace->value
 		);
-		$t = array("s", "s", "s", "s");
+		$t = array("i", "i", "s", "s");
 		$e = new mb_notice("class_wfsToDb.php: INSERTING Featuretype Namespace for WFS-ID $aWfsId, FT: $aWfsFeatureTypeId, NS: $aWfsFeatureTypeNamespace->name");
 		$res = db_prep_query($sql, $v, $t);
 

@@ -149,7 +149,14 @@ class Wfs_2_0_Factory extends WfsFactory {
 		$xpath =  new DOMXpath($doc);
 		$xpath->registerNamespace("xs","http://www.w3.org/2001/XMLSchema");
 
-		// populate a Namespaces Hastable where we can use thec namesopace as a lookup for the prefix
+		//get list of all namespaces which are declared in schema element!
+		/*$context = $doc->documentElement;
+		foreach( $xpath->query('namespace::*', $context) as $node ) {
+		    //echo $node->nodeValue, "\n";
+		    $e = new mb_exception("classes/class_wfs_2_0_factory.php: namespace: " . $node->nodeValue);
+		}*/
+		
+		// populate a Namespaces Hastable where we can use the namespace as a lookup for the prefix
 		// and also keep a 
 		$namespaces = array();
 		$namespaceList = $xpath->query("//namespace::*");
@@ -164,7 +171,7 @@ class Wfs_2_0_Factory extends WfsFactory {
 			$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
 		}
 	
-		list($ftLocalname,$ftTypePrefix) = array_reverse(explode(":",$featureTypeName));
+		list($ftLocalname, $ftTypePrefix) = array_reverse(explode(":",$featureTypeName));
 		// for the sake of simplicity we only care about top level elements. Seems to have worked so far
 		$query = sprintf("/xs:schema/xs:element[@name='%s']",$ftLocalname);
 		$elementList = $xpath->query($query);
