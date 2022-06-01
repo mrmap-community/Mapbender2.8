@@ -499,6 +499,7 @@ class OwsContext {
 		    }
 		    $kmlData = $mergedKml->mergeKMLDocuments($kmlArray);   
 		}
+		//add level 0 vector overlay with digitized objects
 		if ($kmlData != false) {
 		    $owsContextResource = new OwsContextResource();
 		    $owsContextResource->title = "Local data";
@@ -570,6 +571,7 @@ class OwsContext {
 		$e = new mb_notice("classes/class_owsContext.php: number of all layers found in WMC: ".count($layerList));
 		$path = "/";
 		$pathArray = array();
+		//initialize serviceId - most top layers
         $serviceId = 0;
 		/*
 		* Each service has an empty value as layer_parent element
@@ -766,6 +768,36 @@ class OwsContext {
 			$this->addResource($owsContextResource);
 			unset($owsContextResource);
 		}
+		//$e = new mb_exception("classes/class_owsContext.php number of found services: " . $serviceId);
+		//switch order of services in context path e.g.  1-10 -> 10-1
+		$oldOrderArray = range(1, $serviceId, 1);
+		$newOrderArray = range($serviceId, 1, -1);
+		foreach ($this->resource as $resource) {  
+		    for ($l = 0; $l < count($oldOrderArray); $l++) {
+		        $search = '/^\/' . (string)$oldOrderArray[$l] . '\//';
+		        $replace = '/' . (string)$newOrderArray[$l] . '/';
+		        $strSearch = '/' . (string)$oldOrderArray[$l] . '/';
+		        $strFolder = (string)$resource->folder;
+		        //$e = new mb_exception("classes/class_owsContext.php search for : " . $strSearch . " in: " . $strFolder);
+		        // for root folder
+		        if ((string)$resource->folder == "/" .(string)$oldOrderArray[$l]) {
+		            $resource->folder = '/' . (string)$newOrderArray[$l];
+		            break;
+		        }
+		        // for subfolder
+		        if (strpos($strFolder, $strSearch) === 0) {
+		            $str = preg_replace($search, $replace, $resource->folder);
+		            $resource->folder = $str;
+		            break;
+		        }
+		    }
+		}
+		//reorder resources in folder alphabetical order
+		// different approachs
+		//usort($this->resource, function ($a, $b) { return strcmp($a->folder, $b->folder); });
+		//usort($this->resource, function ($a, $b) { $a = explode("/", $a->folder)[0]; $b = explode("/", $b->folder)[0];return strcmp($a, $b); });
+		//usort($this->resource, function ($a, $b) { $a = (integer)explode("/", $a->folder)[0]; $b = (integer)explode("/", $b->folder)[0];($a-$b) ? ($a-$b)/abs($a-$b) : 0; });
+		usort($this->resource, function ($a, $b) { return strnatcmp($a->folder, $b->folder); });
 	}	
 }
 

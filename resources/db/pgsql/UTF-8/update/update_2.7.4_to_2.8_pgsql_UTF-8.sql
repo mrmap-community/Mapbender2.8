@@ -3941,7 +3941,42 @@ ALTER TABLE mb_user ADD COLUMN mb_user_textsize character varying(14);
 ALTER TABLE mb_user ADD COLUMN mb_user_last_login_date date;
 ALTER TABLE mb_user ADD COLUMN mb_user_spatial_suggest_1 boolean;
 
+-- Column: spatial_security
 
+-- ALTER TABLE mb_user DROP COLUMN spatial_security;
+
+ALTER TABLE mb_user ADD COLUMN spatial_security text;
+
+
+-- Column: spatial_security
+
+-- ALTER TABLE gui DROP COLUMN spatial_security;
+
+ALTER TABLE gui ADD COLUMN spatial_security geometry;
+
+
+-- Column: wms_spatial_security
+
+-- ALTER TABLE wms DROP COLUMN wms_spatial_security;
+
+ALTER TABLE wms ADD COLUMN wms_spatial_security boolean;
+
+-- Table: spatial_security
+
+-- DROP TABLE spatial_security;
+
+CREATE TABLE spatial_security
+(
+  id integer NOT NULL,
+  name text,
+  geom geometry,
+  CONSTRAINT spatial_security_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE spatial_security
+  OWNER TO postgres;
 
 
 

@@ -147,6 +147,8 @@ else if ($command == "getSearchResults") {
 
 	$myWfsFactory = new UniversalWfsFactory();
 	$myWfs = $myWfsFactory->createFromDb($wfsId);
+	//fix problem with missing namespace for ogc And filter
+	$filter = str_replace('</And>', '</ogc:And>', str_replace('<And>', '<ogc:And>', $filter));
 	$data = $myWfs->getFeature($typename, $filter,$destSrs, $storedQueryId, $storedQueryParams, null);
 	
 	#new mb_exception($data);

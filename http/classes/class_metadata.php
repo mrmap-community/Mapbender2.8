@@ -1361,7 +1361,7 @@ class searchMetadata
 		}
 		//search filter for isopen - open data classification of the managed termsofuse
 		//
-		if ($this->restrictToOpenData) {
+		if (strtolower($this->searchResources) !== "wmc" && $this->restrictToOpenData) {
 			array_push($whereCondArray, '(isopen = 1)');
 		}
 		//search filter for md_topic_categories
@@ -1996,6 +1996,7 @@ class searchMetadata
 			$servObject->layer[$countsublayer]->name = $child['layer_name'];
 			$servObject->layer[$countsublayer]->abstract = $child['layer_abstract'];
 			$servObject->layer[$countsublayer]->previewURL = $this->protocol . "://" . $this->hostName . "/mapbender/geoportal/mod_showPreview.php?resource=layer&id=" . $child['layer_id'];
+			$servObject->layer[$countsublayer]->getCapabilitiesUrl = $this->protocol . "://" . $this->hostName . "/mapbender/php/wms.php?layer_id=" . $child['layer_id'] . "&INSPIRE=1&VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities";
 			$legendInfo = $this->getInfofromLayerId($servObject->layer[$countsublayer]->id);
 			$servObject->layer[$countsublayer]->getLegendGraphicUrl = $legendInfo['getLegendGraphicUrl'];
 			$servObject->layer[$countsublayer]->getLegendGraphicUrlFormat = $legendInfo['getLegendGraphicUrlFormat'];

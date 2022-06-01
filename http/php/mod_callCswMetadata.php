@@ -814,7 +814,7 @@ foreach ($searchResourcesArray as $searchResource) {
 //for ($i = 0; $i <= $pages-1 ; $i++) {
 	//$cswClient = new cswClient();
 	//$cswClient->cswId = $catalogueId;
-        $startPos = ($searchPages[$i]-1) * $maxResults + 1;
+    $startPos = ($searchPages[$i]-1) * $maxResults + 1;
 	$result = $cswClient->doRequest($cswClient->cswId, 'getrecordspaging', false, false, $searchResource, $maxResults, $startPos, $additionalFilter);
 	//$page = $i + 1;
 	//$e = new mb_exception("page: ".$page." (".$pages.")");
@@ -863,9 +863,10 @@ foreach ($searchResourcesArray as $searchResource) {
 			*/
 			$identifikationXPath = "";
 			if ($searchResource == 'dataset' || $searchResource == 'series') {
+			    $datasetId = 'undefined';
+			    $datasetIdCodeSpace = 'undefined';
 				//dataset identifier
-				$datasetId = 'undefined';
-				$code = $cswClient->operationResult->xpath('///gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString');
+				$code = $cswClient->operationResult->xpath('///gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString');
 				if (isset($code[0]) && $code[0] != '') {
 					//new implementation:
 					//http://inspire.ec.europa.eu/file/1705/download?token=iSTwpRWd&usg=AOvVaw18y1aTdkoMCBxpIz7tOOgu
@@ -888,18 +889,23 @@ foreach ($searchResourcesArray as $searchResource) {
 						}
 					}
 				} else { //try to read code from RS_Identifier 		
-					$code = $cswClient->operationResult->xpath('///gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
-					$codeSpace = $cswClient->operationResult->xpath('gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:codeSpace/gco:CharacterString');
+					$code = $cswClient->operationResult->xpath('///gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
+					$codeSpace = $cswClient->operationResult->xpath('gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:codeSpace/gco:CharacterString');
 					if (isset($codeSpace[0]) && isset($code[0]) && $codeSpace[0] != '' && $code[0] != '') {
 						$datasetId = $code[0];
 						$datasetIdCodeSpace = $codeSpace[0];
 					} else {
+					    if (isset($code[0]) && $code[0] != '') {
+					        $datasetId = $code[0];
+					        $datasetIdCodeSpace = "";
+					    }
 						//neither MD_Identifier nor RS_Identifier are defined in a right way
 						$e = new mb_notice("class_iso19139.php: No datasetId found in metadata record!");
 					}
 				}
 				$resultObject->{$searchResource}->srv[$k-1]->datasetId = $datasetIdCodeSpace.$datasetId;
 			}
+			//$resultObject->{$searchResource}->srv[$k-1]->datasetId = "test";
 			//preview image if available
 			$previewImage = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:graphicOverview/gmd:MD_BrowseGraphic/gmd:fileName/gco:CharacterString');
 
@@ -913,16 +919,25 @@ foreach ($searchResourcesArray as $searchResource) {
 			//organization name
 			$resourceResponsibleParty = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString');
 			$resourceResponsibleParty = $resourceResponsibleParty[0];
-$resultObject->{$searchResource}->srv[$k-1]->respOrg = (string)$resourceResponsibleParty;
+            $resultObject->{$searchResource}->srv[$k-1]->respOrg = (string)$resourceResponsibleParty;
 			//box
+            $minx = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:westBoundLongitude/gco:Decimal');
+            $minx = $minx[0];
+            $miny = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:southBoundLatitude/gco:Decimal');
+            $miny = $miny[0];
+            $maxx = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:eastBoundLongitude/gco:Decimal');
+            $maxx = $maxx[0];
+            $maxy = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox/gmd:northBoundLatitude/gco:Decimal');
+            $maxy = $maxy[0];
+            $resultObject->{$searchResource}->srv[$k-1]->bbox = implode(',', array($minx,$miny,$maxx,$maxy)); 
 			//title
 			$title = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString');
 			$title = $title[0];
-$resultObject->{$searchResource}->srv[$k-1]->title = (string)$title;
+            $resultObject->{$searchResource}->srv[$k-1]->title = (string)$title;
 			//abstract
 			$abstract = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/'.$identifikationXPath.'/gmd:abstract/gco:CharacterString');
 			$abstract = $abstract[0];
-$resultObject->{$searchResource}->srv[$k-1]->abstract = substr((string)$abstract,0,250);
+            $resultObject->{$searchResource}->srv[$k-1]->abstract = substr((string)$abstract,0,250);
 			//mdLink
 			//geturl for get recordbyid request
 			if (isset($csw->cat_op_values['getrecordbyid']['get'])) {

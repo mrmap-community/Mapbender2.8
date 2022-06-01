@@ -36,7 +36,8 @@ class wms {
 	//extended information
 	var $wms_termsofuse;
 	var $wms_license_source_note;
-
+    //new spatial security from 2.8+
+	var $wms_spatial_security = 'f'; //DEFAULTs to false when initialize object
 	var $fees;
 	var $accessconstraints;
 	var $contactperson;
@@ -1971,8 +1972,8 @@ class wms {
 		$sql .= "accessconstraints, contactperson, contactposition, contactorganization, address, city, ";
 		$sql .= "stateorprovince, postcode, country, contactvoicetelephone, contactfacsimiletelephone, contactelectronicmailaddress, ";
 		$sql .= "wms_owner,wms_timestamp,wms_timestamp_create,wms_username,wms_password,wms_auth_type,";
-		$sql .= "wms_supportsld, wms_userlayer, wms_userstyle, wms_remotewfs, uuid, inspire_annual_requests, wms_license_source_note) ";
-		$sql .= "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35)";
+		$sql .= "wms_supportsld, wms_userlayer, wms_userstyle, wms_remotewfs, uuid, inspire_annual_requests, wms_license_source_note, wms_spatial_security) ";
+		$sql .= "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36)";
 		$v = array(
 			$this->wms_version,
 			$this->wms_title,
@@ -2008,11 +2009,12 @@ class wms {
 			$this->wms_remotewfs,
 			$uuid,
 			$this->inspire_annual_requests,
-			$this->wms_license_source_note
+			$this->wms_license_source_note,
+		    $this->wms_spatial_security
 		);
 		$t = array(
 			's','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s',
-			's','s','s','s','s','s','i','i','i','s','s','s','s','s','s','s','s','i','s'
+			's','s','s','s','s','s','i','i','i','s','s','s','s','s','s','s','s','i','s','s'
 		);
 		$res = db_prep_query($sql,$v,$t);
 		if(!$res){
@@ -3581,6 +3583,7 @@ SQL;
 				$this->wms_title = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_title"]));
 				$this->wms_abstract = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_abstract"]));
 				$wmsowsproxy = $row2["wms_owsproxy"];
+				$this->wms_spatial_security = $row2["wms_spatial_security"];
 				#$wmsowsproxy = "test";
 				if($wmsowsproxy != ""){
 					$owsproxyurl = OWSPROXY."/".session_id()."/".$wmsowsproxy."?";
@@ -3851,6 +3854,7 @@ SQL;
 			$this->wms_title = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_title"]));
 			$this->wms_abstract = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_abstract"]));
 			$wmsowsproxy = $row2["wms_owsproxy"];
+			$this->wms_spatial_security = $row2["wms_spatial_security"];
 			#$wmsowsproxy = "test";
 			//exchange the method urls with owsproxy urls if needed - default is to do it, but sometimes this is not usefull!
 			if($wmsowsproxy != "" && $withProxyUrls){
