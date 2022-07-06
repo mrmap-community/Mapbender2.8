@@ -238,13 +238,16 @@ $allowedFormats = array (
 $newline = " ";
 
 function gdalGml2geojson($features) {
+    //$e = new mb_exception("php/mod_linkedDataProxy.php: gdalGml2geojson invoked!");
     $filenameUniquePart = "ldp_gml_".time()."_".uniqid(); //will be set to new one cause ?
     $filenameGml = TMPDIR."/".$filenameUniquePart.".gml";
     $filenameGfs = TMPDIR."/".$filenameUniquePart.".gfs";
     if($h = fopen($filenameGml,"w")){
         if(!fwrite($h, $features)){
             $e = new mb_exception("php/mod_linkedDataProxy.php: could not write gml file to tmp folder");
+            return false;
         } else {
+            //$e = new mb_exception("php/mod_linkedDataProxy.php: wrote gml file to " . $filenameGml);
             unset($features);
         }
         fclose($h);
@@ -256,6 +259,8 @@ function gdalGml2geojson($features) {
         $geojson = fread($h, filesize($filenameGeojson));
         if(!$geojson){
             $e = new mb_exception("php/mod_linkedDataProxy.php: could not read geojson ".$filenameGeojson." from tmp folder");
+            unlink($filenameGml);
+            unlink($filenameGfl); 
             return false;
         } else {
             //unklink tmp files
@@ -1568,8 +1573,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				$apiDescriptionJson->info->version = "1.0.0";
 				
 				// server url - for the proxy!!!
-				$apiDescriptionJson->servers [0]->url = $linkedDataProxyUrl . "/" . $wfsid . "/";
-				
+				//$apiDescriptionJson->servers [0]->url = $linkedDataProxyUrl . "/" . $wfsid . "/";
+				$apiDescriptionJson->servers [0]->url = $linkedDataProxyUrl . "/" . $wfsid;
 				$apiDescriptionJson->tags [0]->name = "Capabilities";
 				$apiDescriptionJson->tags [0]->description = "Essential characteristics of this API including information about the data.";
 				$apiDescriptionJson->tags [1]->name = "Features";
@@ -2238,52 +2243,58 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							//$useGdal = false;
 							//$useGdal = true;
 							if ($useGdal) {
+							    //$e = new mb_exception("php/mod_linkedDataProxy.php: use gdal");
 							    $geojson = gdalGml2geojson($features);
-							    $geojsonList = json_decode($geojson);
-							    /*
-							     *https://datatracker.ietf.org/doc/html/rfc7946:  The coordinate reference system for all GeoJSON coordinates is a
-                                   geographic coordinate reference system, using the World Geodetic
-                                   System 1984 (WGS 84) [WGS84] datum, with longitude and latitude units
-                                   of decimal degrees.  This is equivalent to the coordinate reference
-                                   system identified by the Open Geospatial Consortium (OGC) URN
-                                   urn:ogc:def:crs:OGC::CRS84.  An OPTIONAL third-position element SHALL
-                                   be the height in meters above or below the WGS 84 reference
-                                   ellipsoid.  In the absence of elevation values, applications
-                                   sensitive to height or depth SHOULD interpret positions as being at
-                                   local ground or sea level.
-							     */
-							    //$e = new mb_exception("php/mod_linkedDataProxy.php: count objects: ".count($geojsonList->features));
-							    $geojsonIndex = count($geojsonList->features);
-							    $e = new mb_notice("php/mod_linkedDataProxy.php: gdal geojson result, crs of fc: ".json_encode($geojsonList->crs));
-							    $e = new mb_notice("php/mod_linkedDataProxy.php: gdal geojson result, bbox of fc: ".json_encode($geojsonList->bbox));
-							    //lonlat - for urn.....
-							    // get geomtype
-							    $geomType = $geojsonList->geometry->type;
-							    //extract bbox from fc and features
-							    //$geojsonBbox = $geojsonList->bbox;
-							    // switch axis order if crs = 'urn:ogc:def:crs:OGC:1.3:CRS84'
-							    $minxFC = $geojsonList->bbox[1];
-							    $minyFC = $geojsonList->bbox[0];
-							    $maxxFC = $geojsonList->bbox[3];
-							    $maxyFC = $geojsonList->bbox[2];
-							    $geojsonBbox = array ();
-							    $geojsonBboxIndex = 0;
-							    foreach ($geojsonList->features as $feature) {
-							        $geojsonBbox[$geojsonBboxIndex]->minx = $feature->bbox[1];
-							        $geojsonBbox[$geojsonBboxIndex]->miny = $feature->bbox[0];
-							        $geojsonBbox[$geojsonBboxIndex]->maxx = $feature->bbox[3];
-							        $geojsonBbox[$geojsonBboxIndex]->maxy = $feature->bbox[2];
-							        $geojsonBboxIndex++;
-							    }							    
-							    // TODO write javascript object if to var if html is requested
-							    $timeAfterBuildGeojson = microtime(true);
-							    $e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson by ogr2ogr: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
-							    if ($f == 'html') {
-							        $geoJsonVariable = "";
-							        $geoJsonVariable = '<script>' . $newline;
+							    if ($geojson != false) {
+    							    $geojsonList = json_decode($geojson);
+    							    /*
+    							     *https://datatracker.ietf.org/doc/html/rfc7946:  The coordinate reference system for all GeoJSON coordinates is a
+                                       geographic coordinate reference system, using the World Geodetic
+                                       System 1984 (WGS 84) [WGS84] datum, with longitude and latitude units
+                                       of decimal degrees.  This is equivalent to the coordinate reference
+                                       system identified by the Open Geospatial Consortium (OGC) URN
+                                       urn:ogc:def:crs:OGC::CRS84.  An OPTIONAL third-position element SHALL
+                                       be the height in meters above or below the WGS 84 reference
+                                       ellipsoid.  In the absence of elevation values, applications
+                                       sensitive to height or depth SHOULD interpret positions as being at
+                                       local ground or sea level.
+    							     */
+    							    //$e = new mb_exception("php/mod_linkedDataProxy.php: count objects: ".count($geojsonList->features));
+    							    $geojsonIndex = count($geojsonList->features);
+    							    $e = new mb_notice("php/mod_linkedDataProxy.php: gdal geojson result, crs of fc: ".json_encode($geojsonList->crs));
+    							    $e = new mb_notice("php/mod_linkedDataProxy.php: gdal geojson result, bbox of fc: ".json_encode($geojsonList->bbox));
+    							    //lonlat - for urn.....
+    							    // get geomtype
+    							    $geomType = $geojsonList->geometry->type;
+    							    //extract bbox from fc and features
+    							    //$geojsonBbox = $geojsonList->bbox;
+    							    // switch axis order if crs = 'urn:ogc:def:crs:OGC:1.3:CRS84'
+    							    $minxFC = $geojsonList->bbox[1];
+    							    $minyFC = $geojsonList->bbox[0];
+    							    $maxxFC = $geojsonList->bbox[3];
+    							    $maxyFC = $geojsonList->bbox[2];
+    							    $geojsonBbox = array ();
+    							    $geojsonBboxIndex = 0;
+    							    foreach ($geojsonList->features as $feature) {
+    							        $geojsonBbox[$geojsonBboxIndex]->minx = $feature->bbox[1];
+    							        $geojsonBbox[$geojsonBboxIndex]->miny = $feature->bbox[0];
+    							        $geojsonBbox[$geojsonBboxIndex]->maxx = $feature->bbox[3];
+    							        $geojsonBbox[$geojsonBboxIndex]->maxy = $feature->bbox[2];
+    							        $geojsonBboxIndex++;
+    							    }							    
+    							    // TODO write javascript object if to var if html is requested
+    							    $timeAfterBuildGeojson = microtime(true);
+    							    $e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson by ogr2ogr: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
+    							    if ($f == 'html') {
+    							        $geoJsonVariable = "";
+    							        $geoJsonVariable = '<script>' . $newline;
+    							    }
+    							    $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000);
+							    } else {
+							        $gdalProblem = true;
 							    }
-							    $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000);
-							} else {
+							}
+							if ($useGdal == false  || $gdalProblem === true) {
     							// transform features from gml via mapbenders gml3 class
     							$gml3Class = new Gml_3_Factory ();
     							// create featuretype object
@@ -2545,26 +2556,31 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					            $features = str_replace("EPSG:4326", "urn:ogc:def:crs:EPSG::4326", $features);
 					        }   
 					        $geojson = gdalGml2geojson($features);
-					        $geojsonList = json_decode($geojson);							    
-					        //extract bbox from geojson
-					        //$geojsonBbox = $geojsonList->bbox;
-					        $geojsonBbox[0] = $geojsonList->bbox;
-					        $minxFC = $geojsonList->bbox[1];
-					        $minyFC = $geojsonList->bbox[0];
-					        $maxxFC = $geojsonList->bbox[3];
-					        $maxyFC = $geojsonList->bbox[2];
-					        
-					        $geomType = $geojsonList->geometry->type;
-					        $e = new mb_notice("php/mod_linkedDataProxy.php: count objects: ".count($geojsonList->features));
-					        $geojsonIndex = count($geojsonList->features);
-					        $timeAfterBuildGeojson = microtime(true);
-					        $e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson by ogr2ogr: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
-					        $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000 );
-					        if ($f == 'html') {
-					            $geoJsonVariable = "";
-					            $geoJsonVariable = '<script>' . $newline;
+					        if ($geojson !== false) {
+    					        $geojsonList = json_decode($geojson);							    
+    					        //extract bbox from geojson
+    					        //$geojsonBbox = $geojsonList->bbox;
+    					        $geojsonBbox[0] = $geojsonList->bbox;
+    					        $minxFC = $geojsonList->bbox[1];
+    					        $minyFC = $geojsonList->bbox[0];
+    					        $maxxFC = $geojsonList->bbox[3];
+    					        $maxyFC = $geojsonList->bbox[2];
+    					        
+    					        $geomType = $geojsonList->geometry->type;
+    					        $e = new mb_notice("php/mod_linkedDataProxy.php: count objects: ".count($geojsonList->features));
+    					        $geojsonIndex = count($geojsonList->features);
+    					        $timeAfterBuildGeojson = microtime(true);
+    					        $e = new mb_notice("php/mod_linkedDataProxy.php: time for build geojson by ogr2ogr: ". ($timeAfterBuildGeojson - $timeAfterWfsRequest));
+    					        $e = new mb_notice("php/mod_linkedDataProxy.php: memory usage with ogr2ogr: ".memory_get_usage() / 1000000 );
+    					        if ($f == 'html') {
+    					            $geoJsonVariable = "";
+    					            $geoJsonVariable = '<script>' . $newline;
+    					        }
+					        } else {
+					            $gdalProblem = true;
 					        }
-					    } else {
+					    }	    
+					    if ($useGdal == false || $gdalProblem == true) {
     						//use postgis to transform gml geometry to geojson - this maybe better ;-)
     						// transform to geojson to allow rendering !
     						// TODO test for ows:ExceptionReport!!!!
