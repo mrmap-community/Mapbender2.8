@@ -260,13 +260,13 @@ function gdalGml2geojson($features) {
         if(!$geojson){
             $e = new mb_exception("php/mod_linkedDataProxy.php: could not read geojson ".$filenameGeojson." from tmp folder");
             unlink($filenameGml);
-            unlink($filenameGfl); 
+            unlink($filenameGfs); 
             return false;
         } else {
             //unklink tmp files
             unlink($filenameGeojson);
             unlink($filenameGml);
-            unlink($filenameGfl);  
+            unlink($filenameGfs);  
         }
         fclose($h);
     }
