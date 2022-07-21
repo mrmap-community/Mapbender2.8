@@ -1147,7 +1147,14 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				$georssPolygon .= $mapbenderMetadata["maxx"]." ".$mapbenderMetadata["maxy"]." ".$mapbenderMetadata["minx"]." ".$mapbenderMetadata["maxy"]." ";
 				$georssPolygon .= $mapbenderMetadata["minx"]." ".$mapbenderMetadata["miny"];
 				echo $georssPolygon;*/
-				
+				$crsObject = new Crs($crs);
+				if ($crsObject->alterAxisOrder("wms"."_".$mapbenderMetadata[$m]->wms_version) == true) {
+				    $alterAxisOrder = true;
+				} else {
+				    $alterAxisOrder = false;
+				}
+				//**************************************************************************************
+				$e = new mb_notice("Epsg id of layer ".$mapbenderMetadata[$m]->layer_id." : ".$epsgId);
 					
 				//TODO: check if epsg, and bbox are filled correctly!
 				$sqlExtent = "SELECT X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->minx." ".$mapbenderMetadata[$m]->miny.")',4326),".$epsgId.")) as minx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->minx." ".$mapbenderMetadata[$m]->miny.")',4326),".$epsgId.")) as miny, X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->maxx." ".$mapbenderMetadata[$m]->maxy.")',4326),".$epsgId.")) as maxx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$m]->maxx." ".$mapbenderMetadata[$m]->maxy.")',4326),".$epsgId.")) as maxy";
@@ -1157,6 +1164,8 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				$maxx = floatval(db_result($resExtent,0,"maxx"));
 				$maxy = floatval(db_result($resExtent,0,"maxy"));
 	
+				//$e = new mb_exception("minx " . $minx . " miny " . $miny . " maxx " . $maxx . " maxy " . $maxy . " epsg " . $epsgId);
+				
 				$diffX = $maxx - $minx; //in m
 				$diffY = $maxy - $miny;	//in m
 				//$e = new mb_exception($diffX);
@@ -1176,10 +1185,9 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					break;
 				}
 				$e = new mb_notice($diffXPx.":".$diffYPx);
-				
 				$nRows = ceil($diffYPx / floatval($maxImageSize));
 				$nCols = ceil($diffXPx / floatval($maxImageSize));
-				$e = new mb_notice($nRows.":".$nCols);
+				//$e = new mb_exception($nRows.":".$nCols . ":" . intval($nRows)*intval($nColumns));
 				$bboxWms = array();
 				$bboxWmsWGS84 = array();
 				/*echo $diffXPx.":".$diffYPx.",";
@@ -1188,8 +1196,11 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				echo $maxx.":".$maxy.",";*/
 				$incX = $diffX / ($diffXPx / floatval($maxImageSize));
 				$incY = $diffY / ($diffYPx / floatval($maxImageSize));
+				$multiPolygonText = "'MULTIPOLYGON(";
 				for ($j = 0; $j < $nRows; $j++) {
 					for ($k = 0; $k < $nCols; $k++) {
+					    //TODO build multipolygon 
+					    //SELECT ST_GeomFromText('MULTIPOLYGON(...)',4326)
 						//echo "j: ".$k.",k: ".$j;
 						$minxWms = $minx + $k * $incX;
 						//echo "minxWms: ". $minxWms .",";
@@ -1200,18 +1211,27 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 						$maxyWms = $miny + ($j+1) * $incY;
 						//echo "maxyWms: ". $maxyWms .",";
 						$bboxWms[] = $minxWms.",".$minyWms.",".$maxxWms.",".$maxyWms;
-						//new: use filter of polygon is given ;-)
-						$lonLatBboxWms = transformBbox($minxWms.",".$minyWms.",".$maxxWms.",".$maxyWms,intval($epsgId),4326,$mapbenderMetadata[$m]->metadata_uuid,$polygonalFilter);
-						//only add entry, if not false
-						if ($lonLatBboxWms != false) {
-							$bboxWmsWGS84[] = $lonLatBboxWms;
-						} else {
-							//delete last entry from $bboxWms, cause it is outside the polygon!
-							array_pop($bboxWms);
-						}
-						
+						//NEW 2022-07-11 - use a single sql to calculate the intersections
+						$multiPolygonText .= "((" . $minxWms . " " . $minyWms . "," . $maxxWms . " " . $minyWms . "," . $maxxWms . " " . $maxyWms . ",";
+						$multiPolygonText .= $minxWms . " " . $maxyWms . "," . $minxWms . " " . $minyWms . ")),";
 					}
 				}
+				$multiPolygonText = rtrim($multiPolygonText, ",");
+				$multiPolygonText .= ")'";
+				$geomGeneratorSql = "ST_GeomFromText(" . $multiPolygonText . "," . intval($epsgId) . ")";
+				//$e = new mb_exception($geomGeneratorSql);
+				//$admin->putToStorage("multipolygon_1.sql", $geomGeneratorSql, "file", 10000, False);
+				//new approach - after 2022-07-11:
+				$lonLatBboxWms2 = transformMultipolygon($geomGeneratorSql, intval($epsgId), 4326, $mapbenderMetadata[$m]->metadata_uuid, $polygonalFilter);
+				//delete entries from original bbox where latlon could not be calculated
+				//$e = new mb_exception("number of bbox records: " . count($bboxWms));
+				$newBboxWms = array();
+				$arrayKeysWgsBox = array_keys($lonLatBboxWms2);
+				for ($k = 0; $k < count($arrayKeysWgsBox); $k++) {
+				    $newBboxWms[] = $bboxWms[$arrayKeysWgsBox[$k]];
+				}
+				$bboxWms = $newBboxWms;
+				$bboxWmsWGS84 = array_values($lonLatBboxWms2); 	
 			}
 		}
 		//generate wgs84 bbox again - transform it from projected coords
@@ -1310,15 +1330,26 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				//calculate number of rows and columns from x / y ratio
 				//$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - Bbox from metadata: minx: ". $mapbenderMetadata[$i]->minx." - miny: ".$mapbenderMetadata[$i]->miny." - maxx: ".$mapbenderMetadata[$i]->maxx." - maxy: ".$mapbenderMetadata[$i]->maxy." - CRS: ".$mapbenderMetadata[$i]->featuretype_srs." - EPSG ID: ".$crsObject->identifierCode);
 				//set epsgId;
+				//$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: featureHits: " . json_encode($featureHits) );				
 				$epsgId = $crsObject->identifierCode;
+				/*
+				if ($crsObject->alterAxisOrder == true) {
+				    $e = new mb_exception("mod_isnpireDownloadFeed.php: change axis order TRUE");
+				} else {
+				    $e = new mb_exception("mod_isnpireDownloadFeed.php: change axis order FALSE");
+				}*/
 				//read out in variables 
 				$sqlExtent = "SELECT X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->minx." ".$mapbenderMetadata[$i]->miny.")',4326),".$crsObject->identifierCode.")) as minx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->minx." ".$mapbenderMetadata[$i]->miny.")',4326),".$crsObject->identifierCode.")) as miny, X(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->maxx." ".$mapbenderMetadata[$i]->maxy.")',4326),".$crsObject->identifierCode.")) as maxx, Y(transform(GeometryFromText('POINT(".$mapbenderMetadata[$i]->maxx." ".$mapbenderMetadata[$i]->maxy.")',4326),".$crsObject->identifierCode.")) as maxy";
 				$resExtent =  db_query($sqlExtent);
+				//depending on providing service and crs the axis order should be taken into account 
+				//
 				$minx = floatval(db_result($resExtent,0,"minx"));
 				$miny = floatval(db_result($resExtent,0,"miny"));
 				$maxx = floatval(db_result($resExtent,0,"maxx"));
 				$maxy = floatval(db_result($resExtent,0,"maxy"));
-				//$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - minx: ".$minx. " - maxx: ".$maxx);	
+				/*$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - minx: ".$minx. " - maxx: ".$maxx);	
+				$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: - miny: ".$miny. " - maxy: ".$maxy);	
+				$e = new mb_exception("http/php/mod_inspireDownloadFeed.php: countTiles: " . $countTiles);*/
 				//only calculate new boxes if countTiles > 1
 				if ($countTiles > 1) {
 					$diffX = $maxx - $minx; //in m - depends on given epsg code
@@ -1328,6 +1359,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					$nCols = ceil($diffX / $width);
 					$bboxWfs = array();
 					$countBbox = 0;
+					$multiPolygonText = "'MULTIPOLYGON(";
 					for ($j = 0; $j < $nRows; $j++) {
 						for ($k = 0; $k < $nCols; $k++) {
 							//echo "j: ".$k.",k: ".$j;
@@ -1339,19 +1371,30 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 							//echo "maxxWms: ". $maxxWms .",";
 							$maxyWfs = $miny + ($j+1) * $width;
 							//echo "maxyWms: ". $maxyWms .",";
+							//$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$countBbox] = $minxWfs.",".$minyWfs.",".$maxxWfs.",".$maxyWfs;
 							$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$countBbox] = $minxWfs.",".$minyWfs.",".$maxxWfs.",".$maxyWfs;
-							//transform bbox back to geographic coordinates and filter them if a spatial_extent as polygon is given (give only those which intersects)!!
-							$lonLatBbox = transformBbox($minxWfs.",".$minyWfs.",".$maxxWfs.",".$maxyWfs,intval($epsgId),4326, $mapbenderMetadata[$i]->metadata_uuid, $polygonalFilter);
-							//only add entry, if not false
-							if ($lonLatBbox != false) {
-								$lonLatBbox = explode(',',$lonLatBbox);
-								//georss needs latitude longitude
-								$featureTypeBboxWGS84[] = $lonLatBbox[1].",".$lonLatBbox[0].",".$lonLatBbox[3].",".$lonLatBbox[2];
-								//switch bbox to lat/lon cause inspire demands ist
-								$countBbox++;	
-							}
+							//NEW 2022-07-11 - use a single sql to calculate the intersections
+							$multiPolygonText .= "((" . $minxWfs . " " . $minyWfs . "," . $maxxWfs . " " . $minyWfs . "," . $maxxWfs . " " . $maxyWfs . ",";
+							$multiPolygonText .= $minxWfs . " " . $maxyWfs . "," . $minxWfs . " " . $minyWfs . ")),";
+							$countBbox++;
 						}
 					}
+					//new approach since 2022-07-11
+					$multiPolygonText = rtrim($multiPolygonText, ",");
+					$multiPolygonText .= ")'";
+					$geomGeneratorSql = "ST_GeomFromText(" . $multiPolygonText . "," . intval($epsgId) . ")";
+					//$admin->putToStorage("multipolygon_1.sql", $geomGeneratorSql, "file", 10000, False);
+					//new approach - after 2022-07-11:
+					$lonLatBboxWfs2 = transformMultipolygon($geomGeneratorSql, intval($epsgId), 4326, $mapbenderMetadata[$i]->metadata_uuid, $polygonalFilter);
+					//delete entries from original bbox where latlon could not be calculated
+					$newBboxWfs = array();
+				    $arrayKeysWgsBox = array_keys($lonLatBboxWfs2);
+				    for ($k = 0; $k < count($arrayKeysWgsBox); $k++) {
+				        $newBboxWfs[$mapbenderMetadata[$i]->featuretype_name][] = $bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$arrayKeysWgsBox[$k]];
+				    }
+				    $bboxWfs[$mapbenderMetadata[$i]->featuretype_name] = $newBboxWfs[$mapbenderMetadata[$i]->featuretype_name];
+					$featureTypeBboxWGS84 = array_values($lonLatBboxWfs2); 	
+					$countBbox = count($featureTypeBboxWGS84);				    
 				} else {
 					//only normal extent used
 					if ($minx == "" || $miny == "" || $maxx == "" || $maxy == "") {
@@ -1407,7 +1450,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					$currentBbox = explode(',',$bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l]);
 					//change axis order if crs definition and service needs it
 					if ($alterAxisOrder == true) {
-						//$e = new mb_exception("mod_inspireDownloadFeed.php: axis order should be altered!");
+						$e = new mb_exception("mod_inspireDownloadFeed.php: axis order should be altered!");
 						$currentBboxNew = $currentBbox;
 						$currentBboxGetFeature[0] = $currentBboxNew[1];
 						$currentBboxGetFeature[1] = $currentBboxNew[0];
@@ -1676,9 +1719,20 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 						//TODO - define further link for wms 1.1.1 and wms 1.3.0 - SRS Paramter changed and maybe the axis order!!!!!!
 						$furtherLink[$m] = $getMapUrl."REQUEST=GetMap&VERSION=".$mapbenderMetadata[$i]->wms_version."&SERVICE=WMS&LAYERS=".$mapbenderMetadata[$i]->layer_name;
 
-						
-						$furtherLink[$m] .= "&STYLES=&SRS=".trim($crs)."&BBOX=".$bboxWms[$m]."&WIDTH=".$maxImageSize."&HEIGHT=".$maxImageSize."&FORMAT=image/tiff&";
-						$furtherLink[$m] .= "BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_inimage";
+						switch ($mapbenderMetadata[$i]->wms_version) {
+						    case "1.1.1":
+						        $furtherLink[$m] .= "&STYLES=&SRS=".trim($crs)."&BBOX=".$bboxWms[$m]."&WIDTH=".$maxImageSize."&HEIGHT=".$maxImageSize."&FORMAT=image/tiff&";
+						        $furtherLink[$m] .= "BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_inimage";
+						        break;
+						    case "1.3.0":
+						        $furtherLink[$m] .= "&STYLES=&CRS=".trim($crs)."&BBOX=".$bboxWms[$m]."&WIDTH=".$maxImageSize."&HEIGHT=".$maxImageSize."&FORMAT=image/tiff&";
+						        $furtherLink[$m] .= "BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=INIMAGE";
+						        break;
+						    default:
+						        $furtherLink[$m] .= "&STYLES=&SRS=".trim($crs)."&BBOX=".$bboxWms[$m]."&WIDTH=".$maxImageSize."&HEIGHT=".$maxImageSize."&FORMAT=image/tiff&";
+						        $furtherLink[$m] .= "BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_inimage";
+						        break;
+						}
 						$furtherLinkType[$m] = "image/tiff"; //formats from layer_format - geotiff
 						$currentTileIndex = $m+1;
 						$furtherLinkTitle[$m] = $ressourceTitle." im CRS ".$mapbenderMetadata[$i]->metadata_ref_system." - ".$resourceFormat." - Teil ".$currentTileIndex." von ".$numberOfTiles."";
@@ -1686,8 +1740,8 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 						$furtherLinkBbox[$m] = $bboxWmsWGS84[$m];
 						//exchange lon lat with lat long for georss
 						$newBox = explode(',',$furtherLinkBbox[$m]);
-						//georss needs latitude longitude
-						$newBox = $newBox[1].",".$newBox[0].",".$newBox[3].",".$newBox[2];
+						//georss needs latitude longitude - done before when transform it ;-)
+						$newBox = $newBox[0].",".$newBox[1].",".$newBox[2].",".$newBox[3];
 						//generate content link 
 						$feedEntryLink = $feedDoc->createElement("link");
 						if ($numberOfTiles > 1) {
@@ -1936,6 +1990,42 @@ END as inside;";
 	}
 }
 
+function transformMultipolygon($multiPolygonSql, $fromCRS, $toCRS, $metadataUuid = false ,$polygonFilter = false) {
+    //returns array of bboxes
+    //Transform the given multipolygon to $toCRS
+    //flip coordinates, cause georss needs north/east!!!!!
+    if ($metadataUuid != false && $polygonFilter != false) {
+        //https://gis.stackexchange.com/questions/396367/postgis-find-outers-and-inners-inside-multipolygon-geometries
+        $sql = "SELECT identifier, (dumped).geom AS poly, ((dumped).path)[1] AS path_poly, st_box2d(st_flipcoordinates((dumped).geom)) as wgs84bbox FROM (";
+        $sql .= "SELECT (ST_Dump (p_geom)) AS dumped, identifier FROM (SELECT 1::integer AS identifier, ST_TRANSFORM(";
+        $sql .= $multiPolygonSql;
+        $sql .= ", " . intval($toCRS). ")";
+        $sql .= " AS p_geom) AS b) AS c where ST_INTERSECTS((dumped).geom, (select bounding_geom from mb_metadata where uuid = '".$metadataUuid."'))";
+      
+        $res = db_query($sql);
+        $wgs84bboxArray = array();
+        while ($row = db_fetch_array($res)) {
+            $wgs84bboxArray[intval($row['path_poly']) - 1] = implode(",", parseBox2d($row['wgs84bbox']));
+        }
+        return $wgs84bboxArray;
+        
+    } else {
+        $sql = "SELECT identifier, (dumped).geom AS poly, ((dumped).path)[1] AS path_poly, st_box2d(st_flipcoordinates((dumped).geom)) as wgs84bbox FROM (";
+        $sql .= "SELECT (ST_Dump (p_geom)) AS dumped, identifier FROM (SELECT 1::integer AS identifier, ST_TRANSFORM(";
+        $sql .= $multiPolygonSql;
+        $sql .= ", " . intval($toCRS). ")";
+        $sql .= " AS p_geom) AS b) AS c";//where ST_INTERSECTS((dumped).geom, (select bounding_geom from mb_metadata where metadata_id=" . $metadataUuid . "))";
+     
+        $res = db_query($sql);
+        $wgs84bboxArray = array();
+        while ($row = db_fetch_array($res)) {
+            $wgs84bboxArray[] = implode(",", parseBox2d($row['wgs84bbox']));
+        }
+        return $wgs84bboxArray;
+
+    }
+}
+
 
 function fillMapbenderMetadata($dbResult, $generateFrom) {
 	//function increments $indexMapbenderMetadata !!!
@@ -2101,7 +2191,6 @@ function fillMapbenderMetadata($dbResult, $generateFrom) {
 						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[] = $row['output_format'];
 						//$e = new mb_exception("php/mod_inspireDownloadFeed.php: output_format for wfs: ".$row['output_format']);
 					}
-					
 					if (count($mapbenderMetadata[$indexMapbenderMetadata]->output_formats) < 1) {
 						//set default output format to gml2 TODO - check if senseful
 						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "text/xml; subtype=gml/2.1.2";
