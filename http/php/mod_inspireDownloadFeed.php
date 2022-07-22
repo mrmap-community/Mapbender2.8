@@ -820,7 +820,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 	//instantiate cache if available
 	$cache = new Cache();
 	//define key name cache
-	$atomFeedKey = 'atomFeed_'.$type."_".$recordId."_".$generateFrom.'_';
+	$atomFeedKey = 'mapbender:atomFeed_'.$type."_".$recordId."_".$generateFrom.'_';
 	switch ($generateFrom) {
 		case "wmslayer":
 			$atomFeedKey .= $layerId;

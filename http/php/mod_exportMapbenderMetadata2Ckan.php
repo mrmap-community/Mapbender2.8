@@ -256,10 +256,10 @@ if (isset($_REQUEST["cache"]) & $_REQUEST["cache"] != "") {
     $testMatch = NULL;
 }
 
-if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariableName) && ((date_create($actualDate)->getTimestamp() - date_create(date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($cacheVariableName)))->getTimestamp()) < $maxAgeInSeconds)) {
+if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:" . $cacheVariableName) && ((date_create($actualDate)->getTimestamp() - date_create(date("Y-m-d H:i:s",$cache->cachedVariableCreationTime("mapbender:" . $cacheVariableName)))->getTimestamp()) < $maxAgeInSeconds)) {
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: read " . $mapbenderBaseUrl. "ckan_metadata_" . $id . " from ".$cache->cacheType." cache!");
     //parse result and add origin cache
-    $cachedObj = json_decode($cache->cachedVariableFetch($cacheVariableName));
+    $cachedObj = json_decode($cache->cachedVariableFetch("mapbender:" . $cacheVariableName));
     $cachedObj->origin = "cache";
     echo json_encode($cachedObj, true);
 } else {
@@ -355,7 +355,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
             //echo $dataset->id . " - " .$dataset->title. "<br>";
             //parse dataset metadata and extract relevant information - keywords/tags, themes and license info, actuality
             //https://www.geoportal.rlp.de/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=9ec4e052-ebd2-2c44-f258-25557de7a6b7&outputFormat=iso19139
-            $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
+            $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?outputFormat=iso19139&id=";
             $metadataUrl = $metadataResolverUrl.$dataset->uuid;
             //$metadataResult = $connector->load($metadataUrl);
             $iso19139Md = new Iso19139();
@@ -530,11 +530,11 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists($cacheVariab
     $returnObject->result = $package;
     if ($cache->isActive) {
         //delete old variable first - cause the timestamp will remain the old!
-        if ($cache->cachedVariableExists($cacheVariableName)) {
-            $cache->cachedVariableDelete($cacheVariableName);
+        if ($cache->cachedVariableExists("mapbender:" . $cacheVariableName)) {
+            $cache->cachedVariableDelete("mapbender:" . $cacheVariableName);
             //$e = new mb_exception(": Delete old json in cache!");
         }
-        $cache->cachedVariableAdd($cacheVariableName,json_encode($returnObject, true));
+        $cache->cachedVariableAdd("mapbender:" . $cacheVariableName,json_encode($returnObject, true));
         //$e = new mb_exception(": Save json to apc cache!");
     }
     $returnObject->origin = "direct";
