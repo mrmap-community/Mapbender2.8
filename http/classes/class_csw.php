@@ -114,16 +114,16 @@ class csw{
 	public function createCatObjFromXML($url) {
 		$cache = new Cache();
 		if (defined("CACHE_CSW_CAPS") && CACHE_CSW_CAPS == true) {
-		   if ($cache->isActive && $cache->cachedVariableExists(md5($url))) {
+		   if ($cache->isActive && $cache->cachedVariableExists("mapbender:cswurl:" . md5($url))) {
 		    //overwrite csw caps xml with content from cache
-		    $data = $cache->cachedVariableFetch(md5($url));
+		       $data = $cache->cachedVariableFetch("mapbender:cswurl:" . md5($url));
 		    $e = new mb_exception("classes/class_csw.php: Read CSW Object from cache - if something changed in external catalogue - apache restart is needed!!!");
 		} else {
                     if ($cache->isActive) {
                         //load csw xml and write it to cache - don't resolve it twice!
 			$x = new connector($url);
 			$data = $x->file;
-			$cache->cachedVariableAdd(md5($url), $data);
+			$cache->cachedVariableAdd("mapbender:cswurl:" . md5($url), $data);
                     } else {
 			$x = new connector($url);
 			$data = $x->file;

@@ -407,7 +407,7 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 	foreach ($idList as $currentUuid){
 		//$metadataList .= "<a href='../php/mod_iso19139ToHtml.php?url=".urlencode($mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid)."'>".$options->{$currentUuid}->title."</a> <a href='../php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid."&validate=true'>".'validate'."</a>";
 		$metadataList .= '<div id="tabs-'.$iTabs.'">';
-		$metadataList .= "<a href='../php/mod_iso19139ToHtml.php?url=".urlencode($mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid)."'>"._mb('Metadata')."</a>";
+		$metadataList .= "<a href='../php/mod_iso19139ToHtml.php?url=".urlencode($mapbenderUrl."/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=".$currentUuid)."' target='_blank'>"._mb('Metadata')."</a>";
 		//echo $options->{$currentUuid}->title;
 		$metadataList .= "<br>";
 		if ($downloadOptions != null) {
@@ -415,19 +415,19 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 			foreach ($options->{$currentUuid}->option as $option) {
 				switch ($option->type) {
 					case "wmslayergetmap":
-						$metadataList .= $iOptions.". "._mb('Download raster data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=wmslayer&layerid=".$option->resourceId)."'><img src='../img/osgeo_graphics/geosilk/raster_download.png' title='"._mb('Download raster data from INSPIRE Download Service')."'/></a>";
+						$metadataList .= $iOptions.". "._mb('Download raster data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=wmslayer&layerid=".$option->resourceId)."' target='_blank'><img src='../img/osgeo_graphics/geosilk/raster_download.png' title='"._mb('Download raster data from INSPIRE Download Service')."'/></a>";
 						break;
 					case "wmslayerdataurl":
-						$metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=dataurl&layerid=".$option->resourceId)."'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
+						$metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=dataurl&layerid=".$option->resourceId)."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
 						break;
 					case "wfsrequest":
-						$metadataList .=  $iOptions.". "._mb('Download GML data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=wfs&wfsid=".$option->serviceId)."'><img src='../img/osgeo_graphics/geosilk/vector_download.png' title='"._mb('Download GML data from INSPIRE Download Service')."'/></a>";
+						$metadataList .=  $iOptions.". "._mb('Download GML data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=wfs&wfsid=".$option->serviceId)."' target='_blank'><img src='../img/osgeo_graphics/geosilk/vector_download.png' title='"._mb('Download GML data from INSPIRE Download Service')."'/></a>";
 						break;
 					case "downloadlink":
-						$metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=metadata")."'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
+						$metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=metadata")."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
 						break;
 					case "ogcapifeatures":
-						$metadataList .=  $iOptions.". "._mb('OGC API Features')." (".$option->resourceName."):   <a href='".$option->accessClient."'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Linked Open Data via OGC REST API')."'/></a>";
+						$metadataList .=  $iOptions.". "._mb('OGC API Features')." (".$option->resourceName."):   <a href='".$option->accessClient."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Linked Open Data via OGC REST API')."'/></a>";
 						break;
 				}
 				$metadataList .= "<br>";	

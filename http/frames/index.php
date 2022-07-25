@@ -155,9 +155,9 @@ if (count($row['var_name']) == 1) {
 $cache = new Cache();
 //define key name cache
 $cacheKeyElementVars = 'guiElementVars_'.$gui_id;
-/*if ($cache->isActive && $cache->cachedVariableExists($cacheKeyElementVars)) {
+/*if ($cache->isActive && $cache->cachedVariableExists("mapbender: " . $cacheKeyElementVars)) {
 	$e = new mb_exception("frames/index.php: read elementVars from ".$cache->cacheType." cache!");
-	$res = $cache->cachedVariableFetch($cacheKeyElementVars);
+	$res = $cache->cachedVariableFetch("mapbender: " . $cacheKeyElementVars);
 } else {*/
 	//do sql instead
 	$sql = "SELECT * FROM gui_element_vars WHERE fkey_e_id = 'body' AND fkey_gui_id = $1 and var_name='favicon' ORDER BY var_name";
@@ -165,7 +165,7 @@ $cacheKeyElementVars = 'guiElementVars_'.$gui_id;
 	$t = array('s');
 	$res = db_prep_query($sql,$v,$t);
 	/*if ($cache->isActive) {
-		$cache->cachedVariableAdd($cacheKeyElementVars,$res);
+		$cache->cachedVariableAdd("mapbender: " . $cacheKeyElementVars,$res);
 	}*/
 //}//uncomment for cache
 $cnt = 0;
@@ -187,9 +187,9 @@ if ($representationType == "htmlElement") {
 }
 //define new key name cache
 $cacheKeyGuiCss = 'guiCss_'.$gui_id;
-/*if ($cache->isActive && $cache->cachedVariableExists($cacheKeyGuiCss)) {
+/*if ($cache->isActive && $cache->cachedVariableExists("mapbender: " . $cacheKeyGuiCss)) {
 	$e = new mb_exception("frames/index.php: read guiCss from ".$cache->cacheType." cache!");
-	$res = $cache->cachedVariableFetch($cacheKeyGuiCss);
+	$res = $cache->cachedVariableFetch("mapbender: " . $cacheKeyGuiCss);
 } else {*/
 	$sql = <<<SQL
 	
@@ -207,7 +207,7 @@ SQL;
 	$t = array('s');
 	$res = db_prep_query($sql,$v,$t);
 	/*if ($cache->isActive) {
-		$cache->cachedVariableAdd($cacheKeyGuiCss,$res);
+		$cache->cachedVariableAdd("mapbender: " . $cacheKeyGuiCss,$res);
 	}*/
 //}//for cache
 if ($representationType !== "htmlComplete") {
@@ -279,14 +279,14 @@ if (defined(LOAD_JQUERY_FROM_GOOGLE) && LOAD_JQUERY_FROM_GOOGLE) {
 //cache complete application ;-) - in future only body object!!! not the css!!!
 $cacheKeyGuiHtml = 'guiHtml_'.$gui_id;
 //$e = new mb_notice("frames/index.php: activatedGuiHtmlCache: ". $activatedGuiHtmlCache);
-if ($cache->isActive && $activatedGuiHtmlCache && $cache->cachedVariableExists($cacheKeyGuiHtml)) {
+if ($cache->isActive && $activatedGuiHtmlCache && $cache->cachedVariableExists("mapbender: " . $cacheKeyGuiHtml)) {
 	//$e = new mb_notice("frames/index.php: read gui html from ".$cache->cacheType." cache!");
-	$guiHtml = $cache->cachedVariableFetch($cacheKeyGuiHtml);
+    $guiHtml = $cache->cachedVariableFetch("mapbender: " . $cacheKeyGuiHtml);
 } else {
 	$currentApplication = new gui($gui_id);
         $guiHtml = $currentApplication->toHtml();
 	if ($cache->isActive) {
-		$cache->cachedVariableAdd($cacheKeyGuiHtml,$guiHtml);
+	    $cache->cachedVariableAdd("mapbender: " . $cacheKeyGuiHtml,$guiHtml);
 	}
 }
 if ($representationType == "htmlComplete") {

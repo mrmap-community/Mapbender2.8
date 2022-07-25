@@ -626,7 +626,11 @@ class Map {
 
 				// set layer data
 				$newLayer->layer_uid = $currentLayer->layer_uid;
-				$newLayer->layer_name = $currentLayer->layer_name;
+				if (strpos($currentLayer->layer_name, "unnamed_layer:") == 0) {
+				    $newLayer->layer_name = $currentLayer->layer_name;
+				} else {
+				    $newLayer->layer_name = "";
+				}
 				$newLayer->layer_title = $currentLayer->layer_title;
 				$newLayer->layer_dataurl[0]->href = $currentLayer->layer_dataurl;
 				$newLayer->layer_pos = $currentLayer->layer_pos;
@@ -797,9 +801,9 @@ $newLayer->layer_featuretype_coupling = $currentLayer->layer_featuretype_couplin
 		$cache = new Cache();
 		//define key name cache
 		$mapByAppKey = 'mapApp_'.$appId.'_'.$frameName;
-		if ($cache->isActive && $activatedGuiHtmlCache && $cache->cachedVariableExists($mapByAppKey)) {
+		if ($cache->isActive && $activatedGuiHtmlCache && $cache->cachedVariableExists("mapbender:" . $mapByAppKey)) {
 			$e = new mb_notice("class_map.php: read ".$mapByAppKey." from ".$cache->cacheType." cache!");
-			return $cache->cachedVariableFetch($mapByAppKey);
+			return $cache->cachedVariableFetch("mapbender:" . $mapByAppKey);
 		} else {
 			// find the mapframe in the application elements...
 			$sql = "SELECT * FROM gui_element WHERE fkey_gui_id = $1 AND " .
@@ -861,7 +865,7 @@ $newLayer->layer_featuretype_coupling = $currentLayer->layer_featuretype_couplin
                 			if($ovIndex > $count_wms) {
                     				$e = new mb_exception("class_map.php: selectByApplication : OverviewIndex (set in overview element var 'overview_wms') does not exist!");
 						if ($cache->isActive) {
-							$cache->cachedVariableAdd($mapByAppKey,null);
+						    $cache->cachedVariableAdd("mapbender:" . $mapByAppKey,null);
 						}
                     				return null;
                 			}
@@ -896,13 +900,13 @@ $newLayer->layer_featuretype_coupling = $currentLayer->layer_featuretype_couplin
 				$mapExtent = new Mapbender_bbox($minx, $miny, $maxx, $maxy, $epsg);
 				$currentMap->setExtent($mapExtent);
 				if ($cache->isActive) {
-					$cache->cachedVariableAdd($mapByAppKey,$currentMap);
+				    $cache->cachedVariableAdd("mapbender:" . $mapByAppKey,$currentMap);
 				}
 				return $currentMap;
 			}
 			else {
 				if ($cache->isActive) {
-					$cache->cachedVariableAdd($mapByAppKey,null);
+				    $cache->cachedVariableAdd("mapbender:" . $mapByAppKey,null);
 				}
 				return null;
 			}

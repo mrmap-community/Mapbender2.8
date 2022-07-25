@@ -261,9 +261,9 @@ class gui implements RPCObject{
 		$cache = new Cache();
 		//define key name cache
 		$cacheKeyElements = 'guiElements_'.$this->id;
-		/*if ($cache->isActive && $cache->cachedVariableExists($cacheKeyElements)) {
+		/*if ($cache->isActive && $cache->cachedVariableExists("mapbender:" . $cacheKeyElements)) {
 			$e = new mb_exception("classes/class_gui.php: read gui elements from ".$cache->cacheType." cache!");
-			return $cache->cachedVariableFetch($cacheKeyElements);
+			return $cache->cachedVariableFetch("mapbender:" . $cacheKeyElements);
 
 		} else {*/
 			$sql = "SELECT e_id FROM gui_element WHERE fkey_gui_id = $1 " . 
@@ -284,7 +284,7 @@ class gui implements RPCObject{
 			}
 			//cache elementArray
 			/*if ($cache->isActive) {
-				$cache->cachedVariableAdd($cacheKeyElements,$this->elementArray);
+				$cache->cachedVariableAdd("mapbender:" . $cacheKeyElements,$this->elementArray);
 			}*/
 			return $this->elementArray;
 		//}
