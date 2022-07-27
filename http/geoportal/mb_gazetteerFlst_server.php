@@ -46,23 +46,12 @@ function getGeoJson ($featureType, $filter, $srs = null) {
     $wfsUrl = $wfsUrl . "&NAMESPACE=" . $nameSpace. "&username=" . $authUserName . "&password=" . $authUserPassword . "&typeName=" . $featureType."&srsName=".$srs."&filter=";
 	}
 	$req = urldecode($wfsUrl).urlencode($admin->char_decode(stripslashes($filter)));
-	#echo $req;
-	#$e = new mb_exception(urldecode($req));
-	
 	$mygml = new gml3();
-	
-	#$auth = array();
-	#$auth['username'] = $authUserName; 
-	#$auth['password'] = $authUserPassword;
-	#$auth['auth_type'] = "basic";
 	$mygml->parseFile($req);
-	#$mygml->parseGeometry($req);
 		
 	header("Content-type:application/x-json; charset=utf-8");
 	$geoJson = $mygml->toGeoJSON();
-	
-	$jsonObj = json_decode($geoJson);
-	return $jsonObj;
+	return json_decode($geoJson);
 }
 
 
@@ -99,12 +88,6 @@ if($command == "getGmkNr") {
 
 if($command == "getGmkName") {
 	$searchString = utf8_encode($_REQUEST['term']);
-	//$pattern = "/[a-z0-9]/i";
-	//if (!preg_match($pattern, $searchString)) {
-	//	echo "Ungültiger Suchbegriff";
-        //die();
-	//}
-	
     $searchFeaturetype = $featuretypeGmkNr;
     $filter = '<Filter xmlns="http://www.opengis.net/ogc" xmlns:app="http://www.deegree.org/app"><PropertyIsLike wildCard="*" singleChar="?" escape="#" matchCase="false">
             				<PropertyName>' . $gmkNameAttr . '</PropertyName>
@@ -224,7 +207,6 @@ if($command == "getFln") {
         </And></Filter>';
 		
     $resultObj = getGeoJson($searchFeaturetype, $filter);
-    #print_r($resultObj);
     $resultArray = array();
     foreach($resultObj->features as $feature) {
         $resultArray[] = array("id" => $feature->properties->ID);
