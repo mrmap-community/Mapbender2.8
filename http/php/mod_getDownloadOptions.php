@@ -192,6 +192,7 @@ die();*/
 			switch ($row['resource_type']) {		
 				case "wfs":
 					$serviceIdIndex = false;
+					$wfsRequestObjectExists = false;
 					//check existing options - maybe some option for a wfs already exists 
 					for ($k = 0; $k < count($downloadOptions->{$idList[$i]}->option); $k++) {
 						//echo "k: ".$k."<br>";
@@ -201,6 +202,10 @@ die();*/
 							$serviceIdIndex = $k;
 							//echo "Service already found on index: ".$serviceIdIndex."<br>";
 						} 
+						if ($downloadOptions->{$idList[$i]}->option[$k]->type === "wfsrequest")
+						{
+						    $wfsRequestObjectExists = true;
+						}
 					}
 					if ($serviceIdIndex !== false) {
 						//echo "Add featuretype to given service: ".$serviceIdIndex."<br>";
@@ -210,7 +215,9 @@ die();*/
 						//echo "m: ".$m."<br>";
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m] = $row['resource_id'];
 $downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
-					} else {
+					}
+					if (!$wfsRequestObjectExists)
+					{
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
