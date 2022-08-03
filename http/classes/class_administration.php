@@ -2158,16 +2158,16 @@ SQL;
 				break;
 			case "file":
 			    if ($hashLocalFilename){
-			        return unlink("mapbender:" . md5($filename));
+			        return unlink(md5($filename));
 			    } else {
-			        return unlink("mapbender:" . $filename);
+			        return unlink($filename);
 			    }
 				break;
 			default:
 			    if ($hashLocalFilename){
-			        return unlink("mapbender:" . md5($filename));
+			        return unlink(md5($filename));
 			    } else {
-			        return unlink("mapbender:" . $filename);
+			        return unlink($filename);
 			    }
 				break;
 		}
@@ -2225,16 +2225,16 @@ SQL;
 			break;
 			case "file":
 			    if ($hashLocalFilename){
-			        file_put_contents("mapbender:" . md5($filename), $content);
+			        file_put_contents(md5($filename), $content);
 			    } else {
-			        file_put_contents("mapbender:" . $filename, $content);
+			        file_put_contents($filename, $content);
 			    }
 			break;
 			default:
 			    if ($hashLocalFilename){
-			        file_put_contents("mapbender:" . md5($filename), $content);
+			        file_put_contents(md5($filename), $content);
 			    } else {
-			        file_put_contents("mapbender:" . $filename, $content);
+			        file_put_contents($filename, $content);
 			    }
 			break;
 		}
@@ -2281,17 +2281,17 @@ SQL;
 			break;
 			case "file":
 			    if ($hashLocalFilename){
-			        $content = file_get_contents("mapbender:" . md5($filename));
+			        $content = file_get_contents(md5($filename));
 			    } else {
-			        $content = file_get_contents("mapbender:" . $filename);
+			        $content = file_get_contents($filename);
 			    }
 				return $content;
 			break;
 			default:
 			    if ($hashLocalFilename){
-			        $content = file_get_contents("mapbender:" . md5($filename));
+			        $content = file_get_contents(md5($filename));
 			    } else {
-			        $content = file_get_contents("mapbender:" . $filename);
+			        $content = file_get_contents($filename);
 			    }
 				return $content;
 			break;
