@@ -38,6 +38,15 @@ define("CHARSET","UTF-8");
 define("TMPDIR", "../tmp");
 
 # --------------------------------------------
+# path of optional ramdisk - very fast storage, useful if using e.g. php-ogr  
+# https://www.jamescoyle.net/how-to/943-create-a-ram-disk-in-linux
+# size should be 512m at minimum
+# For configuration see:
+# https://github.com/mrmap-community/Mapbender2.8/wiki/System#ramdisk
+# --------------------------------------------
+define("RAMDISK", "../tmp/ramdisk");
+
+# --------------------------------------------
 # absolute directory for temporary files - for use with external cms
 # --------------------------------------------
 
