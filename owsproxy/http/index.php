@@ -25,6 +25,7 @@ require_once(dirname(__FILE__) . "/../../http/classes/class_administration.php")
 require_once(dirname(__FILE__) . "/../../http/classes/class_connector.php");
 require_once(dirname(__FILE__) . "/../../http/classes/class_mb_exception.php");
 require_once(dirname(__FILE__) . "/./classes/class_QueryHandler.php");
+require_once(dirname(__FILE__) . "/../../http/classes/class_ogr.php");
 $urlsToExclude = array();
 $postData = false;
 if (is_file(dirname(__FILE__) . "/../../conf/excludeproxyurls.conf"))
