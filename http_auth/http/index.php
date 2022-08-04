@@ -22,6 +22,7 @@ require(dirname(__FILE__) . "/../../http/classes/class_administration.php");
 require(dirname(__FILE__) . "/../../http/classes/class_connector.php");
 require_once(dirname(__FILE__) . "/../../http/classes/class_mb_exception.php");
 require_once(dirname(__FILE__) . "/../../http/classes/class_user.php");
+require_once(dirname(__FILE__) . "/../../http/classes/class_ogr.php");
 require(dirname(__FILE__) . "/../../owsproxy/http/classes/class_QueryHandler.php");
 
 //store global variable as local, cause it may be overwritten somewhen ;-)
@@ -1144,7 +1145,7 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
     foreach ($urlsToChange as $xpath) {
         $href = $capFromFascadeXmlObject->xpath($xpath);
         $e = new mb_notice("old href: " . $href[0]);
-        #$e = new mb_notice("href replaced: " . replaceOwsUrls($href[0], $layerId));
+        $e = new mb_notice("href replaced: " . replaceOwsUrls($href[0], $layerId));
         $href[0][0] = replaceOwsUrls($href[0], $layerId, $extraParameter);
     }
     echo $capFromFascadeXmlObject->asXML();
@@ -1714,74 +1715,119 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         //only possible if features should be logged!
         if ($log_id !== false) {
             $e = new mb_notice("http_auth/http/index.php: GetFeature invoked - logging activated!");
-            libxml_use_internal_errors(true);
-            try {
-                $featureCollectionXml = simplexml_load_string($content);
-                if ($featureCollectionXml === false) {
-                    foreach (libxml_get_errors() as $error) {
-                        $err = new mb_exception("owsproxy/http/index.php:" . $error->message);
+            $logWithOgr = true;
+            //another approach to count objects - use ogr from cli - features are temporary stored!
+            if ($logWithOgr == false) {
+                libxml_use_internal_errors(true);
+                try {
+                    $featureCollectionXml = simplexml_load_string($content);
+                    if ($featureCollectionXml === false) {
+                        foreach (libxml_get_errors() as $error) {
+                            $err = new mb_exception("owsproxy/http/index.php:" . $error->message);
+                        }
+                        throw new Exception("owsproxy/http/index.php:" . 'Cannot parse featureCollection XML!');
+                        //TODO give error message
                     }
-                    throw new Exception("owsproxy/http/index.php:" . 'Cannot parse featureCollection XML!');
+                } catch (Exception $e) {
+                    $err = new mb_exception("owsproxy/index.php:" . $e->getMessage());
                     //TODO give error message
                 }
-            } catch (Exception $e) {
-                $err = new mb_exception("owsproxy/index.php:" . $e->getMessage());
-                //TODO give error message
-            }
-            if ($featureCollectionXml !== false) {
-                $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
-                if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
-                    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
+                if ($featureCollectionXml !== false) {
+                    $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
+                    if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
+                        $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
+                    } else {
+                        $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
+                    }
+                    $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
+                    $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
+                    $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
+                    $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                    $featureCollectionXml->registerXPathNamespace("default", "");
+                    preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
+                    if (!$reqParams['version']) {
+                        $e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
+                    }
+                    switch ($reqParams['version']) {
+                        case "1.0.0":
+                            //get # of features from counting features
+                            $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+                            $numberOfFeatures = count($numberOfFeatures);
+                            break;
+                        case "1.1.0":
+                            //get # of features from counting features
+                            $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+                            $numberOfFeatures = count($numberOfFeatures);
+                            break;
+                            //for wfs 2.0 - don't count features
+                        default:
+                            //get # of features from attribut
+                            $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
+                            $numberOfFeatures = $numberOfFeatures[0];
+                            break;
+                    }
+                    $endTime = microtime();
+                    $e = new mb_notice("http_auth/http/index.php: " . $numberOfFeatures . " delivered features from wfs.");
+                    //TODO: enhance error management
+                    if ($log_id !== false) {
+                        $n->updateWfsLog(1, '', '', $numberOfFeatures, $log_id);
+                    }
+                    $e = new mb_notice("http_auth/http/index.php: Time for counting: " . (string)($endTime - $startTime));
+                    $e = new mb_notice("http_auth/http/index.php: Memory used for XML String: " . getVariableUsage($content) / 1000000 . "MB");
+                    if ($header != false) {
+                        header($header);
+                    }
+                    echo $content;
                 } else {
-                    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
+                    //TODO: no feature xml found ! - give back a good error message
+                    if ($header != false) {
+                        header($header);
+                        $e = new mb_exception("http_auth/http/index.php: WFS dows not give back GML - parsing was not successfully!");
+                    }
+                    echo $content;
                 }
-                $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
-                $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
-                $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
-                $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                $featureCollectionXml->registerXPathNamespace("default", "");
-                preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
-                if (!$reqParams['version']) {
-                    $e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
-                }
-                switch ($reqParams['version']) {
-                    case "1.0.0":
-                        //get # of features from counting features
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-                        $numberOfFeatures = count($numberOfFeatures);
-                        break;
-                    case "1.1.0":
-                        //get # of features from counting features
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-                        $numberOfFeatures = count($numberOfFeatures);
-                        break;
-                        //for wfs 2.0 - don't count features
-                    default:
-                        //get # of features from attribut
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
-                        $numberOfFeatures = $numberOfFeatures[0];
-                        break;
-                }
-                $endTime = microtime();
-                $e = new mb_notice("owsproxy/http/index.php: " . $numberOfFeatures . " delivered features from wfs.");
-                //TODO: enhance error management
-                if ($log_id !== false) {
-                    $n->updateWfsLog(1, '', '', $numberOfFeatures, $log_id);
-                }
-                $e = new mb_notice("owsproxy/http/index.php: Time for counting: " . (string)($endTime - $startTime));
-                $e = new mb_notice("owsproxy/http/index.php: Memory used for XML String: " . getVariableUsage($content) / 1000000 . "MB");
-                if ($header != false) {
-                    header($header);
-                }
-                echo $content;
             } else {
-                //TODO: no feature xml found ! - give back a good error message
-                if ($header != false) {
-                    header($header);
-                }
-                echo $content;
+                //count features with ogrinfo
+                /*
+                 * new 2022-08-04
+                 */
+                 $ogr = new Ogr();
+                 //$ogr->logRuntime = true;
+                 if ($reqParams['version'] == '2.0.0' || $reqParams['version'] == '2.0.2') {
+                     $typeParameterName = "typenames"; 
+                 } else {
+                     $typeParameterName = "typename"; 
+                 }
+                 $ogr->logRuntime = true;
+                 //$e = new mb_exception(json_encode($reqParams));
+                 $e = new mb_exception("*".urldecode($reqParams['outputformat'])."*");
+                 if ($log_id !== false) {
+                     $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
+                     if ($numberOfObjects == false) {
+                         $n->updateWfsLog(0, 'Could not count objects for requested format: ' . urldecode($reqParams['outputformat']), '', 0, $log_id);
+                         header("Content-Type: application/json");
+                         echo '{"error": true, "message": "Objects should be counted, but requested format could not be parsed by proxy. Please use another format, e.g. GML, Shape or GeoJSON!"}';
+                         die();
+                     } else {
+                        $n->updateWfsLog(1, '', '', $numberOfObjects, $log_id);
+                     }
+                 }
+                 if ($reqParams['outputformat'] != false) {
+                     header("Content-Type: " . $reqParams['outputformat']);
+                     switch ($reqParams['outputformat']) {
+                         case "application/zip":
+                             $dateTime = date("Y-m-d");
+                             header("Content-Disposition: attachment; filename=\"" . $dateTime . "_mapbender_featuretype_" . $reqParams['typename'] . ".zip\"");
+                             break;
+                     }
+                 } else {
+                     header("Content-Type: application/xml"); //default to gml
+                 }
+                 
+                 echo $content;
             }
         } else {
+            //no logging of features defined
             if ($header != false) {
                 header($header);
             } else {
@@ -1795,11 +1841,13 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                             break;
                     }
                 } else {
-                    header("Content-Type: application/xml");
+                    header("Content-Type: application/xml"); //default to gml
                 }
             }
+            //return content as it is
             echo $content;
         }
+    //other operation ...
     } else {
         if ($header !== false) {
             header($header);
