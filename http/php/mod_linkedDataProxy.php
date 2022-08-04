@@ -2221,7 +2221,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							if ($useGdal) {
 							    //$e = new mb_exception("php/mod_linkedDataProxy.php: use gdal");
 							    $geojson = gdalGml2geojson($features);
-							    $e = new mb_exception("php/mod_linkedDataProxy.php: feature count: " . gdalCountFeatures($features, 'GML', $ftName));
+							    //$e = new mb_exception("php/mod_linkedDataProxy.php: feature count: " . gdalCountFeatures($features, 'GML', $ftName));
 							    
 							    if ($geojson != false) {
     							    $geojsonList = json_decode($geojson);
