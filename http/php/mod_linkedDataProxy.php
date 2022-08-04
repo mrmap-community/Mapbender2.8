@@ -6,6 +6,7 @@ require_once (dirname ( __FILE__ ) . "/../classes/class_gml_3_factory.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_owsConstraints.php");
 require_once (dirname ( __FILE__ ) . "/../classes/class_connector.php"); // for resolving external @context content
 require_once (dirname ( __FILE__ ) . "/../classes/class_user.php");
+require_once (dirname ( __FILE__ ) . "/../classes/class_ogr.php");
 global $rewritePath;
 global $behindRewrite;
 global $linkedDataProxyUrl;
@@ -237,41 +238,16 @@ $allowedFormats = array (
 //
 $newline = " ";
 
+function gdalCountFeatures($features, $format, $layername){
+    $ogr = new Ogr();
+    //$ogr->logRuntime = true;
+    return $ogr->ogrCountFeatures($features, $format, $layername);
+}
+
 function gdalGml2geojson($features) {
-    //$e = new mb_exception("php/mod_linkedDataProxy.php: gdalGml2geojson invoked!");
-    $filenameUniquePart = "ldp_gml_".time()."_".uniqid(); //will be set to new one cause ?
-    $filenameGml = TMPDIR."/".$filenameUniquePart.".gml";
-    $filenameGfs = TMPDIR."/".$filenameUniquePart.".gfs";
-    if($h = fopen($filenameGml,"w")){
-        if(!fwrite($h, $features)){
-            $e = new mb_exception("php/mod_linkedDataProxy.php: could not write gml file to tmp folder");
-            return false;
-        } else {
-            //$e = new mb_exception("php/mod_linkedDataProxy.php: wrote gml file to " . $filenameGml);
-            unset($features);
-        }
-        fclose($h);
-    }
-    $filenameGeojson = TMPDIR."/".$filenameUniquePart.".geojson";
-    exec('ogr2ogr -a_srs "EPSG:4326" -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES', $output);
-    //read geojson
-    if($h = fopen($filenameGeojson, "r")){
-        $geojson = fread($h, filesize($filenameGeojson));
-        if(!$geojson){
-            $e = new mb_exception("php/mod_linkedDataProxy.php: could not read geojson ".$filenameGeojson." from tmp folder");
-            unlink($filenameGml);
-            unlink($filenameGfs); 
-            return false;
-        } else {
-            //unklink tmp files
-            unlink($filenameGeojson);
-            unlink($filenameGml);
-            unlink($filenameGfs);  
-        }
-        fclose($h);
-    }
-    return $geojson;
-    //return str_replace('urn:ogc:def:crs:OGC:1.3:CRS84', 'EPSG:4326', $geojson);
+    $ogr = new Ogr();
+    //$ogr->logRuntime = true;
+    return $ogr->gml2Geojson($features);
 }
 
 function calculateBboxFromGeojsonFcObject($geojsonList) {    
@@ -2245,6 +2221,8 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							if ($useGdal) {
 							    //$e = new mb_exception("php/mod_linkedDataProxy.php: use gdal");
 							    $geojson = gdalGml2geojson($features);
+							    $e = new mb_exception("php/mod_linkedDataProxy.php: feature count: " . gdalCountFeatures($features, 'GML', $ftName));
+							    
 							    if ($geojson != false) {
     							    $geojsonList = json_decode($geojson);
     							    /*
