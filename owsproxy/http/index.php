@@ -58,7 +58,7 @@ $query = new QueryHandler($postData, $_REQUEST, $_SERVER['REQUEST_METHOD']);
 
 // an array with keys and values toLowerCase -> caseinsensitiv
 $reqParams = $query->getRequestParams($reqParams);
-$e = new mb_exception(json_encode($reqParams));
+//$e = new mb_exception(json_encode($reqParams));
 if ($reqParams['service'] == 'WFS') {
 	//switch for different parameter name - typename for wfs < 2.0 typenames for wfs >= 2.0
 	//$typeNameParameter = "typename"; //lowercase
@@ -97,7 +97,7 @@ if ($reqParams['service'] == 'WFS') {
         	$testMatch = NULL;
 	}
 }
-$e = new mb_exception("l99");
+//$e = new mb_exception("l99");
 $e = new mb_notice("incoming request: " . OWSPROXY . "/" . $_REQUEST['sid'] . "/" . $_REQUEST['wms'] . $query->getRequest());
 $e = new mb_notice("owsproxy requested from: " . $_SERVER["REMOTE_ADDR"]);
 $e = new mb_notice("owsproxy requested: " . $query->getRequest());
@@ -117,7 +117,7 @@ if (defined("OWSPROXY_SESSION_GRABBING_WHITELIST")) {
 } else {
     $grabbingAllowed = false;
 }
-$e = new mb_exception("l119");
+//$e = new mb_exception("l119");
 $e = new mb_notice("Initial session_id: " . session_id());
 //The session can be set by a given cookie value or was newly created by core/globalSettings.php
 //either empty (without mb_user_id value) - when the corresponding session file was lost or timed out
@@ -163,7 +163,7 @@ if (defined("OWSPROXY_ALLOW_SESSION_GRABBING") && OWSPROXY_ALLOW_SESSION_GRABBIN
         }
     }
 }
-$e = new mb_exception("l165");
+//$e = new mb_exception("l165");
 //After this there maybe the variable $tmpSession or not. If it is not there, an existing session was grabbed and shouldn't be deleted after, because a user is logged in or the logged in user requested the service!!!
 //check if current session has the same id as the session which is requested in the owsproxy url
 //exchange them, if they differ and redirect to an new one with the current session, they don't differ if the session was grabbed - e.g. when printing secured services via mapbender itself.
@@ -180,7 +180,7 @@ if (session_id() !== $_REQUEST["sid"]) {
 } else {
     $e = new mb_exception("Current session_id() identical to requested SID!");
 }
-$e = new mb_exception("l180");
+//$e = new mb_exception("l180");
 //this is the request which may have been redirected
 //check for given user session with user_id which can be tested against the authorization
 /* $foundUserId = Mapbender::session()->get('mb_user_id');
@@ -219,7 +219,7 @@ if (getUserFromSession() == false || getUserFromSession() <= 0) {
       $e = new mb_exception("tmpSessionFile: does not exist!");
       } */
 }
-$e = new mb_exception("l218");
+//$e = new mb_exception("l218");
 //start the session to be able to write urls to it - for 
 session_start(); //maybe it was started by globalSettings.php
 $n = new administration;
@@ -1552,7 +1552,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 }
                 $ogr->logRuntime = true;
                 //$e = new mb_exception(json_encode($reqParams));
-                $e = new mb_exception("*".urldecode($reqParams['outputformat'])."*");
+                //$e = new mb_exception("*".urldecode($reqParams['outputformat'])."*");
                 if ($log_id !== false) {
                     $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
                     if ($numberOfObjects == false) {
