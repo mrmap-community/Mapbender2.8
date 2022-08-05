@@ -27,6 +27,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 	var $serviceVersion; //string
 	var $serviceRequestType; //string
 	var $serviceResourceName; //string - layer name(s), featuretype name(s)
+	var $outputFormat; //string - parameter outputFormat
 	var $parsingSuccessful; //boolean
 	var $postType; //string - 'xml' or 'form'
 	/**
@@ -87,6 +88,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 			}
 			//$e = new mb_exception("class_owsPostQueryHandler.php: ".$this->serviceRequestType);
 			$this->serviceVersion = $queryDomObject->documentElement->getAttribute("version");
+			$this->outputFormat = $queryDomObject->documentElement->getAttribute("outputFormat");
 			if ($this->serviceType == "WFS") {
 				//read out typename from wfs query as attribute
 				//register namespace
