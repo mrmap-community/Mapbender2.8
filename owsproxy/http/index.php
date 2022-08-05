@@ -1554,6 +1554,12 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 //$e = new mb_exception(json_encode($reqParams));
                 //$e = new mb_exception("*".urldecode($reqParams['outputformat'])."*");
                 if ($log_id !== false) {
+                    //test for exception and return error for transparency
+                    if (strpos($content, ":ExceptionReport") !== false){
+                        header("Content-Type: application/xml"); //default to gml
+                        echo $content;
+                        die();
+                    }
                     $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
                     if ($numberOfObjects == false) {
                         $n->updateWfsLog(0, 'Could not count objects for requested format: ' . urldecode($reqParams['outputformat']), '', 0, $log_id);
