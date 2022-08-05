@@ -144,6 +144,7 @@ if ($layerId !== false) {
     $anonymousAccess = $user->isLayerAccessible($layerId);
 }
 if ($wfsId !== false) {
+    //$e = new mb_exception("typename: ". $reqParams[$typeNameParameter]);
     if (isset($reqParams[$typeNameParameter]) && $reqParams[$typeNameParameter] !== false && $reqParams[$typeNameParameter] !== '') {
         $user = new user(PUBLIC_USER);
         $anonymousAccess = $user->areFeaturetypesAccessible($reqParams[$typeNameParameter], $wfsId);
@@ -329,6 +330,9 @@ if (($anonymousAccess && $proxyEnabled) || ($proxyEnabled == false)) {
 //if ($proxyEnabled == false && $anonymousAccess == false) {
 //    die('The requested resource does not exists or the routing through mapbenders owsproxy is not activated and anonymous access is not allowed!');
 //}
+
+//$e = new mb_exception("user: " . $userId);
+
 //get authentication infos if they are available in wms table! if not $auth = false
 if ($auth['auth_type'] == '') {
     unset($auth);
@@ -1465,7 +1469,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
         $t = array("i", "s");
         $res = db_prep_query($sql, $v, $t);
         if (!($row = db_fetch_array($res))) {
-            $notice = new mb_exception("Permissioncheck failed no wfs conf for wfs " . $service["wfs_id"] . " with featuretype " . $feature);
+            $e = new mb_exception("Permissioncheck failed no wfs conf for wfs " . $service["wfs_id"] . " with featuretype " . $feature);
             throwE(array("No wfs_conf data for featuretype " . $feature));
             die();
         }
@@ -1473,7 +1477,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
 
         //check permission
         if (!in_array($conf_id, $myconfs)) {
-            $notice = new mb_exception("Permissioncheck failed:" . $conf_id . " not in " . implode(",", $myconfs));
+            $e= new mb_exception("Permissioncheck failed:" . $conf_id . " not in " . implode(",", $myconfs));
             throwE(array("Permission denied.", " -> " . $conf_id, implode(",", $myconfs)));
             die();
         }
@@ -1799,8 +1803,14 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                  }
                  //$ogr->logRuntime = true;
                  //$e = new mb_exception(json_encode($reqParams));
-                 $e = new mb_exception("http_auth/http/index.php: got outputformat: " . "*".urldecode($reqParams['outputformat'])."*");
+                 //$e = new mb_exception("http_auth/http/index.php: got outputformat: " . "*".urldecode($reqParams['outputformat'])."*");
                  if ($log_id !== false) {
+                     //test for exception and return error for transparency
+                     if (strpos($content, ":ExceptionReport") !== false){
+                         header("Content-Type: application/xml"); //default to gml
+                         echo $content;
+                         die();
+                     }
                      $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
                      if ($numberOfObjects == false) {
                          $n->updateWfsLog(0, 'Could not count objects for requested format: ' . urldecode($reqParams['outputformat']), '', 0, $log_id);
