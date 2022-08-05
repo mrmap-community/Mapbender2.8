@@ -1800,7 +1800,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                  }
                  $ogr->logRuntime = true;
                  //$e = new mb_exception(json_encode($reqParams));
-                 $e = new mb_exception("*".urldecode($reqParams['outputformat'])."*");
+                 $e = new mb_exception("http_auth/http/index.php: got outputformat: " . "*".urldecode($reqParams['outputformat'])."*");
                  if ($log_id !== false) {
                      $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
                      if ($numberOfObjects == false) {
