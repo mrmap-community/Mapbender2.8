@@ -1426,7 +1426,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
 {
     global $con, $n;
     $myconfs = $n->getWfsConfByPermission($userId);
-    $e = new mb_exception(json_encode($myconfs));
+    //$e = new mb_exception(json_encode($myconfs));
     if ($features !== false) {
         //check if we know the features requested
         if (count($features) == 0) {
@@ -1792,13 +1792,12 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                  * new 2022-08-04
                  */
                  $ogr = new Ogr();
-                 //$ogr->logRuntime = true;
                  if ($reqParams['version'] == '2.0.0' || $reqParams['version'] == '2.0.2') {
                      $typeParameterName = "typenames"; 
                  } else {
                      $typeParameterName = "typename"; 
                  }
-                 $ogr->logRuntime = true;
+                 //$ogr->logRuntime = true;
                  //$e = new mb_exception(json_encode($reqParams));
                  $e = new mb_exception("http_auth/http/index.php: got outputformat: " . "*".urldecode($reqParams['outputformat'])."*");
                  if ($log_id !== false) {
