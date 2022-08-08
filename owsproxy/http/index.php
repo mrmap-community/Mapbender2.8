@@ -1387,6 +1387,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             }
 	    }
 	    $content = $d->file;
+	    $httpCode = $d->httpCode;
     } else {
         $postInterfaceObject = new connector();
         $postInterfaceObject->set('httpType','POST');
@@ -1399,6 +1400,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             $postInterfaceObject->load($url);
         }         
         $content = $postInterfaceObject->file;
+        $httpCode = $postInterfaceObject->httpCode;
     }
     $endTime = microtime();
     //$e = new mb_exception("owsproxy/http/index.php: Time for getting remote resource: ".(string)($endTime - $startTime));
@@ -1557,6 +1559,11 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                     //test for exception and return error for transparency
                     if (strpos($content, ":ExceptionReport") !== false){
                         header("Content-Type: application/xml"); //default to gml
+                        echo $content;
+                        die();
+                    }
+                    if ($httpCode == "500"){
+                        header("Content-Type: text/html"); //default to gml
                         echo $content;
                         die();
                     }
