@@ -1644,6 +1644,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             }
         }
         $content = $d->file;
+        $httpCode = $d->httpCode;
     } else {
         $e = new mb_notice("owsproxy/index.php: postData will be send ");
         $postInterfaceObject = new connector();
@@ -1657,6 +1658,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             $postInterfaceObject->load($url);
         }
         $content = $postInterfaceObject->file;
+        $httpCode = $postInterfaceObject->httpCode;
     }
     $endTime = microtime();
     if (strtoupper($reqParams["request"]) == "GETMAP") { // getmap
@@ -1808,6 +1810,11 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                      //test for exception and return error for transparency
                      if (strpos($content, ":ExceptionReport") !== false){
                          header("Content-Type: application/xml"); //default to gml
+                         echo $content;
+                         die();
+                     }
+                     if ($httpCode == "500"){
+                         header("Content-Type: text/html"); //default to gml
                          echo $content;
                          die();
                      }
