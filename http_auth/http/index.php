@@ -1148,8 +1148,8 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
     );
     foreach ($urlsToChange as $xpath) {
         $href = $capFromFascadeXmlObject->xpath($xpath);
-        $e = new mb_notice("old href: " . $href[0]);
-        $e = new mb_notice("href replaced: " . replaceOwsUrls($href[0], $layerId));
+        //$e = new mb_notice("old href: " . $href[0]);
+        //$e = new mb_notice("href replaced: " . replaceOwsUrls($href[0], $layerId));
         $href[0][0] = replaceOwsUrls($href[0], $layerId, $extraParameter);
     }
     echo $capFromFascadeXmlObject->asXML();
