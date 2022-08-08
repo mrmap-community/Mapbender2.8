@@ -37,7 +37,7 @@ class connector {
 	private $curlSendCustomHeaders = true; //decide to send own headers or not
 	private $curlSessionCookie = false;
 	private $externalHeaders = "";
-	private $httpCode = null;
+	public $httpCode = null;
 
 
 	/**
