@@ -36,7 +36,7 @@ netgis.client =
 			customCallback = callback;
 			
 			//container.find( ".navbar" ).toggleClass( "navbar-embedded", true );
-		}
+		};
 		
 		var onDocReady = function()
 		{
