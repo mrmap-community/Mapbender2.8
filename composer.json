@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Mapbender\\": "modules"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6"
+    }
+}
