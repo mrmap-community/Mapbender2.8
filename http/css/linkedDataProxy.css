@@ -12,19 +12,15 @@
 
  body {
    /* Margin bottom by footer height */
-   margin-bottom: 288px;
- }
-
- html:not(:root) footer {
-   display:none;
+   /*margin-bottom: 288px;*/
  }
 
  .footer {
-   position: absolute;
+   /*position: absolute;
    bottom: 0;
-   width: 100%;
+   width: 100%;*/
    /* Set the fixed height of the footer here */
-   height: 288px;
+   /*height: 288px;*/
  }
 
  h1,h2,h3,h4,h5,h6 {
