@@ -15,9 +15,9 @@ netgis.config =
 	MAP_CONTAINER_ID:		"map-container",
 	
 	/** Initial map center coordinate x in main map projection. */
-	INITIAL_CENTER_X:		499271,
+	INITIAL_CENTER_X:		487000,
 	/** Initial map center coordinate y in main map projection. */
-	INITIAL_CENTER_Y:		5597250,
+	INITIAL_CENTER_Y:		5594000,
 	/** Minimum scale to zoom to place search result.  */
 	MIN_SEARCH_SCALE:		3000,
 	/** Initial map zoom scale (e.g. 10000 = 1:10000). */
@@ -37,7 +37,7 @@ netgis.config =
 	MAP_PROJECTION:			"EPSG:25832",
 	
 	/** Map extent (min x, min y, max x, max y). */
-	MAP_EXTENT:				[ 412133, 5471408, 586408, 5723093 ],
+	MAP_EXTENT:				[ 403960,5468250,595890,5733150 ],
 	
 	/** Default map layer opacity (0.0 - 1.0). */
 	MAP_DEFAULT_OPACITY:	0.8,
@@ -54,32 +54,22 @@ netgis.config =
 	/** Service URLs (avoid proxies by setting to null or empty string). */
 	//URL_WMC_PROXY:			"./scripts/proxy.php", //TODO: empty proxy to invoke from js client on same machine!!!
 	URL_WMC_PROXY:			"",
-	//URL_WMC_REQUEST:		"https://prototyp.geoportal.hessen.de/mapbender/php/mod_exportWmc2Json.php",
-	//URL_WMC_REQUEST:		"http://localhost/mapbender/php/mod_exportWmc2Json.php",
-	URL_WMC_REQUEST:		"../../../../php/mod_exportWmc2Json.php",
+	URL_WMC_REQUEST:		"../../php/mod_exportWmc2Json.php",
 	//name of serverside conf file for mobilemap - will be used as parameter for mod_exportWmc2Json.php!
 	CONF_FILE_NAME:			"mobilemap2",
 	
-	//URL_LAYERS_PROXY:		"./scripts/proxy.php",
 	URL_LAYERS_PROXY:		"",
-	//URL_LAYERS_REQUEST:		"http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php",
-	//URL_LAYERS_REQUEST:		"http://localhost/mapbender/extensions/mobilemap/mod_mapbender/search_proxy.php",
 	URL_LAYERS_REQUEST:		"../../php/mod_callMetadata.php",
 	
-	//URL_SEARCH_PROXY:		"./scripts/proxy.php",
 	URL_SEARCH_PROXY:		"",
-	//URL_SEARCH_REQUEST:		"http://www.geoportal.rlp.de/mapbender/geoportal/gaz_geom_mobile.php",
-	URL_SEARCH_REQUEST:		"../../../../geoportal/gaz_geom_mobile.php",
-	//URL_BACKGROUND_HYBRID:	"http://www.gdi-rp-dienste2.rlp.de/mapcache/tms/1.0.0/topplusbkg@UTM32",
+	URL_SEARCH_REQUEST:		"../../geoportal/gaz_geom_mobile.php",
 	URL_BACKGROUND_HYBRID:		"https://basisdienste.geoportal.hessen.de/mapcache/tms/1.0.0/luftbild@UTM32",
-	URL_BACKGROUND_AERIAL:	        "https://basisdienste.geoportal.hessen.de/mapcache",
+	URL_BACKGROUND_AERIAL:	        "https://inspire-hessen.de/raster/wms/dop20/ows",
 
-	URL_FEATURE_INFO_PROXY:	"",
+	URL_FEATURE_INFO_PROXY:		"",
 	
-	//URL_HEIGHT_PROXY:		"./scripts/proxy.php",
 	URL_HEIGHT_PROXY:		"",
-	//URL_HEIGHT_REQUEST:		"http://www.geoportal.rlp.de/mapbender/extensions/mobilemap/query/rasterqueryWms.php?&lang=de" //"http://www.gdi-rp-dienste2.rlp.de/cgi-bin/mapserv.fcgi?map=/data/umn/geoportal/dhm_query/dhm.map&" + "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&SERVICE=WMS&LAYERS=mydhm&QUERY_LAYERS=mydhm"
-	URL_HEIGHT_REQUEST:		"../../../mobilemap/query/rasterqueryWms.php?&lang=de",
-	URL_USAGE_TERMS:		""
+	URL_HEIGHT_REQUEST:		"../../extensions/mobilemap/query/rasterqueryWms.php?&lang=de",
+	URL_USAGE_TERMS:		"../../php/mod_getWmcDisclaimer.php?id=current"
 
 };

@@ -163,7 +163,7 @@ netgis.map =
 					url: netgis.config.URL_BACKGROUND_AERIAL + "?",
 					params:
 					{
-						"LAYERS":		"rp_dop",
+						"LAYERS":		"OI.OrthoimageCoverage",
 						"FORMAT":		"image/jpeg",
 						"TRANSPARENT":	"false",
 						"VERSION":		"1.1.1"
