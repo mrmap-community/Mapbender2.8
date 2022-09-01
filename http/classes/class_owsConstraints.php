@@ -533,7 +533,7 @@ No conditions apply to access and use
 				$useLimitation2=$iso19139->createElement("gmd:".$conditionsElementName);
 				$otherConstraints_cs=$iso19139->createElement("gco:CharacterString");
 				//copy from above
-				$otherConstraintsText = $iso19139->createTextNode(json_encode($jsonLicense));
+				$otherConstraintsText = $iso19139->createTextNode(json_encode($jsonLicense, JSON_UNESCAPED_SLASHES));
 				$otherConstraints_cs->appendChild($otherConstraintsText);
 				$useLimitation2->appendChild($otherConstraints_cs);
 			
@@ -546,7 +546,7 @@ No conditions apply to access and use
 				$useLimitation2=$iso19139->createElement("gmd:".$conditionsElementName);
 				$otherConstraints_cs=$iso19139->createElement("gco:CharacterString");
 				//copy from above
-				$otherConstraintsText = $iso19139->createTextNode(json_encode($jsonLicense));
+				$otherConstraintsText = $iso19139->createTextNode(json_encode($jsonLicense, JSON_UNESCAPED_SLASHES));
 				$otherConstraints_cs->appendChild($otherConstraintsText);
 				$useLimitation2->appendChild($otherConstraints_cs);
 				
