@@ -94,7 +94,7 @@ class stripRequest{
 	function getFormat(){
 		$format = $this->get("format");
 			
-		if ($format=="PNG" || $format=="image/png"){
+		if ($format=="PNG" || $format=="image/png" || $format=="image/png8"){
 			return "png";
 		} else if ($format=="JPEG" || $format=="image/jpeg"){
 			return "jpeg";
