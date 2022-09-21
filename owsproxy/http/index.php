@@ -1421,6 +1421,32 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             echo $content;
         } else {
             $source = new Imagick();
+            //if tiff (geotiff) was requested - read header to temporary file to add it later on
+            if (in_array(strtoupper($reqParams["format"]), array("TIFF", "TIF", "IMAGE/TIF", "IMAGE/TIFF"))) {
+                //$e = new mb_notice("tiff format requested");
+                //Added 2022-09-21 to allow secured access to masked geotiff images via wms
+                //write image to tmp folder
+                //extract header
+                //read header
+                //Doc: https://github.com/OSGeo/libgeotiff
+                if (defined("ABSOLUTE_TMPDIR") && ABSOLUTE_TMPDIR != "" && defined("LIBGEOTIFF") && LIBGEOTIFF == true) {
+                    $uuidGeoTiff = new Uuid();
+                    $tmpGeoTiffFilename = ABSOLUTE_TMPDIR . '/' .$uuidGeoTiff . '.tif';
+                    $tmpGeoTiffHeaderFilename = ABSOLUTE_TMPDIR . '/' .$uuidGeoTiff . '_header.txt';
+                    if ($h = fopen($tmpGeoTiffFilename, "wb")) {
+                        if (!fwrite($h, $content)) {
+                            $e = new mb_exception("owsproxy/http/index.php: Could not write GeoTIFF cache to " . $tmpGeoTiffFilename);
+                        } else {
+                            exec('listgeo ' . $tmpGeoTiffFilename . ' > ' . $tmpGeoTiffHeaderFilename, $output);
+                        }
+                        fclose($h);
+                    } else {
+                        $e = new mb_exception("owsproxy/http/index.php: Could not open " . $tmpGeoTiffFilename);
+                    }
+                } else {
+                    $e = new mb_exception("owsproxy/http/index.php: Could not cache TIFF image to extract GeoTIFF header, cause ABSOLUTE_TMPDIR is not defined in mapbender.conf and/or libgeotiff is not available!");
+                }
+            }
             $source->readImageBlob($content);
             /*header("Content-Type: " . $reqParams['format']);
             echo $content;*/
@@ -1433,7 +1459,44 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             	$n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
             header("Content-Type: " . $reqParams['format']);
-            echo $source->getImageBlob();
+            if (in_array(strtoupper($reqParams["format"]), array("TIFF", "TIF", "IMAGE/TIF", "IMAGE/TIFF"))) {
+                //Added 2022-09-21 to allow secured access to masked geotiff images via wms
+                //write tif to tmp folder
+                //add header from above
+                //read image with header
+                //https://github.com/OSGeo/libgeotiff
+                if (defined("ABSOLUTE_TMPDIR") && ABSOLUTE_TMPDIR != "" && defined("LIBGEOTIFF") && LIBGEOTIFF == true) {
+                    //overwrite old geotiff
+                    if ($h = fopen($tmpGeoTiffFilename, "wb")) {
+                        $newImage = $source->getImageBlob();
+                        if (!fwrite($h, $newImage)) {
+                            $e = new mb_exception("owsproxy/http/index.php: Could not write GeoTIFF cache to " . $tmpGeoTiffFilename);
+                        } else {
+                            $newImageWritten = true;
+                            $e = new mb_notice("owsproxy/http/index.php: geotiff written to cache!");
+                        }
+                        fclose($h);
+                        if ($newImageWritten == true) {
+                            exec('geotifcp -g ' . $tmpGeoTiffHeaderFilename . ' ' . $tmpGeoTiffFilename . ' ' . $tmpGeoTiffFilename . ".new.tif", $output);
+                            //read image from file and simple echo it
+                            echo file_get_contents($tmpGeoTiffFilename. ".new.tif");
+                            unlink($tmpGeoTiffFilename);
+                            unlink($tmpGeoTiffFilename. ".new.tif");
+                            unlink($tmpGeoTiffHeaderFilename);
+                        } else {
+                            unlink($tmpGeoTiffFilename);
+                            unlink($tmpGeoTiffHeaderFilename);
+                        }
+                    } else {
+                        $e = new mb_exception("owsproxy/http/index.php: Could not open cached tiff file!");
+                    }
+                } else {
+                    $e = new mb_exception("owsproxy/http/index.php: Could not cache new TIFF image to add GeoTIFF header, cause ABSOLUTE_TMPDIR is not defined in mapbender.conf and/or libgeotiff is not available!");
+                }
+            } else {
+                //default give back image without special headers
+                echo $source->getImageBlob();
+            }
         }
         return true;
     } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") { // getmap
