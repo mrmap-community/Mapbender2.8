@@ -38,19 +38,14 @@ define("CHARSET","UTF-8");
 define("TMPDIR", "../tmp");
 
 # --------------------------------------------
-# path of optional ramdisk - very fast storage, useful if using e.g. php-ogr  
-# https://www.jamescoyle.net/how-to/943-create-a-ram-disk-in-linux
-# size should be 512m at minimum
-# For configuration see:
-# https://github.com/mrmap-community/Mapbender2.8/wiki/System#ramdisk
+# absolute directory for temporary files - for use with external cms and security proxy (geotiff handling)
 # --------------------------------------------
-define("RAMDISK", "../tmp/ramdisk");
+#define("ABSOLUTE_TMPDIR", "/data/mapbender/http/tmp");
 
 # --------------------------------------------
-# absolute directory for temporary files - for use with external cms
+# Use libgeotif for managing of geotiff headers by security proxy - needs the installation of libgeotif - for debian do simply an: apt-get install geotiff-bin
 # --------------------------------------------
-
-define("ABSOLUTE_TMPDIR", "/data/mapbender/http/tmp");
+#define("LIBGEOTIFF", true);
 
 # --------------------------------------------
 # directory for log files
@@ -162,7 +157,7 @@ $mailPassword =  MAILPASSWORD;
 # wms monitoring
 # --------------------------------------------
 define("AUTO_UPDATE", "0");
-define("TIME_LIMIT", "30");
+define("TIME_LIMIT", "300");
 define("PHP_PATH", "/usr/bin/");
 
 # --------------------------------------------
