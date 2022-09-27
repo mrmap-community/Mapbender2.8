@@ -536,11 +536,14 @@ class wmc {
 	 * Get a list of all wms, that have the last monitoring status of -1 - don't use permissions for this !
 	 */
 	public function getAllUnavailableWms () {
+	    $validWmsArray = $this->getValidWms();
 	    $resultObj = array();
-	    $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where last_status = '-1'";   
-	    $v = array();
-        $t = array();
-        $res = db_prep_query($sql, $v, $t);
+	    if (count($validWmsArray) > 0) {
+	       $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where wms_id in (" . implode(',', $validWmsArray) . ") and last_status = '-1'";   
+	    } else {
+	        $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where last_status = '-1'";
+	    }
+	    $res = db_query($sql);
         while($row = db_fetch_assoc($res)) {
             $resultObj[]= array(
                 "title" => $row["wms_title"],
