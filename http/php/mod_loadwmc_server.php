@@ -292,7 +292,7 @@ switch ($ajaxResponse->getMethod()) {
 			);
 		}
 		if ($checkLayerAvailability) {
-			$unavailableIdsArray = $wmc->getUnavailableWms($currentUser);
+			$unavailableIdsArray = $wmc->getAllUnavailableWms();
 			$unavailableIdsTitles = array();
 			foreach ($unavailableIdsArray as $i) {
 				$unavailableIdsTitles[]= array(
