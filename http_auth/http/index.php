@@ -1871,6 +1871,11 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                  //$ogr->logRuntime = true;
                  //$e = new mb_exception(json_encode($reqParams));
                  //$e = new mb_exception("http_auth/http/index.php: got outputformat: " . "*".urldecode($reqParams['outputformat'])."*");
+                 if ($reqParams['resulttype'] == 'hits' || $reqParams['resulttype'] == 'HITS') {
+                     header("Content-Type: application/xml");
+                     echo $content;
+                     die();
+                 }                 
                  if ($log_id !== false) {
                      //test for exception and return error for transparency
                      if (strpos($content, ":ExceptionReport") !== false){
