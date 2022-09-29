@@ -64,6 +64,10 @@ class QueryHandler{
 			    $this->reqParams['outputformat'] = $postQueryParser->outputFormat;
 			    $this->reqParamsToLower['outputformat'] = $postQueryParser->outputFormat;
 			}
+			if (isset($postQueryParser->resultType) && $postQueryParser->resultType !== '') {
+			    $this->reqParams['resultType'] = $postQueryParser->resultType;
+			    $this->reqParamsToLower['resulttype'] = $postQueryParser->resultType;
+			}
 			if (isset($postQueryParser->serviceResourceName) && $postQueryParser->serviceResourceName !== '') {
 				if ($this->reqParams['service'] == 'WFS') {
 					switch ($this->reqParams['version']) {
