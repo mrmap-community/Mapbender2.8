@@ -531,7 +531,7 @@ function generateOpenSearchDescription($feedDoc, $recordId, $generateFrom) {
 	//Metadata for OpenSearch
 	//Contact
 	$osContact = $feedDoc->createElement("Contact");
-	$osContactText = $feedDoc->createTextNode("kontakt@geoportal.rlp.de");
+	$osContactText = $feedDoc->createTextNode("gdi-hessen@hvbg.hessen.de");
 	$osContact->appendChild($osContactText);
 	$feed->appendChild($osContact);
 	//Tags

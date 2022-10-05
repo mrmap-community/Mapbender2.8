@@ -321,7 +321,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             isset($mbMeta['country']) ? $mbMeta['country'] : 'country not known');
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/gco:CharacterString',
-            isset($mbMeta['electronicmailaddress']) ? $mbMeta['electronicmailaddress'] : "kontakt@geoportal.rlp.de");
+            isset($mbMeta['electronicmailaddress']) ? $mbMeta['electronicmailaddress'] : "gdi-hessen@hvbg.hessen.de");
     
     $xmlBuilder->addValue($MD_Metadata,
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL',
