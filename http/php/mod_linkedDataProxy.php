@@ -1771,6 +1771,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				); // TODO: relations, resolve, offsetList, crs, bbox-crs, maxAllowedOffset
 				                                                                                                           // first draft - set only json based api description and give it back
 				header ( "Content-type: application/openapi+json;version=3.0" );
+				if ($corsHeader != false) {
+				    header ( "Access-Control-Allow-Origin: " . $corsHeader);
+				}
 				echo json_encode ( $apiDescriptionJson, JSON_UNESCAPED_SLASHES );
 				die ();
 			}
