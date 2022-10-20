@@ -209,6 +209,12 @@ netgis.layers =
 				bbox = bbox.split( "," );
 				for ( var b = 0; b < bbox.length; b++ ) bbox[ b ] = parseFloat( bbox[ b ] );
 				
+				// Parse BBox CRS If Not String
+				if ( data.wmc.crs && !( typeof data.wmc.crs === "string" || data.wmc.crs instanceof String ) )
+				{
+					data.wmc.crs = data.wmc.crs[ 0 ];
+				}
+				
 				// BBox CRS
 				if ( data.wmc.crs && data.wmc.crs !== netgis.config.MAP_PROJECTION )
 				{

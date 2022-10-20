@@ -22,6 +22,7 @@ require(dirname(__FILE__) . "/../../http/classes/class_administration.php");
 require(dirname(__FILE__) . "/../../http/classes/class_connector.php");
 require_once(dirname(__FILE__) . "/../../http/classes/class_mb_exception.php");
 require_once(dirname(__FILE__) . "/../../http/classes/class_user.php");
+require_once(dirname(__FILE__) . "/../../http/classes/class_ogr.php");
 require(dirname(__FILE__) . "/../../owsproxy/http/classes/class_QueryHandler.php");
 
 //store global variable as local, cause it may be overwritten somewhen ;-)
@@ -143,6 +144,7 @@ if ($layerId !== false) {
     $anonymousAccess = $user->isLayerAccessible($layerId);
 }
 if ($wfsId !== false) {
+    //$e = new mb_exception("typename: ". $reqParams[$typeNameParameter]);
     if (isset($reqParams[$typeNameParameter]) && $reqParams[$typeNameParameter] !== false && $reqParams[$typeNameParameter] !== '') {
         $user = new user(PUBLIC_USER);
         $anonymousAccess = $user->areFeaturetypesAccessible($reqParams[$typeNameParameter], $wfsId);
@@ -328,6 +330,9 @@ if (($anonymousAccess && $proxyEnabled) || ($proxyEnabled == false)) {
 //if ($proxyEnabled == false && $anonymousAccess == false) {
 //    die('The requested resource does not exists or the routing through mapbenders owsproxy is not activated and anonymous access is not allowed!');
 //}
+
+//$e = new mb_exception("user: " . $userId);
+
 //get authentication infos if they are available in wms table! if not $auth = false
 if ($auth['auth_type'] == '') {
     unset($auth);
@@ -1143,8 +1148,8 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
     );
     foreach ($urlsToChange as $xpath) {
         $href = $capFromFascadeXmlObject->xpath($xpath);
-        $e = new mb_notice("old href: " . $href[0]);
-        #$e = new mb_notice("href replaced: " . replaceOwsUrls($href[0], $layerId));
+        //$e = new mb_notice("old href: " . $href[0]);
+        //$e = new mb_notice("href replaced: " . replaceOwsUrls($href[0], $layerId));
         $href[0][0] = replaceOwsUrls($href[0], $layerId, $extraParameter);
     }
     echo $capFromFascadeXmlObject->asXML();
@@ -1425,7 +1430,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
 {
     global $con, $n;
     $myconfs = $n->getWfsConfByPermission($userId);
-    $e = new mb_exception(json_encode($myconfs));
+    //$e = new mb_exception(json_encode($myconfs));
     if ($features !== false) {
         //check if we know the features requested
         if (count($features) == 0) {
@@ -1464,7 +1469,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
         $t = array("i", "s");
         $res = db_prep_query($sql, $v, $t);
         if (!($row = db_fetch_array($res))) {
-            $notice = new mb_exception("Permissioncheck failed no wfs conf for wfs " . $service["wfs_id"] . " with featuretype " . $feature);
+            $e = new mb_exception("Permissioncheck failed no wfs conf for wfs " . $service["wfs_id"] . " with featuretype " . $feature);
             throwE(array("No wfs_conf data for featuretype " . $feature));
             die();
         }
@@ -1472,7 +1477,7 @@ function checkWfsPermission($wfsOws, $features, $userId)
 
         //check permission
         if (!in_array($conf_id, $myconfs)) {
-            $notice = new mb_exception("Permissioncheck failed:" . $conf_id . " not in " . implode(",", $myconfs));
+            $e= new mb_exception("Permissioncheck failed:" . $conf_id . " not in " . implode(",", $myconfs));
             throwE(array("Permission denied.", " -> " . $conf_id, implode(",", $myconfs)));
             die();
         }
@@ -1639,6 +1644,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             }
         }
         $content = $d->file;
+        $httpCode = $d->httpCode;
     } else {
         $e = new mb_notice("owsproxy/index.php: postData will be send ");
         $postInterfaceObject = new connector();
@@ -1652,6 +1658,7 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             $postInterfaceObject->load($url);
         }
         $content = $postInterfaceObject->file;
+        $httpCode = $postInterfaceObject->httpCode;
     }
     $endTime = microtime();
     if (strtoupper($reqParams["request"]) == "GETMAP") { // getmap
@@ -1670,7 +1677,35 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
             header("Content-Type: " . $reqParams["exceptions"]);
             echo $content;
         } else {
+            //got some result 
             $source = new Imagick();
+            //$e = new mb_notice("format requested: ".$reqParams["format"]);
+            //if tiff (geotiff) was requested - read header to temporary file to add it later on
+            if (in_array(strtoupper($reqParams["format"]), array("TIFF", "TIF", "IMAGE/TIF", "IMAGE/TIFF"))) {
+                //$e = new mb_notice("tiff format requested");
+                //Added 2022-09-21 to allow secured access to masked geotiff images via wms
+                //write image to tmp folder
+                //extract header
+                //read header
+                //Doc: https://github.com/OSGeo/libgeotiff
+                if (defined("ABSOLUTE_TMPDIR") && ABSOLUTE_TMPDIR != "" && defined("LIBGEOTIFF") && LIBGEOTIFF == true) {
+                    $uuidGeoTiff = new Uuid();
+                    $tmpGeoTiffFilename = ABSOLUTE_TMPDIR . '/' .$uuidGeoTiff . '.tif';
+                    $tmpGeoTiffHeaderFilename = ABSOLUTE_TMPDIR . '/' .$uuidGeoTiff . '_header.txt';
+                        if ($h = fopen($tmpGeoTiffFilename, "wb")) {
+                            if (!fwrite($h, $content)) {
+                                $e = new mb_exception("http_auth/http/index.php: Could not write GeoTIFF cache to " . $tmpGeoTiffFilename);
+                            } else {
+                                exec('listgeo ' . $tmpGeoTiffFilename . ' > ' . $tmpGeoTiffHeaderFilename, $output);
+                            }
+                            fclose($h);
+                        } else {
+                            $e = new mb_exception("http_auth/http/index.php: Could not open " . $tmpGeoTiffFilename);
+                        }
+                } else {
+                    $e = new mb_exception("http_auth/http/index.php: Could not cache TIFF image to extract GeoTIFF header, cause ABSOLUTE_TMPDIR is not defined in mapbender.conf and/or libgeotiff is not available!");
+                }              
+            }
             $source->readImageBlob($content);
             if ($mask !== null && $mask != false) {
                 new mb_notice("spatial security: applying mask");
@@ -1681,7 +1716,44 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 $n->updateWmsLog($numColors <= 1 ? -1 : 1, null, null, $log_id);
             }
             header("Content-Type: " . $reqParams['format']);
-            echo $source->getImageBlob();
+            if (in_array(strtoupper($reqParams["format"]), array("TIFF", "TIF", "IMAGE/TIF", "IMAGE/TIFF"))) {
+                //Added 2022-09-21 to allow secured access to masked geotiff images via wms
+                //write tif to tmp folder 
+                //add header from above
+                //read image with header
+                //https://github.com/OSGeo/libgeotiff
+                if (defined("ABSOLUTE_TMPDIR") && ABSOLUTE_TMPDIR != "" && defined("LIBGEOTIFF") && LIBGEOTIFF == true) {
+                    //overwrite old geotiff
+                    if ($h = fopen($tmpGeoTiffFilename, "wb")) {
+                        $newImage = $source->getImageBlob();
+                        if (!fwrite($h, $newImage)) {
+                            $e = new mb_exception("http_auth/http/index.php: Could not write GeoTIFF cache to " . $tmpGeoTiffFilename);
+                        } else {
+                            $newImageWritten = true;
+                            $e = new mb_notice("http_auth/http/index.php: geotiff written to cache!");
+                        }
+                        fclose($h);
+                        if ($newImageWritten == true) {
+                            exec('geotifcp -g ' . $tmpGeoTiffHeaderFilename . ' ' . $tmpGeoTiffFilename . ' ' . $tmpGeoTiffFilename . ".new.tif", $output);
+                            //read image from file and simple echo it 
+                            echo file_get_contents($tmpGeoTiffFilename. ".new.tif");
+                            unlink($tmpGeoTiffFilename);
+                            unlink($tmpGeoTiffFilename. ".new.tif");
+                            unlink($tmpGeoTiffHeaderFilename);
+                        } else {
+                            unlink($tmpGeoTiffFilename);
+                            unlink($tmpGeoTiffHeaderFilename);
+                        }
+                    } else {
+                        $e = new mb_exception("http_auth/http/index.php: Could not open cached tiff file!");
+                    }
+                } else {
+                    $e = new mb_exception("http_auth/http/index.php: Could not cache new TIFF image to add GeoTIFF header, cause ABSOLUTE_TMPDIR is not defined in mapbender.conf and/or libgeotiff is not available!");
+                }
+            } else {
+                //default give back image without special headers
+                echo $source->getImageBlob();
+            }
         }
         return true;
     } else if (strtoupper($reqParams["request"]) == "GETFEATUREINFO") { // getmap
@@ -1714,74 +1786,134 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         //only possible if features should be logged!
         if ($log_id !== false) {
             $e = new mb_notice("http_auth/http/index.php: GetFeature invoked - logging activated!");
-            libxml_use_internal_errors(true);
-            try {
-                $featureCollectionXml = simplexml_load_string($content);
-                if ($featureCollectionXml === false) {
-                    foreach (libxml_get_errors() as $error) {
-                        $err = new mb_exception("owsproxy/http/index.php:" . $error->message);
+            $logWithOgr = true;
+            //another approach to count objects - use ogr from cli - features are temporary stored!
+            if ($logWithOgr == false) {
+                libxml_use_internal_errors(true);
+                try {
+                    $featureCollectionXml = simplexml_load_string($content);
+                    if ($featureCollectionXml === false) {
+                        foreach (libxml_get_errors() as $error) {
+                            $err = new mb_exception("owsproxy/http/index.php:" . $error->message);
+                        }
+                        throw new Exception("owsproxy/http/index.php:" . 'Cannot parse featureCollection XML!');
+                        //TODO give error message
                     }
-                    throw new Exception("owsproxy/http/index.php:" . 'Cannot parse featureCollection XML!');
+                } catch (Exception $e) {
+                    $err = new mb_exception("owsproxy/index.php:" . $e->getMessage());
                     //TODO give error message
                 }
-            } catch (Exception $e) {
-                $err = new mb_exception("owsproxy/index.php:" . $e->getMessage());
-                //TODO give error message
-            }
-            if ($featureCollectionXml !== false) {
-                $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
-                if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
-                    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
+                if ($featureCollectionXml !== false) {
+                    $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
+                    if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
+                        $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
+                    } else {
+                        $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
+                    }
+                    $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
+                    $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
+                    $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
+                    $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                    $featureCollectionXml->registerXPathNamespace("default", "");
+                    preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
+                    if (!$reqParams['version']) {
+                        $e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
+                    }
+                    switch ($reqParams['version']) {
+                        case "1.0.0":
+                            //get # of features from counting features
+                            $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+                            $numberOfFeatures = count($numberOfFeatures);
+                            break;
+                        case "1.1.0":
+                            //get # of features from counting features
+                            $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
+                            $numberOfFeatures = count($numberOfFeatures);
+                            break;
+                            //for wfs 2.0 - don't count features
+                        default:
+                            //get # of features from attribut
+                            $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
+                            $numberOfFeatures = $numberOfFeatures[0];
+                            break;
+                    }
+                    $endTime = microtime();
+                    $e = new mb_notice("http_auth/http/index.php: " . $numberOfFeatures . " delivered features from wfs.");
+                    //TODO: enhance error management
+                    if ($log_id !== false) {
+                        $n->updateWfsLog(1, '', '', $numberOfFeatures, $log_id);
+                    }
+                    $e = new mb_notice("http_auth/http/index.php: Time for counting: " . (string)($endTime - $startTime));
+                    $e = new mb_notice("http_auth/http/index.php: Memory used for XML String: " . getVariableUsage($content) / 1000000 . "MB");
+                    if ($header != false) {
+                        header($header);
+                    }
+                    echo $content;
                 } else {
-                    $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
+                    //TODO: no feature xml found ! - give back a good error message
+                    if ($header != false) {
+                        header($header);
+                        $e = new mb_exception("http_auth/http/index.php: WFS dows not give back GML - parsing was not successfully!");
+                    }
+                    echo $content;
                 }
-                $featureCollectionXml->registerXPathNamespace("gco", "http://www.isotc211.org/2005/gco");
-                $featureCollectionXml->registerXPathNamespace("gml", "http://www.opengis.net/gml");
-                $featureCollectionXml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
-                $featureCollectionXml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                $featureCollectionXml->registerXPathNamespace("default", "");
-                preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
-                if (!$reqParams['version']) {
-                    $e = new mb_notice("owsproxy/http/index.php: No version for wfs request given in reqParams!");
-                }
-                switch ($reqParams['version']) {
-                    case "1.0.0":
-                        //get # of features from counting features
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-                        $numberOfFeatures = count($numberOfFeatures);
-                        break;
-                    case "1.1.0":
-                        //get # of features from counting features
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/gml:featureMember');
-                        $numberOfFeatures = count($numberOfFeatures);
-                        break;
-                        //for wfs 2.0 - don't count features
-                    default:
-                        //get # of features from attribut
-                        $numberOfFeatures = $featureCollectionXml->xpath('//wfs:FeatureCollection/@numberReturned');
-                        $numberOfFeatures = $numberOfFeatures[0];
-                        break;
-                }
-                $endTime = microtime();
-                $e = new mb_notice("owsproxy/http/index.php: " . $numberOfFeatures . " delivered features from wfs.");
-                //TODO: enhance error management
-                if ($log_id !== false) {
-                    $n->updateWfsLog(1, '', '', $numberOfFeatures, $log_id);
-                }
-                $e = new mb_notice("owsproxy/http/index.php: Time for counting: " . (string)($endTime - $startTime));
-                $e = new mb_notice("owsproxy/http/index.php: Memory used for XML String: " . getVariableUsage($content) / 1000000 . "MB");
-                if ($header != false) {
-                    header($header);
-                }
-                echo $content;
             } else {
-                //TODO: no feature xml found ! - give back a good error message
-                if ($header != false) {
-                    header($header);
-                }
-                echo $content;
+                //count features with ogrinfo
+                /*
+                 * new 2022-08-04
+                 */
+                 $ogr = new Ogr();
+                 if ($reqParams['version'] == '2.0.0' || $reqParams['version'] == '2.0.2') {
+                     $typeParameterName = "typenames"; 
+                 } else {
+                     $typeParameterName = "typename"; 
+                 }
+                 //$ogr->logRuntime = true;
+                 //$e = new mb_exception(json_encode($reqParams));
+                 //$e = new mb_exception("http_auth/http/index.php: got outputformat: " . "*".urldecode($reqParams['outputformat'])."*");
+                 if ($reqParams['resulttype'] == 'hits' || $reqParams['resulttype'] == 'HITS') {
+                     header("Content-Type: application/xml");
+                     echo $content;
+                     die();
+                 }                 
+                 if ($log_id !== false) {
+                     //test for exception and return error for transparency
+                     if (strpos($content, ":ExceptionReport") !== false){
+                         header("Content-Type: application/xml"); //default to gml
+                         echo $content;
+                         die();
+                     }
+                     if ($httpCode == "500"){
+                         header("Content-Type: text/html"); //default to gml
+                         echo $content;
+                         die();
+                     }
+                     $numberOfObjects = $ogr->ogrCountFeatures($content, urldecode($reqParams['outputformat']), $reqParams[$typeParameterName], true);
+                     if ($numberOfObjects == false) {
+                         $n->updateWfsLog(0, 'Could not count objects for requested format: ' . urldecode($reqParams['outputformat']), '', 0, $log_id);
+                         header("Content-Type: application/json");
+                         echo '{"error": true, "message": "Objects should be counted, but requested format could not be parsed by proxy. Please use another format, e.g. GML, Shape or GeoJSON!"}';
+                         die();
+                     } else {
+                        $n->updateWfsLog(1, '', '', $numberOfObjects, $log_id);
+                     }
+                 }
+                 if ($reqParams['outputformat'] != false) {
+                     header("Content-Type: " . $reqParams['outputformat']);
+                     switch ($reqParams['outputformat']) {
+                         case "application/zip":
+                             $dateTime = date("Y-m-d");
+                             header("Content-Disposition: attachment; filename=\"" . $dateTime . "_mapbender_featuretype_" . $reqParams['typename'] . ".zip\"");
+                             break;
+                     }
+                 } else {
+                     header("Content-Type: application/xml"); //default to gml
+                 }
+                 
+                 echo $content;
             }
         } else {
+            //no logging of features defined
             if ($header != false) {
                 header($header);
             } else {
@@ -1795,11 +1927,13 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                             break;
                     }
                 } else {
-                    header("Content-Type: application/xml");
+                    header("Content-Type: application/xml"); //default to gml
                 }
             }
+            //return content as it is
             echo $content;
         }
+    //other operation ...
     } else {
         if ($header !== false) {
             header($header);

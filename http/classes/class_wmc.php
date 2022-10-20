@@ -181,10 +181,10 @@ class wmc {
 			$this->wmc_extent->miny = $row['miny'];
 			$this->wmc_extent->maxx = $row['maxx'];
 			$this->wmc_extent->maxy = $row['maxy'];
-            		$this->local_data_public = $row['wmc_local_data_public'];
-            		$this->local_data_size = $row['wmc_local_data_size'];
-            		$this->has_local_data = $row['wmc_has_local_data'];
-	    		$this->uuid = $row['uuid'];
+            $this->local_data_public = $row['wmc_local_data_public'];
+            $this->local_data_size = $row['wmc_local_data_size'];
+            $this->has_local_data = $row['wmc_has_local_data'];
+	    	$this->uuid = $row['uuid'];
 			$this->wmc_contactperson = $row['mb_user_name'];
 			$this->wmc_contactemail = $row['mb_user_email'];
 			return true;
@@ -513,10 +513,8 @@ class wmc {
 	public function getUnavailableWms ($user) {
 		$wmsArray = $this->getWmsWithPermission($user);
 		$resultObj = array();
-
 		for ($i = 0; $i < count($wmsArray); $i++) {
 			$currentWmsId = $wmsArray[$i]["id"];
-
 			$sql = "SELECT last_status FROM mb_wms_availability WHERE fkey_wms_id = $1";
 			$v = array($currentWmsId);
 			$t = array("i");
@@ -533,7 +531,30 @@ class wmc {
 		}
 		return $resultObj;
 	}
-
+	
+	/*
+	 * Get a list of all wms, that have the last monitoring status of -1 - don't use permissions for this !
+	 */
+	public function getAllUnavailableWms () {
+	    $validWmsArray = $this->getValidWms();
+	    $resultObj = array();
+	    if (count($validWmsArray) > 0) {
+	       $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where wms_id in (" . implode(',', $validWmsArray) . ") and last_status = '-1'";   
+	    } else {
+	        $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where last_status = '-1'";
+	    }
+	    $res = db_query($sql);
+        while($row = db_fetch_assoc($res)) {
+            $resultObj[]= array(
+                "title" => $row["wms_title"],
+                "id" => $row["wms_id"],
+                "availability" => row["availability"],
+                "index" => 0
+            );  
+        }
+    return $resultObj;
+    }
+	
 	/*
 	* function to update the information about wms in a mapbender wmc object and stores it in the database
 	* actually layer names and getmap urls are updated by the given mapbender layer id, also the dataurl entries are created or
@@ -1181,7 +1202,7 @@ SQL;
 	}
 
 	/**
-	 * Returns a WMC document with public local data (KML)
+	 * Returns the whole WMC document with public local data (KML)
 	 * @return String|boolean The document if it exists; else false
 	 * @param $id String the WMC id
 	 */
@@ -1730,8 +1751,8 @@ SQL;
 
 		//$e = new mb_exception("class_wmc.php: parsing wmc by xpath: title: ".$title[0]);
 		//$e = new mb_exception("class_wmc.php: parsing wmc by xpath: wmc_version: ".$this->wmc_version);
-//$e = new mb_exception("");
-//$e = new mb_exception("class_wmc.php: createObjFromWMC_xml: ".$data);
+        //$e = new mb_exception("");
+        //$e = new mb_exception("class_wmc.php: createObjFromWMC_xml: ".$data);
 
 		foreach ($values as $element) {
 			$tag = strtoupper(administration::sepNameSpace($element['tag']));
