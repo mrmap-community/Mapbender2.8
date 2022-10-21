@@ -38,6 +38,22 @@ function logit($text,$filename,$how){
 		fclose($h);
 	}
 }
+
+// function to delete one GET parameter totally from a query url
+function delTotalFromQuery($paramName, $queryString) {
+    $queryString = "&" . $queryString;
+    //only delete totally if not searchText itself
+    if ($paramName == "searchText") {
+        $str2exchange = "searchText=*&";
+    } else {
+        $str2exchange = "";
+    }
+    $queryStringNew = preg_replace('/\b' . $paramName . '\=[^&]+&?/', $str2exchange, $queryString);
+    $queryStringNew = ltrim($queryStringNew, '&');
+    $queryStringNew = rtrim($queryStringNew, '&');
+    return $queryStringNew;
+}
+
 $admin = new administration();
 /*
 Initial declaration of the return object, that handles some control of the distributed services
@@ -209,9 +225,9 @@ if ($inputWmcArray) {
 			// update urls from wmc with urls from database if id is given
 			//$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
 			$updatedWMC = $wmcGetApi->updateUrlsFromDb();
-	        	$wmcGetApi->createFromXml($updatedWMC);
-//set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
-$startWmcId = $input["id"];
+	        $wmcGetApi->createFromXml($updatedWMC);
+            //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
+            $startWmcId = $input["id"];
 			// increment load count
 			$wmcGetApi->incrementWmcLoadCount();
 		}
@@ -285,7 +301,22 @@ if ($getParams['WMS']) {
 				}
 				// get WMS by URL
 				else if (is_string($val)) {
-					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);		
+					//$e = new mb_exception("javascripts/initWmcObj.php: look for identifier element: ".$getParams['DATASETID']);
+					//check wms url for parameter request, service, version
+					//else add missing parameter
+				     
+				    if (!filter_var($val, FILTER_VALIDATE_URL) === false) {
+				        //sanitize url
+				        //del all wms params from url
+				        foreach (array('service','SERVICE','version','VERSION','request','REQUEST') as $paramName) {
+				            $val = delTotalFromQuery($paramName, $val);
+				        }
+				        $val .= "&REQUEST=GetCapabilities&VERSION=1.3.0&SERVICE=wms";
+				        $val = str_replace("?&","?", str_replace('&&', '&', $val));
+				        //add new ones to url
+				        //$e = new mb_exception("javascripts/init.WmcObj.php: wmsurlfrom new: ".$val);
+				    }
+				  				   
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
 					//Set zoom to extent of wms 
 					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
@@ -725,8 +756,9 @@ $resultObj["invalidId"]["wms"] = array_merge(
 );
 $e = new mb_notice("javascripts/initWmcObj.php: invalid wms list generated");
 // find potentially unavailable WMS
-$e = new mb_notice("javascripts/initWmcObj.php: find problematic wms");
-$unavailableIdsArray = $wmcGetApi->getUnavailableWms($currentUser);
+$e = new mb_notice("javascripts/initWmcObj.php: find problematic wms - which had problems in last monitoring");
+//$unavailableIdsArray = $wmcGetApi->getUnavailableWms($currentUser);
+$unavailableIdsArray = $wmcGetApi->getAllUnavailableWms();
 $unavailableIdsTitles = array();
 foreach ($unavailableIdsArray as $i) {
 	$unavailableIdsTitles[]= array(

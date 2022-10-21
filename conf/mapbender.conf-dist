@@ -38,10 +38,14 @@ define("CHARSET","UTF-8");
 define("TMPDIR", "../tmp");
 
 # --------------------------------------------
-# absolute directory for temporary files - for use with external cms
+# absolute directory for temporary files - for use with external cms and security proxy (geotiff handling)
 # --------------------------------------------
+#define("ABSOLUTE_TMPDIR", "/data/mapbender/http/tmp");
 
-define("ABSOLUTE_TMPDIR", "/data/mapbender/http/tmp");
+# --------------------------------------------
+# Use libgeotif for managing of geotiff headers by security proxy - needs the installation of libgeotif - for debian do simply an: apt-get install geotiff-bin
+# --------------------------------------------
+#define("LIBGEOTIFF", true);
 
 # --------------------------------------------
 # directory for log files
@@ -153,7 +157,7 @@ $mailPassword =  MAILPASSWORD;
 # wms monitoring
 # --------------------------------------------
 define("AUTO_UPDATE", "0");
-define("TIME_LIMIT", "30");
+define("TIME_LIMIT", "300");
 define("PHP_PATH", "/usr/bin/");
 
 # --------------------------------------------

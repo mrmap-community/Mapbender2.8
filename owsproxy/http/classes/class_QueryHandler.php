@@ -28,7 +28,7 @@ class QueryHandler{
 	private $owsproxyServiceKey = 'wms';
 	private $owsproxyServiceId;
 	private $onlineResource;
-        private $hasPost = false;
+    private $hasPost = false;
 	private $serviceResourceName;
 	public $req;
         public $reqMethod;
@@ -38,7 +38,7 @@ class QueryHandler{
 	 */
 	function __construct($postData, $request, $requestMethod){
 		//${$this->typeNameParameter};
-                $this->req = $request;
+        $this->req = $request;
 		$this->reqMethod = $requestMethod;
 		$this->setRequestParams(array_keys($request));
 		if ($postData !== false) {
@@ -59,6 +59,14 @@ class QueryHandler{
 			if (isset($postQueryParser->serviceRequestType) && $postQueryParser->serviceRequestType !== '') {
 				$this->reqParams['request'] = $postQueryParser->serviceRequestType;
 				$this->reqParamsToLower['request'] = $postQueryParser->serviceRequestType;
+			}
+			if (isset($postQueryParser->outputFormat) && $postQueryParser->outputFormat !== '') {
+			    $this->reqParams['outputformat'] = $postQueryParser->outputFormat;
+			    $this->reqParamsToLower['outputformat'] = $postQueryParser->outputFormat;
+			}
+			if (isset($postQueryParser->resultType) && $postQueryParser->resultType !== '') {
+			    $this->reqParams['resultType'] = $postQueryParser->resultType;
+			    $this->reqParamsToLower['resulttype'] = $postQueryParser->resultType;
 			}
 			if (isset($postQueryParser->serviceResourceName) && $postQueryParser->serviceResourceName !== '') {
 				if ($this->reqParams['service'] == 'WFS') {

@@ -27,8 +27,10 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 	var $serviceVersion; //string
 	var $serviceRequestType; //string
 	var $serviceResourceName; //string - layer name(s), featuretype name(s)
+	var $outputFormat; //string - parameter outputFormat
 	var $parsingSuccessful; //boolean
 	var $postType; //string - 'xml' or 'form'
+	var $resultType; //string - 'hits' or 'results'
 	/**
 	 * Constructor of the OwsPostQueryHandler
 	 * 
@@ -87,6 +89,8 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 			}
 			//$e = new mb_exception("class_owsPostQueryHandler.php: ".$this->serviceRequestType);
 			$this->serviceVersion = $queryDomObject->documentElement->getAttribute("version");
+			$this->outputFormat = $queryDomObject->documentElement->getAttribute("outputFormat");
+			$this->resultType = $queryDomObject->documentElement->getAttribute("resultType");
 			if ($this->serviceType == "WFS") {
 				//read out typename from wfs query as attribute
 				//register namespace
@@ -103,7 +107,7 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 				if (in_array(strtolower($this->serviceRequestType), $typenameRequired)) {
 					switch ($this->serviceVersion) {
 						case "2.0.0":
-                                                        if (strtolower($this->serviceRequestType) == 'describefeaturetype') {
+                            if (strtolower($this->serviceRequestType) == 'describefeaturetype') {
 							    $this->serviceResourceName = $queryNodeList->item(0)->getAttribute('typeName');
 							} else {
 							    $this->serviceResourceName = $queryNodeList->item(0)->getAttribute('typeNames');

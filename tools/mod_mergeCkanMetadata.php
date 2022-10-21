@@ -43,12 +43,42 @@ $returnObject->success = true;
 $returnObject->numberOfPackages = (integer)$mergedPackages;
 echo "Merged " . $mergedPackages . " ckan packages - from " . $mergedOrganisations . " organisations!" . "\n";
 $fileNameMerged = "ckan_metadata_merged.json";
+//test if old file exists and read number of packages from old file
+$oldMergedPackages = file_get_contents($metadataDir . "/" . $fileNameMerged);
+
+$today = date("Y-m-d"); 
 //write to merged file
-if($h = fopen($metadataDir . "/" . $fileNameMerged, "w")){
+if($h = fopen($metadataDir . "/" . $today . "_" . $fileNameMerged, "w")){
     if(!fwrite($h, json_encode($returnObject, true))){
-        echo "Could not write result file to " . $metadataDir . "/" . $fileNameMerged;
+        echo "Could not write result file to " . $metadataDir . "/" . $today . "_" . $fileNameMerged . "\n";
     }
     fclose($h);
-    echo "Ckan metadata for all organisations written to " . $metadataDir . "/" . $fileNameMerged . "\n";
+    echo "Ckan metadata for all organisations written to " . $metadataDir . "/" . $today . "_" . $fileNameMerged . "\n";
 }
+
+if($oldMergedPackages !== false){
+    //try to count packages
+    $oldMergedPackagesObject = json_decode($oldMergedPackages);
+    $oldNumberOfPackages = count($oldMergedPackagesObject->result);
+    //compare
+    echo "New number of packages: " . $mergedPackages . " - Previous number of packages: " . $oldNumberOfPackages. "\n";
+    if ((((float)$mergedPackages / (float)$oldNumberOfPackages) < 0.9) || (((float)$mergedPackages / (float)$oldNumberOfPackages) > 1.1)) {
+        //keep old file
+        echo "keep old file - difference more than 10%" . "\n";
+    } else {
+        //replace old file 
+        echo "replace old file - difference less than 10%" . "\n";
+        if($h = fopen($metadataDir . "/" . $fileNameMerged, "w")){
+            if(!fwrite($h, json_encode($returnObject, true))){
+                echo "Could not write result file to " . $metadataDir . "/" . $fileNameMerged . "\n";
+            }
+            fclose($h);
+            echo "Ckan metadata for all organisations written to " . $metadataDir . "/" . $fileNameMerged . "\n";
+        }
+    }
+} else {
+    echo "tools/mod_mergeCkanMetadata.php: could not open old merged file!" . "\n";
+}
+
+
 ?>

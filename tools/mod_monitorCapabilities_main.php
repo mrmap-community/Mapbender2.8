@@ -377,7 +377,7 @@ echo "please wait " . TIME_LIMIT . " seconds for the monitoring to finish...$br"
 sleep(TIME_LIMIT);
 //when time limit has ended: begin to collect results for every registrating user
 for ($iz = 0; $iz < count($user_id_all); $iz++) {
-    logit("/tools/mod_monitorCapabilities.php - collect info from xml for user: ".$user_id_all[$iz]);
+    //logit("/tools/mod_monitorCapabilities.php - collect info from xml for user: ".$user_id_all[$iz]);
     //$e = new mb_exception("/tools/mod_monitorCapabilities.php - collect info from xml for user: ".$user_id_all[$iz]);
     //loop for serviceType - reinitialize all things from earlier serviceType
     //foreach ($serviceTypes as $serviceType) {
@@ -410,7 +410,7 @@ for ($iz = 0; $iz < count($user_id_all); $iz++) {
 		$cap_diff = $tags['getcapdiff'];
 		$timestamp_begin = $tags['getcapbegin'];
 		$timestamp_end = $tags['getcapend'];
-logit("try to update ".$serviceType." with id ".$service_id_own[$k]);
+		//logit("try to update ".$serviceType." with id ".$service_id_own[$k]);
 		switch ($serviceType) {
 			case "WMS":
 				$map_url = rawurldecode($tags['getmapurl']);
