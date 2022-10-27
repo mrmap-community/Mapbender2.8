@@ -539,21 +539,28 @@ class wmc {
 	    $validWmsArray = $this->getValidWms();
 	    $resultObj = array();
 	    if (count($validWmsArray) > 0) {
-	       $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where wms_id in (" . implode(',', $validWmsArray) . ") and last_status = '-1'";   
+		$sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where wms_id in (";
+		$wmsIdArray = []; 
+		foreach ($validWmsArray as $validWms)  {
+		    //$e = new mb_exception("javascripts/map.php: validWms".json_decode(json_encode($validWms))->id);
+		    $wmsIdArray[] = json_decode(json_encode($validWms))->id;
+		}
+		$sql .= implode($wmsIdArray, ',');
+		$sql .= ") and last_status = '-1'";   
 	    } else {
 	        $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where last_status = '-1'";
 	    }
 	    $res = db_query($sql);
-        while($row = db_fetch_assoc($res)) {
-            $resultObj[]= array(
-                "title" => $row["wms_title"],
-                "id" => $row["wms_id"],
-                "availability" => row["availability"],
-                "index" => 0
-            );  
+            while($row = db_fetch_assoc($res)) {
+                $resultObj[]= array(
+                    "title" => $row["wms_title"],
+                    "id" => $row["wms_id"],
+                    "availability" => row["availability"],
+                    "index" => 0
+                );  
+            }
+            return $resultObj;
         }
-    return $resultObj;
-    }
 	
 	/*
 	* function to update the information about wms in a mapbender wmc object and stores it in the database
