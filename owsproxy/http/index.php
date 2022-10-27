@@ -178,7 +178,7 @@ if (session_id() !== $_REQUEST["sid"]) {
     header("Location: " . $redirectUrl);
     die();
 } else {
-    $e = new mb_exception("Current session_id() identical to requested SID!");
+    //$e = new mb_exception("Current session_id() identical to requested SID!");
 }
 //$e = new mb_exception("l180");
 //this is the request which may have been redirected
