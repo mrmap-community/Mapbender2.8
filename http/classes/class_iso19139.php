@@ -551,18 +551,18 @@ XML;
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
 			//get last part of string separated by the colon symbol
 			if ($this->hierarchyLevel != 'service' && $this->hierarchyLevel != '') {
-				$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
+				//$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
 				try {
-			        $crsObject = new Crs($this->refSystem);
+			            $crsObject = new Crs($this->refSystem);
 				} catch (Exception $e) {
-    			    $err = new mb_exception("classes/class_Iso19139.php: - tried to resolve crs via class_crs: ".$e->getMessage());
-			        //return "error";
-			        $crsObject = false;
+    			            $err = new mb_exception("classes/class_Iso19139.php: - tried to resolve crs via class_crs: ".$e->getMessage());
+			            //return "error";
+			            $crsObject = false;
 				}
 				if ($crsObject != false) {
-					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
-			        $epsgId = $crsObject->identifierCode;
-			        $this->refSystem = "EPSG:".$epsgId;
+				    //$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
+			            $epsgId = $crsObject->identifierCode;
+			            $this->refSystem = "EPSG:".$epsgId;
 				} 
 			}
 			//debug output of keywords:
