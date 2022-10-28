@@ -513,7 +513,7 @@ class Map {
 
 
 			if ($options["show"] && is_numeric($options["show"]) && !isset($options["visible"])) {
-				$e = new mb_exception("show");
+				//$e = new mb_exception("show");
 				// set all layers of WMS to visible
 				for ($i = 0; $i < count($wmsArray); $i++) {
 					$numLayers = count($wmsArray[$i]->objLayer);
