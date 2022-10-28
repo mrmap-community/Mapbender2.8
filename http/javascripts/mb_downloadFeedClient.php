@@ -337,7 +337,7 @@ function showDatasetList(featureCollection,id) {
 			//add identifier anchor
 			identifierAnchor =  $(document.createElement('a')).appendTo('#dataset_identifier');
 			identifierAnchor.attr({'id':'dataset_identifier_link'});
-			identifierAnchor.attr({'uuid':featureCollection.features[i].properties.code});
+			identifierAnchor.attr({'uuid':featureCollection.features[i].properties.fileIdentifier});
 			identifierAnchor.attr({'href':'../php/mod_iso19139ToHtml.php?url='+encodeURIComponent(featureCollection.features[i].properties.metadataLink)});
 			identifierAnchor.attr({'target':'_blank'});
 			identifierAnchor.text(featureCollection.features[i].properties.namespace+"#"+featureCollection.features[i].properties.code);
