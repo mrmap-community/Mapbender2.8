@@ -304,7 +304,7 @@ $.widget("mapbender.mb_hohe", {
 	_fetchdata : async function (data,div)  {
 		const response = await fetch('../plugins/mb_hohe_weiterleitung.php',{
 			method : 'POST',	
-			body: data 
+			body: data, 
 	   	});
 
 		const re = await response.text();
