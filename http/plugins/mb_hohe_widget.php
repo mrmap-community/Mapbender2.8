@@ -5,6 +5,7 @@ var MeasureApi = function (o) {
 
 	var measureDialog,
 		button,
+
 		that = this,
 		inProgress = false,
 		title = o.title,
@@ -40,7 +41,8 @@ var MeasureApi = function (o) {
                 //alert(o.$target.offset().left + ' ' + o.$target.offset().top);
 		measureDialog = $(informationHtml);
 		measureDialog.dialog({
-			autoOpen: false,
+			dialogClass: "ownSuperClass",
+            autoOpen: false,
 			position: [20,80],
                         width : 'auto',
                         heigth: 'auto',
@@ -89,6 +91,7 @@ var MeasureApi = function (o) {
                  
                  if(data == -1)
                  {
+                   ctx.clearRect(0, 0, 630, 250);
                    prep_json(jsonarray);
                    
                    draw_lineII();
@@ -153,7 +156,7 @@ var MeasureApi = function (o) {
 		}
 
 		measureDialog.dialog("open");
-                setText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.");
+                setText();
 	};
 
 	this.destroy = function () {
@@ -517,11 +520,12 @@ er wird farblich gezeichnet je nach dem ob die zwei Punkte in der BBox sind oder
 
     }
 
-    var setText = function(t) {
+    var setText = function() {
         ctx.font = "12px Arial";
 
         ctx.clearRect(0, 0, 600, 250);
-        ctx.fillText(t,9,15);
+        ctx.fillText("Sie koennen mit Klicken eine Strecke in die Kartei zeichnen. Beim letzten Punkt bitte ein Doppelklick.",9,15);
+        ctx.fillText("Nach dem Erstellen koennen Sie ueber die Strecke fahren und bekommen die Hoehe angezeigt.",9,30);
         draw_stuetzpunkte();
     }
 

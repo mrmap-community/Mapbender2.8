@@ -287,27 +287,45 @@ $.widget("mapbender.mb_hohe", {
 		}
 
 		var myJsonString = JSON.stringify(sende);
-		// actual save request
-		var req = new Mapbender.Ajax.Request({
-			url: "../plugins/mb_hohe_weiterleitung.php",
-			method: "getheigth",
-			parameters: {
-				stringxyz: myJsonString
-			},
-			callback: this._mycallback
-		});
-		req.send();
+		var div = document.createElement('div');
+		div.setAttribute('style', 'position: absolute;top: calc(50% - 75px);left: calc(50% - 120px);');
+		var img = document.createElement('img');
+		img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="40" width="60" height="80" opacity="1"><animate id="a" begin="0;b.end-0.25s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="90" y="40" width="60" height="80" opacity=".4"><animate begin="a.begin+0.15s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect><rect x="170" y="40" width="60" height="80" opacity=".3"><animate id="b" begin="a.begin+0.3s" attributeName="opacity" dur="0.75s" values="1;.2" fill="freeze"/></rect></svg>');
+		div.append(img);
+		document.querySelector('.ownSuperClass').append(div);	
+
+		var data = new FormData()
+		data.append('action', 'getheigth')
+		data.append('stringxyz', myJsonString )
+
+		this._fetchdata(data,div);	
 	},
 
-	_mycallback: function (result, status, message) {
-		var arr = JSON.parse(message);
+	_fetchdata : async function (data,div)  {
+		const response = await fetch('../plugins/mb_hohe_weiterleitung.php',{
+			method : 'POST',	
+			body: data 
+	   	});
+
+		const re = await response.text();
+		var arr = JSON.parse(re);
 		var s = JSON.stringify(arr);
 
 		for (var i = 0; i < jsonPoints.length; i++) {
 			jsonPoints[i].hoehe = arr[(3 * i) + 2];
 		}
 		paintPoints = true;
-		alert('Diagramm erstellt.\nZum Anzeigen, die Maus ueber das Kartenfenster bewegen');
+		div.remove();
+
+		uebergeben = true;
+        var l = jsonPoints.length;
+		for (var i = 0; i < l; i++)
+			this._trigger("pointadded", null, jsonPoints[i]);
+			this._trigger("update", null, -1);
+			this._draw(undefined, {
+				not_clicked: true
+			});
+		return  re;
 	},
 
 	/*

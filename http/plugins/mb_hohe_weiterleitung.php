@@ -10,24 +10,16 @@
 require_once(dirname(__FILE__)."/../classes/class_json.php");
 require_once(dirname(__FILE__)."/../classes/class_connector.php");
 
-$ajaxResponse = new AjaxResponse($_POST);
-if($ajaxResponse->getMethod() != "getheigth") {
-	$ajaxResponse->setSuccess(false);
-	$ajaxResponse->setMessage("method invalid");
-	$ajaxResponse->send();
-	exit;
-}
-
-$json = new Mapbender_JSON();
-$xyz = $ajaxResponse->getParameter('stringxyz');
+if($_POST['action'] = 'getheigth')
+{
+$xyz = $_POST['stringxyz'];
 $url = "http://localhost/mapbender/plugins/dtm.php";
 $e = new connector();
 $e->set("httpType","post");
 $e->set("httpPostFieldsNumber",1);
 $e->set("curlSendCustomHeaders",false);
 $e->set("httpPostData","xyz=".urlencode($xyz));
-$result = $e->load($url);
-$ajaxResponse->setMessage($result);
-$ajaxResponse->setSuccess(true);
-$ajaxResponse->send();
+$result = $e->load($url);	
+echo $result;	
+}
 ?>
