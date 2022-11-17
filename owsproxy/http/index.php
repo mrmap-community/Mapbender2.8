@@ -169,16 +169,16 @@ if (defined("OWSPROXY_ALLOW_SESSION_GRABBING") && OWSPROXY_ALLOW_SESSION_GRABBIN
 //exchange them, if they differ and redirect to an new one with the current session, they don't differ if the session was grabbed - e.g. when printing secured services via mapbender itself.
 if (session_id() !== $_REQUEST["sid"]) {
     //get all request params which are original
-    $e = new mb_exception("session_id " . session_id());
-    $e = new mb_exception("sid " . $_REQUEST["sid"]);
+    $e = new mb_notice("session_id " . session_id());
+    $e = new mb_notice("sid " . $_REQUEST["sid"]);
     //build reuquest
     $redirectUrl = OWSPROXY . "/" . session_id() . "/" . $_REQUEST['wms'] . $query->getRequest();
     $redirectUrl = str_replace(":80:80", ":80", $redirectUrl);
-    $e = new mb_exception("IDs differ - redirect to new owsproxy url: " . $redirectUrl);
+    $e = new mb_notice("IDs differ - redirect to new owsproxy url: " . $redirectUrl);
     header("Location: " . $redirectUrl);
     die();
 } else {
-    $e = new mb_exception("Current session_id() identical to requested SID!");
+    //$e = new mb_exception("Current session_id() identical to requested SID!");
 }
 //$e = new mb_exception("l180");
 //this is the request which may have been redirected

@@ -1033,7 +1033,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 					break;
 			}
 		}
-		$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
+		//$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
 		return $this->get($getRequest); //from class_ows!
 	}
 	

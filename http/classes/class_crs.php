@@ -140,10 +140,19 @@ class Crs {
 						$this->identifierCode = explode('/',$identifierNew)[2];
 						return;
 					} else {
-						$this->identifier = $identifier;
-						$this->identifierType = 'other';
-						$this->identifierCode = $identifier;
-						return;
+						if (substr($identifier, 0, 40) === 'http://www.opengis.net/gml/srs/epsg.xml#') {
+						    $identifierNew = str_replace('http://www.opengis.net/gml/srs/epsg.xml#','',$identifier);
+						    //remaining string: ({code})
+						    $this->identifier = $identifier;
+						    $this->identifierType = 'urlxml';
+						    $this->identifierCode = $identifierNew;
+						    return;
+					        } else {
+						    $this->identifier = $identifier;
+						    $this->identifierType = 'other';
+						    $this->identifierCode = $identifier;
+						    return;
+						}
 					}
 				}
 			}

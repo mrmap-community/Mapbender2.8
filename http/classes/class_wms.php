@@ -3378,6 +3378,11 @@ SQL;
 	}
 
 	function updateGuiLayer($i,$myWMS,$gui_id){
+		$layerNameString = $this->objLayer[$i]->layer_name;
+		if ($layerNameString == "") {
+		    $e = new mb_exception("classes/class_wms.php - fn updateGuiLayer - Layer has no name! GUI layer relations could not be updated!");
+		    return;
+		}	
 		$sql = "SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_name = $2";
 		$v = array($myWMS,$this->objLayer[$i]->layer_name);
 		$t = array('i','s');
