@@ -1,7 +1,11 @@
+*.mo
 /logs/*.log
+http/tmp/
 /http/tmp/*.png
 /http/tmp/*.pdf
 /http/tmp/*.xml
 /http/tmp/*.gfs
 /http/tmp/wmc/*
 /tools/tmp/*
+http/geoportal/preview/*.jpg
+http/geoportal/preview/*.png
