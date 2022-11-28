@@ -303,6 +303,7 @@ XML;
 			//$iso19139Xml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
 			$iso19139Xml->registerXPathNamespace("xlink", "http://www.w3.org/1999/xlink");
 			$iso19139Xml->registerXPathNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+			$iso19139Xml->registerXPathNamespace("gmx", "http://www.isotc211.org/2005/gmx");
 			$iso19139Xml->registerXPathNamespace("default", "");
 			//TODO: use md_metadata element before xpath
 			$e = new mb_notice("Parsing of xml metadata file was successfull"); 
@@ -548,21 +549,27 @@ XML;
 			//ref_system
 			$this->refSystem = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
 			$this->refSystem = $this->refSystem[0];
+			if ($this->refSystem == '' || !isset($this->refSystem)) {
+			    //try to find it in anchor tag instead
+			    //$e  = new mb_exception("classes/class_iso19139.php: try to search epsg in gmx:Anchor tag: ".json_encode($this->refSystem));
+			    $this->refSystem = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gmx:Anchor');
+			    $this->refSystem = $this->refSystem[0];
+			}
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
 			//get last part of string separated by the colon symbol
 			if ($this->hierarchyLevel != 'service' && $this->hierarchyLevel != '') {
-				//$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
+				$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
 				try {
-			            $crsObject = new Crs($this->refSystem);
+			        $crsObject = new Crs($this->refSystem);
 				} catch (Exception $e) {
-    			            $err = new mb_exception("classes/class_Iso19139.php: - tried to resolve crs via class_crs: ".$e->getMessage());
-			            //return "error";
-			            $crsObject = false;
+    			    $err = new mb_exception("classes/class_Iso19139.php: - tried to resolve crs via class_crs: ".$e->getMessage());
+			        //return "error";
+			        $crsObject = false;
 				}
 				if ($crsObject != false) {
-				    //$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
-			            $epsgId = $crsObject->identifierCode;
-			            $this->refSystem = "EPSG:".$epsgId;
+					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
+			        $epsgId = $crsObject->identifierCode;
+			        $this->refSystem = "EPSG:".$epsgId;
 				} 
 			}
 			//debug output of keywords:
