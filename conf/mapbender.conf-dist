@@ -299,6 +299,10 @@ define("PUBLIC_USER_DEFAULT_SRS", "EPSG:25832");
 # --------------------------------------------
 define("PUBLIC_GROUP", "");
 
+# --------------------------------------------
+# define a admin user id for catalogue maintenance - defaults to 1 - 'root' user
+# --------------------------------------------
+define("CATALOGUE_MAINTENANCE_USER", 1);
 
 # --------------------------------------------
 # define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework
