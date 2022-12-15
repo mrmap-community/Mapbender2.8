@@ -443,7 +443,7 @@ if (isset($orgaId)){
 				//get id from user if already exists - is needed for update since ckan 2.8+!
 				$requestPost->{'id'} = $ckanResultUserObject->result->id;
 				$requestPost->{'name'} = $editingUserName;
-				//$requestPost->{'email'} = "kontakt@geoportal.rlp.de";
+				//$requestPost->{'email'} = "gdi-hessen@hvbg.hessen.de";
 				$requestPost->{'email'} = $editingUserName . "@example.com";
 				$requestPost->{'password'} = "1234".$editingUserName."5678";
 				

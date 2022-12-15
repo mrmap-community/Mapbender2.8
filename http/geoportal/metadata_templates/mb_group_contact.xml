@@ -32,7 +32,7 @@
 	      <gmd:Country codeList="https://en.wikipedia.org/wiki/ISO_3166-1" codeListValue="DE">Deutschland</gmd:Country>
             </gmd:country>
             <gmd:electronicMailAddress>
-              <gco:CharacterString>kontakt@geoportal.rlp.de</gco:CharacterString>
+              <gco:CharacterString>gdi-hessen@hvbg.hessen.de</gco:CharacterString>
             </gmd:electronicMailAddress>
           </gmd:CI_Address>
         </gmd:address>

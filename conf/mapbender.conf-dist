@@ -16,6 +16,7 @@ define("PORT", "%%DBPORT%%"); //default "5432"
 define("DB", "%%DBNAME%%");
 define("OWNER", "%%DBOWNER%%");
 define("PW", "%%DBPASSWORD%%");
+define("DB_test","TEST_DB");
 
 # --------------------------------------------
 # prepared statements (PHP > 5.1.x, PostgreSQL > 7.4)

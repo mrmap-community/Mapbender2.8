@@ -555,7 +555,7 @@ function fillISO19139($iso19139, $recordId)
 		//get email address from ows service metadata out of mapbender database	
 		$electronicMailAddressText = $iso19139->createTextNode($userMetadata['mb_user_email']);
 	} else {
-		$electronicMailAddressText = $iso19139->createTextNode('kontakt@geoportal.rlp.de');
+		$electronicMailAddressText = $iso19139->createTextNode('gdi-hessen@hvbg.hessen.de');
 	}
 	$role = $iso19139->createElement("gmd:role");
 	$CI_RoleCode = $iso19139->createElement("gmd:CI_RoleCode");
@@ -895,7 +895,7 @@ function fillISO19139($iso19139, $recordId)
 		if (isset($userMetadata['mb_user_email'])) {
 			$resMailText = $iso19139->createTextNode($userMetadata['mb_user_email']);
 		} else {
-			$resMailText = $iso19139->createTextNode("kontakt@geoportal.rlp.de");
+			$resMailText = $iso19139->createTextNode("gdi-hessen@hvbg.hessen.de");
 		}
 	}
 	$resRoleText = $iso19139->createTextNode("pointOfContact");
