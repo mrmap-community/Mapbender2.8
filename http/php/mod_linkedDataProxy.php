@@ -2885,7 +2885,7 @@ switch ($f) {
 		// own styles - mapviewer ...
 		$html .= '<style>
 	#map {
-		width: 600px;
+		max-width: 600px;
 		height: 400px;
 	}
 </style>' . $newline;
@@ -3126,10 +3126,10 @@ switch ($f) {
 					$html .= '<div class=" flex-row justify-content-start align-items-center flex-wrap col-md-3">' . $newline;
 					$html .= '<span class="mr-2 font-weight-bold">Filter</span>' . $newline;
 					if (isset ( $bbox ) && $bbox != "") {
-						$html .= '<div class="mr-1 my-1 btn-group"><button disabled="" style="opacity: 1;" class="py-0 btn btn-primary btn-sm disabled">bbox≈' . $bbox . '</button><button type="button" aria-haspopup="true" aria-expanded="false" class="py-0 btn btn-danger btn-sm" onclick="location.href = URL_remove_parameter(URL_remove_parameter(location.href, \'bbox\'), \'offset\');return false;">×</button></div>' . $newline;
+						$html .= '<div class="mr-1 my-1 btn-group"><button disabled="" style="opacity: 1;" class="py-0 btn btn-primary btn-sm disabled bbox-filter-button">bbox≈' . $bbox . '</button><button type="button" aria-haspopup="true" aria-expanded="false" class="py-0 btn btn-danger btn-sm" onclick="location.href = URL_remove_parameter(URL_remove_parameter(location.href, \'bbox\'), \'offset\');return false;">×</button></div>' . $newline;
 					}
 					if (isset ( $nativeJson ) && $nativeJson == true) {
-						$html .= '<div class="mr-1 my-1 btn-group"><button disabled="" style="opacity: 1;" class="py-0 btn btn-primary btn-sm disabled">nativeJson=true</button><button type="button" aria-haspopup="true" aria-expanded="false" class="py-0 btn btn-danger btn-sm" onclick="location.href = URL_remove_parameter(location.href, \'nativeJson\');return false;">×</button></div>' . $newline;
+						$html .= '<div class="mr-1 my-1 btn-group"><button disabled="" style="opacity: 1;" class="py-0 btn btn-primary btn-sm disabled bbox-filter-button">nativeJson=true</button><button type="button" aria-haspopup="true" aria-expanded="false" class="py-0 btn btn-danger btn-sm" onclick="location.href = URL_remove_parameter(location.href, \'nativeJson\');return false;">×</button></div>' . $newline;
 					}
 					// for each other set parameter show***********************************************
 					// variable with parameters:
