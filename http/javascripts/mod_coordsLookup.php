@@ -61,17 +61,25 @@ include '../include/dyn_php.php';
 $projections = explode(',',$projections);
 $projectionsValue =  array();
 $projectionsName = array();
+$projectionsPlaceholderX = array();
+$projectionsPlaceholderY = array();
 for ($i=0; $i < count($projections); $i++){
 	$projectionList = explode(';',$projections[$i]);
 	if (count($projectionList) > 1) {
 		$projectionsValue[$i] = $projectionList[0];
 		$projectionsName[$i] = _mb($projectionList[1]);
+		$projectionsPlaceholderX[$i] = $projectionList[2];
+		$projectionsPlaceholderY[$i] = $projectionList[3];
 	} else {
 		$projectionsValue[$i] = $projectionList[0];
 		$projectionsName[$i] = $projectionList[0];
+		$projectionsPlaceholderX[$i] = $projectionList[0];
+		$projectionsPlaceholderY[$i] = $projectionList[0];
 	}
 }
 ?>
+var placeholder_array_X = <?php echo json_encode($projectionsPlaceholderX); ?>;
+var placeholder_array_Y = <?php echo json_encode($projectionsPlaceholderY); ?>;
 var projectionsDefault = <?php if (isset($projections_default) and !empty($projections_default)) {echo $projections_default;} else { echo "undefined";}?>;
 var standingHighlightCoords = null;
 Mapbender.events.afterMapRequest.register( function(){
@@ -110,15 +118,16 @@ var CoordsLookup = function() {
 		//enable coords by default
 		$('#coords').attr("checked", "checked");
 
+
 //		Coordinates input with label
 		this.coordsInputLabel          = $(document.createElement('label')).attr({'for':'coord-x'}).text('<?php echo _mb("east / longitude");?>: ').appendTo(this.coordsInputContainer);
 		$(this.coordsInputLabel).after($(document.createElement('br')));
-		this.coordXInput               = $(document.createElement('input')).attr({'id':'coord-x','size':18 }).appendTo(this.coordsInputContainer);
+		this.coordXInput               = $(document.createElement('input')).attr({'id':'coord-x','name':'coord-x','size':18}).appendTo(this.coordsInputContainer);
 		$(this.coordXInput).after($(document.createElement('br')));
 
 		this.coordsInputLabel          = $(document.createElement('label')).attr({'for':'coord-y'}).text('<?php echo _mb("north / latitude");?>: ').appendTo(this.coordsInputContainer);
 		$(this.coordsInputLabel).after($(document.createElement('br')));
-		this.coordYInput               = $(document.createElement('input')).attr({'id':'coord-y','size':18}).appendTo(this.coordsInputContainer);
+		this.coordYInput               = $(document.createElement('input')).attr({'id':'coord-y','name':'coord-y','size':18}).appendTo(this.coordsInputContainer);
 		$(this.coordYInput).after($(document.createElement('br')));
 		this.mapcodeInputLabel          = $(document.createElement('label')).attr({'for':'coord-x'}).text('<?php echo _mb("Global Mapcode");?>: ').appendTo(this.mapcodeContainer);
 		this.mapcodeInput               = $(document.createElement('input')).attr({'id':'mapcodeinput','size':18 }).appendTo(this.mapcodeContainer);
@@ -127,29 +136,35 @@ var CoordsLookup = function() {
 //		$(this.coordYInput).after('&nbsp;&nbsp;');
 		
 //		Projection select
-		this.projectionSelect          = $(document.createElement('select')).attr({'id':'projection-select'}).appendTo(this.projectionSelectContainer);
+        this.projectionInputLabel          = $(document.createElement('label')).attr({'for':'projection-select'}).text('<?php echo _mb("Spatial Reference System");?>: ').appendTo(this.projectionSelectContainer);
+		$(this.projectionInputLabel).after($(document.createElement('br')));
+		this.projectionSelect          = $(document.createElement('select')).attr({'id':'projection-select', 'name':'projection-select'}).appendTo(this.projectionSelectContainer);
 //		Perimeter select
-		this.perimeterSelect           = $(document.createElement('select')).attr({'id':'perimeter-select'}).appendTo(this.perimeterSelectContainer);		
+        this.perimeterInputLabel          = $(document.createElement('label')).attr({'for':'perimeter-select'}).text('<?php echo _mb("Perimeter");?>: ').appendTo(this.perimeterSelectContainer);
+		$(this.perimeterInputLabel).after($(document.createElement('br')));
+		this.perimeterSelect           = $(document.createElement('select')).attr({'id':'perimeter-select'}).appendTo(this.perimeterSelectContainer);
 //		Trigger button
 		this.triggerButton             = $(document.createElement('input')).attr({'id':'trigger-button','type':'button','value':'<?php echo _mb("zoom to coordinates");?>'}).appendTo(this.triggerButtonContainer);
 //		Trigger button New Search
 		this.triggerButtonNew          = $(document.createElement('input')).attr({'id':'trigger-button-new','type':'button','value':'<?php echo _mb("new");?>'}).appendTo(this.triggerButtonContainer);		
 
 	};
-	
+
 	this.initForm = function() {
 //		Fill projection select with options
-<?php
-		for ($i=0; $i < count($projections); $i++){
-			echo "$(this.projectionSelect).append('<option value=\"".$projectionsValue[$i]."\">".$projectionsName[$i]."</option>');\n";
-		}
-?>
-		if (typeof projectionsDefault === 'undefined') {
-			$(this.projectionSelect).prepend('<option value="Projektionssystem" selected=selected><?php echo _mb("Spatial Reference System");?></option>');
-		} else {
-			$(this.projectionSelect).prepend('<option value="Projektionssystem"><?php echo _mb("Spatial Reference System");?></option>');
-			<?php echo "$(this.projectionSelect).append('<option value=\"".$projectionsValue[$projections_default -1]."\"selected=selected >".$projectionsName[$projections_default -1]."</option>');\n"; ?>
-		}
+        <?php
+                for ($i=0; $i < count($projections); $i++){
+                    if ($i === ($projections_default -1)){
+                        echo "$(this.projectionSelect).append('<option value=\"".$projectionsValue[$projections_default -1]."\"selected=selected>".$projectionsName[$projections_default -1]."</option>');\n";
+                        echo "$(this.coordXInput).attr({'placeholder':'$projectionsPlaceholderX[$i]'});";
+                        echo "$(this.coordYInput).attr({'placeholder':'$projectionsPlaceholderY[$i]'});";
+                    }
+                    else {
+                         echo "$(this.projectionSelect).append('<option value=\"".$projectionsValue[$i]."\">".$projectionsName[$i]."</option>');\n";
+                    }
+                }
+        ?>
+
 //		Fill perimeter select with options	
 		for(var i = 0; i < options.perimeters.length; i++) {
 			var optionValue = options.perimeters[i] + '';
@@ -158,7 +173,7 @@ var CoordsLookup = function() {
 			
 			$(this.perimeterSelect).append('<option value=' + optionValue + ' >' + optionValue + '</option>');
 		}
-		$(this.perimeterSelect).prepend('<option value="Umkreis" ><?php echo _mb("Perimeter: ");?></option>');
+		//$(this.perimeterSelect).prepend('<option value="Umkreis" ><?php echo _mb("Perimeter: ");?></option>');
 		//default
 		$("#mapcodecontainer").hide();
 
@@ -182,15 +197,30 @@ var CoordsLookup = function() {
 		$(this.triggerButtonNew).click(function() {
 			Mapbender.modules[options.id].emptyFieldsAndMarker();
 		});
+
+//		Set action for changing Placeholder in X Y input field
+		$(this.projectionSelect).click(function() {
+			Mapbender.modules[options.id].changeToPlaceholder();
+		});
 	};
-	
+
 	this.emptyFieldsAndMarker = function() {
 				if(standingHighlightCoords !== null){ 
 					standingHighlightCoords.clean();
 				}
 				this.coordXInput.val('');
 				this.coordYInput.val('');
-	}	
+	};
+
+	this.changeToPlaceholder = function(){
+	    for (var i=0; i < placeholder_array_X.length; i++) {
+	        if($("#projection-select option:selected").index() == i) {
+	            $(this.coordXInput).attr({'placeholder': <?php echo ("placeholder_array_X[i]") ?>});
+	            $(this.coordYInput).attr({'placeholder': <?php echo ("placeholder_array_Y[i]") ?>});
+                return;
+            }
+        }
+	};
 	
 	this.zoomToCoordinates = function() {
 		//if radio button selection between coords and mapcode exists, check for selection
@@ -210,10 +240,7 @@ var CoordsLookup = function() {
 			//check if deg/minutes/seconds have been inserted
 			//validate 
 			this.regexdms = /([0-9.]+)\°([0-9.]+)\'([0-9.]+)\'\'/;
-			if($("#projection-select option:selected").index() == 0) {
-				alert('<?php echo _mb("Invalid spatial reference system! Please select a value from list!");?>');
-				return;	
-			}
+
 			this.coords.sourceProjection = (this.projectionSelect.val()) ? 
 				this.projectionSelect.val() : null;
 			this.coords.targetProjection = Mapbender.modules[options.target].getSRS();
@@ -280,7 +307,6 @@ var CoordsLookup = function() {
 		if(this.coords.sourceProjection) {
 			this.transformProjection();
 		}
-
 	};
 	
 	this.transformProjection = function() {
@@ -380,7 +406,6 @@ var CoordsLookup = function() {
 		});
 		req.send();
 	};
-	
 	this.buildForm();
 	this.initForm();
 
