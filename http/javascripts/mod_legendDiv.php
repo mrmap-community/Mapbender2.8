@@ -44,6 +44,7 @@ var showwmstitle = typeof showwmstitle === "undefined" ? "false" : showwmstitle;
 var showlayertitle = typeof showlayertitle === "undefined" ? "false" : showlayertitle;
 var showgroupedlayertitle = typeof showgroupedlayertitle === "undefined" ? "false" : showgroupedlayertitle;
 var reverseLegend = typeof reverseLegend === "undefined" ? "false" : reverseLegend;
+var exclude = typeof exclude === "undefined" ? [] : exclude;
 
 function mod_legend_pos(frameName){
 	if(frameName == mod_legend_target){
@@ -55,7 +56,9 @@ function mod_legend_pos(frameName){
 
 		if(reverseLegend == 'true') {
 			for(var i=mb_mapObj[ind].wms.length-1; i>=0; i--){
-
+				if (array_contains(exclude,mb_mapObj[ind].wms[i].wms_id)){
+                    			continue;
+                		}
 				 	var layerNames = mb_mapObj[ind].wms[i].getLayers(mb_mapObj[ind]);
 					for(var j=0; j<layerNames.length; j++){
 						var layerParent = mb_mapObj[ind].wms[i].checkLayerParentByLayerName(layerNames[j]);
