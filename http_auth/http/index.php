@@ -727,7 +727,7 @@ function getNonce()
 function throwE($e)
 {
     global $reqParams, $imageformats;
-
+    header ( "Access-Control-Allow-Origin: " . "*");
     if (in_array($reqParams['format'], $imageformats)) {
         throwImage($e);
     } else {
@@ -738,6 +738,7 @@ function throwE($e)
 function throwImage($e)
 {
     global $width, $height;
+    header ( "Access-Control-Allow-Origin: " . "*");
     $image = imagecreate($width, $height);
     $transparent = ImageColorAllocate($image, 155, 155, 155);
     ImageFilledRectangle($image, 0, 0, $width, $height, $transparent);
@@ -771,6 +772,7 @@ function responseImage($im)
 {
     global $reqParams;
     global $imageformats;
+    header ( "Access-Control-Allow-Origin: " . "*");
     if (!in_array($reqParams['format'], $imageformats)) {
         header("Content-Type: image/png");
         imagepng($im);
@@ -1106,7 +1108,8 @@ function getCapabilities($request, $requestFull, $extraParameter, $auth = false)
 {
     global $arrayOnlineresources;
     global $layerId;
-    header("Content-Type: application/xml");
+    header("Content-Type: application/xml");    
+    header ( "Access-Control-Allow-Origin: " . "*");
     if ($auth) {
         $d = new connector($requestFull, $auth);
     } else {
@@ -1190,6 +1193,7 @@ function getWfsCapabilities($request, $extraParameter, $auth = false)
     global $sid, $serviceId, $wfsId;
     global $reqParams;
     global $proxyEnabled, $anonymousAccess;
+    header ( "Access-Control-Allow-Origin: " . "*");
     //$e = new mb_exception("http_auth/http/index.php: in function getWfsCapabilities - request=".$request);
     $urlsToChange = array();
     switch ($reqParams['version']) {
@@ -1617,6 +1621,7 @@ function checkLayerPermission($wms_id, $l, $userId)
 function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask = null)
 {
     global $reqParams, $n, $postData, $query;
+    header ( "Access-Control-Allow-Origin: " . "*");
     $startTime = microtime();
     if ($postData == false) {
         $d = new connector();

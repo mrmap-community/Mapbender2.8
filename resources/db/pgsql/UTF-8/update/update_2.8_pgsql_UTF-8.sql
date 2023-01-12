@@ -704,3 +704,7 @@ GRANT ALL ON SEQUENCE oaf_proxy_log_log_id_seq TO mapbenderdbuser;
 -- ALTER TABLE mb_group DROP COLUMN mb_group_ckan_api_key_text;
 
 ALTER TABLE mb_group ADD COLUMN mb_group_ckan_api_key_text text;
+
+-- Column: spatial_security in table mb_group
+
+ALTER TABLE mb_group ADD COLUMN spatial_security text;

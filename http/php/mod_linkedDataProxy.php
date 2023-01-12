@@ -1261,17 +1261,10 @@ $returnObject = new stdClass ();
  * GET list of wfs which are published with an open license - they don't need autorization control
  * 
  */
-if ($restrictToOpenData == true) {
-    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
-    if (count($excludeWfsIds) >= 1) {
-        $sql .= " AND wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
-    }
-} else {
-    $sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id";
-    if (count($excludeWfsIds) >= 1) {
-        $sql .= " WHERE wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
-    }
-} 
+$sql = "SELECT * FROM (SELECT wfs_id, wfs_version, wfs_abstract, wfs_title, wfs_owsproxy, fkey_termsofuse_id, wfs_getcapabilities, providername, fees FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1";
+if (count($excludeWfsIds) >= 1) {
+    $sql .= " AND wfs_id NOT IN (".implode(",", $excludeWfsIds).")";
+}
 $v = array ();
 $t = array ();
 $res = db_prep_query ( $sql, $v, $t );
@@ -1283,6 +1276,7 @@ while ( $row = db_fetch_array ( $res ) ) {
 }
 unset($i);
 //$e = new mb_exception("php/linkedDataProxy.php: open wfs: ".json_encode($openWfsIds));//strings !
+//check if special wfs was choosen
 if (! isset ( $wfsid ) || $wfsid == "") {
 	// list all public available wfs which are classified as opendata!
 	$returnObject->service = array ();
@@ -1320,11 +1314,11 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 		$returnObject->message = "Services found in registry!";
 	}
 } else {
-		// ************************************************************************************************************************************
-		// service part
-		// ************************************************************************************************************************************
-		// try to instantiate wfs object
-		/*
+	// ************************************************************************************************************************************
+	// service part
+	// ************************************************************************************************************************************
+	// try to instantiate wfs object
+	/*
 	 * check authentication if access to resource / featuretype is not allowed
 	 *
 	 */
