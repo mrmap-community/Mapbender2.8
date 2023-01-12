@@ -46,6 +46,15 @@ var showgroupedlayertitle = typeof showgroupedlayertitle === "undefined" ? "fals
 var reverseLegend = typeof reverseLegend === "undefined" ? "false" : reverseLegend;
 var exclude = typeof exclude === "undefined" ? [] : exclude;
 
+function array_contains(hay,needle){
+    for(var i = 0; i < hay.length; i++ ){
+        if (hay[i] == needle){
+            return true
+        }
+    } 
+    return false;
+}
+
 function mod_legend_pos(frameName){
 	if(frameName == mod_legend_target){
 		var ind = getMapObjIndexByName(mod_legend_target);
@@ -103,7 +112,9 @@ function mod_legend_pos(frameName){
 		}
 		else {
 			for(var i=0; i<mb_mapObj[ind].wms.length; i++){
-	
+					if (array_contains(exclude,mb_mapObj[ind].wms[i].wms_id)){
+                    				continue;
+                			}
 				 	var layerNames = mb_mapObj[ind].wms[i].getLayers(mb_mapObj[ind]);
 					for(var j=0; j<layerNames.length; j++){
 						var layerParent = mb_mapObj[ind].wms[i].checkLayerParentByLayerName(layerNames[j]);
