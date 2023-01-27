@@ -174,12 +174,21 @@ if ($_POST["suggest"] || $error_msg){
 		echo "<label for='exampleInputText1'>Email Text</label>";
 		echo "<textarea class='form-control' id='exampleInputText1' name='comment' cols=38 rows=10>" . $text . "</textarea>";
 	echo "</div><br>";
-
-	echo "<td></td><td><input class='btn btn-primary' type='submit' name='mail' value='Send Email'></td><br>";
+	echo "<div class='container'>";
+						echo "<div class='row'>";
+							echo "<div class='col1'>";
+								echo "<input class='btn btn-primary' type='submit' name='mail' value='Send Email'>";
+							echo "</div>";
+							echo "<div class='col1'>";
+								echo "<a id='deleteWMS' href='../php/mod_deleteWMS.php?&amp;guiID=Administration_DE&amp;elementID=deleteWMS' title='Set the form' class=''><input class='button_cancel btn btn-primary col-xs-3 form-control  btn-block' type='button' value='cancel'></a>";
+							echo "</div>";
+						echo "</div>";
+					echo "</div>";
+	
 
 	echo "<input type='hidden' name='owners' value='" . $_POST["owners"] . "'>";
 	echo "</form>";
-	mail($email, $fromName, $text);	
+	//mail($email, $fromName, $text);	
 }
 else {	
 	// delete WMS
@@ -293,10 +302,10 @@ else {
 		$cnt = 0;
 		
 		
-		echo "<form name='form1' action='" . $self ."' method='post'>";
+		echo "<form id='form1' name='form1' action='" . $self ."' method='post'>";
 		echo "<div id='optionsbox' style='margin-top:0'><label for='guiList'><b>Wählen Sie Ihren WMS aus</b></label>
 			<select class='form-control' name='wmsList' onchange='submit()'>";
-			echo "<option id='edit-item' value=''></option>";
+			echo "<option id='edit-item' value='' selected>Select a WMS from the list</option>";
 		while($row = db_fetch_array($res))
 		{
 			$wmsvalue = $row["wms_id"];
@@ -445,7 +454,16 @@ else {
 						echo "alert('You are not allowed to delete this WMS!');";
 						echo "</script>";
 					}
-					echo "<input class='button_del btn btn-primary' type='button' value='suggest deletion' onclick='suggest_deletion(\"" . $email_str . "\")'>";
+					echo "<div class='container'>";
+						echo "<div class='row'>";
+							echo "<div class='col1'>";
+								echo "<input class='button_del btn btn-primary col-xs-3 form-control  btn-block' type='button' value='suggest deletion' onclick='suggest_deletion(\"" . $email_str . "\")'><br>";
+							echo "</div>";
+							echo "<div class='col1'>";
+								echo "<a id='deleteWMS' href='../php/mod_deleteWMS.php?&amp;guiID=Administration_DE&amp;elementID=deleteWMS' title='Set the form' class=''><input class='button_cancel btn btn-primary col-xs-3 form-control  btn-block' type='button' value='cancel'></a>";
+							echo "</div>";
+						echo "</div>";
+					echo "</div>";
 				}
 
 		}
