@@ -8,6 +8,7 @@
 	require_once(dirname(__FILE__)."/../classes/class_georss_geometry.php");
 	require_once(dirname(__FILE__)."/../classes/class_Uuid.php");
 	require_once(dirname(__FILE__)."/../classes/class_rss_factory.php");
+	require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
 	
 	if (file_exists ( dirname ( __FILE__ ) . "/../../conf/excludeFromAtomFeedClient.json" )) {
 	    $configObject = json_decode ( file_get_contents ( "../../conf/excludeFromAtomFeedClient.json" ) );
@@ -283,6 +284,9 @@ switch ($_REQUEST['method']) {
 				$feature->properties["date"] = $dateArray[$i];
 				$feature->properties["code"] = $codeArray[$i];
 				$feature->properties["namespace"] = $namespaceArray[$i];
+				$metadataObject = new Iso19139();
+				$metadataObject->createFromUrl($metadataLinkArray[$i]);
+				$feature->properties["fileIdentifier"] = (string)$metadataObject->fileIdentifier;
 				$feature->properties["metadataLink"] = $metadataLinkArray[$i];
 				$feature->properties["capabilitiesLink"] = $capLinkArray[0];
 				$feature->properties["datasetFeedLink"] = $datasetFeedLinkArray[$i];
