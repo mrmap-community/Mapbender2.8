@@ -2809,7 +2809,7 @@ CREATE TABLE mapviewer_types
   mapviewer_api_json varchar(512)
 )
 WITH (
-  OIDS=TRUE
+  OIDS=FALSE
 );
 ALTER TABLE mapviewer_types
   OWNER TO postgres;
@@ -2922,7 +2922,7 @@ CREATE TABLE custom_category_origin
   CONSTRAINT custom_category_origin_pkey PRIMARY KEY (id)
 )
 WITH (
-  OIDS=TRUE
+  OIDS=FALSE
 );
 ALTER TABLE custom_category_origin
   OWNER TO postgres;
