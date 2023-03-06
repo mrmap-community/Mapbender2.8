@@ -1476,8 +1476,17 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			}*/
 		}
 	}
-	$myWfsFactory = new UniversalWfsFactory ();
-	$wfs = $myWfsFactory->createFromDb ( $wfsid ); // set force version to pull featuretype_name with namespace!!!!, $forceVersion = "2.0.0"
+	if (in_array($wfsid, $excludeWfsIds)) {
+	    $wfs = null;
+	    $returnObject->success = false;
+	    $returnObject->message = "WFS with id does not exists!";
+	    header ( "Content-type: application/json" );
+	    echo json_encode ( $returnObject );
+	    die();
+	} else {
+	    $myWfsFactory = new UniversalWfsFactory ();
+	    $wfs = $myWfsFactory->createFromDb ( $wfsid ); // set force version to pull featuretype_name with namespace!!!!, $forceVersion = "2.0.0"
+	}
 	if ($wfs == null) {
 		$returnObject->success = false;
 		$returnObject->message = "Wfs object could not be created from db!";

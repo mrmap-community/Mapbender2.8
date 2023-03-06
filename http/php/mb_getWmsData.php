@@ -36,7 +36,7 @@ if ($command == "getWmsData") {
 	}
 	
 	//get existing DB wms information 
-    	$sql = "SELECT * from layer WHERE fkey_wms_id = $1 ORDER BY layer_id";
+    	$sql = "SELECT * from layer WHERE fkey_wms_id = $1 ORDER BY layer_pos";
     	$v = array ($wms);
     	$t = array ('i');
    	$res = db_prep_query($sql, $v, $t);
