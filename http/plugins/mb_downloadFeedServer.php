@@ -7,9 +7,8 @@
 	require_once(dirname(__FILE__)."/../classes/class_gml2.php");
 	require_once(dirname(__FILE__)."/../classes/class_georss_geometry.php");
 	require_once(dirname(__FILE__)."/../classes/class_Uuid.php");
+	require_once(dirname(__FILE__)."/../classes/class_rss_factory.php");
 	require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
-
-
 	
 	if (file_exists ( dirname ( __FILE__ ) . "/../../conf/excludeFromAtomFeedClient.json" )) {
 	    $configObject = json_decode ( file_get_contents ( "../../conf/excludeFromAtomFeedClient.json" ) );
@@ -317,6 +316,24 @@ switch ($_REQUEST['method']) {
 		//log usage
 		//logDlsUsage ($link, $s_title, $datasetid)
 		logDlsUsage ($serviceFeedUrl, $feature->properties["title"], $feature->properties["namespace"]."#".$feature->properties["code"]);
+		
+		if (defined("DOWNLOAD_GEO_RSS_FILE") && DOWNLOAD_GEO_RSS_FILE !="") {
+		    $pubDate = new DateTime();
+    		$rssFactory = new RssFactory();
+    		$rssFeed = $rssFactory->loadOrCreate(DOWNLOAD_GEO_RSS_FILE);
+    		$rssFeed->channel_url=LOGIN;
+    		$rssFeed->channel_title="Geoportal.rlp downloads RSS";
+    		$rssFeed->channel_description="Invocation of INSPIRE ATOM Feed downloads";
+    		$rssItem = new RssItem();
+    		$rssItem->setTitle($feature->properties["title"] . " - " .  $feature->properties["code"]);
+    		$rssItem->setDescription("Download started for: " . $feature->properties["title"]);
+    		$rssItem->setUrl($serviceFeedUrl);
+    		$rssItem->setPubDate($pubDate->format(DateTime::RSS));
+    		//$geoRssItem->setBbox($bboxArray);
+    		$rssFeed->appendTop($rssItem);
+    		$rssFeed->saveAsFile();
+		}
+		
 		echo $featureCollection->toGeoJSON();
 		break;
 	case "getDatasetFeedObjectFromUrl" :
