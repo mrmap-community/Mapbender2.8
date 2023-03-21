@@ -128,7 +128,7 @@ class UniversalWmsFactory extends WmsFactory {
 	    $cache = new Cache ();
 	    if ($cache->isActive) {
 	        if ($cache->cachedVariableExists ( 'wms_obj_cache_' . $id . '_' . md5($appId) ) != false) {
-	            $e = new mb_exception("Deliver wms obj with id " . $id . " from cache! Generation time: " . gmdate("Y-m-d\TH:i:s\Z", $cache->cachedVariableCreationTime('wms_obj_cache_' . $id . '_' . md5($appId))));
+	            //$e = new mb_exception("Deliver wms obj with id " . $id . " from cache! Generation time: " . gmdate("Y-m-d\TH:i:s\Z", $cache->cachedVariableCreationTime('wms_obj_cache_' . $id . '_' . md5($appId))));
 	            return $cache->cachedVariableFetch ( 'wms_obj_cache_' . $id . '_' . md5($appId) );
 	        }
 	    }
@@ -166,16 +166,34 @@ class UniversalWmsFactory extends WmsFactory {
 	public function createLayerFromDb ($id, $appId = null) {
 		$wmsId = intval(wms::getWmsIdByLayerId($id));
 		$version = $this->getVersionByWmsId($wmsId);
-		$e = new mb_exception('classes/class_universal_wms_factory.php: wms_version: ' . $version);
-		
+		//$e = new mb_exception('classes/class_universal_wms_factory.php: wms_version: ' . $version);
+		$cache = new Cache ();
+		if ($cache->isActive) {
+		    if ($cache->cachedVariableExists ( 'layer_obj_cache_' . $id . '_' . md5($appId) ) != false) {
+		        //$e = new mb_exception("Deliver layer obj with id " . $id . " from cache! Generation time: " . gmdate("Y-m-d\TH:i:s\Z", $cache->cachedVariableCreationTime('wms_obj_cache_' . $id . '_' . md5($appId))));
+		        return $cache->cachedVariableFetch ( 'layer_obj_cache_' . $id . '_' . md5($appId) );
+		    }
+		}
 		if (!is_null($version)) {
 
 			$factory = $this->getFactory($version);
 			if (!is_null($factory)) {
 				if (!is_null($appId)) {
-					return $factory->createLayerFromDb($id, $wmsId, $appId);
+				    if ($cache->isActive) {
+				        $returnObject = $factory->createLayerFromDb($id, $wmsId, $appId);
+				        //write to cache
+				        $cache->cachedVariableAdd ( 'layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+				    }
+				    return $returnObject;
+					//return $factory->createLayerFromDb($id, $wmsId, $appId);
 				}
-				return $factory->createLayerFromDb($id, $wmsId);
+				if ($cache->isActive) {
+				    $returnObject = $factory->createLayerFromDb($id, $wmsId);
+				    $cache->cachedVariableAdd ( 'layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+				    
+				}
+				return $returnObject;
+				//return $factory->createLayerFromDb($id, $wmsId);
 			}
 			return null;
 		}
