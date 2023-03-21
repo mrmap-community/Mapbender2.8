@@ -142,14 +142,14 @@ class UniversalWmsFactory extends WmsFactory {
 					    if ($cache->isActive) {
 					        $returnObject = $factory->createFromDb($id, $appId);
 					        //write to cache 
-					        $cache->cachedVariableAdd ( 'wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+					        $cache->cachedVariableAdd ( 'wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, 120 );
 					    }
 					    return $returnObject;
 						
 					}
 					if ($cache->isActive) {
 					    $returnObject = $factory->createFromDb($id);
-					    $cache->cachedVariableAdd ( 'wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+					    $cache->cachedVariableAdd ( 'wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, 120 );
 					    
 					}
 					return $returnObject;
@@ -182,14 +182,14 @@ class UniversalWmsFactory extends WmsFactory {
 				    if ($cache->isActive) {
 				        $returnObject = $factory->createLayerFromDb($id, $wmsId, $appId);
 				        //write to cache
-				        $cache->cachedVariableAdd ( 'layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+				        $cache->cachedVariableAdd ( 'layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, 120 );
 				    }
 				    return $returnObject;
 					//return $factory->createLayerFromDb($id, $wmsId, $appId);
 				}
 				if ($cache->isActive) {
 				    $returnObject = $factory->createLayerFromDb($id, $wmsId);
-				    $cache->cachedVariableAdd ( 'layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+				    $cache->cachedVariableAdd ( 'layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, 120 );
 				    
 				}
 				return $returnObject;
