@@ -11,6 +11,7 @@ require_once dirname(__FILE__) . "/class_ows_factory.php";
 require_once dirname(__FILE__) . "/class_wms_factory.php";
 require_once dirname(__FILE__) . "/class_wms_1_1_1_factory.php";
 require_once dirname(__FILE__) . "/class_wms_1_3_0_factory.php";
+require_once (dirname ( __FILE__ ) . "/class_cache.php");
 
 /**
  * 
@@ -123,6 +124,14 @@ class UniversalWmsFactory extends WmsFactory {
 	}
 	
 	public function createFromDb ($id, $appId = null) {
+	    //cache reading of wms objects from db to enhance loading of big layertrees 
+	    $cache = new Cache ();
+	    if ($cache->isActive) {
+	        if ($cache->cachedVariableExists ( 'wms_obj_cache_' . $id . '_' . md5($appId) ) != false) {
+	            $e = new mb_exception("Deliver wms obj with id " . $id . " from cache! Generation time: " . gmdate("Y-m-d\TH:i:s\Z", $cache->cachedVariableCreationTime('wms_obj_cache_' . $id . '_' . md5($appId))));
+	            return $cache->cachedVariableFetch ( 'wms_obj_cache_' . $id . '_' . md5($appId) );
+	        }
+	    }
 		try {
 			$version = $this->getVersionByWmsId($id);
 			if (!is_null($version)) {
@@ -130,9 +139,20 @@ class UniversalWmsFactory extends WmsFactory {
 				$factory = $this->getFactory($version);
 				if (!is_null($factory)) {
 					if (!is_null($appId)) {
-						return $factory->createFromDb($id, $appId);
+					    if ($cache->isActive) {
+					        $returnObject = $factory->createFromDb($id, $appId);
+					        //write to cache 
+					        $cache->cachedVariableAdd ( 'wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+					    }
+					    return $returnObject;
+						
 					}
-					return $factory->createFromDb($id);
+					if ($cache->isActive) {
+					    $returnObject = $factory->createFromDb($id);
+					    $cache->cachedVariableAdd ( 'wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, 20 );
+					    
+					}
+					return $returnObject;
 				}
 				return null;
 			}
@@ -146,6 +166,8 @@ class UniversalWmsFactory extends WmsFactory {
 	public function createLayerFromDb ($id, $appId = null) {
 		$wmsId = intval(wms::getWmsIdByLayerId($id));
 		$version = $this->getVersionByWmsId($wmsId);
+		$e = new mb_exception('classes/class_universal_wms_factory.php: wms_version: ' . $version);
+		
 		if (!is_null($version)) {
 
 			$factory = $this->getFactory($version);
