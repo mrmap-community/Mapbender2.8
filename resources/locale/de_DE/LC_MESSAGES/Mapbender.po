@@ -4399,5 +4399,5 @@ msgid "Access via services"
 msgstr "Zugriff über Dienste"
 
 msgid "No layer with legend activated. Please open the themes menu and activate some layer."
-msgstr "Es ist keine Kartenebene mit Legende aktiviert. Bitte öffnen sie die Themen und aktivieren Sie einen Kartenlayer."
+msgstr "Es ist keine Kartenebene mit Legende aktiviert. Bitte öffnen Sie die Themen und aktivieren Sie einen Kartenlayer."
 
