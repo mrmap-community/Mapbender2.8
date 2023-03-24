@@ -197,7 +197,7 @@ define("NOTIFY_ON_UPDATE",true);
 # RSS
 # --------------------------------------------
 define("GEO_RSS_FILE", "../tmp/georss.xml");
-
+define("DOWNLOAD_GEO_RSS_FILE", "../tmp/download_georss.xml");
 
 # --------------------------------------------
 # TWITTER
