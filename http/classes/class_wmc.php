@@ -538,29 +538,27 @@ class wmc {
 	public function getAllUnavailableWms () {
 	    $validWmsArray = $this->getValidWms();
 	    $resultObj = array();
-	    if (count($validWmsArray) > 0) {
-		$sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where wms_id in (";
-		$wmsIdArray = []; 
-		foreach ($validWmsArray as $validWms)  {
-		    //$e = new mb_exception("javascripts/map.php: validWms".json_decode(json_encode($validWms))->id);
-		    $wmsIdArray[] = json_decode(json_encode($validWms))->id;
-		}
-		$sql .= implode($wmsIdArray, ',');
-		$sql .= ") and last_status = '-1'";   
+	    //$e = new mb_exception("classes/class_wmc.php: " . json_encode($validWmsArray));
+	    $validWmsIdArray = array();
+	    foreach ($validWmsArray as $wms) {
+	        $validWmsIdArray[] = $wms['id'];
+	    }
+	    if (count($validWmsIdArray) > 0) {
+	       $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where wms_id in (" . implode(',', $validWmsIdArray) . ") and last_status = '-1'";   
 	    } else {
 	        $sql = "select wms_id, wms_title, availability from wms inner join mb_wms_availability on wms.wms_id = mb_wms_availability.fkey_wms_id where last_status = '-1'";
 	    }
 	    $res = db_query($sql);
-            while($row = db_fetch_assoc($res)) {
-                $resultObj[]= array(
-                    "title" => $row["wms_title"],
-                    "id" => $row["wms_id"],
-                    "availability" => row["availability"],
-                    "index" => 0
-                );  
-            }
-            return $resultObj;
+        while($row = db_fetch_assoc($res)) {
+            $resultObj[]= array(
+                "title" => $row["wms_title"],
+                "id" => $row["wms_id"],
+                "availability" => row["availability"],
+                "index" => 0
+            );  
         }
+    return $resultObj;
+    }
 	
 	/*
 	* function to update the information about wms in a mapbender wmc object and stores it in the database
