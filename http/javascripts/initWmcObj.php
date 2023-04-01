@@ -539,10 +539,12 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			// TODO: here there may exists firewall problems which cut the request part after the first ampersand!!!!
 			//$e = new mb_exception("javascripts/initWmcObj.php: found url ".urldecode($inputGeojson));
 			//$e = new mb_exception("javascripts/initWmcObj.php: found url unencoded ".$inputGeojson);
-			$jsonFile = new connector($inputGeojson);
-			//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON: ".$jsonFile->file);
-			//$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
-			$geojson = json_decode($jsonFile->file);
+			$jsonFileConnector = new connector();
+			$jsonFileConnector->set('externalHeaders', 'empty');
+			$jsonFileConnector->load($inputGeojson);
+			//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON: ".$jsonFileConnector->file);
+			//$jsonFileConnector = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
+			$geojson = json_decode($jsonFileConnector->file);
 		} else {
 			$e = new mb_notice("javascripts/initWmcObj.php: GEOJSON parameter will be interpreted as string!");
 			$geojson = json_decode(urldecode($inputGeojson));
