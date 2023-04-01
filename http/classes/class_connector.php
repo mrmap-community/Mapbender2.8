@@ -331,7 +331,9 @@ class connector {
 						"Proxy-Connection: Keep-Alive"
 				);
 			}
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		        if ($headers != 'empty') {
+		            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			}
 		}
 		#curl_setopt($ch, CURLOPT_HEADER, true);
 //$e = new mb_exception("class_connector.php: CURL connect to:".$url);
