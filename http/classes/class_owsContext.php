@@ -489,6 +489,10 @@ class OwsContext {
 		    $localData = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:kmls");
 		    $localDataOrder = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:kmlOrder");
 		    //use first entry
+		    //before, check if data is encoded 
+		    if (strpos($localData, 'base64_') === 0) {
+		        $localData = base64_decode(str_replace('base64_', '', $localData));
+		    }
 		    $localData = json_decode($localData[0]);
 		    $localDataOrder = json_decode($localDataOrder[0]);
 		    $mergedKml = new Kml();

@@ -95,9 +95,9 @@ class wmc {
 	var $userId;
 	var $timestamp;
 	var $public;
-        var $local_data_public = 0;
-        var $has_local_data = 0;
-        var $local_data_size = '0';
+    var $local_data_public = 0;
+    var $has_local_data = 0;
+    var $local_data_size = '0';
 	var $uuid; 
 
 	// set during parsing
@@ -238,9 +238,14 @@ class wmc {
 		$this->wmc_title = $generalTitle;
         	if($mapObject[0]->kmls) {
             		$this->has_local_data = true;
+            		/*
+            		 * Alter the kmls - base64 encode them to prevent problems (armin:2023-04-06) - this may be only needed when storing it into wmc xml!
+            		 */
+            		//$mapObject[0]->kmls = "base64_" .base64_encode($mapObject[0]->kmls);
             		$this->local_data_size = strlen(json_encode($mapObject[0]->kmls));
             		if(defined('MAX_WMC_LOCAL_DATA_SIZE')) {
                 		if($this->local_data_size > MAX_WMC_LOCAL_DATA_SIZE) {
+                		        $e = new mb_exception("classes/class_wmc.php: max local data size exeeded - please increase the value in mapbender.conf!");
                     			$this->has_local_data = false;
                     			$this->local_data_size = '0';
                     			unset($mapObject[0]->kmls);
@@ -1525,8 +1530,18 @@ SQL;
 
 		// set general extension data
 		if (count($this->generalExtensionArray) > 0) {
-			$json = new Mapbender_JSON();
-			array_push($wmcJsArray, "restoredWmcExtensionData = " . $json->encode($this->generalExtensionArray) . ";");
+		    //TODO - check base64
+			//$json = new Mapbender_JSON();
+			//test decode base 64
+			if (strpos($this->generalExtensionArray['kmls'], 'base64_') === 0) {
+			    $KMLString = base64_decode(str_replace('base64_', '', (string)$this->generalExtensionArray['kmls']));
+			    $this->generalExtensionArray['kmls'] = $KMLString;
+			}
+			if (strpos($this->generalExtensionArray['KMLS'], 'base64_') === 0) {
+			    $KMLString = base64_decode(str_replace('base64_', '', (string)$this->generalExtensionArray['KMLS']));
+			    $this->generalExtensionArray['KMLS'] = $KMLString;
+			}
+			array_push($wmcJsArray, "restoredWmcExtensionData = " . json_encode($this->generalExtensionArray) . ";");
 		}
 
 		// reset WMS data
@@ -1902,17 +1917,34 @@ SQL;
 					//
 					$this->setMapData();
 				}
+				/*
+				 * extract extensions - be aware, that storing of json-encode(d) content may make some trouble
+				 * the kmls / KMLS extension include geojson objects as vector layer. this content maybe base64 encoded 
+				 * to solve that problem - the encoded string can be identified with a leading "base64_"  (armin:2023-04-06) 
+				 */
+				$base64EncodedExtensions = array('KMLS', 'kmls');
 				if ($generalExtension) {
+				    //TODO: enable base64 for kmls everywhere the extension is used, class_wmc.php, class_wmcToXml.php, initWmcObj.php, ...
 					if ($value !== "") {
 						if (isset($this->generalExtensionArray[$tag])) {
 							if (!is_array($this->generalExtensionArray[$tag])) {
 								$firstValue = $this->generalExtensionArray[$tag];
 								$this->generalExtensionArray[$tag] = array();
+								//base 64
+								if (in_array($tag, $base64EncodedExtensions) && strpos($firstValue, 'base64_') === 0) {
+								    $firstValue = base64_decode(str_replace('base64_', '', $firstValue));
+								}
 								array_push($this->generalExtensionArray[$tag], $firstValue);
 							}
+							if (in_array($tag, $base64EncodedExtensions) && strpos($value, 'base64_') === 0) {
+							    $value = base64_decode(str_replace('base64_', '', $value));
+							}
+							//add the value - is this the right way? TODO: check this behauviour
 							array_push($this->generalExtensionArray[$tag], $value);
-						}
-						else {
+						} else {
+						    if (in_array($tag, $base64EncodedExtensions) && strpos($value, 'base64_') === 0) {
+						        $value = base64_decode(str_replace('base64_', '', $value));
+						    }
 							$this->generalExtensionArray[$tag] = $value;
 						}
 					}
