@@ -107,8 +107,7 @@ if ($saveInSession === 1) {
 	$e = new mb_notice("mod_savewmc_server: save WMC into storage succeeded.");
 	$ajaxResponse->setSuccess(true);
 	$ajaxResponse->setResult(_mb("saved wmc document to temporal storage"));
-}
-else {
+} else {
 	// insert WMC into database
 	if(isset($attributes->title)) {
 		$attributes->title = trim($attributes->title);
@@ -126,20 +125,20 @@ else {
 		exit;
 	}
 	foreach($mapObject as $map)	{
-		#$e = new mb_exception("mod_savewmc_server.php: isOverview".$map->isOverview);
+		#$e = new mb_exception("php/mod_savewmc_server.php: isOverview: ".$map->isOverview);
 		if (isset($map->isOverview) && $map->isOverview == "1") { continue; }
 		$wmc->wmc_extent  = $map->extent;
 		$wmc->wmc_srs	  = $map->epsg;
 	}
 	// make a keyword array here
-    	$kwds = explode(",",$attributes->keywords);
-    	$wmckwds = $wmc->keyword;
-   	 if(is_array($wmckwds)) {
-       	 	foreach ($wmckwds as &$val) {
-            		$val = trim($val);
-        	}
-    	}
-    	$wmc->keyword = $wmckwds;
+    $kwds = explode(",",$attributes->keywords);
+    $wmckwds = $wmc->keyword;
+   	if(is_array($wmckwds)) {
+         foreach ($wmckwds as &$val) {
+             $val = trim($val);
+         }
+    }
+    $wmc->keyword = $wmckwds;
 	$wmc->wmc_keyword = $kwds;
 
 	$wmc->wmc_abstract = $attributes->abstract;
@@ -148,7 +147,7 @@ else {
 		$parts = explode("_",$cat);
 		$wmc->isoTopicCats[] =  $parts[1];
 	}
-
+	
 	$result = $wmc->insert($overwrite);
 
 	if ($result["success"]) {
