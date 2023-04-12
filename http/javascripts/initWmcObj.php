@@ -19,6 +19,7 @@ require_once(dirname(__FILE__)."/../classes/class_cache.php");
 require_once(dirname(__FILE__)."/../classes/class_crs.php");
 require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
 require_once(dirname(__FILE__)."/../classes/class_group.php");
+require_once(dirname(__FILE__)."/../classes/class_geojson_style.php");
 //require_once(dirname(__FILE__)."/../classes/class_wms_factory.php");
 /*check if key param can be found in SESSION, otherwise take it from $_GET
 */
@@ -579,73 +580,90 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		} else {
 			$e = new mb_notice("javascripts/initWmcObj.php: GEOJSON parameter will be interpreted as string!");
 			$geojson = json_decode(urldecode($inputGeojson));
-			//$geojson = json_decode(urldecode($inputGeojson));
 		}
 		if ($geojson !== null && $geojson !== false) {
-		    //TODO: use schema or default conf file add default style for each feature to render it
-		    foreach($geojson->features as $feature) {
-		        switch ($feature->geometry->type) {
-		            case "Polygon":
-		                
-		                if (!isset($feature->properties->title)) {
-		                    $feature->properties->title = "dummy title";
-		                }
-		                if (!isset($feature->properties->name)) {
-		                    $feature->properties->name = "dummy name";
-		                }
-		                if (!isset($feature->properties->description)) {
-		                    $feature->properties->description = "dummy description";
-		                }
-		                if (!isset($feature->properties->stroke)) {
-		                    $feature->properties->stroke = "#555555";
-		                }
-		                if (!isset($feature->properties->{"stroke-width"})) {
-		                    $feature->properties->{"stroke-width"} = "2";
-		                }
-		                if (!isset($feature->properties->{"stroke-opacity"})) {
-		                    $feature->properties->{"stroke-opacity"} = "1";
-		                }
-		                if (!isset($feature->properties->fill)) {
-		                    $feature->properties->fill = "#555555";
-		                }
-		                if (!isset($feature->properties->{"fill-opacity"})) {
-		                    $feature->properties->{"fill-opacity"} = "0.5";
-		                }
-		                break;
-		                
-		        }
-		        //dummy values - not needed - define them in conf file!
-		        /*$geojson->uuid = "53d46f7b-0b49-4076-b113-08eca33efc3c";
-		        $geojson->version = "v1";
-		        $geojson->created = "2016-09-28T08:31:30.192Z";
-		        $geojson->updated = "2016-09-28T08:31:30.192Z";*/
-		        
+		    //build collection if single features are given!
+		    //$e = new mb_exception("javascripts/initWmcObj.php: geojson.type: " . $geojson->type);
+		    switch ($geojson->type) {
+		        case "Feature":
+		            $dummyCollection = new stdClass();
+		            $dummyCollection->type = "FeatureCollection";
+		            $dummyCollection->features = array();
+		            //add feature to dummy collection
+		            $dummyCollection->features[] = $geojson;
+		            $geojson = $dummyCollection;
+		            //$geojsonValid = true;
+		            break;
+		        case "FeatureCollection":
+		            //all further things are ok 
+		            //$geojsonValid = true;
+		            break;
+		        default:
+		            $e = new mb_exception("javascripts/initWmcObj.php: no kown geojson type is given in json!");
+		            //TODO - ignore all geojson specific get parameters!
+		            break;
 		    }
-		    //$e = new mb_exception("read geojson: " . json_encode($geojson));
+		    //add default style and title/description tags if they are not given as json properties
+		    //$e = new mb_exception("javascripts/initWmcObj.php: before styling");
+		    $geojsonStyle = new Geojson_style();
+		    $styledGeojson = $geojsonStyle->addDefaultStyles(json_encode($geojson));
+		    $geojson = json_decode($styledGeojson);
+		    //add default title for geojson collection, if not given 
 			if (!empty($geojson->title)) {
 				$geojsonTitle = $geojson->title . " " . $i;
 			} else {
 				$geojsonTitle = "notTitleGivenForCollection " . $i;
 			}
-			
 			$kmlOrder[] = $geojsonTitle;
 			$kmls->{$geojsonTitle}->type = "geojson";
 			$kmls->{$geojsonTitle}->data = $geojson;
 			$kmls->{$geojsonTitle}->url = $geojsonTitle;
-			
 			$kmls->{$geojsonTitle}->display = true;
-			
+			//$e = new mb_exception("javascripts/initWmcObj.php: before iterating multipolygon");
+			//$e = new mb_exception("javascripts/initWmcObj.php: features: " . json_encode($geojson));
+			foreach($kmls->{$geojsonTitle}->data->features as $feature) {
+			    //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);
+			    //explode multipolygons to polygon before further processing, because we don't support multi geometries at this time
+			    if ($feature->geometry->type == 'MultiPolygon') {
+			        $numberOfPolygon = 1;
+			        foreach ($feature->geometry->coordinates as $polygons) {
+			            $newFeature = new stdClass();
+			            $newFeature->type = "Feature";
+			            $newFeature->properties = clone $feature->properties;
+			            //$newFeature->properties->title = $newFeature->properties->title . " - Polygon " . $numberOfPolygon;
+			            $newFeature->geometry->coordinates = $polygons;
+			            $newFeature->geometry->type = "Polygon";		       
+			            $kmls->{$geojsonTitle}->data->features[] = $newFeature;
+			            unset($newFeature);
+			            $numberOfPolygon++;
+			        }
+			        //TODO: delete feature from parent
+			        //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON MULTIPOLYGON: ".json_encode($feature));
+			    }
+			}
 			if ($zoomToExtent == 'true') {
 				$latitudes = array();
 				$longitudes = array();
 				foreach($kmls->{$geojsonTitle}->data->features as $feature) {
+				    $e = new mb_exception("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);   
 					//TODO: Ugly fix to read multipolygons - delete if multiobjects are supported somewhen! 
-					if ($feature->geometry->type == 'MultiPolygon') {
+					/*if ($feature->geometry->type == 'MultiPolygon') {
 						$feature->geometry->type = "Polygon";
 						// read only the first polygon!!
 						$feature->geometry->coordinates = $feature->geometry->coordinates[0];
-					}
+					}*/
 					switch ($feature->geometry->type) {
+					    case "MultiPolygon":
+					        //$e = new mb_exception("javascripts/initWmcObj.php: Polygon found!");
+					        foreach ($feature->geometry->coordinates as $polygons) {
+					            foreach ($polygons as $coordinates1) {
+					               foreach ($coordinates1 as $coordinates2) {
+					                   $longitudes[] = $coordinates2[0];
+					                   $latitudes[] = $coordinates2[1];
+					               }
+					            }
+					        }
+					        break;
 						case "Polygon":
 							//$e = new mb_exception("javascripts/initWmcObj.php: Polygon found!");
 							foreach ($feature->geometry->coordinates as $coordinates2) {
@@ -669,7 +687,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 							break;
 					}
 				}
-			}
+		    }
 		}
 	$i++; //for more than one featurecollection
 	}
