@@ -576,7 +576,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			//$e = new mb_exception("javascripts/initWmcObj.php: found url unencoded ".$inputGeojson);
 			$jsonFileConnector = new connector();
 			$jsonFileConnector->set('externalHeaders', 'empty');
-			$jsonFileConnector->set('executionTimeOut', 2000); //to prohibit big geojson files, set max download time to 2000 mseconds ;-)
+			$jsonFileConnector->set('executionTimeOut', 5000); //to prohibit big geojson files, set max download time to 2000 mseconds ;-)
 			$jsonFileConnector->load($inputGeojson);
 			if ($jsonFileConnector->curlError !== false) {
 			    $e = new mb_exception("javascripts/initWmcObj.php: curl error message: " . $jsonFileConnector->curlError);
