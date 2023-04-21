@@ -59,6 +59,8 @@ echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 ?>
 <title>updateWMS</title>
 <link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css">
+<link rel="stylesheet" href="../css/loading.css" type="text/css">
+
 <style type="text/css">
   	<!--
   	body{
@@ -114,6 +116,10 @@ echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 	#authbox > .radio > label {margin: 0;}
 	#optionsbox,#newCapabilitiesBox {border: 1px solid #ccc;padding: 15px;border-radius: 4px;background-color: #efefef;margin-top: 30px;margin-bottom: 30px;}
 	#optionsbox > .checkbox {margin: unset;}
+
+        .digitize-copy {background-image: url('../img/gnome/edit-copy.png');background-size: 22px;}
+	.digitize-image {float: left;width: 20px;height: 20px;background-repeat: no-repeat;background-position: center;cursor: pointer;}
+
 </style>
 <link rel="stylesheet" href="../extensions/jquery-ui-1.7.2.custom/css/smoothness/jquery-ui-1.7.2.custom.css" />
 <?php
@@ -140,6 +146,10 @@ function toggleAuthDivVis() {
 function reupload(){ 
  		document.form1.myURL.value = document.form1.capURL.value; 
  		validate(); 
+}
+
+function copyUrl(){
+	document.form1.myURL.value = document.form1.capURL.value;
 }
 
 function updateWms() {
@@ -201,6 +211,10 @@ function updateWms() {
 			return false;	
 		}			
 	});		
+}
+
+function showLoading() {
+        document.getElementById("loadingOverlay").style.display="block";
 }
 
 function validate(){
@@ -376,6 +390,14 @@ function sel(){
 </script>
 </head>
 <body>
+<div id="loadingOverlay" role="alert" aria-busy="true" title="loading..." style="display: none;">
+  <div class="loading">
+    <div class="bounce1"></div>
+    <div class="bounce2"></div>
+    <div class="bounce3"></div>
+    <div class="bounce4"></div>
+  </div>
+</div>
 <div class="container" style="padding-top:15px;padding-bottom:15px;">
 <form name='form1' id='form1' action='<?php echo $self; ?>' method='POST'>
 
@@ -421,7 +443,7 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	?>
 <?php
 	
-	echo "<label for='capURL'>URL:</label><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly>";
+	echo "<label for='capURL'>URL:</label><div class='input-group' style='margin:0 0 10px 0'><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly><span class='input-group-btn'><button class='btn btn-primary' type='button' onclick='copyUrl();'><i class='digitize-image digitize-copy'></i></button></span></div>";
 	echo "<input type='hidden' name='myWMS' id='myWMS' value=''></div>";
  	echo "<div id='newCapabilitiesBox' class='' ><label for='myURL'>Neue URL:</label><input class='form-control' type='text' name='myURL' id='myURL'>"; 
         echo "<span id='helpBlock' class='help-block bg-danger' style='padding:10px;margin-top:25px;word-wrap:break-word;border-radius:4px;'>Die URL muss ein valides WMS Capabilities Dokument der Version 1.1.1 liefern. In der Regel sollte folgendes in Ihrer URL enthalten sein:<p style='margin:10px 0 0 0;font-weight:bold;'>REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.1.1</p></span></div>";
@@ -456,7 +478,7 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	echo "<div class='checkbox'><label><input type='checkbox' name='compare_dialog' id='compare_dialog'>Vergleichsdialog beim Update anzeigen</label></div></div>";
 
 	echo "<input class='btn btn-default' type='button' value='Simulieren' onclick='window.open(this.form.myURL.value,\"\",\"\")'>&nbsp;";
-	echo "<input class='btn btn-primary' type='button' value='Update' onclick='validate()'>&nbsp;"; 
+	echo "<input class='btn btn-primary' type='button' value='Update' onclick='validate();showLoading();'>&nbsp;"; 
 
 
 if(isset($myURL) && $myURL != ''){
