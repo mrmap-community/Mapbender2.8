@@ -62,51 +62,6 @@ echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 <link rel="stylesheet" href="../css/loading.css" type="text/css">
 
 <style type="text/css">
-  	<!--
-  	body{
-      background-color: #ffffff;
-  		font-family: Arial, Helvetica, sans-serif;
-  		font-size : 14px;
-  		color: #303030
-  	}
-  	.list_guis{
-  		font-family: Arial, Helvetica, sans-serif;
-  		font-size : 12px;
-  		color: #808080;
-  	}
-  	a:link{
-  		font-family: Arial, Helvetica, sans-serif;
-  		font-size : 12px;
-  		text-decoration : none;
-  		color: #808080;
-  	}
-  	a:visited {
-  		font-family: Arial, Helvetica, sans-serif;
-  		text-decoration : none;
-  		color: #808080;
-  		font-size : 12px;
-  	}
-  	a:active {
-  		font-family: Arial, Helvetica, sans-serif;
-  		text-decoration : none;
-  		color: #808080;
-  		font-size : 12px;
-  	}
-  	table {
-  		font-family: Arial, Helvetica, sans-serif;
-  		color: #000000;
-  		font-size : 12px;
-  	}
-  	table.layerNames{
-  		font-family: Arial, Helvetica, sans-serif;
-  		font-size : 14px;
-  		color: #000000;
-  	}
-  	#updateResult{
-  		font-family: Arial, Helvetica, sans-serif;
-  		color: #000000;
-  	}
-  	-->
 	label{margin-top:10px;}
 	#updateResult {background-color: #efefef;border: 1px solid #ccc;padding: 15px;margin: 30px 0;border-radius: 4px;}
 	#updateResult td {padding: 7px;}
@@ -116,9 +71,6 @@ echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 	#authbox > .radio > label {margin: 0;}
 	#optionsbox,#newCapabilitiesBox {border: 1px solid #ccc;padding: 15px;border-radius: 4px;background-color: #efefef;margin-top: 30px;margin-bottom: 30px;}
 	#optionsbox > .checkbox {margin: unset;}
-
-        .digitize-copy {background-image: url('../img/gnome/edit-copy.png');background-size: 22px;}
-	.digitize-image {float: left;width: 20px;height: 20px;background-repeat: no-repeat;background-position: center;cursor: pointer;}
 
 </style>
 <link rel="stylesheet" href="../extensions/jquery-ui-1.7.2.custom/css/smoothness/jquery-ui-1.7.2.custom.css" />
@@ -443,7 +395,7 @@ if (count($wms_id_own)>0 AND count($ownguis)>0 AND count($permguis)>0){
 	?>
 <?php
 	
-	echo "<label for='capURL'>URL:</label><div class='input-group' style='margin:0 0 10px 0'><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly><span class='input-group-btn'><button class='btn btn-primary' type='button' onclick='copyUrl();'><i class='digitize-image digitize-copy'></i></button></span></div>";
+	echo "<label for='capURL'>URL:</label><div class='input-group' style='margin:0 0 10px 0'><input class='form-control' placeholder='...zunächst WMS auswählen...' type='text' name='capURL' id='capURL' readonly><span class='input-group-btn'><button class='btn btn-primary' type='button' onclick='copyUrl();'>copy</button></span></div>";
 	echo "<input type='hidden' name='myWMS' id='myWMS' value=''></div>";
  	echo "<div id='newCapabilitiesBox' class='' ><label for='myURL'>Neue URL:</label><input class='form-control' type='text' name='myURL' id='myURL'>"; 
         echo "<span id='helpBlock' class='help-block bg-danger' style='padding:10px;margin-top:25px;word-wrap:break-word;border-radius:4px;'>Die URL muss ein valides WMS Capabilities Dokument der Version 1.1.1 liefern. In der Regel sollte folgendes in Ihrer URL enthalten sein:<p style='margin:10px 0 0 0;font-weight:bold;'>REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.1.1</p></span></div>";
