@@ -50,6 +50,8 @@ var ConfTree = function(o){
 		});
 	}
 	var $wfsConfDialog = $("<div></div>").dialog({
+		title: "Flurstückssuche",
+		dialogClass: "dialog_flst",
 		width: 260,
 		height: 390,
 		position: [o.$target.offset().left+20, o.$target.offset().top+80],
