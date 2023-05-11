@@ -38,6 +38,7 @@ echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 include '../include/dyn_css.php';
 ?>
 <link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css">
+<link rel="stylesheet" href="../css/loading.css" type="text/css">
 <style type="text/css">
   	<!--
   	body{
@@ -75,6 +76,10 @@ include '../include/dyn_css.php';
 	#authbox > .radio {margin: unset;}
 </style>
 <script language="JavaScript">
+
+function showLoading() {
+	document.getElementById("loadingOverlay").style.display="block";
+}
 function validate(wert){
 	if(wert == 'guiList'){
 		var listIndex = document.form1.guiList.selectedIndex;
@@ -106,6 +111,14 @@ function toggleAuthDivVis() {
 </script>
 </head>
 <body>
+<div id="loadingOverlay" role="alert" aria-busy="true" title="loading..." style="display: none;">
+  <div class="loading">
+    <div class="bounce1"></div>
+    <div class="bounce2"></div>
+    <div class="bounce3"></div>
+    <div class="bounce4"></div>
+  </div>
+</div>
 <div class="container" style="padding-top:15px;padding-bottom:15px;">
 <?php
 
@@ -196,7 +209,7 @@ if (count($ownguis)>0){
 	if (defined("GEO_RSS_FILE") &&  GEO_RSS_FILE != "") {
 		echo"<div class='checkbox' style='display:none'><label><input type='checkbox' name='rss_news' checked='checked'>Publish via RSS</label></div>";
 	}
-	echo"</div><input class='btn btn-primary' type='button' name='loadCap' value='Load' onClick='validate(\"guiList\")'>";	
+	echo"</div><input class='btn btn-primary' type='button' name='loadCap' value='Load' onClick='validate(\"guiList\");showLoading();'>";	
 	echo "</form>";
 }
 else{
