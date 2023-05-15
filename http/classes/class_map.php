@@ -15,8 +15,8 @@ class Map {
 	private $zoomFullExtentArray = array();
 	private $isOverview = false;
 	private $wmsArray = array();
-        private $kmls;
-        private $kmlOrder;
+    private $kmls;
+    private $kmlOrder;
 
 	/**
 	 * @destructor
@@ -441,6 +441,7 @@ class Map {
 	 * @return
 	 */
 	public function mergeWmsArray ($wmsArray) {
+	    $e = new mb_notice('classes/class_map.php: mergeWmsArray: ' . json_encode(count($wmsArray)));
 		if (func_num_args() > 1
 			&& is_array($wmsArray)
 			&& count($wmsArray) > 0) {
@@ -513,7 +514,7 @@ class Map {
 
 
 			if ($options["show"] && is_numeric($options["show"]) && !isset($options["visible"])) {
-				//$e = new mb_exception("show");
+				$e = new mb_exception("show");
 				// set all layers of WMS to visible
 				for ($i = 0; $i < count($wmsArray); $i++) {
 					$numLayers = count($wmsArray[$i]->objLayer);

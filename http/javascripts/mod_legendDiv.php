@@ -9,13 +9,13 @@
 # any later version.
 #
 /*
-INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('<app_id>','legend',2,1,'legend','Legend','div','','',0,0,NULL ,NULL ,600,'','','div','../javascripts/mod_legendDiv.php','','mapframe1','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'legendlink', 'false', '' ,'var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'showgroupedlayertitle', 'true', 'show the title of the grouped layers in the legend' ,'var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'showlayertitle', 'true', 'show the layer title in the legend' ,'var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'showwmstitle', 'true', 'show the wms title in the legend' ,'var');
-
-*/
+ INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('<app_id>','legend',2,1,'legend','Legend','div','','',0,0,NULL ,NULL ,600,'','','div','../javascripts/mod_legendDiv.php','','mapframe1','','');
+ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'legendlink', 'false', '' ,'var');
+ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'showgroupedlayertitle', 'true', 'show the title of the grouped layers in the legend' ,'var');
+ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'showlayertitle', 'true', 'show the layer title in the legend' ,'var');
+ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('<app_id>', 'legend', 'showwmstitle', 'true', 'show the wms title in the legend' ,'var');
+ 
+ */
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -160,9 +160,8 @@ function mod_legend_pos(frameName){
 
 	    if(str != ""){
 			writeTag("", "legend", str);
-		}
-		else{
-			writeTag("", "legend", "");
+		} else {
+			writeTag("", "legend", "<?php echo _mb('No layer with legend activated. Please open the themes menu and activate some layer.');?>");
 		}
 		return true;
 	}
@@ -193,4 +192,6 @@ function mod_legend_init(){
 		});
 	}
 }
+
+
 

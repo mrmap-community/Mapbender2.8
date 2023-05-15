@@ -107,6 +107,7 @@ var JsonAutocompleteGazetteer = function() {
 	var targetName = options.target;
 	var ind = getMapObjIndexByName(targetName);
 	var my = mb_mapObj[ind];
+	var searchTerm = '';
 
 	this.zoomToExtent = function(fromSrs,minx,miny,maxx,maxy) {
 		var parameters = {
@@ -232,7 +233,7 @@ var JsonAutocompleteGazetteer = function() {
                		//default value
 		this.inputAddress.val('<?php echo _mb('Search for addresses'); ?>');
 		this.inputAddress.click(function() {
-			that.inputAddress.val('');
+			that.inputAddress.val(searchTerm);
 		});
 		this.inputAddress.css('width',options.inputWidth);
 		$('.ui-menu').css('width','100px');
@@ -246,6 +247,7 @@ var JsonAutocompleteGazetteer = function() {
 				source: function( request, response ) {
                options.map_width = mb_mapObj[getMapObjIndexByName(options.target)].width;
                options.map_height = mb_mapObj[getMapObjIndexByName(options.target)].height;
+               searchTerm = request.term;
                					$.ajax({
 						url: options.gazetteerUrl,
 						dataType: "jsonp",

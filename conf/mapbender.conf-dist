@@ -39,6 +39,14 @@ define("CHARSET","UTF-8");
 define("TMPDIR", "../tmp");
 
 # --------------------------------------------
+# path of optional ramdisk - very fast storage, useful if using e.g. php-ogr  
+# https://www.jamescoyle.net/how-to/943-create-a-ram-disk-in-linux
+# size should be 512m at minimum
+# 
+# --------------------------------------------
+#define("RAMDISK", "../tmp/ramdisk");
+
+# --------------------------------------------
 # absolute directory for temporary files - for use with external cms and security proxy (geotiff handling)
 # --------------------------------------------
 #define("ABSOLUTE_TMPDIR", "/data/mapbender/http/tmp");
@@ -194,7 +202,7 @@ define("LANGUAGE", "en");   // only available if USE_I18N is "true".
 define("NOTIFY_ON_UPDATE",true);
 
 # --------------------------------------------
-# RSS
+# RSS News
 # --------------------------------------------
 define("GEO_RSS_FILE", "../tmp/georss.xml");
 define("DOWNLOAD_GEO_RSS_FILE", "../tmp/download_georss.xml");
@@ -300,10 +308,6 @@ define("PUBLIC_USER_DEFAULT_SRS", "EPSG:25832");
 # --------------------------------------------
 define("PUBLIC_GROUP", "");
 
-# --------------------------------------------
-# define a admin user id for catalogue maintenance - defaults to 1 - 'root' user
-# --------------------------------------------
-define("CATALOGUE_MAINTENANCE_USER", 1);
 
 # --------------------------------------------
 # define a special group for departments which are allowed to publish metadata in the mapbender geoportal framework
@@ -353,6 +357,11 @@ define("TMP_SEARCH_RESULT_MAX_AGE", "2400"); # Max age in seconds for temporal r
 # define if csw capabilities documents should be cached for csw client interface - faster when resolving coupled resources!
 # --------------------------------------------
 define("CACHE_CSW_CAPS", false);
+
+# --------------------------------------------
+# define if mapbender wms and layer objects should be cached - sometimes big wms need some seconds to load from big databases!
+# --------------------------------------------
+#define("CACHE_TIME_WMS_LAYER", 120);
 
 #---------------------------------------------
 # HOSTNAME WHITELIST
@@ -443,7 +452,7 @@ define("INSPIRE_METADATA_SPEC", "2.0.1");
 # are logged to oaf_proxy_log table. They are only counted!
 # 
 define("OAF_LOG", false);
-
+#
 ###HACK for GLOBALS
 $DBSERVER=DBSERVER;
   $DB=DB;

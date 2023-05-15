@@ -708,3 +708,17 @@ ALTER TABLE mb_group ADD COLUMN mb_group_ckan_api_key_text text;
 -- Column: spatial_security in table mb_group
 
 ALTER TABLE mb_group ADD COLUMN spatial_security text;
+
+-- add some indices to allow faster creation of big wms objects
+
+CREATE INDEX idx_layer_pos ON layer USING btree (layer_pos);
+
+CREATE INDEX idx_wfs_conf_id ON wfs_conf USING btree (wfs_conf_id);
+
+CREATE INDEX idx_wfs_conf_type ON wfs_conf USING btree (wfs_conf_type);
+
+CREATE INDEX idx_mb_metadata_origin ON mb_metadata USING btree (origin);
+
+CREATE INDEX idx_mb_metadata_uuid ON mb_metadata USING btree (uuid);
+
+CREATE INDEX idx_datalink_origin ON datalink USING btree (datalink_origin);
