@@ -153,10 +153,12 @@ function getMapcode(x,y) {
 
 function mod_showCoord_write(x,y){
 	if(document.getElementById(displayTarget)){
-		var str = "<div class='actualcoords'>" + x + " / " +  y;
+		//var str = "<div class='actualcoords'>" + x + " / " +  y;
+		var str = "<div class='actualcoords'><div class='coords'>" + x + " / " +  y;
 		if (mod_showCoords_div_mapObj.epsg =='EPSG:4326' ||  mod_showCoords_div_mapObj.epsg=="EPSG:4258") {
 			strDMS = dec2dms(x) + " / " + dec2dms(y);
-			str += " <br> " + strDMS;//
+			//str += " <br> " + strDMS;//
+			str += " <br> " + strDMS + "</div>";					   
 		}
 		if(mod_showCoords_div_fix != ""){
 			//extract coordinates from mod_showCoords_div_fix

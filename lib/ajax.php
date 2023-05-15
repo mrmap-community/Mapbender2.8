@@ -141,17 +141,18 @@ class AjaxResponse extends AjaxRequest {
 			!Mapbender::session()->get("mb_user_ip") || 
 			Mapbender::session()->get("mb_user_ip") != $_SERVER['REMOTE_ADDR']) {
 			$messageOne = "Either there is no mb_user_id or mb_user_ip in session or mb_user_ip is not equal to the remote_addr of the request";
-            //if "PUBLIC_USER_AUTO_CREATE_SESSION" is set to true in mapbender.conf,
+            		$e = new mb_exception("lib/ajax.php: " . $messageOne);
+			//if "PUBLIC_USER_AUTO_CREATE_SESSION" is set to true in mapbender.conf,
 			//a new anonymous session sould be created directly
-			if (defined("PUBLIC_USER_AUTO_CREATE_SESSION") && PUBLIC_USER_AUTO_CREATE_SESSION == true) {
+			/*if (defined("PUBLIC_USER_AUTO_CREATE_SESSION") && PUBLIC_USER_AUTO_CREATE_SESSION == true) {
 				//kill old cookie, set a new session and also a new cookie
 				if (ini_get("session.use_cookies")) {
     				    $params = session_get_cookie_params();
     				    //setcookie(session_name(), '', time() - 42000, $params["path"],
         			    //    $params["domain"], $params["secure"], $params["httponly"]
     				    //);
-                        $this->setSuccess(true);
-                        $this->setMessage(_mb("The session has expired - there is no information for the current cookie. Read cookie params: ").json_encode($params));
+                        	    $this->setSuccess(true);
+                        	    $this->setMessage(_mb("The session has expired - there is no information for the current cookie. Read cookie params: ").json_encode($params));
 				}
 				//return;//test if this is a problem 
 			}
@@ -159,7 +160,7 @@ class AjaxResponse extends AjaxRequest {
 			$this->error = array(
 				"code" => -2,
 				"message" => _mb("The session has expired. Please log in again.")
-			);
+			);*/
 		}
 	}
 	

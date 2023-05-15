@@ -141,15 +141,29 @@ class WmcToXml {
 			$extensionData["ov_width"] = $this->wmc->overviewMap->getWidth();
 			$extensionData["ov_height"] = $this->wmc->overviewMap->getHeight();
 		}
-
-
+		
+        /* Try to read kmls and kmlorder from mainMap - why? - these are the kmls from savewmc which is invoked from the client ;-)
+         * 
+         * TODO: maybe it will be better to alter the client not to write the geometries to mainMap?
+         * 
+         */
         if($this->wmc->mainMap->getKmls()) {
-            $extensionData['kmls'] = json_encode($this->wmc->mainMap->getKmls());
+            $e = new mb_notice("classes/class_wmcToXml.php: found kmls in mainMap");
+            /*
+             * Store them in base64 encoding to allow complex geosjon - somehow otherwise they are not stored !!!!
+             */
+            $extensionData['kmls'] = "base64_" .base64_encode(json_encode($this->wmc->mainMap->getKmls()));
+        } else {
+            $e = new mb_notice("classes/class_wmcToXml.php: don't found kmls in mainMap!");
         }
+        
         if($this->wmc->mainMap->getKmlOrder()) {
+            $e = new mb_notice("classes/class_wmcToXml.php: found kmlOrder in mainMap");
             $extensionData['kmlOrder'] = json_encode($this->wmc->mainMap->getKmlOrder());
+        } else {
+            $e = new mb_notice("classes/class_wmcToXml.php: don't found kmlOrder in mainMap!");
         }
-
+        
 		// store epsg and bbox of root layer of 0th WMS
 		$firstWms = $this->wmc->mainMap->getWms(0);
 		if ($firstWms !== null) {
@@ -240,20 +254,41 @@ class WmcToXml {
 		if ($e_contact !== null) {
 			$e_general->appendChild($e_contact);
 		}
-
-		// Extension data
-		if (count($extensionData) > 0) {
-			$e_extensionGeneral = $this->doc->createElement("Extension");
-
-			foreach ($extensionData as $keyExtensionData => $valueExtensionData) {
-				$e_currentExtensionTag = $this->addExtension($keyExtensionData, $valueExtensionData);
-				$e_extensionGeneral->appendChild($e_currentExtensionTag);
-			}
-			foreach ($this->wmc->generalExtensionArray as $keyExtensionData => $valueExtensionData) {
-				$e_currentExtensionTag = $this->addExtension($keyExtensionData, $valueExtensionData);
-				$e_extensionGeneral->appendChild($e_currentExtensionTag);
-			}
-
+		
+		// Extension and generalExtensionData 
+		$e = new mb_notice("classes/class_wmcToXml.php write extensions to xml: number of elements for extension: " . count($extensionData) . " number of elements of generalExtensionArray: " . count($this->wmc->generalExtensionArray));
+		
+		if ((count($extensionData) + count($this->wmc->generalExtensionArray)) > 0) {
+		    $e_extensionGeneral = $this->doc->createElement("Extension");
+		    if (count($extensionData) > 0) {
+			    //$e_extensionGeneral = $this->doc->createElement("Extension");
+			    $e = new mb_notice("classes/class_wmcToXml.php write extensionData to xml: " . json_encode($extensionData));
+			    foreach ($extensionData as $keyExtensionData => $valueExtensionData) {
+				    $e_currentExtensionTag = $this->addExtension($keyExtensionData, $valueExtensionData);
+				    $e_extensionGeneral->appendChild($e_currentExtensionTag);
+			    }
+		    }
+		    if (count($this->wmc->generalExtensionArray) > 0) {
+		        $e = new mb_notice("classes/class_wmcToXml.php write generalExtensionArray to xml: " . json_encode($this->wmc->generalExtensionArray));
+		        foreach ($this->wmc->generalExtensionArray as $keyExtensionData => $valueExtensionData) {
+		            $e = new mb_notice("classes/class_wmcToXml.php write " . $keyExtensionData . " with content: " .$valueExtensionData);
+				    //$e_currentExtensionTag = $this->addExtension($keyExtensionData, md5($valueExtensionData));
+				    
+		            //problem when encoding some geojson!!!!!!
+		            if ($keyExtensionData == 'kmls' || $keyExtensionData == 'KMLS') {
+		                $e_currentExtensionTag = $this->addExtension($keyExtensionData, "base64_" .base64_encode($valueExtensionData));
+		                //$e_currentExtensionTag = $this->addExtension($keyExtensionData, $valueExtensionData);
+		            } else {
+		                $e_currentExtensionTag = $this->addExtension($keyExtensionData, $valueExtensionData);
+		            }
+				    $e_extensionGeneral->appendChild($e_currentExtensionTag);
+			    }
+		    }
+		    /*
+		    //dummy default extension 
+		    $e_currentExtensionTag = $this->addExtension("testtag", "testvalue");
+		    $e_extensionGeneral->appendChild($e_currentExtensionTag);
+		    //*/
 			$e_general->appendChild($e_extensionGeneral);
 		}
 		return $e_general;

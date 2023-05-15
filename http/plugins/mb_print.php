@@ -89,7 +89,8 @@ var myTarget = options.target ? options.target[0] : "mapframe1";
 var myId = options ? options.id : "printPDF";
 
 var mbPrintConfig = options.mbPrintConfig;
-
+//wms_ids of services where legends should not be printed
+var exclude = typeof options.exclude === "undefined" ? [] : options.exclude;
 /* the array of json print config files */
 
 if (typeof mbPrintConfig === "object") {
@@ -251,7 +252,16 @@ var PrintPDF = function (options) {
       printBox.show();
     }
   };
-
+  
+  function array_contains(hay,needle){
+	    for(var i = 0; i < hay.length; i++ ){
+	        if (hay[i] == needle){
+	            return true
+	        }
+	    } 
+	    return false;
+  }
+	
   function getClosestNum (num, ar) {
     var i = 0, closest, closestDiff, currentDiff;
     if (ar.length) {
@@ -519,7 +529,13 @@ var PrintPDF = function (options) {
                 }
                 layerLegendObj.legendUrl = currentWms.getLegendUrlByGuiLayerStyle(currentLayer.layer_name, layerStyle);
                 if (layerLegendObj.legendUrl !== false) {
-                  wmsLegendObj.push(layerLegendObj);
+                    //if wms id is not excluded from printing
+                    if (!array_contains(exclude,currentWms.wms_id)){
+                    	//alert("The legend of the WMS with id " + JSON.stringify(currentWms.wms_id) + " should be printed");
+        				wmsLegendObj.push(layerLegendObj);
+    			    } else {
+    			    	//alert("The legend of the WMS with id " + JSON.stringify(currentWms.wms_id) + " should not be printed");
+    			    }
                 }
               }
             }
@@ -567,7 +583,13 @@ var PrintPDF = function (options) {
               }
               layerLegendObj.legendUrl = currentWms.getLegendUrlByGuiLayerStyle(currentLayer.layer_name, layerStyle);
               if (layerLegendObj.legendUrl !== false) {
-                wmsLegendObj.push(layerLegendObj);
+                //if wms id is not excluded from printing
+                if (!array_contains(exclude,currentWms.wms_id)){
+                	//alert("The legend of the WMS with id " + JSON.stringify(currentWms.wms_id) + " should be printed");
+    				wmsLegendObj.push(layerLegendObj);
+			    } else {
+			    	//alert("The legend of the WMS with id " + JSON.stringify(currentWms.wms_id) + " should not be printed");
+			    }
               }
             }
           }
