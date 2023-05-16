@@ -29,11 +29,12 @@ $isLoaded = $_REQUEST["isLoaded"];
 $con = db_connect($DBSERVER,$OWNER,$PW);
 db_select_db($DB,$con);
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset='<?php echo CHARSET;?>'">
 <title>mod_wfsGazetteerEditor</title>
+<link rel="stylesheet" href="../extensions/selectize-dist/css/selectize.default.css" type="text/css">
 <STYLE TYPE="text/css">
 <!--
 div.mainDiv {
@@ -198,6 +199,7 @@ var frameIsReady = function () {
 		global_wfsConfObj = json;
 		init_wfsSpatialRequest();
 		appendWfsForm();
+		$("#FS_GKNR").selectize();
 		appendStyles();
 	
 		setWfsInfo();
@@ -207,7 +209,6 @@ var frameIsReady = function () {
 		requestGeometryHighlight = new parent.Highlight(targetArray, "requestGeometryHighlight", styleProperties, 2);
 		parent.mb_registerSubFunctions("window.frames['" + frameName +"'].requestGeometryHighlight.paint()");
 	});
-
 }
 
 function showHelptext(helptextId) {
@@ -563,7 +564,6 @@ function appendWfsForm() {
 		 */
 		var divContainer = document.createElement("div");
 		divContainer.className = global_wfsConfObj[global_selectedWfsConfId].g_label_id;
-		divContainer.innerHTML = global_wfsConfObj[global_selectedWfsConfId].g_label;
 		
 		form.appendChild(divContainer);
 		
@@ -572,7 +572,6 @@ function appendWfsForm() {
 		for (var i = 0; i < wfsConfElementArray.length; i++){
 			if (parseInt(wfsConfElementArray[i].f_search)) {
 				var spanNode = document.createElement("span");
-				spanNode.setAttribute("id", "ttttt");
 				spanNode.className = wfsConfElementArray[i].f_label_id;
 				spanNode.innerHTML = wfsConfElementArray[i].f_label;
 				if (wfsConfElementArray[i].f_form_element_html && wfsConfElementArray[i].f_form_element_html.length > 0) {
@@ -603,7 +602,6 @@ function appendWfsForm() {
 				form.appendChild(inputNode);
 				if(wfsConfElementArray[i].f_helptext.length > 0) { form.appendChild(helptextNode); }
 				if(wfsConfElementArray[i].f_helptext.length > 0) { form.appendChild(helptextDisplay); }
-				form.appendChild(document.createElement("br"));
 			}
 		}
 
@@ -736,7 +734,9 @@ function checkSrs(){
 				if(submit)submit.disabled = false;
 				if(submit_attr)submit_attr.disabled = false;
 				var msg = '<?php echo _mb("Please note: Wfs featuretype is  not requested in default srs, other srs is used (variation of transformation possible)! ");?>';
-				alert(msg);
+				if (displaySrsWarning != false) {
+				        alert(msg);
+                               }
 				return true;
 			}
 			else {
@@ -1412,8 +1412,13 @@ function setResult(event, index){
 		global_resultHighlight.paint();
 	}
 	return true;
-} 
+}
+
+
 </script>
+<script src="../extensions/jQuery-1.12.4/jquery-1.12.4.min.js" type="text/javascript"></script>
+<script src="../extensions/selectize-dist/js/selectize.js" type="text/javascript"></script>
+
 </head>
 <body leftmargin='0' topmargin='10' bgcolor='#ffffff' onload='frameIsReady()'> <!-- onload='initModWfsGazetteer();init_wfsSpatialRequest();'  -->
 	<!-- WFS conf info -->
@@ -1480,3 +1485,4 @@ function setResult(event, index){
 <div name='progressWheel' id='progressWheel'></div>
 </body>
 </html>
+

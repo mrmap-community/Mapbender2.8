@@ -24,7 +24,11 @@ class mbOverviewDecorator extends mbTemplatePdfDecorator
         $this->elementId = $elementId;
         $this->filename = TMPDIR . "/" . parent::generateOutputFileName("map", "png");
         $this->override();
-        $this->decorate();
+        if ($this->getValue("overview_url") == 'false' || $this->getValue("overview_url") == false) {
+            $e = new mb_exception("print/classes/mbOverviewDecorator.php: no overview url found!");
+        } else {
+            $this->decorate();
+        }
     }
 
     public function override()

@@ -1,3 +1,4 @@
 #!/bin/bash
 . /etc/profile
+source /etc/environment
 [ -f /tmp/wmsmonitorlock ] && : || /usr/bin/php %%MAPBENDER_ROOT_DIRECTORY%%tools/mod_monitorCapabilities_main.php group:%%ADMINISTRATORS_GROUP_ID%% > /dev/null

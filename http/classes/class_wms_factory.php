@@ -19,6 +19,7 @@ abstract class WmsFactory extends OwsFactory {
 	 * @param $appId id of the application where this WMS is configured
 	 */
 	public function createFromDb ($id) {
+	    $e = new mb_notice("classes/class_wms_factory.php: number of args: " . func_num_args() . " invokes the class_wms.php directly!");
 		$myWms = func_num_args() >= 2 ? 
 			func_get_arg(1) : null;
 
@@ -31,6 +32,7 @@ abstract class WmsFactory extends OwsFactory {
 		else {
 			$myWms->createObjFromDBNoGui($id);
 		}
+		//$e = new mb_exception("classes/class_wms_factory.php: return wms object from class_wms.php");
 		return $myWms;
 	}
 }

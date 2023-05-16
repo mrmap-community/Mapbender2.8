@@ -19,6 +19,8 @@ require_once(dirname(__FILE__)."/../classes/class_cache.php");
 require_once(dirname(__FILE__)."/../classes/class_crs.php");
 require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
 require_once(dirname(__FILE__)."/../classes/class_group.php");
+require_once(dirname(__FILE__)."/../classes/class_geojson_style.php");
+//require_once(dirname(__FILE__)."/../classes/class_wms_factory.php");
 /*check if key param can be found in SESSION, otherwise take it from $_GET
 */
 function getConfiguration ($key) {
@@ -38,7 +40,16 @@ function logit($text,$filename,$how){
 		fclose($h);
 	}
 }
-
+//https://www.geeksforgeeks.org/how-to-validate-json-in-php/
+function json_validator($data) {
+    if (!empty($data)) {
+        @json_decode($data);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return json_decode($data);
+        }
+    }
+    return false;
+}
 // function to delete one GET parameter totally from a query url
 function delTotalFromQuery($paramName, $queryString) {
     $queryString = "&" . $queryString;
@@ -184,7 +195,19 @@ Look in wmc xml ****************************************************************
 /*
 ************************************************************************************
 */
+
 $wmcGetApi = WmcFactory::createFromXml($wmc->toXml());
+
+//$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc obj to {TMPDIR}/class_wmc0.json");//
+//json_encode($wmcGetApi);//: ".json_encode($wmcGetApi));
+
+/*if($h = fopen(TMPDIR . "/tmp_wmc0.json","w")){
+    $content = json_encode($wmcGetApi) .chr(13).chr(10);
+    if(!fwrite($h,$content)){
+        #exit;
+    }
+    fclose($h);
+}*/
 
 //$e = new mb_notice("javascripts/initWmcObj.php: initial wmc doc: ".$wmc->toXml());
 //$e = new mb_exception("javascripts/initWmcObj.php: initial wmc from xml: ".json_encode($wmcGetApi));
@@ -419,18 +442,23 @@ if ($getParams['WMS']) {
 /*
 LAYER
 */
-$e = new mb_notice("javascripts/initWmcObj.php: check LAYER API");
+//$e = new mb_notice("javascripts/initWmcObj.php: check LAYER API");
 $inputLayerArray = $getApi->getLayers();
 if ($inputLayerArray) {
+//    $start = microtime(true);
 	foreach ($inputLayerArray as $input) {
+	    $start_layer = microtime(true);
+	    $e = new mb_notice('javascripts/mod_initWmcObj.php: layer: ' . json_encode($input));
 		// just make it work for a single layer id
 		$wmsFactory = new UniversalWmsFactory();
+//		$start_read_layer = microtime(true);
 		try {
 			if (isset($input["application"])) {
 				$wms = $wmsFactory->createLayerFromDb($input["id"], $input["application"]);
 			}
 			else {
 				$wms = $wmsFactory->createLayerFromDb($input["id"]);
+				//$e = new mb_exception("javascripts/initWmcObj.php: wms obj: " . json_encode($wms));
 			}
 		}
 		catch (AccessDeniedException $e) {
@@ -439,6 +467,8 @@ if ($inputLayerArray) {
 				"id" => $input["id"]
 			);
 		}
+//		$time_elapsed_secs_read_layer = microtime(true) - $start_layer;
+//		$e = new mb_exception('javascripts/mod_initWmcObj.php: time for read single layer: ' . $time_elapsed_secs_read_layer);
 		if (is_a($wms, "wms")) {
 			$options = array();
 			if ($input["visible"]) {
@@ -449,7 +479,11 @@ if ($inputLayerArray) {
 			if (isset($input["querylayer"])) {
 				$options["querylayer"] = $input["querylayer"];
 			}
+			//$start = microtime(true);
 			$wmcGetApi->mergeWmsArray(array($wms), $options);
+			//$time_elapsed_secs = microtime(true) - $start;
+			//$e = new mb_exception('javascripts/mod_initWmcObj.php: time for mergeWmsArray: ' . $time_elapsed_secs);
+			
 			// do not use "zoom" attribute of mergeWmsArray,
 			// as this would zoom to the entre WMS.
 			// Here we set extent to the layer extent only.
@@ -462,6 +496,7 @@ if ($inputLayerArray) {
 							$layer->layer_epsg[$i]
 						);
 					}
+//					$e = new mb_exception("javascripts/initWmcObj.php: bbox array obj: " . json_encode($bboxArray));
 					$wmcGetApi->mainMap->mergeExtent($bboxArray);
 				}
 				catch (Exception $e) {
@@ -469,7 +504,12 @@ if ($inputLayerArray) {
 				}
 			}
 		}
+//		$time_elapsed_secs_layer = microtime(true) - $start_layer;
+//		$e = new mb_exception('javascripts/mod_initWmcObj.php: time for single layer: ' . $time_elapsed_secs_layer);
 	}
+//	$time_elapsed_secs = microtime(true) - $start;
+//	$e = new mb_exception('javascripts/mod_initWmcObj.php: time for all layer: ' . $time_elapsed_secs);
+	
 }
 /*
 FEATURETYPE
@@ -506,15 +546,10 @@ if($inputKmlArray){
 /*
 GEOJSON
 */
+$someGeojsonGiven = false;
 $inputGeojsonArray = $getApi->getGeojson();
-//$e = new mb_exception("javascripts/initWmcObj.php: GET-parameter for geojson: ".$inputGeojsonArray[0]);
 $zoomToExtent = $getApi->getGeojsonZoom();
 $offset = $getApi->getGeojsonZoomOffset();
-//$e = new mb_exception("javascripts/initWmcObj.php: offset from initWmcObj: ".$offset);
-/*if ($offset == false) {
-	$e = new mb_exception("javascripts/initWmcObj.php: no offset given");
-}*/
-//$e = new mb_exception("javascripts/initWmcObj.php: zoomToExtent from initWmcObj: ".$zoomToExtent);
 if ($zoomToExtent == 'true') {
 	$minx = false;
 	$miny = false;
@@ -529,75 +564,152 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 	unset($wmcGetApi->generalExtensionArray['KMLORDER']);
 	unset($wmcGetApi->generalExtensionArray['KMLS']);
 	$kmlOrder = array();
-	//$i = 0;
+	$i = 0;
 	foreach ($inputGeojsonArray as $inputGeojson) {
 		//$e = new mb_exception($inputGeojson);
 		// load json files from distributed locations
 		// check if url directly geojson is given
 		if ($admin->validateUrl(urldecode($inputGeojson))) {
-			$e = new mb_notice("javascripts/initWmcObj.php: GEOJSON parameter will be interpreted as url - try to resolve external json!");
+			//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON parameter will be interpreted as url - try to resolve external json!");
 			// TODO: here there may exists firewall problems which cut the request part after the first ampersand!!!!
 			//$e = new mb_exception("javascripts/initWmcObj.php: found url ".urldecode($inputGeojson));
 			//$e = new mb_exception("javascripts/initWmcObj.php: found url unencoded ".$inputGeojson);
-			$jsonFile = new connector($inputGeojson);
-			//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON: ".$jsonFile->file);
+			$jsonFileConnector = new connector();
+			$jsonFileConnector->set('externalHeaders', 'empty');
+			$jsonFileConnector->set('executionTimeOut', 5000); //to prohibit big geojson files, set max download time to 2000 mseconds ;-)
+			$jsonFileConnector->load($inputGeojson);
+			if ($jsonFileConnector->curlError !== false) {
+			    $e = new mb_exception("javascripts/initWmcObj.php: curl error message: " . $jsonFileConnector->curlError);
+			}
+			//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON: ".$jsonFileConnector->file);
 			//$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
-			$geojson = json_decode($jsonFile->file);
+			$geojson = json_validator($jsonFileConnector->file);
+			if ($geojson !== false) {
+			    $someGeojsonGiven = true;
+			    //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON is valid");
+			} else {
+			    //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON is not valid");
+			}
 		} else {
 			$e = new mb_notice("javascripts/initWmcObj.php: GEOJSON parameter will be interpreted as string!");
-			$geojson = json_decode(urldecode($inputGeojson));
-
-		}
-		if ($geojson !== null && $geojson !== false) {
-			if (!empty($geojson->title)) {
-				$geojsonTitle = $geojson->title;
+			//$geojson = json_decode(urldecode($inputGeojson));
+			$geojson = json_validator(urldecode($inputGeojson));
+			if ($geojson !== false) {
+			    $someGeojsonGiven = true;
+			    //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON is valid");
 			} else {
-				$geojsonTitle = "notTitleGivenForCollection";
-			}
-			$kmlOrder[] = $geojsonTitle;
-			$kmls->{$geojsonTitle}->type = "geojson";
-			$kmls->{$geojsonTitle}->data = $geojson;
-			$kmls->{$geojsonTitle}->url = $geojsonTitle;
-			$kmls->{$geojsonTitle}->display = true;
-			if ($zoomToExtent == 'true') {
-				$latitudes = array();
-				$longitudes = array();
-				foreach($kmls->{$geojsonTitle}->data->features as $feature) {
-					//TODO: Ugly fix to read multipolygons - delete if multiobjects are supported somewhen! 
-					if ($feature->geometry->type == 'MultiPolygon') {
-						$feature->geometry->type = "Polygon";
-						// read only the first polygon!!
-						$feature->geometry->coordinates = $feature->geometry->coordinates[0];
-					}
-					switch ($feature->geometry->type) {
-						case "Polygon":
-							//$e = new mb_exception("javascripts/initWmcObj.php: Polygon found!");
-							foreach ($feature->geometry->coordinates as $coordinates2) {
-								foreach ($coordinates2 as $coordinates1) {
-									$longitudes[] = $coordinates1[0];
-									$latitudes[] = $coordinates1[1];
-								}
-							}
-							break;
-						case "Point":
-							//$e = new mb_exception("javascripts/initWmcObj.php: Point found!");
-							$longitudes[] = $feature->geometry->coordinates[0];
-							$latitudes[] = $feature->geometry->coordinates[1];
-							break;
-						case "LineString":
-							//$e = new mb_exception("javascripts/initWmcObj.php: LineString found!");
-							foreach ($feature->geometry->coordinates as $coordinates1) {
-								$longitudes[] = $coordinates1[0];
-								$latitudes[] = $coordinates1[1];
-							}
-							break;
-					}
-				}
+			    //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON is not valid");
 			}
 		}
-	//$i++;
+		$isGeojson = false;
+		if ($geojson !== null && $geojson !== false) {
+		    //build collection if single features are given!
+		    //$e = new mb_exception("javascripts/initWmcObj.php: geojson: " . json_encode($geojson));
+		    //$e = new mb_exception("javascripts/initWmcObj.php: geojson.type: " . $geojson->type);
+		    switch ($geojson->type) {
+		        case "Feature":
+		            $dummyCollection = new stdClass();
+		            $dummyCollection->type = "FeatureCollection";
+		            $dummyCollection->features = array();
+		            //add feature to dummy collection
+		            $dummyCollection->features[] = $geojson;
+		            $geojson = $dummyCollection;
+		            $isGeojson = true;
+		            break;
+		        case "FeatureCollection":
+		            //all further things are ok 
+		            $isGeojson = true;
+		            break;
+		        default:
+		            $e = new mb_exception("javascripts/initWmcObj.php: no known geojson type is given in json!");
+		            //TODO - ignore all geojson specific get parameters!
+		            break;
+		    }
+		    if ($isGeojson) {
+		        //add default style and title/description tags if they are not given as json properties
+		        $geojsonStyle = new Geojson_style();
+		        $styledGeojson = $geojsonStyle->addDefaultStyles(json_encode($geojson));
+		        $geojson = json_decode($styledGeojson);
+		        //add default title for geojson collection, if not given 
+			    if (!empty($geojson->title)) {
+				    $geojsonTitle = $geojson->title . " " . $i;
+			    } else {
+				    $geojsonTitle = "notTitleGivenForCollection " . $i;
+			    }
+			    $kmlOrder[] = $geojsonTitle;
+			    $kmls->{$geojsonTitle}->type = "geojson";
+			    $kmls->{$geojsonTitle}->data = $geojson;
+			    $kmls->{$geojsonTitle}->url = $geojsonTitle;
+			    $kmls->{$geojsonTitle}->display = true;
+			    foreach($kmls->{$geojsonTitle}->data->features as $feature) {
+			        //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);
+			        //explode multipolygons to polygon before further processing, because we don't support multi geometries at this time
+			        if ($feature->geometry->type == 'MultiPolygon') {
+			            $numberOfPolygon = 1;
+			            foreach ($feature->geometry->coordinates as $polygons) {
+			                $newFeature = new stdClass();
+			                $newFeature->type = "Feature";
+			                $newFeature->properties = clone $feature->properties;
+			                //$newFeature->properties->title = $newFeature->properties->title . " - Polygon " . $numberOfPolygon;
+			                $newFeature->geometry->coordinates = $polygons;
+			                $newFeature->geometry->type = "Polygon";		       
+			                $kmls->{$geojsonTitle}->data->features[] = $newFeature;
+			                unset($newFeature);
+			                $numberOfPolygon++;
+			            }
+			            //TODO: delete feature from parent
+			            //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON MULTIPOLYGON: ".json_encode($feature));
+			        }
+			    }
+			    if ($zoomToExtent == 'true') {
+				    $latitudes = array();
+				    $longitudes = array();
+				    foreach($kmls->{$geojsonTitle}->data->features as $feature) {
+				        $e = new mb_notice("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);   
+					    switch ($feature->geometry->type) {
+					        case "MultiPolygon":
+					            //$e = new mb_exception("javascripts/initWmcObj.php: Polygon found!");
+					            foreach ($feature->geometry->coordinates as $polygons) {
+					                foreach ($polygons as $coordinates1) {
+					                   foreach ($coordinates1 as $coordinates2) {
+					                       $longitudes[] = $coordinates2[0];
+					                       $latitudes[] = $coordinates2[1];
+					                   }
+					                }
+					            }
+					            break;
+						    case "Polygon":
+							    //$e = new mb_exception("javascripts/initWmcObj.php: Polygon found!");
+							    foreach ($feature->geometry->coordinates as $coordinates2) {
+								    foreach ($coordinates2 as $coordinates1) {
+									    $longitudes[] = $coordinates1[0];
+									    $latitudes[] = $coordinates1[1];
+								    }
+							    }
+							    break;
+						    case "Point":
+							    //$e = new mb_exception("javascripts/initWmcObj.php: Point found!");
+							    $longitudes[] = $feature->geometry->coordinates[0];
+							    $latitudes[] = $feature->geometry->coordinates[1];
+							    break;
+						    case "LineString":
+						    	//$e = new mb_exception("javascripts/initWmcObj.php: LineString found!");
+							    foreach ($feature->geometry->coordinates as $coordinates1) {
+								    $longitudes[] = $coordinates1[0];
+								    $latitudes[] = $coordinates1[1];
+							    }
+							    break;
+					    }
+				    }
+		        }  
+		        $i++; //only add one geojson - if it is somewhat valid
+		    } else {
+		        $e = new mb_exception("javascripts/initWmcObj.php: some json is not a feature or a featurecollection!");
+		    }
+		}
+		$e = new  mb_exception("javascripts/initWmcObj.php: add " . $i . " geojson objects from GET-Parameters");
 	}
-	if ($zoomToExtent == 'true') {
+	if ($someGeojsonGiven && $zoomToExtent == 'true') {
 		$minx = min($longitudes);
 		$miny = min($latitudes);
 		$maxx = max($longitudes);
@@ -606,6 +718,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			$offset = 100;
 		}
 		if ($offset !== false) {
+		    $e = new mb_exception("javascripts/initWmcObj.php: calculate new offset! "); 
 			$averageLatitude = ($maxy - $miny) / 2;
 			$r = 6371000.0;
 			$pi = 3.14159265359;
@@ -619,19 +732,25 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		}
 		// overwrite extend from getApi
 		$bbox = new Mapbender_bbox($minx,$miny,$maxx,$maxy,"EPSG:4326");
+		//$e = new mb_exception("javascripts/initWmcObj.php: new bbox " . json_encode($bbox)); 
 		// check for current epsg and transform if needed
 		if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
 			$bbox->transform($wmcGetApi->mainMap->getEpsg());
 		}
 		$wmcGetApi->mainMap->setExtent($bbox);
 	}
-	if ($geojson !== null && $geojson !== false) {
-		$wmcGetApi->generalExtensionArray['kmls'] = json_encode($kmls);
-//$e = new mb_exception("javascripts/initWmcObj.php: ".$wmcGetApi->generalExtensionArray['kmls']);
-//$e = new mb_exception("javascripts/initWmcObj.php: ".$wmcGetApi->generalExtensionArray['kmlOrder']);
+	//$e = new mb_exception("javascripts/initWmcObj.php: after setExtent " . $wmcGetApi->mainMap->getExtent());
+	if ($someGeojsonGiven) {  
+	    $wmcGetApi->generalExtensionArray['kmls'] = json_encode($kmls);
 		$wmcGetApi->generalExtensionArray['kmlOrder'] = json_encode($kmlOrder);
+		$e = new mb_notice("javascripts/initWmcObj.php: kmls: ".$wmcGetApi->generalExtensionArray['kmls']);
+		$e = new mb_notice("javascripts/initWmcObj.php: kmlOrder: ".$wmcGetApi->generalExtensionArray['kmlOrder']);
+	} else {
+	    $e = new mb_notice("javascripts/initWmcObj.php: no valid geojson was given");
 	}
+	$e = new mb_notice("javascripts/initWmcObj.php: write wmc obj to {TMPDIR}/class_wmc1.json");//
 }
+
 //*******************************************************************************************************
 /*
 GET information about application metadata if a combination of GUI and WMC is invoked and a special
@@ -683,8 +802,18 @@ if (true) {
 //*******************************************************************************************************
 // TODO test following
 // workaround to have a fully merged WMC for loading
+//$e = new mb_exception("javascripts/initWmcObj.php: xml generate - tmp_wmc2.json!");//
 $xml = $wmcGetApi->toXml();
-//$e = new mb_notice("javascripts/initWmcObj.php: WMC document after reading information from GET-API: ".$xml);
+/*
+if($h = fopen(TMPDIR . "/tmp_wmc2.json","w")){
+    $content = json_encode($wmcGetApi) .chr(13).chr(10);
+    if(!fwrite($h,$content)){
+        #exit;
+    }
+    fclose($h);
+}
+*/
+//$e = new mb_exception("javascripts/initWmcObj.php: WMC document after reading information from GET-API: ".json_encode($xml));
 //$e = new mb_notice("");
 //die();
 if ($removeUnaccessableLayers == true) {
@@ -697,6 +826,16 @@ $wmcGetApi = new wmc();
 // For debuggin purposes
 // New Object with merged layers and other features - why?? TODO test 
 $wmcGetApi->createFromXml($xml);	
+//$e = new mb_exception("javascripts/initWmcObj.php: new wmc from saved xml generated - tmp_wmc3.json!");//
+/*
+if($h = fopen(TMPDIR . "/tmp_wmc3.json","w")){
+    $content = json_encode($wmcGetApi) .chr(13).chr(10);
+    if(!fwrite($h,$content)){
+        #exit;
+    }
+    fclose($h);
+} 
+*/
 /*
 CONSTRAINTS
 */

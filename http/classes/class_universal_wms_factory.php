@@ -11,6 +11,7 @@ require_once dirname(__FILE__) . "/class_ows_factory.php";
 require_once dirname(__FILE__) . "/class_wms_factory.php";
 require_once dirname(__FILE__) . "/class_wms_1_1_1_factory.php";
 require_once dirname(__FILE__) . "/class_wms_1_3_0_factory.php";
+require_once (dirname ( __FILE__ ) . "/class_cache.php");
 
 /**
  * 
@@ -123,16 +124,28 @@ class UniversalWmsFactory extends WmsFactory {
 	}
 	
 	public function createFromDb ($id, $appId = null) {
+	    $e = new mb_notice("classes/class_universal_wms_factory.php function createFromDb");
+	    //cache reading of wms objects from db to enhance loading of big layertrees 
+	    $cache = new Cache ();
+	    if ($cache->isActive && defined("CACHE_TIME_WMS_LAYER") && is_int(CACHE_TIME_WMS_LAYER)) {
+	        if ($cache->cachedVariableExists ( 'mapbender: wms_obj_cache_' . $id . '_' . md5($appId) ) != false) {
+	            $e = new mb_notice("classes/class_universal_wms_factory.php: Deliver wms obj with id " . $id . " from cache! Generation time: " . gmdate("Y-m-d\TH:i:s\Z", $cache->cachedVariableCreationTime('wms_obj_cache_' . $id . '_' . md5($appId))));
+	            return $cache->cachedVariableFetch ( 'mapbender: wms_obj_cache_' . $id . '_' . md5($appId) );
+	        }
+	    }
 		try {
 			$version = $this->getVersionByWmsId($id);
 			if (!is_null($version)) {
-
+			    $e = new mb_notice("classes/class_universal_wms_factory.php: Read wms obj with id " . $id . " from database! ");
 				$factory = $this->getFactory($version);
 				if (!is_null($factory)) {
-					if (!is_null($appId)) {
-						return $factory->createFromDb($id, $appId);
-					}
-					return $factory->createFromDb($id);
+				    $returnObject = $factory->createFromDb($id, $appId);
+				    //write to cache
+				    if ($cache->isActive && defined("CACHE_TIME_WMS_LAYER") && is_int(CACHE_TIME_WMS_LAYER)) {
+				        $e = new mb_notice('classes/class_universal_wms_factory.php: createFromDb - write wms obj to cache!');
+				        $cache->cachedVariableAdd ( 'mapbender: wms_obj_cache_' . $id . '_' . md5($appId), $returnObject, CACHE_TIME_WMS_LAYER );
+				    }
+				    return $returnObject;
 				}
 				return null;
 			}
@@ -146,14 +159,25 @@ class UniversalWmsFactory extends WmsFactory {
 	public function createLayerFromDb ($id, $appId = null) {
 		$wmsId = intval(wms::getWmsIdByLayerId($id));
 		$version = $this->getVersionByWmsId($wmsId);
+		$e = new mb_notice('classes/class_universal_wms_factory.php: createLayerFromDb - wms_version: ' . $version);
+		$cache = new Cache ();
+		if ($cache->isActive && defined("CACHE_TIME_WMS_LAYER") && is_int(CACHE_TIME_WMS_LAYER)) {
+		    if ($cache->cachedVariableExists ( 'mapbender: layer_obj_cache_' . $id . '_' . md5($appId) ) != false) {
+		        $e = new mb_notice("classes/class_universal_wms_factory.php: Deliver layer obj with id " . $id . " from cache! Generation time: " . gmdate("Y-m-d\TH:i:s\Z", $cache->cachedVariableCreationTime('wms_obj_cache_' . $id . '_' . md5($appId))));
+		        return $cache->cachedVariableFetch ( 'mapbender: layer_obj_cache_' . $id . '_' . md5($appId) );
+		    }
+		}
+		$e = new mb_notice("classes/class_universal_wms_factory.php: Read layer obj with id " . $id . " from database");
 		if (!is_null($version)) {
-
 			$factory = $this->getFactory($version);
 			if (!is_null($factory)) {
-				if (!is_null($appId)) {
-					return $factory->createLayerFromDb($id, $wmsId, $appId);
-				}
-				return $factory->createLayerFromDb($id, $wmsId);
+			    $returnObject = $factory->createLayerFromDb($id, $wmsId, $appId);
+			    if ($cache->isActive && defined("CACHE_TIME_WMS_LAYER") && is_int(CACHE_TIME_WMS_LAYER)) {
+			        //write to cache
+			        $e = new mb_notice('classes/class_universal_wms_factory.php: createLayerFromDb - write layer obj to cache!');
+			        $cache->cachedVariableAdd ( 'mapbender: layer_obj_cache_' . $id . '_' . md5($appId), $returnObject, CACHE_TIME_WMS_LAYER );
+			    }
+			    return $returnObject;
 			}
 			return null;
 		}

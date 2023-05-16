@@ -1,0 +1,127 @@
+WFS URL: https://www.gds-srv.hessen.de/cgi-bin/lika-services/ogc-free-data.ows?REQUEST=GetCapabilities&VERSION=1.1.0&SERVICE=WFS
+Featuretype Modul einrichten: flst, Search
+
+wfs_conf: flst:
+
+Title: 			Flurstücke
+Description: 	Flurstücke
+Label: 			Flurstückssuche
+Label_id: 		modultitle
+Button: 		Suchen
+Button_id: 		suchenbutton
+Style: 			
+
+body {font-family: Verdana,Arial,sans-serif;font-size: 12px;line-height: 2;}
+div.modultitle{color: #137673;font-size: 14px;font-weight: bold;margin: 0;}
+.ab{color:red;}
+.wfsConfHelpButton {margin: -29px 0 0 3px;float: left;}
+.wfsConfHelpButton img {margin: 0px 0px 2px 0px;}
+.selectize-input.input {margin-left: 25px;width: calc(100% - 25px);}
+.selectize-control.single {margin-left: 25px;width: calc(100% - 25px);}
+.label {margin-left: 25px;}
+.suchenbutton {margin: 15px auto;display: block;border: 1px solid;border-top-color: currentcolor;border-right-color: currentcolor;border-bottom-color: currentcolor;border-left-color: currentcolor;padding: 5px 10px;border-radius: 3px;box-shadow: 0 1px 0 rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.8);background-color: #f9f9f9;background-image: linear-gradient(to bottom,#fefefe,#f2f2f2);background-repeat: repeat-x;border-color: #b8b8b8;cursor: pointer;}
+.suchenbutton:hover {background-image: linear-gradient(to top,#fefefe,#f2f2f2);border-color: #111;}
+
+Buffer:			70
+
+geom
+----
+msGeometry: true
+
+search
+------
+FS_GKNR:	true
+FS_FLNR:	true
+FS_FSZ:		true
+FS_FSN:		true
+
+pos
+----
+FS_GKNR:	2
+FS_FLNR:	3
+FS_FSZ:		4
+FS_FSN:		5
+GK_GKBEZ:	1
+
+minimum_input
+-------------
+FS_GKNR:	true
+FS_FLNR:	true
+
+style_id
+--------
+FS_GKNR:	input
+FS_FLNR:	selectize-input input
+FS_FSZ:		selectize-input input
+FS_FSN:		selectize-input input
+
+label
+-----
+FS_GKNR:	Gemarkung:
+FS_FLNR:	Flur- Nummer:
+FS_FSZ:		Flst.- Zähler:
+FS_FSN:		Flst.- Nenner:
+GK_GKBEZ:	Gem.- Name:
+
+label_id
+--------
+FS_GKNR:	ab label
+FS_FLNR:	ab label
+FS_FSZ:		label
+FS_FSN:		label
+GK_GKBEZ:	label
+
+show
+----
+FS_GKNR:	true
+FS_FLNR:	true
+FS_FSZ:		true
+FS_FSN:		true
+GK_GKBEZ:	true
+
+position
+--------
+FS_GKNR:	5
+FS_FLNR:	1
+FS_FSZ:		2
+FS_FSN:		3
+GK_GKBEZ:	4
+
+html
+----
+FS_GKNR: siehe: select_options_list.txt
+
+operator
+--------
+FS_GKNR:	equal
+FS_FLNR:	equal
+FS_FSZ:		equal
+FS_FSN:		equal
+
+helptext
+--------
+
+FS_GKNR
+<a class="ab"><em>Pflichtelement</em></a>
+<a><strong>Wählen Sie eine Gemarkung aus der Liste.</strong></a> 
+<a>Nutzen Sie das Eingabefeld. Bereits Teile der <strong>Gemarkungsnamen oder -nummern</strong> filtern die Liste.</a>
+
+
+FS_FLNR
+<a class="ab"><em>Pflichtelement</em></a>
+<a><strong>Geben Sie eine gültige Flur-Nummer ein.</strong><a>
+<a>Erlaubte Ziffern sind 0 - 9.</a>
+
+FS_FSZ
+<a><em>optional</em></a>
+<a><strong>Bitte geben Sie einen gültigen Flurstücks-Zähler ein.</strong></a>
+<a>Erlaubte Ziffern sind 0-9.</a>
+<a><strong>ACHTUNG: </strong>Flurstücksbezeichnungen werden oft als Bruch geschrieben, z. B. 10/5. Die 10 ist hier der Flurstücks-Zähler.</a>
+
+FS_FSN
+<a><em>optional</em></a>
+<a><strong>Bitte geben Sie einen gültigen Flurstücks-Nenner ein.</strong></a>
+<a>Erlaubte Ziffern sind 0-9.</a>
+<a><strong>ACHTUNG: </strong>Flurstücksbezeichnungen werden oft als Bruch geschrieben, z. B. 10/5. Die 5 ist hier der Flurstücks-Nenner.</a>
+
+

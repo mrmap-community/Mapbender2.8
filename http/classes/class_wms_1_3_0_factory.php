@@ -28,6 +28,7 @@ class Wms_1_3_0_Factory extends WmsFactory {
 	}
 	
 	public function createFromDb ($id) {
+	    $e = new mb_notice("classes/class_wms_1_3_0_factory.php: number of args: " . func_num_args() . " method invoked from parent (class_wms_factory)!");
 		$appId = func_num_args() >= 2 ? 
 			func_get_arg(1) : null;
 
@@ -43,21 +44,37 @@ class Wms_1_3_0_Factory extends WmsFactory {
 	public function createLayerFromDb ($id) {
 		$wmsId = func_num_args() >= 2 ? 
 			func_get_arg(1) : null;
-
 		$appId = func_num_args() >= 3 ? 
 			func_get_arg(2) : null;
 		//
 		// get WMS of this layer
 		//
-		if (!is_null($appId)) {
-			$myWms = $this->createFromDb($wmsId, $appId);
-		}
-		else {
-			$myWms = $this->createFromDb($wmsId);	
-		}
-		if (is_null($myWms)) {
-			return null;
-		}
+		$cache = new Cache ();
+		$e = new mb_notice('classes/class_wms_1_3_0_factory.php function createLayerFromDb: found wmsId: ' . $wmsId);
+		$start = microtime(true);
+		//try to read wms_obj fom cache if already given
+		if ($cache->isActive && defined("CACHE_TIME_WMS_LAYER") && is_int(CACHE_TIME_WMS_LAYER)) {
+		    if ($cache->cachedVariableExists ( 'mapbender: wms_obj_cache_' . $wmsId . '_' . md5($appId) ) != false) {
+		        $e = new mb_notice("classes/class_wms_1_3_0_factory.php: Read existing wms obj with id " . $wmsId . " from cache!");
+			    $myWms = $cache->cachedVariableFetch ( 'mapbender: wms_obj_cache_' . $wmsId . '_' . md5($appId) );
+		    } else {
+			    //try to read wms obj from db
+		        $e = new mb_notice("classes/class_wms_1_3_0_factory.php: Read existing wms obj with id " . $wmsId . " from database!");
+			    $returnObject = $this->createFromDb($wmsId, $appId);
+			    if ($cache->isActive && defined("CACHE_TIME_WMS_LAYER") && is_int(CACHE_TIME_WMS_LAYER)) {
+			        $e = new mb_notice("classes/class_wms_1_3_0_factory.php: Write wms obj with id " . $wmsId . " to database!");
+			        $cache->cachedVariableAdd ( 'mapbender: wms_obj_cache_' . $wmsId . '_' . md5($appId), $returnObject, CACHE_TIME_WMS_LAYER );
+			    }
+			    $myWms = $returnObject;
+            }
+        }
+        $e = new mb_notice('classes/class_wms_1_3_0_factory.php function createLayerFromDb: wms object ready!');
+        if (is_null($myWms)) {
+            return null;
+        }
+        $time_elapsed_secs = microtime(true) - $start;
+        $e = new mb_notice('classes/class_wms_1_3_0_factory.php function createLayerFromDb: time for createFromDb: ' . $time_elapsed_secs);
+        $e = new mb_notice('classes/class_wms_1_3_0_factory.php function createLayerFromDb: after create wms');
 		//
 		// delete all layers apart from the one mentioned (but keep parents and children) better to use recursive creation
 		//
