@@ -471,11 +471,7 @@ if (count($ownguis) > 0) {
 
 echo "<div id='optionsbox' style='margin-top:0'><label for='guiList'><b>Wählen Sie Ihren GUI aus</b></label>
 <select class='form-control' name='guiList' onchange='document.form1.wmsList.selectedIndex = -1;submit()'>";
-<<<<<<< HEAD
 echo "<option id='gui-item' value='' selected disabled hidden>Select a GUI from the list..</option>";
-=======
-	
->>>>>>> 7bd2dc72115e1d0bbeca8c6ce50455b9d79b745e
 	$selected_gui_id = "";
 	
 	for ($i = 0; $i < count($ownguis); $i++) {
@@ -484,16 +480,7 @@ echo "<option id='gui-item' value='' selected disabled hidden>Select a GUI from 
 		if ($guiList && $guiList == $gui_id[$i]) {
 			echo "selected";
 			$selected_gui_id = $gui_id[$i];
-<<<<<<< HEAD
 		} 
-=======
-		} else {
-			if ($i == 0) {
-				echo "selected";
-				$selected_gui_id = $gui_id[$i];
-			}
-		}
->>>>>>> 7bd2dc72115e1d0bbeca8c6ce50455b9d79b745e
 		echo ">" . $gui_id[$i] . "</option>";
 	}
 	
@@ -865,12 +852,8 @@ if (isset ($wmsList)) {
 
 	#echo "<tr><td>Nr.</td><td>ID</td><td>Parent</td><td>Name</td><td>Title</td><td>on/off</td><td>sel</td><td>sel_default</td><td>info</td><td>info_default</td><td>minScale 1:</td><td>maxScale 1:</td><td>Prio</td><td>setWFS</td></tr>";
 	echo "<tr><td></td><td></td><td></td><td></td><td></td><td>";
-<<<<<<< HEAD
 	echo "<nobr><input type='button' class='LButton' value='Sublayer\noff' onclick='setSubs(\"visible\",false)'>&nbsp;";
 	echo "<input type='button' class='LButton' value='Sublayer\non' onclick='setSubs(\"visible\",true)'></nobr>";
-=======
-	echo "<input type='button' class='LButton' value='Sublaye\noff' onclick='setSubs()'>";
->>>>>>> 7bd2dc72115e1d0bbeca8c6ce50455b9d79b745e
 	echo "</td><td></td><td>";
 	echo "<nobr><input type='button' class='button_on_off' value='off' onclick='setLayer(\"visible\",false)'>&nbsp;";
 	echo "<input type='button' class='button_on_off' value='on' onclick='setLayer(\"visible\",true)'></nobr>";
