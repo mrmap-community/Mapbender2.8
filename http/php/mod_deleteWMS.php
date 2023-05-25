@@ -42,13 +42,14 @@ function getWmsMetadataUrl ($wmsId) {
 
 ?>
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 
 <html>
 <head>
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="pragma" content="no-cache">
 <meta http-equiv="expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <?php
 echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">';	
 ?>
@@ -56,6 +57,11 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">'
 <?php
 include '../include/dyn_css.php';
 ?>
+<link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css">
+<style type="text/css">
+.optionsbox {border: 1px solid #ccc;padding: 15px;border-radius: 4px;background-color: #efefef;margin-top: 30px;margin-bottom: 30px;}
+.optionsbox-header {display: inline-block;max-width: 100%;margin-bottom: 5px;font-weight: 700;}
+</style>
 <script type="text/javascript">
 
 function validate()
@@ -69,10 +75,6 @@ function validate()
      }
    }
 }
-
-
-
-
 
 function suggest_deletion(email_str) 
 {
@@ -88,10 +90,11 @@ function suggest_deletion(email_str)
      }
    }
 }
--->
+
 </script>
 </head>
 <body>
+<div class="container-fluid" style="padding-top:15px;padding-bottom:15px;">
 <?php
 require_once(dirname(__FILE__)."/../classes/class_administration.php");
 $admin = new administration();
@@ -156,23 +159,38 @@ if ($_POST["suggest"] || $error_msg){
 		$text = "The WMS " . $wms . " has been suggested for deletion. If you agree, remove it from your GUIs. If not, you can contact the user who suggested the deletion and discuss it.";
 	else
 		$text = $_POST["comment"];
+	
 		
-	echo "<form name='form3' action='" . $self ."' method='post'>";
-	echo "<table><tr>";
-	echo "<td>Your name:</td>";
-	echo "<td><input type='text' name='from' size=50 value = '".$fromName."'></td>";
-	echo "</tr><tr>";
-	echo "<td>Reply-To:</td>";
-	echo "<td><input type='text' name='replyto' size=50 value = '" . $email . "'></td>";
-	echo "</tr><tr>";
-	echo "<td valign=top>Comment:</td>";
-	echo "<td><textarea name='comment' cols=38 rows=10>" . $text . "</textarea></td>";
-	echo "</tr><tr>";
-	echo "<td></td><td><input type='submit' name='mail' value='send email'></td>";
-	echo "</tr></table>";
+	echo "<form type='invisible' name='form3' action='" . $self ."' method='post'>";
+	echo "<div class='form-group>";
+		echo "<label for='exampleInputOwner1'>Sender</label>";
+		echo "<input class='form-control' type='text' id='exampleInputOwner1' name='from' size=50 value = '".$fromName."' readonly>";
+	echo "</div><br>";
+
+	echo "<div class='form-group>";
+		echo "<label for='exampleInputEmail1'>To</label>";
+		echo "<input class='form-control' type='text' id='exampleInputEmail1' ame='replyto' size=50 value = '" . $email. "' readonly>";
+	echo "</div><br>";
+
+	echo "<div class='form-group>";
+		echo "<label for='exampleInputText1'>Email Text</label>";
+		echo "<textarea class='form-control' id='exampleInputText1' name='comment' cols=38 rows=10>" . $text . "</textarea>";
+	echo "</div><br>";
+	echo "<div class='container'>";
+						echo "<div class='row'>";
+							echo "<div class='col1'>";
+								echo "<input class='btn btn-primary' type='submit' name='mail' value='Send Email'>";
+							echo "</div>";
+							echo "<div class='col1'>";
+								echo "<a id='deleteWMS' href='../php/mod_deleteWMS.php?&amp;guiID=Administration_DE&amp;elementID=deleteWMS' title='Set the form' class=''><input class='button_cancel btn btn-primary col-xs-3 form-control  btn-block' type='button' value='cancel'></a>";
+							echo "</div>";
+						echo "</div>";
+					echo "</div>";
+	
+
 	echo "<input type='hidden' name='owners' value='" . $_POST["owners"] . "'>";
 	echo "</form>";
-
+	//mail($email, $fromName, $text);	
 }
 else {	
 	// delete WMS
@@ -286,24 +304,26 @@ else {
 		$cnt = 0;
 		
 		
-		echo "<form name='form1' action='" . $self ."' method='post'>";
-		echo "<select class='wmsList' size='20' name='wmsList' onchange='document.form1.wmsList.value = this.value;submit()'>";
+		echo "<form id='form1' name='form1' action='" . $self ."' method='post'>";
+		echo "<div class='optionsbox' style='margin-top:0'><label for='guiList'><strong>Wählen Sie Ihren WMS aus</strong></label>
+			<select class='form-control' name='wmsList' onchange='submit()'>";
+			echo "<option id='edit-item' value='' selected>...</option>";
 		while($row = db_fetch_array($res))
 		{
 			$wmsvalue = $row["wms_id"];
 			//mark previously selected WMS <==> text = " selected" 
 			if ($wmsvalue == $wmsList) {
-				$text = " selected";
+				$text = "selected";
 			}
 			else {
 				$text = "";
 			}
-		   echo "<option value='".$wmsvalue."'" . $text . ">".$row["wms_title"]."</option>";
+		   
+		   echo "<option id='edit-item' value='".$wmsvalue."'" . $text . ">".$row["wms_title"]."</option>";
 		   $cnt++;
 		}
-		echo "</select><br>";
-	
-	
+		echo "</select></div>";
+		
 		//
 		//
 		// If WMS is selected, show more info
@@ -313,66 +333,64 @@ else {
 		{   
 		    $sql = "SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_pos=0";
 		
-			echo "<p class = 'guiList'>";
-			// Show GUIs using chosen WMS
-			$sql = "SELECT fkey_gui_id FROM gui_wms WHERE fkey_wms_id = $1";
-			$v = array($wmsList);
-			$t = array('i');
-			$res = db_prep_query($sql,$v,$t);
-
-			// show WMS-ID for better identifiability
-			echo "<b>WMS-ID " . $wmsList . " is used in the following applications:</b><br><br>";
-			
-			$cnt = 0;
-			while($row = db_fetch_array($res))
-			{
-				echo "- " . $row["fkey_gui_id"]."<br>";
-				$cnt++;
-			}
-			if ($cnt == 0) {
-				echo "<i>- none -</i><br>";
-			}
-			
+			// Show WMS Information
+			echo "<div class='panel panel-default'><div class='panel-heading'><strong>Informationen</strong></div><table class='table table-bordered'>";
 			// Show GetCapabilities of chosen WMS
-			$sql = "SELECT wms_getcapabilities FROM wms WHERE wms_id = $1";
+			$sql = "SELECT wms_id,wms_getcapabilities,wms_abstract FROM wms WHERE wms_id = $1";
 			$v = array($wmsList);
 			$t = array('i');
 			$res = db_prep_query($sql,$v,$t);
-			
-			echo "<br><br><b>GetCapabilities</b><br><br>";
-		
 			$cnt = 0;
 			while($row = db_fetch_array($res))
 			{
-				echo $row["wms_getcapabilities"]."<br>";
+				echo "<tr><td>WMS ID</td><td>" . $row["wms_id"] . "</td></tr>";
+				echo "<tr><td>GetCapabilities</td><td>" . $row["wms_getcapabilities"] . "</td></tr>";
+				echo "<tr><td>Beschreibung</td><td>" . $row["wms_abstract"] . "</td></tr>";
+				
 				$cnt++;
 			}
+			echo "</table></div>";
 			
-			// Show Abstract of Chosen WMS
-			$sql = "SELECT wms_abstract FROM wms WHERE wms_id = $1";
-			$v = array($wmsList);
-			$t = array('i');
-			$res = db_prep_query($sql,$v,$t);
-			
-			echo "<br><br><b>Abstract</b><br><br>";
-		
-			$cnt = 0;
-			while($row = db_fetch_array($res))
-			{
-				echo $row["wms_abstract"]."<br>";
-				$cnt++;
-			}
-			echo "<br><br><b>Owner:</b><br><br>";
+
+                        // Show GUIs using chosen WMS
+                        $sql = "SELECT gui_wms.fkey_gui_id,mb_user.mb_user_name,mb_user.mb_user_email
+FROM gui_wms 
+INNER JOIN gui_mb_user ON gui_wms.fkey_gui_id = gui_mb_user.fkey_gui_id
+INNER JOIN mb_user ON mb_user.mb_user_id = gui_mb_user.fkey_mb_user_id WHERE gui_wms.fkey_wms_id = $1 AND gui_mb_user.mb_user_type = 'owner'";
+                        $v = array($wmsList);
+                        $t = array('i');
+                        $res = db_prep_query($sql,$v,$t);
+
+                        // show WMS-ID for better identifiability
+                        echo "<div class='panel panel-default'>
+                                <div class='panel-heading'><strong>WMS wird in folgenden Anwendungen / Containern verwendet</strong></div>
+                                        <table class='table table-bordered table-striped'>
+						<thead>
+							<tr>
+								<th>Name (gui_id)</th>
+								<th>Besitzer (owner)</th>
+								<th>Email</th>
+							</tr>
+						</thead>";
+                        $cnt = 0;
+                        while($row = db_fetch_array($res))
+                        {
+                                echo "<tr><td>" .$row["fkey_gui_id"]. "</td><td>" .$row["mb_user_name"]. "</td><td>" .$row["mb_user_email"]. "</td></tr>";
+                                $cnt++;
+
+                        }
+                        if ($cnt == 0) {
+                                echo "<tr><td>-</td><td>-</td><td>-</td></tr>";
+                        }
+                        echo "</table></div>";
+
+
 			$owner = $admin->getOwnerByWms($wmsList);
 			if ($owner && count($owner)>0) {
 				for($i=0; $i<count($owner); $i++){
-					echo "- ".$admin->getUserNameByUserId($owner[$i])."<br>";	
 				}
 			}
 			else echo "<i>- none -</i>";
-			
-				
-			echo "</p>";
 	
 			//previously, a WMS could only be deleted if it was owned by a single owner
 			//if(count($owner)==1 && $owner[0] == Mapbender::session()->get("mb_user_name")){
@@ -380,7 +398,7 @@ else {
 			//now, any owner can delete, any non-owner can suggest deletions
 			//if a wms has no owner, anyone can delete
 	    		if($owner && in_array(Mapbender::session()->get("mb_user_id"), $owner) && count($owner) == 1) {
-	    			echo "<input class='button_del' type='button' value='delete' onclick='validate()'>";
+	    			echo "<input class='button_del btn btn-danger' type='button' value='delete' onclick='validate()'>";
 	    		}
 	    		elseif ($owner && in_array(Mapbender::session()->get("mb_user_id"), $owner) && count($owner) > 1) {
 	    			
@@ -390,27 +408,33 @@ else {
 	    				// prepare email-addresses and usernames of all owners
 	    				$owner_ids = $owner;
 	    				$owner_mail_addresses = array();
-	    				$email_str = '';
+	    				
 	    				$j=0;
 	    				for ($i=0; $i<count($owner_ids); $i++) {
 	    					$adr_tmp = $admin->getEmailByUserId($owner_ids[$i]);
-	    					if (!in_array($adr_tmp, $owner_mail_addresses) && $adr_tmp) {
+	    					if (in_array($adr_tmp, $owner_mail_addresses) && $adr_tmp) {
 	    						$owner_mail_addresses[$j] = $adr_tmp;
 	    						$email_str .= $owner_mail_addresses[$j] . ";;;" . $owner[$i] . ":::";
 	    						$j++;
 	    					} 
 	    				}
 	    				print_r($owner_ids);
-	    				print_r($owner_mail_addresses);
-	    				echo "<input class='button_del' type='button' value='suggest deletion' onclick='suggest_deletion(\"" . $email_str . "\")'>";
+	    				print_r($owner_mail_addresses); 
+	    				
 	    			}
-	    			else {
-	    				echo "<script language='javascript'>";
-	    				echo "alert('You are not allowed to delete this WMS!');";
-	    				echo "</script>";
-	    			}
+				else {
+					//echo "<script language='javascript'>";
+					//echo "alert('You are not allowed to delete this WMS!');";
+					//echo "</script>";
 				}
-	
+			//echo "<input class='button_del btn btn-info' type='button' value='suggest deletion' onclick='suggest_deletion(\"" . $email_str . "\")'> ";
+				echo "<div class='panel panel-danger'><div class='panel-heading'>Löschen nicht erlaubt!</div><div class='panel-body'><p>Diese Ressource der GDI-Hessen wird von weiteren Benutzern in Anwendungen des Geoportals verwendet.</p><p><strong>Bitte Informieren Sie diese Benutzer über Ihre geplante Löschung</strong>, so dass diese eine Alternative verwenden.</p></div></div>
+	<div class='alert alert-danger' role='alert'>
+	  <span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>
+	  <span class='sr-only'>Error:</span>
+Die weiteren Benutzer müssen die Ressource aus ihren Geoportal Anwendungen entfernen - nur dann kann der Service endgültig aus der GDI-Hessen entfernt werden.</div>";
+				echo "<a id='deleteWMS' href='../php/mod_deleteWMS.php?&amp;guiID=Administration_DE&amp;elementID=deleteWMS' title='Set the form'><input class='button_cancel btn btn-default' type='button' value='cancel'></a> ";
+			}
 		}
 	}else{
 		echo "There are no wms available for this user.<br>";
@@ -426,5 +450,6 @@ echo "<form name='form2' action='" . $self ."' method='post'>";
 <input type='hidden' name='wms_name' value=''>
 <input type='hidden' name='owners' value=''>
 </form>
+</div>
 </body>
 </html>
