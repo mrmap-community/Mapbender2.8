@@ -306,7 +306,7 @@ class OwsConstraints {
 						$fees .= "<a href='".$row['descriptionlink']."' target=_blank><img src='".$row['symbollink']."' ".$row['name']."></a><br>";
 						if (isset($row['isopen']) && $row['isopen'] == "1") {
 							//show opendata symbol
-							$fees .= "<br><img src='http://assets.okfn.org/images/ok_buttons/od_80x15_blue.png' alt='opendata symbol'/><br>";
+							$fees .= "<br><img src='../mapbender/img/od_80x15_blue.png' alt='opendata symbol'/><br>";
 						}
 						$fees .= $row['description']."<br>";
 						if ($row['source_note'] !== "" && isset($row['source_note'])) {
