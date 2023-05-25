@@ -29,6 +29,7 @@ class connector {
 	var $file;
 	private $connectionType;
 	public  $timeOut = 20;
+	private $executionTimeOut = 0; //set max execution time in ms e.g. for a download process 
 	private $httpType = "get";
 	private $httpVersion = "1.0";
 	private $httpPostData;
@@ -38,6 +39,7 @@ class connector {
 	private $curlSessionCookie = false;
 	private $externalHeaders = "";
 	public $httpCode = null;
+	public $curlError = false;
 
 
 	/**
@@ -175,6 +177,10 @@ class connector {
 				$this->timeOut = (integer)$value;
 				break;
 
+			case "executionTimeOut":
+			       $this->executionTimeOut = (integer)$value;
+			       break;
+				
 			case "externalHeaders":
 				$this->externalHeaders = $value;
 				break;
@@ -235,6 +241,8 @@ class connector {
 		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->timeOut);
+		curl_setopt($ch, CURLOPT_TIMEOUT_MS, $this->executionTimeOut);
+		
 		if ($this->curlSessionCookie !== false) {
 			curl_setopt($ch,CURLOPT_COOKIE, $this->curlSessionCookie);
 			//$e = new mb_exception("class_connector: cookie ".$this->curlSessionCookie);
@@ -331,7 +339,9 @@ class connector {
 						"Proxy-Connection: Keep-Alive"
 				);
 			}
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		        if ($headers != 'empty') {
+		            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			}
 		}
 		#curl_setopt($ch, CURLOPT_HEADER, true);
 //$e = new mb_exception("class_connector.php: CURL connect to:".$url);
@@ -353,6 +363,7 @@ class connector {
 		$error_log .= "lookup time: ".$info['namelookup_time']."\n";
 		$error_log .= "redirect_time: ".$info['redirect_time']."\n";
 		$error_log .= "redirect_count: ".$info['redirect_count']."\n";*/
+		$this->curlError = curl_error ($ch);
 		if ($info['total_time'] == (float)0) {
 			$this->timedOut = true;
 			$e = new mb_exception("class_connector.php: Problem when connecting to external resource via curl - connection timed out: Waited more than ".$this->timeOut." seconds!");
