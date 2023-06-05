@@ -24,11 +24,13 @@ function getWfsConfs(myGui,myWms,myLayer,myWfsConfId,layerButton) {
 			selectHtml += "</select>";
 			
 			$("<div id='setWfsDialog'>" + selectHtml + "</div>").dialog({
+				modal: true,
 				autoOpen: true,
 				height: 170,
 				width: 300,
 				title: '<?php echo _mb("Set WFS for layer"); ?>',
 				draggable: true,
+				dialogClass: 'setWFSdialog',
 				buttons: {
 					"OK": function(){
 						saveLayerWfsConnection($("#wfsConfSelect").val(), myGui, myWms, myLayer, layerButton);
