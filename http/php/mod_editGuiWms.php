@@ -46,16 +46,32 @@ $userId = Mapbender::session()->get("mb_user_id");
 
 require_once (dirname(__FILE__) . "/../classes/class_wms.php");
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML>
 
 <html>
 <head>
 <?php
 
 echo '<meta http-equiv="Content-Type" content="text/html; charset=' . CHARSET . '">';
-echo '<link rel="stylesheet" type="text/css" href="../extensions/jquery-ui-1.7.2.custom/css/smoothness/jquery-ui-1.7.2.custom.css">';
 ?>
 <title>Edit GUI WMS</title>
+<style type="text/css">
+.optionsbox {border: 1px solid #ccc;padding: 15px;border-radius: 4px;background-color: #efefef;margin-top: 30px;margin-bottom: 30px;max-width:fit-content;}
+.optionsbox-header {display: inline-block;max-width: 100%;margin-bottom: 5px;font-weight: 700;}
+.selectwmsbox{padding-right:35px;}
+.padding-override{padding-right:0px !important;padding-left:0px !important;}
+.margin-override{margin-right:0px !important;margin-left:0px !important;}
+.myButton{margin:2px 0;}
+.saveButton{border:1px solid #ccc !important;}
+.saveButtonwrapper{background-color: rgba(255,255,255,0.8);padding: 5px 30px;width: fit-content;height: fit-content;left: 0;position: fixed;bottom: 0;}
+.u-hidden {visibility: hidden}
+.u-visible {visibility: visible}
+div.dt-buttons{margin-bottom: 13px;}
+.setWFSdialog .ui-dialog-titlebar-close{visibility:hidden;}
+.setWFSdialog .ui-dialog-titlebar {background: #ccc;border: 1px solid #aaa;color: #222;}
+.setWFSdialog .ui-button.ui-state-default {background: #f6f6f6;color: #222;}
+.setWFSdialog .ui-button.ui-state-hover {border: 1px solid #222222;background: #f0f0f0;}
+</style>
 <?php
 
 include_once '../include/dyn_css.php';
@@ -68,14 +84,14 @@ function toImage($text) {
 	return $text;
 }
 ?>
-
+<link rel="stylesheet" href="../extensions/bootstrap-3.3.6-dist/css/bootstrap.min.css" type="text/css">
+<link rel="stylesheet" href="../extensions/datatables-1.13.4-custom-datatables/datatables.min.css" type="text/css">
+<link rel="stylesheet" href="../extensions/jquery-ui-1.11.4/jquery-ui.css" type="text/css">
 <script language="JavaScript">
 
 <?php
-
-require_once (dirname(__FILE__) . "/../extensions/jquery-ui-1.7.2.custom/js/jquery-1.3.2.min.js");
-require_once (dirname(__FILE__) . "/../extensions/jquery-ui-1.7.2.custom/js/jquery-ui-1.7.2.custom.min.js");
-require_once (dirname(__FILE__) . "/../extensions/jquery-ui-1.7.2.custom/development-bundle/ui/min.ui.dialog.js");
+require_once (dirname(__FILE__) . "/../extensions/datatables-1.13.4-custom-datatables/datatables.min.js");
+require_once (dirname(__FILE__) . "/../extensions/jquery-ui-1.11.4/jquery-ui.min.js");
 require_once (dirname(__FILE__) . "/../javascripts/mod_wfsLayerObj_conf.js");
 header('Content-type: text/html');
 ?>
@@ -147,25 +163,35 @@ function getAllLayer(){
    }
    return arrayLayer;
 }
-function setSubs(){
+function setSubs(def,status){
    var arrayLayer = getAllLayer();
-   for(var i=0; i<arrayLayer.length; i++){
-      if(parseInt(eval("document.forms[0].L_" + arrayLayer[i] + "___layer_parent.value")) > 0){
-         eval("document.forms[0].L_" + arrayLayer[i] + "___gui_layer_status.checked = false");
+   
+   if ($('#sublayer_off').hasClass('active')){
+      for(var i=0; i<arrayLayer.length; i++){
+         if(parseInt(eval("document.forms[0].L_" + arrayLayer[i] + "___layer_parent.value")) > -1){
+            eval("document.forms[0].L_" + arrayLayer[i] + "___gui_layer_status.checked = " + status);
+         }
       }
-   }
+   } else {
+      for(var i=0; i<arrayLayer.length; i++){
+         if(parseInt(eval("document.forms[0].L_" + arrayLayer[i] + "___layer_parent.value")) > 0){
+            eval("document.forms[0].L_" + arrayLayer[i] + "___gui_layer_status.checked = " + status);
+         }
+      }
+   } 
 }
+
 function setLayer(def,status){
    var arrayLayer = getAllLayer();
    if(def == 'querylayer'){
-      for(var i=1; i<arrayLayer.length; i++){
+      for(var i=0; i<arrayLayer.length; i++){
          if(eval("document.forms[0].L_" + arrayLayer[i] + "___gui_layer_querylayer.disabled == false")){
             eval("document.forms[0].L_" + arrayLayer[i] + "___gui_layer_querylayer.checked = " + status);
          }
       }
    }
    if(def == 'visible'){
-      for(var i=1; i<arrayLayer.length; i++){
+      for(var i=0; i<arrayLayer.length; i++){
          eval("document.forms[0].L_" + arrayLayer[i] + "___gui_layer_visible.checked = " + status);
       }
    }
@@ -179,10 +205,13 @@ function showSld(origUrl){
 	}
 	window.open(url);
 }
+
 </script>
 <link rel="stylesheet" type="text/css" href="../css/edit_gui.css" />
 </head>
 <body>
+<div class="container-fluid" style="padding-top:15px;padding-bottom:15px;">
+
 <?php
 
 
@@ -447,20 +476,6 @@ if (isset ($update_content) && $update_content == "1") {
 }
 
 echo "<form name='form1' action='" . $self . "' method='post'>";
-echo "<table cellpadding='3' cellspacing='3' border='0' class='table_top'>";
-
-echo "<tr>";
-echo "<td>";
-echo "GUI";
-echo "</td>";
-echo "<td>";
-echo "WMS-TITLE";
-echo "</td>";
-echo "<td>";
-echo "</td>";
-echo "<tr>";
-
-echo "<td>";
 
 require_once (dirname(__FILE__) . "/../classes/class_administration.php");
 $admin = new administration();
@@ -473,58 +488,60 @@ if (count($ownguis) > 0) {
 	}
 }
 
-echo "<select size='8' name='guiList' onchange='document.form1.wmsList.selectedIndex = -1;submit()'>";
-$selected_gui_id = "";
-
-for ($i = 0; $i < count($ownguis); $i++) {
-	echo "<option value='" . $gui_id[$i] . "' ";
-	if ($guiList && $guiList == $gui_id[$i]) {
-		echo "selected";
-		$selected_gui_id = $gui_id[$i];
-	} else {
-		if ($i == 0) {
+echo "<div class='optionsbox' style='margin-top:0'><label for='guiList'><strong>Anwendung / Container auswählen</strong></label>
+<select class='form-control' name='guiList' onchange='document.form1.wmsList.selectedIndex = -1;submit();'>";
+echo "<option id='gui-item' value='' selected disabled hidden>...</option>";
+	$selected_gui_id = "";
+	
+	for ($i = 0; $i < count($ownguis); $i++) {
+		
+		echo "<option id='gui-item' value='" . $gui_id[$i] . "' ";
+		if ($guiList && $guiList == $gui_id[$i]) {
 			echo "selected";
 			$selected_gui_id = $gui_id[$i];
-		}
+		} 
+		echo ">" . $gui_id[$i] . "</option>";
 	}
-	echo ">" . $gui_id[$i] . "</option>";
-}
+	
 
-echo "</select>";
-echo "</td>";
-echo "<td>";
-
+echo "</select></div>";
 $sql = "SELECT * from gui_wms JOIN gui ON gui_wms.fkey_gui_id = gui.gui_id JOIN wms ON ";
-$sql .= "gui_wms.fkey_wms_id = wms.wms_id AND gui_wms.fkey_gui_id=gui.gui_id WHERE gui.gui_id = $1 ORDER BY gui_wms_position";
-$v = array (
-	$selected_gui_id
-);
-$t = array (
-	's'
-);
-$res = db_prep_query($sql, $v, $t);
-$count_wms = 0;
+	$sql .= "gui_wms.fkey_wms_id = wms.wms_id AND gui_wms.fkey_gui_id=gui.gui_id WHERE gui.gui_id = $1 ORDER BY gui_wms_position";
+	$v = array (
+		$selected_gui_id
+	);
+	$t = array (
+		's'
+	);
+	$res = db_prep_query($sql, $v, $t);
+	$count_wms = 0;
 
-# WMS select box on right side
-echo "<select size='8' name='wmsList' style='width:300px' onchange='submit()'>";
+	# WMS select box on right side
+	echo "<div id='selectwmsbox' class='optionsbox margin-override selectwmsbox row";
+        if (isset($guiList)) {
+		echo " u-visible";
+	}else{
+		echo " u-hidden";
+	} 
+        echo "'><label for='guiList'><strong>Wählen Sie Ihren WMS aus</strong></label>
+	<div class='col-sm-10 padding-override' ><select class='padding-override form-control' id='select-wms' size=5 name='wmsList' onchange='submit()'>";
 
-while ($row = db_fetch_array($res)) {
+	while ($row = db_fetch_array($res)) {
 	echo "<option title='" . htmlentities($row["wms_abstract"], ENT_QUOTES, "UTF-8") . "'  value='" . $row["wms_id"] . "' ";
 	if (isset ($wmsList) && $wmsList == $row["wms_id"]) {
 		echo "selected";
 	}
 	echo ">" . $row["gui_wms_position"] . " - " . $row["wms_title"] . "</option>";
 	$count_wms++;
-}
+	}
+	echo "</select></div>";
 
-echo "</select>";
-echo "</td><td>";
 
-echo "<input class='myButton' type='button' name='up_wms' value=' up ' onClick='validate(\"up_wms\")'>";
-echo "<input type='hidden' name='up' value=''><br><br>";
-
-echo "<input class='myButton' type='button' name='down_wms' value='down'  onClick='validate(\"down_wms\")'>";
-echo "<input type='hidden' name='down' value=''><br><br>";
+	echo "<div class='col-sm-2'>";
+			echo "<input class='myButton btn btn-primary' type='button' name='up_wms' value=' up ' onClick='validate(\"up_wms\")'>";
+			echo "<input type='hidden' name='up' value=''>";
+			echo "<input class='myButton btn btn-primary' type='button' name='down_wms' value='down'  onClick='validate(\"down_wms\")'>";
+			echo "<input type='hidden' name='down' value=''>";
 
 $may_delete = !isset($wmsList);
 //TODO - check if the other application is not the same
@@ -546,16 +563,16 @@ EOT;
 }
 
 if ($may_delete) {
-    echo "<input class='myButton' type='button' name='delete_wms' value='remove'  onClick='validate(\"delete_wms\")'>";
-    echo "<input type='hidden' name='del' value=''>";
+		echo "<input class='myButton btn btn-primary' type='button' name='delete_wms' value='remove'  onClick='validate(\"delete_wms\")'>";
+		echo "<input type='hidden' name='del' value=''>";
+	echo "</div>";
+	echo "</div>";
 }
 else {
-    echo "Bitte benutzen Sie !Vollständig Löschen! um den WMS vollständig zu entfernen.";
+	echo "<input class='myButton btn btn-default' type='button' name='delete_wms' value='remove' disabled='disabled' onClick='' title='Benutzen Sie !Vollständig Löschen!'>";
+        echo "</div>";
+        echo "</div>";
 }
-
-echo "</td>";
-echo "</tr>";
-echo "</table>";
 
 if (isset ($wmsList)) {
 	#gui_wms
@@ -691,10 +708,9 @@ if (isset ($wmsList)) {
 	}
 
 	# Save button
-	echo "<div style='position:absolute;left:500px; top:225px;' ><input type='button' style='width:130px;height:80px;background-color:#ffeded' value='Save Settings' onclick='checkBoxValue()'></div>";
-	echo "<table class='table_top'>";
-	echo "<tr>";
-	echo "<td colspan='2'>";
+	echo "<div class='optionsbox' style='max-width: fit-content;'><table class='table'>";
+	echo "<tr><td>WMS ID:</td><td>" . $wms_id[0] . "</td></tr>";
+	echo "<tr><td>Capabilities</td><td>";
 	echo "<a href='" . $wms_getcapabilities[0];
 	echo wms :: getConjunctionCharacter($wms_getcapabilities[0]);
 	if ($wms_version[0] == "1.0.0") {
@@ -702,10 +718,8 @@ if (isset ($wmsList)) {
 	} else {
 		echo "VERSION=" . $wms_version[0] . "&REQUEST=GetCapabilities&SERVICE=WMS";
 	}
-	echo "' style='font-size:14px' target='_blank'>LINK: Capabilities</a>";
-	echo "</td>";
-	echo "<td align = right>WMS ID: " . $wms_id[0] . "</td>";
-	echo "<tr>";
+	echo "' style='' target='_blank'>In neuem Fenster öffnen</a>";
+	echo "</td></tr>";
 	#epsg
 	if ($gui_wms_position[0] == 0) {
 		echo "<tr>";
@@ -769,7 +783,7 @@ if (isset ($wmsList)) {
 	}
 	echo "</select>";
 	echo "</td>";
-	echo "</tr><br>";
+	echo "</tr>";
 
 	# visibility
 	echo "<tr>";
@@ -824,41 +838,41 @@ if (isset ($wmsList)) {
 		echo "<input type='hidden' value='' name='this_gui_wms_sldurl'>";
 	}
 
-	echo "</table><br>";
-
-	echo "<table border='1' cellpadding='1'>";
+	echo "</table></div>";
+	echo "<div class='optionsbox' style='max-width:85em;'>";
+	echo "<table id='exampledatatable' class='table table-bordered table-striped compact display nowrap'>";
+	echo "<thead>";
 	echo "<tr>";
-
-	echo "<td>Nr.</td>";
-	echo "<td>ID</td>";
-	echo "<td>" . toImage('Parent') . "</td>";
-	echo "<td>Name</td>";
-	echo "<td>Title</td>";
-	echo "<td>" . toImage('on/off') . "</td>";
-	echo "<td>" . toImage('sel') . "</td>";
-	echo "<td>" . toImage('sel_default') . "</td>";
-	echo "<td>" . toImage('info') . "</td>";
-	echo "<td>" . toImage('info_default') . "</td>";
-	echo "<td>" . toImage('minScale 1:') . "</td>";
-	echo "<td>" . toImage('maxScale 1:') . "</td>";
-	echo "<td>" . toImage('Style') . "</td>";
-	echo "<td>" . toImage('Prio') . "</td>";
-	echo "<td>" . toImage('setWFS') . "</td>";
+	echo "<th>Nr.</th>";
+	echo "<th>ID</th>";
+	echo "<th>" . toImage('Parent') . "</th>";
+	echo "<th>Name</th>";
+	echo "<th>Title</th>";
+	echo "<th>" . toImage('on/off') . "</th>";
+	echo "<th>" . toImage('sel') . "</th>";
+	echo "<th>" . toImage('s_default') . "</th>";
+	echo "<th>" . toImage('info') . "</th>";
+	echo "<th>" . toImage('i_default') . "</th>";
+	echo "<th>" . toImage('minScale 1:') . "</th>";
+	echo "<th>" . toImage('maxScale 1:') . "</th>";
+	echo "<th>" . toImage('Style') . "</th>";
+	echo "<th>" . toImage('Prio') . "</th>";
+	echo "<th>" . toImage('setWFS') . "</th>";
 	if ($wms_supportsld[0]) {
-		echo "<td>" . toImage('SLD') . "</td>";
+		echo "<th>" . toImage('SLD') . "</th>";
 	}
 	echo "</tr>";
 
-	#echo "<tr><td>Nr.</td><td>ID</td><td>Parent</td><td>Name</td><td>Title</td><td>on/off</td><td>sel</td><td>sel_default</td><td>info</td><td>info_default</td><td>minScale 1:</td><td>maxScale 1:</td><td>Prio</td><td>setWFS</td></tr>";
-	echo "<tr><td></td><td></td><td></td><td></td><td></td><td>";
-	echo "<input type='button' class='LButton' value='Sublayer\noff' onclick='setSubs()'>";
-	echo "</td><td></td><td>";
-	echo "<nobr><input type='button' class='button_on_off' value='off' onclick='setLayer(\"visible\",false)'>&nbsp;";
-	echo "<input type='button' class='button_on_off' value='on' onclick='setLayer(\"visible\",true)'></nobr>";
-	echo "</td><td></td><td>";
-	echo "<nobr><input type='button' class='button_on_off' value='off' onclick='setLayer(\"querylayer\",false)'>&nbsp;";
-	echo "<input type='button' class='button_on_off' value='on' onclick='setLayer(\"querylayer\",true)'></nobr>";
-	echo "</td><td></td><td></td><td></td></tr>";
+	echo "<tr><th colspan='5' style='text-align: right;'><a style='margin-right:5px'>Only SubLayer</a><div class='btn-group btn-toggle'><input type='button' id='sublayer_on' class='btn btn-xs btn-default' value='on' onclick=''><input type='button' id='sublayer_off' class='btn btn-xs btn-primary active' value='off' onclick=''></div></th><th>";
+	echo "<input type='button' class='LButton btn btn-xs btn-default' value='off' onclick='setSubs(\"visible\",false)'>&nbsp;";
+	echo "<input type='button' class='LButton btn btn-xs btn-default' value='on' onclick='setSubs(\"visible\",true)'>";
+	echo "</th><th></th><th>";
+	echo "<input type='button' class='button_on_off btn btn-xs btn-default' value='off' onclick='setLayer(\"visible\",false)'>&nbsp;";
+	echo "<input type='button' class='button_on_off btn btn-xs btn-default' value='on' onclick='setLayer(\"visible\",true)'>";
+	echo "</th><th></th><th colspan='7'>";
+	echo "<input type='button' class='button_on_off btn btn-xs btn-default' value='off' onclick='setLayer(\"querylayer\",false)'>&nbsp;";
+	echo "<input type='button' class='button_on_off btn btn-xs btn-default' value='on' onclick='setLayer(\"querylayer\",true)'>";
+	echo "</th></tr></thead><tbody>";
 
 	for ($i = 0; $i < count($layer_id); $i++) {
 		#layer_styles
@@ -878,13 +892,13 @@ if (isset ($wmsList)) {
 		}
 
 		echo "<tr align='center'>";
-		echo "<td><input type='text' size='1' name='L_" . $layer_id[$i] . "___layer_nr' disabled value='" . $i . "'></td>";
-		echo "<td style='background:lightgrey'><input type='text' size='2' name='L_" . $layer_id[$i] . "___layer_id' value='" . $layer_id[$i] . "' readonly></td>";
-		echo "<td><input type='text' size='1' name='L_" . $layer_id[$i] . "___layer_parent' value='" . $layer_parent[$i] . "' readonly></td>";
-		echo "<td style='background:lightgrey'><input type='text' size='7' value='" . $layer_name[$i] . "' readonly></td>";
-		echo "<td><input type='text' size='12' name='L_" . $layer_id[$i] . "___gui_layer_title' value='" . $gui_layer_title[$i] . "' ></td>";
+		echo "<td class='readonly-1' ><input type='text' size='2' name='L_" . $layer_id[$i] . "___layer_nr' disabled value='" . $i . "'></td>";
+		echo "<td class='readonly-2' ><input type='text' size='4' name='L_" . $layer_id[$i] . "___layer_id' value='" . $layer_id[$i] . "' readonly disabled></td>";
+		echo "<td class='readonly-3' ><input type='text' size='2' name='L_" . $layer_id[$i] . "___layer_parent' value='" . $layer_parent[$i] . "' readonly disabled></td>";
+		echo "<td style=><input type='text' size='15' value='" . $layer_name[$i] . "' readonly disabled></td>";
+		echo "<td><input type='text' size='22' name='L_" . $layer_id[$i] . "___gui_layer_title' value='" . $gui_layer_title[$i] . "' ></td>";
 
-		echo "<td style='background:lightgrey'><input name='L_" . $layer_id[$i] . "___gui_layer_status' type='checkbox' ";
+		echo "<td style=><input name='L_" . $layer_id[$i] . "___gui_layer_status' type='checkbox' ";
 		if ($gui_layer_status[$i] == 1) {
 			echo "checked";
 		}
@@ -896,7 +910,7 @@ if (isset ($wmsList)) {
 		}
 		echo "></td>";
 
-		echo "<td style='background:lightgrey'><input name='L_" . $layer_id[$i] . "___gui_layer_visible' type='checkbox' ";
+		echo "<td style=><input name='L_" . $layer_id[$i] . "___gui_layer_visible' type='checkbox' ";
 		if ($gui_layer_visible[$i] == 1) {
 			echo "checked";
 		}
@@ -911,7 +925,7 @@ if (isset ($wmsList)) {
 		}
 		echo "></td>";
 
-		echo "<td style='background:lightgrey'><input name='L_" . $layer_id[$i] . "___gui_layer_querylayer' type='checkbox' ";
+		echo "<td style=><input name='L_" . $layer_id[$i] . "___gui_layer_querylayer' type='checkbox' ";
 		if ($gui_layer_querylayer[$i] == 1) {
 			echo "checked";
 		}
@@ -921,7 +935,7 @@ if (isset ($wmsList)) {
 		echo "></td>";
 
 		echo "<td><input name='L_" . $layer_id[$i] . "___gui_layer_minscale' type='text' size='5' value='" . $gui_layer_minscale[$i] . "'></td>";
-		echo "<td style='background:lightgrey'><input name='L_" . $layer_id[$i] . "___gui_layer_maxscale' type='text' size='5' value='" . $gui_layer_maxscale[$i] . "'></td>";
+		echo "<td style=><input name='L_" . $layer_id[$i] . "___gui_layer_maxscale' type='text' size='5' value='" . $gui_layer_maxscale[$i] . "'></td>";
 		/**/
 		echo "<td>\n";
 		echo "<select class='select_short' name='L_" . $layer_id[$i] . "___gui_layer_style'>\n";
@@ -975,16 +989,61 @@ if (isset ($wmsList)) {
 		}
 		echo "</tr>\n";
 		if ($i == 0) {
-			echo "<tr><td colspan='16'><hr></td></tr>";
 		}
 	}
-	echo "</table>\n";
+	echo "</tbody></table></div>\n";
 	echo "<input type='hidden' name='this_gui' value='" . $guiList . "'>\n";
 	echo "<input type='hidden' name='this_wms' value='" . $wmsList . "'>\n";
 	echo "<input type='hidden' name='this_layer_count' value='" . $cnt_l . "'>\n";
 	echo "<input type='hidden' name='update_content' value=''>\n";
 	echo "</form>\n";
+        # Save button
+        echo "<div class='saveButtonwrapper'><input class='saveButton saveButtonfixed btn btn-danger float-right btn-md' type='button' value='Save Settings' onclick='checkBoxValue()'></div></div>";
 }
 ?>
+</div>
+<script>
+$(document).ready(function () {
+    $('#exampledatatable').DataTable({
+	responsive: true,
+	ordering: false,
+	searching: false,
+	paging: true,
+	dom: 'Bfrtip',
+        lengthMenu: [
+            [10, 25, 50, -1],
+            [10, 25, 50, 'All'],
+        ],
+        buttons: [
+		'pageLength',
+		{
+		extend: 'colvisGroup',
+		text: 'Standardansicht',
+		show: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
+		hide: [ 10, 11, 12, 13, 14, 15 ]
+		},
+		{
+                extend: 'colvisGroup',
+                text: 'Expertenansicht',
+                show: ':hidden'
+		}
+        ],
+	
+	columnDefs: [
+        	{
+                targets: [-1,-2,-3,-4,-5,-6],
+                visible: false
+        	}
+        ]
+    	});
+	
+	$('.btn-toggle').click(function() {
+    		$(this).find('.btn').toggleClass('active');  
+		$(this).find('.btn').toggleClass('btn-primary');
+		$(this).find('.btn').toggleClass('btn-default');
+		
+	});
+});
+</script>
 </body>
 </html>
