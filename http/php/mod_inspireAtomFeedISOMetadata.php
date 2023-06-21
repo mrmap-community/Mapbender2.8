@@ -274,13 +274,14 @@ SQL;
 			$mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
 			$mapbenderMetadata ['serviceUuid'] = $mbMetadata ['uuid'];
 			$mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
-			$mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
-			$mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
-			// $mapbenderMetadata['serviceTimestamp'] = date("Y-m-d",strtotime($mb_metadata['lastchanged']));
-			
-			// $mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d",strtotime($mb_metadata['lastchanged']));
+			$mapbenderMetadata['serviceTimestamp'] = date("Y-m-d", strtotime($mb_metadata['lastchanged']));
+			$mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d", strtotime($mb_metadata['createdate']));
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
-			$mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
+			if ($mbMetadata ['responsible_party_email'] != '') {
+			    $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
+			} else {
+			    $mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
+			}
 			$mapbenderMetadata ['serviceGroupId'] = $mbMetadata ['fkey_mb_group_id'];
 			$mapbenderMetadata ['serviceOwnerId'] = $mbMetadata ['fkey_mb_user_id'];
 			// TODO!
