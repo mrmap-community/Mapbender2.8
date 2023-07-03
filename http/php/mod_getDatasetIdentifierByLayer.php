@@ -41,12 +41,10 @@ $datasetIdentifier = array();
 while($row = db_fetch_array($res)){
     $orgaInfo = $admin->getOrgaInfoFromRegistry('metadata', $row['metadata_id'], 0);
     $codespace = $admin->getIdentifierCodespaceFromRegistry($orgaInfo, $row);
-    if ($row['datasetid_codespace'] . $row['datasetid'] != '') {
-        #echo "<br>" . $row['datasetid_codespace'] . $row['datasetid'] . "<br>";
-        $datasetIdentifier[] = $row['datasetid_codespace'] . $row['datasetid'];
+    if ($row['datasetid'] != '') {
+        $datasetIdentifier[] = $codespace . $row['datasetid'];
     } else {
-        #echo "<br>" . $codespace .  $row['uuid'] . "<br>";
-        $datasetIdentifier[] = $codespace .  $row['uuid'];
+        $datasetIdentifier[] = $codespace . $row['uuid'];
     }
 }
 $datasetIdentifier = array_unique($datasetIdentifier);
