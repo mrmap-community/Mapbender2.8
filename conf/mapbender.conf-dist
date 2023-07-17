@@ -462,6 +462,11 @@ define("GPKG_ABSOLUTE_DOWNLOAD_PATH", "/tmp/");
 # --------------------------------------------
 define("GPKG_ABSOLUTE_DOWNLOAD_URI", "https://www.geoportal.rlp.de/inspiredownloads/");
 
+# --------------------------------------------
+# Max area for download of gpkg in squarekilometer
+# --------------------------------------------
+define("GPKG_AREA_LIMIT", "100");
+
 #
 ###HACK for GLOBALS
 $DBSERVER=DBSERVER;
