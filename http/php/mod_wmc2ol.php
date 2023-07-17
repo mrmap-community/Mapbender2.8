@@ -239,7 +239,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 			$html.="var logo = \"<a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 		}
 	} else {
-		$html.="var logo = \"<a href = 'http://www.mapbender.org' target='_blank'><img src='../img/Mapbender_logo_and_text.png' height='20' width='120' alt='Mapbender Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";	
+		$html.="var logo = \"<a href = 'https://www.geoportal.rlp.de' target='_blank'><img src='../img/logo_geoportal_neu.png' height='20' width='120' alt='Mapbender Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&withHeader=true&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";	
 	}
 	//$html.="var logo = \"<a href = 'http://www.geoportal.rlp.de' target='_blank'><img src='../img/logo_geoportal_neu.png' height='20' width='120' alt='Geoportal Logo'/></a><br><a href = 'mod_getWmcDisclaimer.php?&id=".$wmcId."&languageCode=de&hostName=".$hostName."' target='_blank'>"._mb('Terms of use')."</a>\";\n";
 	//check for some queryable layer in web map context document
