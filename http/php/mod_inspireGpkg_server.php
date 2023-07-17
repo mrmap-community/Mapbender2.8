@@ -62,12 +62,12 @@ switch ($ajaxResponse->getMethod()) {
 		} else {
 		    $ajaxResponse->setSuccess(true);
 		    $ajaxResponse->setMessage(_mb("Method checkOptions requested."));
-		    $e = new mb_exception("input for python method check_options: '" . json_encode($configuration) . "'");
+		    //$e = new mb_exception("input for python method check_options: '" . json_encode($configuration) . "'");
 		    #https://stackoverflow.com/questions/39471295/how-to-install-python-package-for-global-use-by-all-users-incl-www-data
-		    $e = new mb_exception('/usr/bin/python3 /tmp/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
+		    //$e = new mb_exception('/usr/bin/python3 /tmp/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
 		    
 		    $output = exec('/usr/bin/python3.9 ../extensions/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
-		    $e = new mb_exception("output of python method check_options: " . $output);
+		    //$e = new mb_exception("output of python method check_options: " . $output);
 		    //die();
 		    
 		    // some example json files for testing the client
@@ -521,13 +521,21 @@ switch ($ajaxResponse->getMethod()) {
 	        $uuid = new Uuid();
 	        
 	        //add location for cache
-	        $outputFolder = '/home/armin/GDI-RP/devel/Geoportal/Mapbender2.8/http/tmp/';
+	        if (defined("GPKG_ABSOLUTE_DOWNLOAD_PATH") && GPKG_ABSOLUTE_DOWNLOAD_PATH != "") {
+	            $outputFolder = GPKG_ABSOLUTE_DOWNLOAD_PATH;
+	        } else {
+	            $outputFolder = '/tmp/';
+	        }
 	        $outputFilename = date('Y-m-d',time()) . "_" . $uuid . "_" . (string)$user->id;
 	        $configuration->output_folder = $outputFolder;
 	        $configuration->output_filename = $outputFilename;
 	        $configuration->notification->email_address = $user->email;
-	        $configuration->notification->subject = _mb("GeoPortal.rlp geopackage download processed");
-	        $configuration->notification->text = "https://www.geoportal.rlp.de/metadata/..." . $outputFilename . ".gpkg";
+	        $configuration->notification->subject = _mb("Your GeoPortal.rlp geopackage download has been processed");
+	        if (defined("GPKG_ABSOLUTE_DOWNLOAD_URI") && GPKG_ABSOLUTE_DOWNLOAD_URI != "") {
+	            $configuration->notification->text = GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg";
+	        } else {
+	           $configuration->notification->text = "https://www.geoportal.rlp.de/metadata/" . $outputFilename . ".gpkg";
+	        }
 	        //add link to nga client to view the download if wished
 	        
 	        //check values
