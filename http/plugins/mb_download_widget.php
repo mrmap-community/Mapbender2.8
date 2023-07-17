@@ -263,10 +263,11 @@
     };
     
     var checkSession = function() {
+    	console.log("checkSession");
         $.ajax({
             url: '../php/mod_showLoggedInUser.php?outputFormat=json',
             type: 'POST',
-            async: false,
+            async: true,
             dataType: 'json',
             data: {
             },
@@ -274,9 +275,10 @@
             	if (data.result.logged_in) {
             		$('#user-info').html('<i><b>' + data.result.username + '</b></i>');
             	} else {
-            	
-            		$('#user-info').html('<i><b>' + data.result.username + '</b></i>' + "<br><?php echo _mb('The anonymous user is not allowed to download data!');?>");
-            		$('#start-digitize').remove();
+            	    //alert('problem');
+            		//$('#user-info').html('<i><b>' + data.result.username + '</b></i>' + '<br><?php echo _mb('The anonymous user is not allowed to download data!');?>');
+            		//$('#user-info').show();
+            		$('#start-digitize').html('<?php echo _mb('The anonymous user is not allowed to download data!');?>');
             	}
             	userLoggedIn = data.result.logged_in;
             }
