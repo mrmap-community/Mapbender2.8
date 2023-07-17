@@ -354,13 +354,13 @@
 		rowContainer = $(document.createElement('tr')).appendTo(tableContainer);
 		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
 		datasetTitle = $(document.createElement('b')).appendTo(columnContainer);
-    	datasetTitle.append("Dataset");
+    	datasetTitle.append("<?php echo _mb('Dataset');?>");
     	columnContainer = $(document.createElement('th')).appendTo(rowContainer);
     	rasterTitle = $(document.createElement('b')).appendTo(columnContainer);
-    	rasterTitle.append("Raster");
+    	rasterTitle.append("<?php echo _mb('Vector');?>");
     	columnContainer = $(document.createElement('th')).appendTo(rowContainer);
     	vectorTitle = $(document.createElement('b')).appendTo(columnContainer);
-    	vectorTitle.append("Vector");
+    	vectorTitle.append("<?php echo _mb('Raster');?>");
     	for (dataset_id in data) {
     		rowContainer = $(document.createElement('tr')).appendTo(tableContainer);
     		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
