@@ -451,6 +451,17 @@ define("INSPIRE_METADATA_SPEC", "2.0.1");
 # are logged to oaf_proxy_log table. They are only counted!
 # 
 define("OAF_LOG", false);
+
+# --------------------------------------------
+# Absolute path for downloading and processing gpkg files via python lib
+# --------------------------------------------
+define("GPKG_ABSOLUTE_DOWNLOAD_PATH", "/tmp/");
+
+# --------------------------------------------
+# Absolute uri for accessing processed gpkg files
+# --------------------------------------------
+define("GPKG_ABSOLUTE_DOWNLOAD_URI", "https://www.geoportal.rlp.de/inspiredownloads/");
+
 #
 ###HACK for GLOBALS
 $DBSERVER=DBSERVER;
