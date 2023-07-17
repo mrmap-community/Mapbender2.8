@@ -56,7 +56,7 @@
         status = 'new-polygon',
 		defaultHtml = "<div title='" + title + "'></div>";
 	    descriptionHtml = "<div id='description'><?php 
-				echo nl2br(htmlentities(_mb("Module (beta!) for download regional limited data as Geopackage. Actually the allowed region area is limited to 2.000 ha."), ENT_QUOTES, "UTF-8"));
+				echo nl2br(htmlentities(_mb("BETA: Module for download regional limited data as Geopackage. Actually the allowed region area is limited to 2.000 ha."), ENT_QUOTES, "UTF-8"));
 			?><br><a style='' href='https://www.geopackage.org/' target='_blank'><img src='../img/geopackage-2.png' width='25' height='25'></a></div>";
 		startDigitizeHtml = "<div id='start-digitize' ><?php 
 				echo nl2br(htmlentities(_mb("Click in the map and digitize the area of interest."), ENT_QUOTES, "UTF-8"));
@@ -76,7 +76,6 @@
 
    
  	var create = function () {
- 		//alert('create sdi_download_widget ;-)');
  		/*
 		 Initialise download dialog
 		*/
@@ -114,7 +113,6 @@
  	};
  	
  	var reinitializeDigitize = function() {
- 		console.log('reinitialize');
         inProgress = false;
         that.deactivate();
         that.activate();
@@ -133,7 +131,7 @@
         var digit = o.$target.data('mb_digitize');
         // problem : shallow copying: https://code.tutsplus.com/the-best-way-to-deep-copy-an-object-in-javascript--cms-39655a
         var pts = digit._digitizePoints;
-        console.log(pts);
+        //console.log(pts);
         var ptsWgs84 = JSON.parse(JSON.stringify(pts));
         console.log(ptsWgs84);       
         // TODO: render permanent ;-) - the problem is, that the points are converted into 4326 - the geometry is altered!        
@@ -177,10 +175,7 @@
                     };
                 });
             }
-        });   
-            
-        //console.log(pts);
-        //console.log(ptsWgs84);
+        });           
                 
         for (var i = 0; i < pts.length; ++i) {
         	// old way via proj4js
@@ -203,8 +198,7 @@
         var modifiedGeom = $.extend(true, {}, geomWgs84);
         var modifiedData = new MultiGeometry('polygon');
         modifiedGeom.addPoint(geomWgs84.list[0]); // add first point as last point
-        modifiedData.add(modifiedGeom);
-            
+        modifiedData.add(modifiedGeom);      
         multiWkt = multi.toText();
         var area = 0;
         // calculate current area (polygon) or length(linestring)
@@ -225,12 +219,9 @@
             }
         });
         if (area > 20000000)  {
-        	alert('The selected area is greater than 2.000 ha : ' + Math.round(area / 10000) + ' ha - select a smaller one ;-)');
-        	that.destroy();
-        	//create();
-        	
+        	alert('<?php echo _mb("The selected area is greater than 2.000 ha");?> : ' + Math.round(area / 10000) + ' <?php echo _mb("ha - select a smaller one");?> ;-)');
+        	that.destroy();       	
         } else {
-        	
             // store the object to variable
             that.area_of_interest = JSON.parse(multi.toString());
             		
@@ -274,7 +265,7 @@
             		$('#user-info').html('<i><b>' + data.result.username + '</b></i>');
             	} else {
             	
-            		$('#user-info').html('<i><b>' + data.result.username + '</b></i>' + "<br>The anonymous user is not allowed to download data!");
+            		$('#user-info').html('<i><b>' + data.result.username + '</b></i>' + "<br><?php echo _mb('The anonymous user is not allowed to download data!');?>");
             		$('#start-digitize').remove();
             	}
             	userLoggedIn = data.result.logged_in;
@@ -309,7 +300,7 @@
         	// add actual geojson to configuration
         	download_configuration['area_of_interest'] = that.area_of_interest;
         	download_configuration['dataset_configuration'] = dataset_configuration;
-            console.log(JSON.stringify(dataset_configuration));
+            //console.log(JSON.stringify(dataset_configuration));
             //ajax call
             $.ajaxSetup({async:true});
 			var req = new Mapbender.Ajax.Request({
@@ -321,17 +312,16 @@
 				}
 			});
 			req.send();
-			//$('#load-options-spinner').show();
 			$.ajaxSetup({async:true});
-			alert('Package creation startet - you will get an email with a download link, if the process is finished!');
+			alert('<?php echo _mb('Package creation startet - you will get an email with a download link, if the process is finished!');?>');
 			that.destroy();
         } else {
-        	console.log("No option selected - please select some to create geopackage!");
+        	console.log("<?php echo _mb('No option selected - please select some to create geopackage!');?>");
         }
     };
     
     var generateCacheCallback = function (obj, success, message) {
-    	console.log(JSON.stringify(obj));
+    	//console.log(JSON.stringify(obj));
     	//$('#load-options-spinner').hide();
 		if (!success) {
 			console.log("problem when invoking generateCache");
@@ -344,7 +334,7 @@
 			console.log("generateCache invoked successfully");
 			// result is a list of download options
 			// iterate over list and show table for select raster or vector!
-			console.log(obj);
+			//console.log(obj);
 			alert(message);
 			// show table with checkboxes for download underlying data
 			return;
@@ -387,28 +377,30 @@
     			}
     		}
     		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
-    		rasterCheck = $(document.createElement('input')).appendTo(this.columnContainer);
-			rasterCheck.attr({'type':'checkbox'});
-			rasterCheck.attr({'name':data[dataset_id]['spatial_dataset_identifier'] + '_check_raster'});
-    		if (serviceType.includes('raster')) {
-				// rasterCheck.attr({'disabled':'disabled'});
-    		} else {
-    			rasterCheck.attr({'disabled':'disabled'});
-    		}
-    		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
     		vectorCheck = $(document.createElement('input')).appendTo(this.columnContainer);
 			vectorCheck.attr({'type':'checkbox'});
 			vectorCheck.attr({'name':data[dataset_id]['spatial_dataset_identifier'] + '_check_vector'});
     		if (serviceType.includes('vector')) {
-				// vectorCheck.attr({'disabled':'disabled'});
+				
     		} else {
     			vectorCheck.attr({'disabled':'disabled'});
     		}
+    		
+    		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
+    		rasterCheck = $(document.createElement('input')).appendTo(this.columnContainer);
+			rasterCheck.attr({'type':'checkbox'});
+			rasterCheck.attr({'name':data[dataset_id]['spatial_dataset_identifier'] + '_check_raster'});
+    		if (serviceType.includes('raster') && !serviceType.includes('vector')) {
+				
+    		} else {
+    			rasterCheck.attr({'disabled':'disabled'});
+    		}
+
     	}
     	submitContainer = $(document.createElement('input')).appendTo(formContainer);
     	submitContainer.attr({'type':'button'});
     	submitContainer.attr({'id':'form-submit-button'});
-    	submitContainer.attr({'value':'Create geopackage'});
+    	submitContainer.attr({'value':'<?php echo _mb('Create geopackage');?>'});
     	$("#" + "form-submit-button").click(
     		(function () {
 				return function(){
@@ -433,7 +425,7 @@
 			// iterate over list and show table for select raster or vector!
 		    createDownloadForm(obj);
 		    //set css 
-			$('a').css({
+			$('#dataset-list').find('a').css({
       			"cursor": "default",
       			"color": "blue",
       			"text-decoration": "underline",
@@ -459,33 +451,8 @@
     	    entry['resourceidentifier'] = sdiArray[sdi];
     		download_configuration.dataset_configuration.datasets.push(entry);
     	}
-    	//console.log(download_configuration);
-    	
-    	
-    	/*$.ajax({
-            url: '../php/mod_showLoggedInUser.php?outputFormat=json',
-            type: 'POST',
-            async: false,
-            dataType: 'json',
-            data: {
-            },
-            success: function(data) {
-            	if (data.result.logged_in) {
-            		$('#user-info').html('<i><b>' + data.result.username + '</b></i>');
-            	} else {
-            	
-            		$('#user-info').html('<i><b>' + data.result.username + '</b></i>' + "<br>The anonymous user is not allowed to download data!");
-            		$('#start-digitize').remove();
-            	}
-            	userLoggedIn = data.result.logged_in;
-            }
-        });*/
-    	
     	$('#load-options-spinner').show();
-    	
-    	
     	$.ajaxSetup({async:true});
-    	
 		var req = new Mapbender.Ajax.Request({
 			method: "checkOptions",
 			url: "../php/mod_inspireGpkg_server.php",
@@ -519,9 +486,6 @@
 		$('#start-digitize').show();
 		$('#dataset-list-header').hide();
 		$('#identity').hide();
-		
-		
-		
 		
 		//if dataset-list already opened
 		if ($('#dataset-list-table').length) {
