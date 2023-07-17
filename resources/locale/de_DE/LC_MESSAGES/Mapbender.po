@@ -4446,5 +4446,8 @@ msgstr "Ihr GeoPortal.rlp Geopackage Downloadpaket wurde prozessiert"
 msgid " km2."
 msgstr " km2 beschränkt"
 
+msgid "The anonymous user is not allowed to download data!"
+msgstr "Ein Gastnutzer ist nicht berechtigt Daten herunterzuladen!"
+
 
 
