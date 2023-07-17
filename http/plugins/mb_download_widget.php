@@ -54,9 +54,19 @@
         digitizingFor = '',
         editedFeature = null,
         status = 'new-polygon',
+        <?php 
+        if (defined('GPKG_AREA_LIMIT') && GPKG_AREA_LIMIT !='') {
+            $areaLimit = GPKG_AREA_LIMIT;
+        } else {
+            $areaLimit = "100";
+        }
+        echo 'areaLimit="' . $areaLimit . '";';
+        ?>
+        
+        areaLimit = '<?php echo _mb("Dataset list"); ?>';
 		defaultHtml = "<div title='" + title + "'></div>";
 	    descriptionHtml = "<div id='description'><?php 
-				echo nl2br(htmlentities(_mb("BETA: Module for download regional limited data as Geopackage. Actually the allowed region area is limited to 2.000 ha."), ENT_QUOTES, "UTF-8"));
+				echo nl2br(htmlentities(_mb("BETA: Module for download regional limited data as Geopackage. Actually the allowed region area is limited to ") . $areaLimit . _mb(" km2."), ENT_QUOTES, "UTF-8"));
 			?><br><a style='' href='https://www.geopackage.org/' target='_blank'><img src='../img/geopackage-2.png' width='25' height='25'></a></div>";
 		startDigitizeHtml = "<div id='start-digitize' ><?php 
 				echo nl2br(htmlentities(_mb("Click in the map and digitize the area of interest."), ENT_QUOTES, "UTF-8"));
@@ -218,8 +228,8 @@
                 area = parseFloat(data[0]);
             }
         });
-        if (area > 20000000)  {
-        	alert('<?php echo _mb("The selected area is greater than 2.000 ha");?> : ' + Math.round(area / 10000) + ' <?php echo _mb("ha - select a smaller one");?> ;-)');
+        if (area > <?php echo (integer)$areaLimit * 1000000;?>)  {
+        	alert('<?php echo _mb("The selected area is greater than ") . $areaLimit . " km2";?> : ' + Math.round(area / 1000000) + ' <?php echo _mb("km2 - select a smaller one");?> ;-)');
         	that.destroy();       	
         } else {
             // store the object to variable
