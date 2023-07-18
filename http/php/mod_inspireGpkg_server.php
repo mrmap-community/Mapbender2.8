@@ -471,10 +471,9 @@ switch ($ajaxResponse->getMethod()) {
                 JSON;
 		    //get back array of datasets - idx = spatial_dataset_identifier
 		    //demo usage
-		    $ajaxResponse->setResult(json_decode($pos_list));
+		    //$ajaxResponse->setResult(json_decode($pos_list));
 		    //activate for productive use
-		    //$ajaxResponse->setResult(json_decode($output));
-		    
+		    $ajaxResponse->setResult(json_decode($output));
 		}
 		break;
 	case "generateCache":
@@ -515,8 +514,6 @@ switch ($ajaxResponse->getMethod()) {
 	            //$ajaxResponse->setMessage(_mb("You will get an email with a link to the geopackage <" . $user->email . ">!"));
 	            //$ajaxResponse->send();
 	        }
-	        //add user information to configuration
-	        
 	        //check if id and email are the same as from ajax call
 	        $uuid = new Uuid();
 	        
@@ -532,12 +529,15 @@ switch ($ajaxResponse->getMethod()) {
 	        $configuration->notification->email_address = $user->email;
 	        $configuration->notification->subject = _mb("Your GeoPortal.rlp geopackage download has been processed");
 	        if (defined("GPKG_ABSOLUTE_DOWNLOAD_URI") && GPKG_ABSOLUTE_DOWNLOAD_URI != "") {
-	            $configuration->notification->text = GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg";
+	            $configuration->notification->text = 'Downloadlink: ';
+	            $configuration->notification->text .= GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg";
+	            $configuration->notification->text .= "\n";
+	            $configuration->notification->text .= 'Preview (NGA Viewer): ';
+	            $configuration->notification->text .= 'https://ngageoint.github.io/geopackage-viewer-js/?gpkg=' . urlencode(GPKG_ABSOLUTE_DOWNLOAD_URI . $outputFilename . ".gpkg");
+	            //https://ngageoint.github.io/geopackage-viewer-js/?gpkg=
 	        } else {
 	           $configuration->notification->text = "https://www.geoportal.rlp.de/metadata/" . $outputFilename . ".gpkg";
 	        }
-	        //add link to nga client to view the download if wished
-	        
 	        //check values
 	        //invoke python script
 	        $output = exec('/usr/bin/python3.9 ../extensions/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'generateCache'" );
