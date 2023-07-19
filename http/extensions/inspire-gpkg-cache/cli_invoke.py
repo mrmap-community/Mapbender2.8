@@ -8,15 +8,14 @@ from inspire_gpkg_cache.spatial_data_cache import SpatialDataCache
 
 print(sys.argv[1])
 
-#os.environ["HTTP_PROXY"] = "http://proxy.rlp:8080"
-#os.environ["HTTPS_PROXY"] = "http://proxy.rlp:8080"
+#os.environ["HTTP_PROXY"] = "http://{proxyhost}:{proxyport}"
+#os.environ["HTTPS_PROXY"] = "http://{proxyhost}:{proxyport}"
 
 # https://stackoverflow.com/questions/50607908/how-to-send-mail-in-python-on-linux-server-via-mail
 def send_mail(subject: str, body: str, mail_address:str):
     body_str_encoded_to_byte = body.encode()
-    return_stat = subprocess.run([f"mail", f"-s {subject}", mail_address], input=body_str_encoded_to_byte)
+    return_stat = subprocess.run([f"mail", f"-s {subject}", f"-aFrom:kontakt@geoportal.rlp.de", mail_address], input=body_str_encoded_to_byte)
     print(return_stat) 
-
 
 configuration = json.loads(sys.argv[1])
 
@@ -37,8 +36,8 @@ if sys.argv[2] == 'generateCache':
     print('start generate cache')
     cache.generate_cache()
     # send downloadlink via email
-    
-    
+    send_mail(configuration['notification']['subject'], configuration['notification']['text'], configuration['notification']['email_address'])   
     sys.exit()
+
 
 
