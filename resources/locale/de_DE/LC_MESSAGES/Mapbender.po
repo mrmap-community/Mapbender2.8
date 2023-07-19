@@ -4449,5 +4449,6 @@ msgstr " km2 beschränkt"
 msgid "The anonymous user is not allowed to download data!"
 msgstr "Ein Gastnutzer ist nicht berechtigt Daten herunterzuladen!"
 
-
+msgid "Dataset not found in catalogue!"
+msgstr "Datensatz wurde nicht im Katalog gefunden!"
 
