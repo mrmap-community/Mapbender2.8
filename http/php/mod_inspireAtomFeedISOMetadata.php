@@ -274,8 +274,8 @@ SQL;
 			$mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
 			$mapbenderMetadata ['serviceUuid'] = $mbMetadata ['uuid'];
 			$mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
-			$mapbenderMetadata['serviceTimestamp'] = date("Y-m-d", strtotime($mb_metadata['lastchanged']));
-			$mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d", strtotime($mb_metadata['createdate']));
+			$mapbenderMetadata['serviceTimestamp'] = date("Y-m-d", strtotime($mbMetadata['lastchanged']));
+			$mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d", strtotime($mMetadata['createdate']));
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
 			if ($mbMetadata ['responsible_party_email'] != '') {
 			    $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
