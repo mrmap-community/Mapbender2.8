@@ -181,7 +181,11 @@ var arrNodes = eval(arrNodesStr);
 function _foo(){selectedMap=-1;selectedWMS=-1;selectedLayer=-1}
 
 // some defaults
-if (typeof(reverse) === 'undefined')reverse = 'false';
+if (typeof(reverse) === 'undefined' || reverse == 'false') {
+	reverseWms = false;
+} else { 
+	reverseWms = true;
+}
 if (typeof(switchwms) === 'undefined')switchwms = 'true';
 if (typeof(ficheckbox) === 'undefined')ficheckbox = 'false';
 if (typeof(metadatalink) === 'undefined')metadatalink = 'false';
@@ -395,6 +399,7 @@ function loadTree(){
 		setTimeout('operaLoad()',200);
 		return;
 	}
+	//console.log('load tree');
 	initArray();
 	renderTree();
 	initWmsCheckboxen();
@@ -618,7 +623,8 @@ function move_up(j,k,l){
 		return;
 	}
 	var lid= mb_mapObj[j].wms[k].objLayer[l].layer_id;
-	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id,lid,(reverse=="true")?false:true)){
+	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id, lid, reverseWms)){
+	//if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id,lid,(reverse=="true")?false:true)){
 		alert("<?php echo _mb('Illegal move operation');?>");
 		return;
 	}
@@ -650,7 +656,7 @@ function move_down(j,k,l){
 		return;
 	}
 	var lid= mb_mapObj[j].wms[k].objLayer[l].layer_id;
-	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id,lid,(reverse=="true")?true:false)){
+	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id,lid, reverseWms)){
 		alert("<?php echo _mb('Illegal move operation');?>");
 		return;
 	}
@@ -950,7 +956,7 @@ function initArray(){
 									eval("categories['wms_"+ mb_mapObj[i].wms[ii].wms_id+"'] = parentNode");
 
 								var c_menu="[";
-								if(reverse=="true"){
+								if(reverseWms==true){
 									if(menu.indexOf("wms_down")!=-1 && ii!= mb_mapObj[i].wms.length-1)c_menu+="menu_move_up,";
 									if(menu.indexOf("wms_up")!=-1 && parentObj!="")c_menu+="menu_move_down,";
 								}
@@ -969,7 +975,7 @@ function initArray(){
 								if(metadatalink == 'true'){
 									controls+='<a class="metadata_link" href="'+defaultMetadataUrl + '&id='+temp.layer_uid+'"'+' target=\'_blank\' onclick="metadata_window = window.open(this.href,\'Metadata\',\'Width=700, Height=550,scrollbars=yes,menubar=yes,toolbar=yes\'); metadata_window.focus(); return false;"><img alt="'+msgObj.tooltipMetadata+'" title="'+msgObj.tooltipMetadata+'" src="'+imagedir+'/info.svg" /></a>';
 								}
-								addNode(parentNode,["wms_"+ mb_mapObj[i].wms[ii].wms_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,,temp.layer_currentTitle,eval(c_menu),controls,[i,ii,iii]]],false,false,reverse=="true");
+								addNode(parentNode,["wms_"+ mb_mapObj[i].wms[ii].wms_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,,temp.layer_currentTitle,eval(c_menu),controls,[i,ii,iii]]],false,false,reverseWms);
 								parentObj = parentNode+"|wms_"+ mb_mapObj[i].wms[ii].wms_id;
 							}
 							if( mb_mapObj[i].wms[ii].objLayer[iii].layer_parent && (handlesublayer=="true"|| mb_mapObj[i].wms[ii].objLayer[iii].layer_parent=="0")){
@@ -987,7 +993,7 @@ function initArray(){
 								}
 								if(temp.gui_layer_selectable == '1' || temp.gui_layer_queryable == '1'){
 									var c_menu="[";
-									if(reverse=="true"){
+									if(reverseWms==true){
 										if(menu.indexOf("layer_down")!=-1 && iii!= mb_mapObj[i].wms[ii].objLayer.length-1)c_menu+="menu_move_up,";
 										if(menu.indexOf("layer_up")!=-1 && iii!=1)c_menu+="menu_move_down,";
 									}
@@ -1082,7 +1088,7 @@ function initArray(){
 									else{
 										groupedImageStyle ='verticaldots.svg';
 									}
-									addNode(parentObj + parentLayer, [temp.layer_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,((c_menu!='[]'&&temp.layer_name!="")?groupedImageStyle:null),temp.layer_currentTitle,eval(c_menu),controls.join(""),[i,ii,iii]]],false,false,reverse=="true");
+									addNode(parentObj + parentLayer, [temp.layer_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,((c_menu!='[]'&&temp.layer_name!="")?groupedImageStyle:null),temp.layer_currentTitle,eval(c_menu),controls.join(""),[i,ii,iii]]],false,false,false);
 								}
 							}
 						}

@@ -4405,3 +4405,54 @@ msgstr "Zugriff über Dienste"
 msgid "No layer with legend activated. Please open the themes menu and activate some layer."
 msgstr "Es ist keine Kartenebene mit Legende aktiviert. Bitte öffnen Sie die Themen und aktivieren Sie einen Kartenlayer."
 
+msgid "BETA: Module for download regional limited data as Geopackage. Actually the allowed region area is limited to "
+msgstr "BETA: Modul für den Download regional begrenzter Gebiete im Geopackage Format. Aktuell ist die Fläche der Region auf "
+
+msgid "Click in the map and digitize the area of interest."
+msgstr "Markieren Sie das gewünschte Gebiet auf der Karte."
+
+msgid "List of available datasets"
+msgstr "Liste der verfügbaren Datensätze"
+
+msgid "Check download options"
+msgstr "Prüfung der Download Möglichkeiten" 
+
+msgid "Dataset list"
+msgstr "Liste der Datensätze"
+
+msgid "The selected area is greater than "
+msgstr "Das ausgewählte Gebiet ist größer als "
+
+msgid "km2 - select a smaller one"
+msgstr "km2 - bitte wählen Sie ein kleineres Gebiet aus"
+
+msgid "Package creation startet - you will get an email with a download link, if the process is finished!"
+msgstr "Die Erstellung des Geopackages wurde gestartet - Sie bekommen eine EMail mit einem Downloadlink, wenn der Prozess beendet ist!"
+
+msgid "No option selected - please select some to create geopackage!"
+msgstr "Keine Option gewählt - bitte wählen Sie eine der Möglichkeiten um das Geopackage zu erstellen!"
+
+msgid "Create geopackage"
+msgstr "Erstelle Geopackage"
+
+msgid "Your geopackage has been created. Please control your mailbox"
+msgstr "Ihr Geopackage wurde erstellt. Bitte kontrollieren Sie Ihre Mailbox"
+
+msgid "Public user is not allowed to download data."
+msgstr "Ein Gastnutzer ist nicht berechtigt Daten herunterzuladen."
+
+msgid "Some spatial dataset identifier is not valid!"
+msgstr "Einige Datensatzidentifikatoren sind nicht valide!"
+
+msgid "Your GeoPortal.rlp geopackage download has been processed"
+msgstr "Ihr GeoPortal.rlp Geopackage Downloadpaket wurde prozessiert"
+
+msgid " km2."
+msgstr " km2 beschränkt"
+
+msgid "The anonymous user is not allowed to download data!"
+msgstr "Ein Gastnutzer ist nicht berechtigt Daten herunterzuladen!"
+
+msgid "Dataset not found in catalogue!"
+msgstr "Datensatz wurde nicht im Katalog gefunden!"
+

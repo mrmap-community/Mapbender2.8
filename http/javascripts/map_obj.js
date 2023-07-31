@@ -813,8 +813,8 @@ Mapbender.Map = function (options) {
      */
     this.getMapUrl = function(ii, extent){
         var currentWms = this.wms[ii];
-	var tmpExtent;
-	tmpExtent = extent.toString().split(",");
+        var tmpExtent;
+        tmpExtent = extent.toString().split(",");
         tmp = tmpExtent[0];
         tmpExtent[0] = tmpExtent[1];
         tmpExtent[1] = tmp;
@@ -830,8 +830,13 @@ Mapbender.Map = function (options) {
         for (var i = 0; i < validLayers.length; i++) {
             validLayersEncoded[i] = encodeURIComponent(validLayers[i]);
         }
+        //rewind layernames, cause the first one will be printed at the bottom as defined in the wms spec!
+        /*
+         * https://portal.ogc.org/files/?artifact_id=1081&format=pdf - 7.2.3.3
+         * A WMS shall render the requested layers by drawing the leftmost in the list bottommost, the next one over that, and so on.
+         */
+        validLayersEncoded.reverse();
         var layerNames = validLayersEncoded.join(",");
-        
         url = currentWms.wms_getmap;
         url += mb_getConjunctionCharacter(currentWms.wms_getmap);
         
@@ -1716,7 +1721,7 @@ Mapbender.Map = function (options) {
             imageString += "height='" + height + "' ";
             imageString += "border='0'>";
         }
-        
+        //console.log(newMapURL);
         var newMapRequest = "<div id='" + myDivId + "' ";
         newMapRequest += "style=\"position:absolute; top:" + top + "px; left:" + left + "px; ";
         //newMapRequest += "style=\"";

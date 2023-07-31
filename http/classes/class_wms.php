@@ -2936,7 +2936,7 @@ SQL;
 	}
 
 	function updateObjInDB($myWMS,$updateMetadataOnly=false,$changedLayers=null){ //TODO give return true or false to allow feedback to user!!!
-        	if (func_num_args() == 4) { //new for HTTP Authentication 
+        if (func_num_args() == 4) { //new for HTTP Authentication 
 			$auth = func_get_arg(3); 
 			$username = $auth['username']; 
 			$password = $auth['password']; 
@@ -2946,7 +2946,12 @@ SQL;
 			$password = ''; 
 			$authType = ''; 
 		} 
-        	$this->wms_id = $myWMS;
+		//new 2023-07-20 - check existence of layers!
+		if (count($this->objLayer) < 1) {
+		    //wms has no layers - there maybe some problem 
+		    return false;
+		}
+        $this->wms_id = $myWMS;
 		//get some things out from database if not already given thru metadata editor: wms_network_access, wms_max_imagesize, inspire_download (on layer level)
 		//they don't come from the capabilities!
 		if (!$updateMetadataOnly) {
@@ -2973,10 +2978,8 @@ SQL;
 		    $this->geoRssFactory = new GeoRssFactory();
 		    $this->geoRss = $this->geoRssFactory->loadOrCreate(GEO_RSS_FILE);
 		}
-		
 		$admin = new administration();
 		db_begin();
-		
 		$sql = "UPDATE wms SET ";
 		$sql .= "wms_version = $1 ,";
 		$sql .= "wms_getcapabilities  = $2 ,";
@@ -2994,7 +2997,7 @@ SQL;
 		$sql .= "wms_network_access = $13, ";
 		$sql .= "wms_max_imagesize = $16, ";
 		$sql .= "fkey_mb_group_id = $14, ";
-        	$sql .= "wms_auth_type = $17, "; 
+        $sql .= "wms_auth_type = $17, "; 
  		$sql .= "wms_username = $18, "; 
  		$sql .= "wms_password = $19, ";
 		$sql .= "inspire_annual_requests = $20, ";
@@ -3003,13 +3006,11 @@ SQL;
 		$sql .= "wms_bequeath_contact_info = $23 ";
 		//$sql .= "uuid = $15 ";
 		$sql .= " WHERE wms_id = $15";
-	
 		$v = array($this->wms_version,$this->wms_getcapabilities,
 			$this->wms_getmap,$this->wms_getfeatureinfo,$this->wms_getlegendurl,
 			$admin->char_encode($this->wms_getcapabilities_doc),$this->wms_upload_url,strtotime("now"),
 			$this->wms_supportsld,$this->wms_userlayer,$this->wms_userstyle,$this->wms_remotewfs,$this->wms_network_access, $this->fkey_mb_group_id ,$myWMS, $this->wms_max_imagesize, $authType, $username, $password, $this->inspire_annual_requests,$this->wms_license_source_note, $this->wms_bequeath_licence_info, $this->wms_bequeath_contact_info);
 		$t = array('s','s','s','s','s','s','s','i','s','s','s','s','i','i','i','i','s','s','s','i','s','i','i');
-			
 		$res = db_prep_query($sql,$v,$t);
 		if(!$res){
 			db_rollback();
@@ -3115,7 +3116,6 @@ SQL;
 		$sql = "SELECT layer_id, layer_name, layer_title, layer_abstract, inspire_download FROM layer WHERE fkey_wms_id = $1 AND layer_pos = 0 AND NOT layer_name = $2"; 
 		$v = array($myWMS,$this->objLayer[0]->layer_name);
 		$t = array("i","s");
-		
 		$res = db_prep_query($sql,$v,$t);
 		while ($row = db_fetch_array($res)) {
 			$oldLayerNameArray[]= array(
@@ -3125,9 +3125,7 @@ SQL;
 				"abstract" => $row["layer_abstract"]
 				//"inspire_download" => $row["inspire_download"]
 			);
-			
 		}
-		
 		# delete all layer which are outdated
 		//first delete their metadataUrl entries*****
 		$e = new mb_notice("class_wms.php: delete all metadataUrl relations of old layer");
@@ -3151,11 +3149,8 @@ SQL;
 		if(!$res){
 			db_rollback();	
 		}
-		
 		################################ end section for root-layer
-		
 		################################ start section for all child layers
-		
 		# update TABLE layer
 		$oldLayerNameArray = array();
 		$v = array($myWMS);
@@ -3378,11 +3373,11 @@ SQL;
 	}
 
 	function updateGuiLayer($i,$myWMS,$gui_id){
-		$layerNameString = $this->objLayer[$i]->layer_name;
-		if ($layerNameString == "") {
-		    $e = new mb_exception("classes/class_wms.php - fn updateGuiLayer - Layer has no name! GUI layer relations could not be updated!");
-		    return;
-		}	
+	    $layerNameString = $this->objLayer[$i]->layer_name;
+	    if ($layerNameString == "") {
+	        $e = new mb_exception("classes/class_wms.php - fn updateGuiLayer - Layer has no name! GUI layer relations could not be updated!");
+	        return;
+	    }	
 		$sql = "SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_name = $2";
 		$v = array($myWMS,$this->objLayer[$i]->layer_name);
 		$t = array('i','s');
@@ -3848,6 +3843,7 @@ SQL;
 	*/ 
 	//TODO Update while editing metadata of wms will update the metadata - delete entries and read new ones - then they will be visible and cannot be set to inactive!
 	  function createObjFromDBNoGui($wms_id, $withProxyUrls = true){
+	    //$e = new mb_exception('classes/class_wms.php function createObjFromDBNoGui');
 	   	$sql = "Select * from wms where wms_id = $1 ";
 		$v = array($wms_id);
 		$t = array('i');
@@ -4170,7 +4166,6 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 						
 			$count_layer++;
 		}
-	
    }
 	/** end createObjfromDBNoGui **/
 	

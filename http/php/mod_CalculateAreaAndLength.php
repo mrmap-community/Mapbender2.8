@@ -30,7 +30,7 @@ if ($geom_type == 'line') {
     $sql = "SELECT st_length(st_GeogFromText( $1 )) as meter";
 
 } else if ($geom_type == 'polygon') {
-    $sql = "SELECT st_area(st_GeogFromText( $1 )) as sqm, st_length(st_GeogFromText( $1 )) as meter ";
+    $sql = "SELECT st_area(st_GeogFromText( $1 )) as sqm, st_perimeter(st_GeogFromText( $1 )) as meter ";
 }
 
 
