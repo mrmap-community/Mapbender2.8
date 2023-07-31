@@ -156,7 +156,7 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
 	    	continue;
     	}
 	
-	if($wmsToUpdate[$i]['scheduler_mail']) {
+	if($wmsToUpdate[$i]['scheduler_mail'] == '1') {
 	    	$admin = new administration();
 		//get all users which have the wms integrated in their guis!
 		$ownerIds = $admin->getOwnerByWms($wmsToUpdate[$i]['wms_id']);

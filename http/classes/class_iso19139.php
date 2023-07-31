@@ -626,13 +626,18 @@ XML;
 			$this->resourceContactEmail = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact/gmd:address/gmd:CI_Address/gmd:electronicMailAddress/gco:CharacterString');
 			$this->resourceContactEmail = $this->resourceContactEmail[0];
 			//parse extension for gmd:resourceMaintenance
-			$updateFrequency = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:resourceMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency/gmd:MD_MaintenanceFrequencyCode[@codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode"]/@codeListValue');
+			//Using the "contains"-function for the codelist-url to include updated lists like: [@codeList="http://standards.iso.org/iso/19139/resources/gmxCodelists.xml#MD_MaintenanceFrequencyCode"] 
+			$updateFrequency = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:resourceMaintenance/gmd:MD_MaintenanceInformation/gmd:maintenanceAndUpdateFrequency/gmd:MD_MaintenanceFrequencyCode[contains(@codeList,"/gmxCodelists.xml#MD_MaintenanceFrequencyCode")]/@codeListValue');		
 			$updateFrequency = $updateFrequency[0];
 			//TODO: push codelists into conf files !
 			//http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode
 			$codeListUpdateFrequencyArray = array('continual','daily','weekly','fortnightly','monthly','quarterly','biannually','annually','asNeeded','irregular','notPlanned','unknown');
 			if (in_array($updateFrequency, $codeListUpdateFrequencyArray)) {
 				$this->updateFrequency = $updateFrequency;
+			}else{
+				#Setting this variable initial because of the unintentional value initialisation in mb_metadata_server.php,
+				#where it's set based on the ajax Post parameters read from the form that can also be used to maintain metadata
+				$this->updateFrequency = '';
 			}
 			//check declaration of inspire conformity - only true if true for all relevant regulations is declared!
 			$this->inspireInteroperability = 't';

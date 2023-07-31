@@ -179,9 +179,12 @@ var categories = {};
 ?>
 var arrNodes = eval(arrNodesStr);
 function _foo(){selectedMap=-1;selectedWMS=-1;selectedLayer=-1}
-
 // some defaults
-if (typeof(reverse) === 'undefined')reverse = 'false';
+if (typeof(reverse) === 'undefined' || reverse == 'false') {
+	reverseWms = false;
+} else { 
+	reverseWms = true;
+}
 if (typeof(switchwms) === 'undefined')switchwms = 'true';
 if (typeof(ficheckbox) === 'undefined')ficheckbox = 'false';
 if (typeof(metadatalink) === 'undefined')metadatalink = 'false';
@@ -384,6 +387,7 @@ function operaLoad(){
 }
 
 function loadTree(){
+	//console.log('load tree');
 	if(wmsbuttons=='true'){
 		var div = document.createElement("div");
 		div.innerHTML = '<a href="javascript:move_up()"><img title="'+msgObj.tooltipMoveSelectionUp+'" src="'+imagedir+'/move_up.png" alt="move up" style="position:relative;top:0px;left:0px;"/></a><a href="javascript:move_down()"><img title="'+msgObj.tooltipMoveSelectionDown+'" src="'+imagedir+'/move_down.png" alt="move down" style="position:relative;top:0px;left:-3px"/></a><a href="javascript:remove_wms()"><img title="'+msgObj.tooltipRemoveWms+'" src="'+imagedir+'/delete_wms.png" alt="remove wms" style="position:relative;top:0px;left:-6px"/></a>';
@@ -620,7 +624,7 @@ function move_up(j,k,l){
 		return;
 	}
 	var lid= mb_mapObj[j].wms[k].objLayer[l].layer_id;
-	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id,lid,(reverse=="true")?false:true)){
+	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id, lid, reverseWms)){
 		alert("<?php echo _mb('Illegal move operation');?>");
 		return;
 	}
@@ -652,7 +656,7 @@ function move_down(j,k,l){
 		return;
 	}
 	var lid= mb_mapObj[j].wms[k].objLayer[l].layer_id;
-	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id,lid,(reverse=="true")?true:false)){
+	if(! mb_mapObj[j].move( mb_mapObj[j].wms[k].wms_id, lid, reverseWms)){
 		alert("<?php echo _mb('Illegal move operation');?>");
 		return;
 	}
@@ -935,16 +939,21 @@ function initArray(){
 	var parentObj = "";
 	var controls="";
 	if( mb_mapObj.length > 0){
+		//console.log(mb_mapObj);
+		//iterate over mapframes - first will be main map
 		for(var i=0; i< mb_mapObj.length; i++){
 			if( mb_mapObj[i].elementName == mod_treeGDE_map){
+				//iterate over wms by ii
 				for(var ii=0; ii< mb_mapObj[i].wms.length; ii++){
+					//only if wms should be visible
 					if( mb_mapObj[i].wms[ii].gui_wms_visible === '1' ||  mb_mapObj[i].wms[ii].gui_wms_visible === 1){
+						//iterate over layer by iii
 						for(var iii=0; iii< mb_mapObj[i].wms[ii].objLayer.length; iii++){
 							var temp =  mb_mapObj[i].wms[ii].objLayer[iii];
+							//for wms root layer
 							if( mb_mapObj[i].wms[ii].objLayer[iii].layer_parent == ""){
 								if(!temp.gui_layer_selectable == '1' && !temp.gui_layer_queryable == '1')
 									continue;
-
 								parentNode = arrNodes[0][0];
 								if(eval("categories.wms_"+ mb_mapObj[i].wms[ii].wms_id) !== undefined)
 									parentNode = eval("categories.wms_"+ mb_mapObj[i].wms[ii].wms_id);
@@ -952,11 +961,10 @@ function initArray(){
 									eval("categories['wms_"+ mb_mapObj[i].wms[ii].wms_id+"'] = parentNode");
 
 								var c_menu="[";
-								if(reverse=="true"){
+								if(reverseWms==true){
 									if(menu.indexOf("wms_down")!=-1 && ii!= mb_mapObj[i].wms.length-1)c_menu+="menu_move_up,";
 									if(menu.indexOf("wms_up")!=-1 && parentObj!="")c_menu+="menu_move_down,";
-								}
-								else{
+								} else {
 									if(menu.indexOf("wms_up")!=-1 && parentObj!="")c_menu+="menu_move_up,";
 									if(menu.indexOf("wms_down")!=-1 && ii!= mb_mapObj[i].wms.length-1)c_menu+="menu_move_down,";
 								}
@@ -971,9 +979,12 @@ function initArray(){
 								if(wmsbuttons == 'true'&&metadatalink == 'true'){
 									controls+='<a href="'+defaultMetadataUrl + '&id='+temp.layer_uid+'"'+' target=\'_blank\' onclick="metadata_window = window.open(this.href,\'Metadata\',\'Width=700, Height=550,scrollbars=yes,menubar=yes,toolbar=yes\'); metadata_window.focus(); return false;"><img alt="'+msgObj.tooltipMetadata+'" title="'+msgObj.tooltipMetadata+'" src="'+imagedir+'/info.png" /></a>';
 								}
-								addNode(parentNode,["wms_"+ mb_mapObj[i].wms[ii].wms_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,,temp.layer_currentTitle,eval(c_menu),controls,[i,ii,iii]]],false,false,reverse=="true");
+								//add node - react on reverse
+								//console.log("reverse: " + JSON.stringify(reverseWms));
+								addNode(parentNode,["wms_"+ mb_mapObj[i].wms[ii].wms_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,,temp.layer_currentTitle,eval(c_menu),controls,[i,ii,iii]]],false,false,reverseWms);
 								parentObj = parentNode+"|wms_"+ mb_mapObj[i].wms[ii].wms_id;
 							}
+							//for sublayer - some parent exists and sublayer of some rootlayer (parent='0')
 							if( mb_mapObj[i].wms[ii].objLayer[iii].layer_parent && (handlesublayer=="true"|| mb_mapObj[i].wms[ii].objLayer[iii].layer_parent=="0")){
 								var parentLayer = "";
 								var j = iii;
@@ -989,7 +1000,7 @@ function initArray(){
 								}
 								if(temp.gui_layer_selectable == '1' || temp.gui_layer_queryable == '1'){
 									var c_menu="[";
-									if(reverse=="true"){
+									if(reverseWms==true){
 										if(menu.indexOf("layer_down")!=-1 && iii!= mb_mapObj[i].wms[ii].objLayer.length-1)c_menu+="menu_move_up,";
 										if(menu.indexOf("layer_up")!=-1 && iii!=1)c_menu+="menu_move_down,";
 									}
@@ -1034,8 +1045,7 @@ function initArray(){
 									}
 									if(datalink == 'true' && mb_mapObj[i].wms[ii].objLayer[iii].layer_dataurl != ''){
 										controls.push('<a href="'+mb_mapObj[i].wms[ii].objLayer[iii].layer_dataurl+'"'+' target=\'_blank\' onclick="download_window = window.open(this.href,\'Download Data\',\'Width=450, Height=350,scrollbars=yes,menubar=yes,toolbar=yes\'); download_window.focus(); return false;"><img width="18" height="18" alt="'+msgObj.tooltipDownload+'" title="'+msgObj.tooltipDownload+'" src="'+imagedir+'/../gnome/document-save.png" /></a>');
-									//
-}
+									}
 //if (typeof mb_mapObj[i].wms[ii].objLayer[iii].layer_featuretype_coupling == 'undefined') {				
 //alert(mb_mapObj[i].wms[ii].objLayer[iii].layer_title+': '+JSON.stringify(mb_mapObj[i].wms[ii].objLayer[iii].layer_featuretype_coupling));
 //}
@@ -1084,7 +1094,8 @@ function initArray(){
 									else{
 										groupedImageStyle ='menu.png';
 									}
-									addNode(parentObj + parentLayer, [temp.layer_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,((c_menu!='[]'&&temp.layer_name!="")?groupedImageStyle:null),temp.layer_currentTitle,eval(c_menu),controls.join(""),[i,ii,iii]]],false,false,reverse=="true");
+									//add sublayer - don't change order of them!
+									addNode(parentObj + parentLayer, [temp.layer_id,[temp.layer_currentTitle,((metadatalink=='true'&&wmsbuttons != 'true')?('javascript:openwindow(\"'+ defaultMetadataUrl + '&id='+temp.layer_uid+'\",'+metadataWidth+','+metadataHeight+');'):"javascript:select("+i+","+ii+","+iii+");"),,((c_menu!='[]'&&temp.layer_name!="")?groupedImageStyle:null),temp.layer_currentTitle,eval(c_menu),controls.join(""),[i,ii,iii]]],false,false,false);
 								}
 							}
 						}

@@ -446,6 +446,34 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 			echo "Guest don't have permission on Base-Layer or ".$layer_id." therefor OpenLayers client will not be generated! Check if the layer does exists any longer or if someone has removed the permission to access this service.<br>";
 		}
 	}
+	//extract stored geojson objects from wmc
+	//add some simple function to show the point layers
+	//featurecollections - maybe base 64 encoded
+	$kmls = $xml->General->Extension->children('http://www.mapbender.org/context')->kmls;
+	//$e = new mb_exception($kmls);
+	if (substr( $kmls , 0, 7 ) == 'base64_') {
+	    //remove base 64 and decode
+	    $kmls = str_replace('base64_', '', $kmls);
+	    $kmls = base64_decode($kmls);
+	}
+	//$e = new mb_exception($kmls);
+	//array of collection names
+	$kmlOrder = $xml->General->Extension->children('http://www.mapbender.org/context')->kmlOrder;
+	//use only first collection
+	$firstCollectionName = json_decode($kmlOrder)[0];
+	$hasGeojson = false;
+	$geojson = json_decode($kmls);
+	//$e = new mb_exception($firstCollectionName);
+	$geojson = $geojson->{$firstCollectionName}->data;
+	
+	//$e = new mb_exception(json_encode($geojson));
+	//OK
+	if ($geojson !== false) {
+	    $hasGeojson = true;
+	    //$geojson = json_encode($geojson);
+	}
+	//$e = new mb_exception($geojson);
+	//$e = new mb_exception("has geojson: " . json_encode($hasGeojson));
 	//create the overlay layers for which the user guest has permissions
 	$startLayerId = $firstLayerId+1;
 	for ($i=$startLayerId; $i<count($layer_array); $i++) {
@@ -465,7 +493,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 		$has_permission=$admin->getLayerPermission($wms_id, $layer_name, $userId);
 		if (($xml->LayerList->Layer[$i]->attributes()->hidden=='0' && $has_permission && $extensions->layer_parent != '') ||
 			($layer_id=='' && $xml->LayerList->Layer[$i]->attributes()->hidden=='0')){
-			$html.="	layer".$i." = new OpenLayers.Layer.WMS( \"".str_replace("'","",str_replace('"','',$xml->LayerList->Layer[$i]->Title))."\",\n";
+			$html.="	layer".$i." = new OpenLayers.Layer.WMS( \"".$xml->LayerList->Layer[$i]->Title."\",\n";
 			$getMapUrl = $xml->LayerList->Layer[$i]->Server->OnlineResource->attributes('http://www.w3.org/1999/xlink')->href;
 			if (strpos($getMapUrl, OWSPROXY) === false) {
 				if (getWmsGetMapUrl($wms_id) != false) {
@@ -551,8 +579,8 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 		}	
 	}
 //new part showing georss content **************
-	if(isset($_REQUEST["GEORSS"])){
-		if($_REQUEST["GEORSS"]!=''){
+	if(isset($_REQUEST["GEORSS"]) || $hasGeojson){
+	    if($_REQUEST["GEORSS"]!='' || $hasGeojson){
 			$html.="	var pointVectorLayer = new OpenLayers.Layer.Vector(\"Vector Layer\", {\n";
 			//$html.="		styleMap: new OpenLayers.StyleMap({\n";
 			//$html.="    			pointRadius: \"".$pointRadius."\", // based on feature.attributes.type\n";
@@ -625,8 +653,122 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 	$html.="}\n";//End of central function initGeoportal()
 //\"<div class='georsstitle'>\" + feature.attributes['title'] +\"</div><br/>\"+\"<div class='georssdescription'>\" +feature.attributes['description']+\"</div><br/><div class='georsslink'><a href='\"+feature.attributes['link']+\"' target='_blank'>Weitere Informationen</a></div>\",
 	//functions only needed, if georss objects are given - for generating popups - after initGeoportal()!
-	if(isset($_REQUEST["GEORSS"])){
-		if($_REQUEST["GEORSS"]!=''){	
+	//check if some geojson with points is given
+	if ($hasGeojson) {
+	    
+	    $example_geojson = <<<JSON
+{
+	"collectionTitle": "Flurstueckskoordinaten",
+	"title": "Flurstueckskoordinaten",
+	"id": "vermkv:Flurstueckskoordinaten",
+	"description": "",
+	"extent": {
+		"spatial": {
+			"minx": "5.94118209385663",
+			"miny": "48.8506868607187",
+			"maxx": "8.52256094424267",
+			"maxy": "50.9555490157182"
+		},
+		"temporal": []
+	},
+	"type": "FeatureCollection",
+	"timeStamp": "2023-07-17T06:15:38.7200Z",
+	"features": [{
+		"type": "Feature",
+		"properties": {
+			"gid": "1523756",
+			"marker-size": "26",
+			"marker-symbol": "marker",
+			"marker-color": "#2f9ae4",
+			"title": "Flurstueckskoordinaten.071255004000990001__",
+			"description": "Point default description",
+			"uuid": "9653081d-2458-11ee-8cfc-edde720827fd",
+			"updated": "2023-07-17T04:50:02.018Z",
+			"created": "2023-07-17T04:15:39.281Z",
+			"marker-type": "predefined",
+			"stroke": "#000000",
+			"stroke-width": "1",
+			"fill": "#ff0000"
+		},
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7.1559262, 50.372519719]
+		}
+	}, {
+		"type": "Feature",
+		"geometry": {
+			"type": "Point",
+			"coordinates": [7.276859924440988, 50.39042881362837]
+		},
+		"properties": {
+			"title": "title",
+			"name": "Name",
+			"description": "Nachaltige Orte Beschreibung",
+			"marker-size": "34",
+			"marker-symbol": "marker",
+			"marker-color": "#e29324",
+			"marker-offset-x": "-10",
+			"marker-offset-y": "-34",
+			"uuid": "b00b8114-2458-11ee-8cfc-edde720827fd",
+			"updated": "2023-07-17T04:51:09.195Z",
+			"created": "2023-07-17T04:16:22.433Z",
+			"marker-type": "predefined",
+			"stroke": "#000000",
+			"stroke-width": "1",
+			"fill": "#ff0000"
+		},
+		"label": "title"
+	}]
+}
+JSON;
+	    	    
+	    $header_georss = <<<XML
+<?xml version="1.0" encoding="utf-8"?>
+ <feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:georss="http://www.georss.org/georss"
+      xmlns:gml="http://www.opengis.net/gml">
+   <title>Test GeoRSS</title>
+   <subtitle>Test GeoRSS subtitle</subtitle>
+   <link href="http://www.mapbender.org/"/>
+   <updated>2010-12-02T17:35:01Z</updated>
+   <author>
+      <name>Armin Retterath</name>
+      <email>armin.retterath@lvermgeo.rlp.de</email>
+   </author>
+   <id>http://www.geoportal.rlp.de</id>
+XML;
+	    
+	    $footer_georss = <<<XML
+ </feed>
+XML;
+	    
+	    //parse geojson points and transform them to georss entries
+	    $xmlEntries = "";
+	    foreach ($geojson->features as $feature) {
+	        if ($feature->geometry->type == 'Point') {
+	        $xmlEntries .= "  <entry>\n";
+	        $xmlEntries .= "  <title>" . $feature->properties->title . "</title>\n";
+	        $xmlEntries .= "  <description>" . $feature->properties->description . "</description>\n";
+	        $xmlEntries .= "  <link href='" . $feature->properties->link . "'/>\n";
+	        $xmlEntries .= "  <content>" . $feature->properties->description . "</content>\n";
+	        
+	        $xmlEntries .= "  <id>" . $feature->properties->uuid . "</id>\n";
+	        $xmlEntries .= "  <imageUrl href='../img/marker/red.png'/>\n";
+	        //switch marker 
+	        $xmlEntries .= "  <imageSize>" . $feature->properties->{'marker-size'} . "</imageSize>\n";
+	        $xmlEntries .= "  <georss:where>\n";
+	        $xmlEntries .= "    <gml:Point srsName=\"EPSG:4326\">\n";
+	        $xmlEntries .= "      <gml:pos>" . $feature->geometry->coordinates[0] . " " . $feature->geometry->coordinates[1] . "</gml:pos>\n";
+	        $xmlEntries .= "    </gml:Point>\n";
+	        $xmlEntries .= "  </georss:where>\n";
+	        $xmlEntries .= "  </entry>\n";
+	        }
+	    }
+	    $georssFromGeojson = $header_georss . $xmlEntries . $footer_georss;
+	}
+	
+	if(isset($_REQUEST["GEORSS"]) || $hasGeojson){
+	    if($_REQUEST["GEORSS"]!='' || $hasGeojson){	
 			$html.="function onPopupClose(evt) {\n";
 			$html.="	selectControl.unselect(selectedFeature);\n";
 			$html.="}\n";
@@ -649,9 +791,14 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 			$html.="}\n"; 
 			
 			$html.="function createFeaturesFromGeoRSS() {\n";
+			$e = new mb_exception("georss: " . $georssFromGeojson);
 			//First check if some georss is send in the request variable GEORSS
-			if (isset($_REQUEST['GEORSS']) && $_REQUEST['GEORSS'] != '' && $_REQUEST['GEORSS'] != '1') {
-				$georssXml = simplexml_load_string(stripslashes($_REQUEST['GEORSS']));
+			if ((isset($_REQUEST['GEORSS']) && $_REQUEST['GEORSS'] != '' && $_REQUEST['GEORSS'] != '1') || $hasGeojson) {
+			    if ($hasGeojson) {
+			        $georssXml = simplexml_load_string($georssFromGeojson);
+			    } else {
+				    $georssXml = simplexml_load_string(stripslashes($_REQUEST['GEORSS']));
+			    }
 				if($georssXml===FALSE) {
 					//It was not a XML string
 					$html.= "alert('The content of the request parameter GEORSS was not a valid XML String!');\n";
@@ -696,6 +843,7 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 						//extract styles for single features
 						$imageUrl = $georssXml->entry[$i]->imageUrl->attributes()->href;
 						$imageSize = $georssXml->entry[$i]->imageSize;
+						//$e = new mb_exception("imageSize: " . $imageSize);
 						//style
 						$html .= "	var pointStyle = {\n";
 						//validate imageUrl to url
@@ -722,7 +870,6 @@ function createOlFromWMC_id($wmc_id, $pointRadius, $fillColor){
 					$html.="}\n"; 
 				}
 			} else {
-	
 				//
 				if (file_exists('/tmp/georss_test_v1a.xml')) {
 					$georssXml = simplexml_load_file('/tmp/georss_test_v1a.xml');
