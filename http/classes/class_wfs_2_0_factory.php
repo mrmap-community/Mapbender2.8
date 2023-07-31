@@ -162,13 +162,16 @@ class Wfs_2_0_Factory extends WfsFactory {
 		$namespaceList = $xpath->query("//namespace::*");
 		$targetNamespace = $doc->documentElement->getAttribute("targetNamespace");
 		$targetNamespaceNode = null;
-
+		$namespaceLookupList = [];
 		foreach($namespaceList as $namespaceNode){
 			$namespaces[$namespaceNode->nodeValue] = $namespaceNode->localName;
 			if($namespaceNode->nodeValue == $targetNamespace){
 				$targetNamespaceNode = $namespaceNode;
 			}
-			$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
+			//don't allow double entries - this maybe a parsing mistake
+			if (!in_array($namespaceNode->localName, $namespaceLookupList)) {
+				$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
+			}
 		}
 	
 		list($ftLocalname, $ftTypePrefix) = array_reverse(explode(":",$featureTypeName));
