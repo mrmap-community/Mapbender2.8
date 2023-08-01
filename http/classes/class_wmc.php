@@ -656,7 +656,7 @@ class wmc {
 		$v = array();
 		$t = array();
 		$layerIds = array();
-		$sql = "SELECT layer_id, layer_title, f_get_layer_featuretype_coupling(array[ layer_id ], TRUE) as featuretypecoupling, f_get_download_options_for_layer(layer_id) AS downloadoptions, layer_name, fkey_wms_id, wms_timestamp, wms_getmap, wms_getlegendurl, wms_owsproxy FROM layer, wms WHERE layer.fkey_wms_id = wms.wms_id and layer_id in (";
+		$sql = "SELECT layer_id, layer_title, f_get_layer_featuretype_coupling(array[ layer_id ], TRUE) as featuretypecoupling, f_get_download_options_for_layer(layer_id) AS downloadoptions, layer_name, fkey_wms_id, wms_timestamp, wms_getmap, wms_getlegendurl, wms_owsproxy, wms_title FROM layer, wms WHERE layer.fkey_wms_id = wms.wms_id and layer_id in (";
 		$i = 0;
 		//generate csv list of layer_ids
 		$layerList = "";
@@ -735,6 +735,8 @@ class wmc {
  				$layer->Server->OnlineResource->attributes('xlink', true)->href = $wmsGetMapUrl;
 				//title
 				$layer->Title = $layerTitle;
+				//service title
+				$layer->Server->attributes()->title = $row['wms_title'];
 				//check if layer has available download options
 				if (defined("SHOW_INSPIRE_DOWNLOAD_IN_TREE") && SHOW_INSPIRE_DOWNLOAD_IN_TREE == true && $row["downloadoptions"] != ""){
 					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
