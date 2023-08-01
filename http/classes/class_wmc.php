@@ -191,7 +191,46 @@ class wmc {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * Loads a WMC from the database.
+	 *
+	 * @param integer $wmc_id the ID of the WMC document in the database table "mb_user_wmc"
+	 */
+	function createFromDbRoot($wmcId) {
+	    $doc = wmc::getDocumentRoot($wmcId);
+	    if ($doc === false) {
+	        return false;
+	    }
+	    $this->createObjFromWMC_xml($doc);
+	    $sql = "SELECT * from (SELECT wmc_timestamp, wmc_title, wmc_public, srs, minx, miny, maxx, maxy, wmc_has_local_data, wmc_local_data_size, wmc_local_data_public, uuid, fkey_user_id " .
+	   	    "FROM mb_user_wmc WHERE wmc_serial_id = $1) as wmc_data INNER JOIN mb_user ON wmc_data.fkey_user_id = mb_user.mb_user_id";
+	    $v = array($wmcId);
+	    $t = array("i");
+	    
+	    $res = db_prep_query($sql,$v,$t);
+	    if(db_error()) { return false; }
+	    if($row = db_fetch_assoc($res)) {
+	        $this->wmc_id = $wmcId;
+	        $this->timestamp = $row['wmc_timestamp'];
+	        $this->title = $row['wmc_title'];
+	        $this->public = $row['wmc_public'];
+	        $this->wmc_srs = $row['srs'];
+	        $this->wmc_extent->minx = $row['minx'];
+	        $this->wmc_extent->miny = $row['miny'];
+	        $this->wmc_extent->maxx = $row['maxx'];
+	        $this->wmc_extent->maxy = $row['maxy'];
+	        $this->local_data_public = $row['wmc_local_data_public'];
+	        $this->local_data_size = $row['wmc_local_data_size'];
+	        $this->has_local_data = $row['wmc_has_local_data'];
+	        $this->uuid = $row['uuid'];
+	        $this->wmc_contactperson = $row['mb_user_name'];
+	        $this->wmc_contactemail = $row['mb_user_email'];
+	        return true;
+	    }
+	    return false;
+	}
+	
 	public function createFromApplication ($appId) {
 	// get the map objects "overview" and "mapframe1"
 		$this->mainMap = map::selectMainMapByApplication($appId);
@@ -617,7 +656,7 @@ class wmc {
 		$v = array();
 		$t = array();
 		$layerIds = array();
-		$sql = "SELECT layer_id, layer_title, f_get_layer_featuretype_coupling(array[ layer_id ], TRUE) as featuretypecoupling, f_get_download_options_for_layer(layer_id) AS downloadoptions, layer_name, fkey_wms_id, wms_timestamp, wms_getmap, wms_getlegendurl, wms_owsproxy, wms_title FROM layer, wms WHERE layer.fkey_wms_id = wms.wms_id and layer_id in (";
+		$sql = "SELECT layer_id, layer_title, f_get_layer_featuretype_coupling(array[ layer_id ], TRUE) as featuretypecoupling, f_get_download_options_for_layer(layer_id) AS downloadoptions, layer_name, fkey_wms_id, wms_timestamp, wms_getmap, wms_getlegendurl, wms_owsproxy FROM layer, wms WHERE layer.fkey_wms_id = wms.wms_id and layer_id in (";
 		$i = 0;
 		//generate csv list of layer_ids
 		$layerList = "";
@@ -696,8 +735,6 @@ class wmc {
  				$layer->Server->OnlineResource->attributes('xlink', true)->href = $wmsGetMapUrl;
 				//title
 				$layer->Title = $layerTitle;
-				//service title
-				$layer->Server->attributes()->title = $row['wms_title'];
 				//check if layer has available download options
 				if (defined("SHOW_INSPIRE_DOWNLOAD_IN_TREE") && SHOW_INSPIRE_DOWNLOAD_IN_TREE == true && $row["downloadoptions"] != ""){
 					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != "") {
@@ -850,6 +887,144 @@ class wmc {
 		return $updatedWMC;
 	}
 
+	/*
+	 * Function to reverse the order of a mapbender wms tree in a wmc.
+	 * The wms_id of the mapbender wms must be given 
+	 */
+	
+	public function reorderMapbenderWms($wmcId, $wmsId) {
+	    $this->createFromDbRoot($wmcId);
+	    //load as xml and parse relevant information
+	    //declare xpath to pull all layer with given ids from stored wmc docs
+	    $query_wmsId = "/wmc:ViewContext/wmc:LayerList/wmc:Layer[wmc:Extension/mapbender:wms_id='".(integer)$wmsId."']";
+	    //do parsing with dom, cause we want to alter the xml which have been parsed afterwards
+	    $WMCDocDom = new DOMDocument();
+	    libxml_use_internal_errors(true);
+	    try {
+	        $WMCDocDom->loadXML($this->toXml());
+	        if ($WMCDocDom === false) {
+	            foreach (libxml_get_errors() as $error) {
+	                $err = new mb_exception("classes/class_wmc.php:" . $error->message);
+	            }
+	            throw new Exception("classes/class_wmc.php:" . 'Cannot parse metadata with dom!');
+	        }
+	    } catch (Exception $e) {
+	        $err = new mb_exception("classes/class_wmc.php:" . $e->getMessage());
+	    }
+	    if ($WMCDocDom !== false) {
+	        //importing namespaces
+	        $xpath = new DOMXPath($WMCDocDom);
+	        $rootNamespace = $WMCDocDom->lookupNamespaceUri($WMCDocDom->namespaceURI);
+	        $xpath->registerNamespace('defaultns', $rootNamespace);
+	        $xpath->registerNamespace("wmc", "http://www.opengis.net/context");
+	        $xpath->registerNamespace("mapbender", "http://www.mapbender.org/context");
+	        $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
+	        //get all Layer elements for the relevant wms
+	        $wmsLayersNodeList = $xpath->query($query_wmsId);
+	        //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "Number of layers for wms in DOM Object: " . count($wmsLayersNodeList));
+	        $parentId = '';
+	        $childsDom = $this->getChildrenDom($WMCDocDom, $wmsId, $parentId);
+	        /*
+	         $e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "Number of childs for wms root layer in DOM Object: " . count($childsDom));
+	         foreach ($childsDom as $childDom) {
+	         $e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "Title of first layer after root layer: " . $childDom->getElementsByTagName('Title')->item(0)->nodeValue);
+	         }*/
+	    }
+	    //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "begin recursion:");
+	    //initial values
+	    $layerIndex = 0;
+	    $newParentId = 0;
+	    //storage for new layer tree
+	    $tmpLayerListDocDom = DOMDocument::loadXML('<LayerList></LayerList>');
+	    //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . $tmpLayerListDocDom->saveXML());
+	    //start creation of tree
+	    $this->recursiveBuildTreeDom($WMCDocDom, $wmsId, '', $layerIndex, $newParentId, $tmpLayerListDocDom);
+	    //set http header if wmc should be given back via http
+	    //header('Content-type: text/xml');
+	    //read out new layertree and put the layer into the wmc
+	    foreach ($tmpLayerListDocDom->getElementsByTagName('Layer') as $newLayer) {
+	        $childsDom[0]->parentNode->insertBefore($WMCDocDom->importNode( $newLayer, true ), $childsDom[0]);
+	    }
+	    //delete all old layers which are stored in variable childsDom
+	    foreach($wmsLayersNodeList as $childToRemove) {
+	        if ($childToRemove->getElementsByTagName('Extension')[0]->getElementsByTagName('layer_parent')->item(0)->nodeValue != '') {
+	            $childToRemove->parentNode->removeChild($childToRemove);
+	        }
+	    }
+	    //save new wmc into db
+	    $updatedWMC = $WMCDocDom->saveXML(); 
+	    if (is_int($wmcId)) {
+	        $this->update_existing($updatedWMC, $wmcId);
+	        $err = new mb_exception("classes/class_wmc.php:" . "wms with id: " . $wmsId . " have been reordered in wmc with id: " . $wmcId . "!");
+	    } else {
+	        $err = new mb_exception("classes/class_wmc.php:" . "Given wmcId is not an integer: " . $wmcId . "!");
+	    }
+	}
+	
+	/*
+	 * Helper function for reorderMapbenderWms 
+	 */
+	
+	function getChildrenDom($WMCDocDom, $wmsId, $parentId) {
+	    $xpath = new DOMXPath($WMCDocDom);
+	    $rootNamespace = $WMCDocDom->lookupNamespaceUri($WMCDocDom->namespaceURI);
+	    $xpath->registerNamespace('defaultns', $rootNamespace);
+	    $xpath->registerNamespace("wmc", "http://www.opengis.net/context");
+	    $xpath->registerNamespace("mapbender", "http://www.mapbender.org/context");
+	    $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
+	    $query_wmsId_parentId = "/wmc:ViewContext/wmc:LayerList/wmc:Layer[wmc:Extension/mapbender:wms_id='".(integer)$wmsId."' and wmc:Extension/mapbender:layer_parent='".(integer)$parentId."']";
+	    //$WMCDoc->registerXPathNamespace("mapbender","http://www.mapbender.org/context");
+	    return $xpath->query($query_wmsId_parentId);
+	}
+	
+	/*
+	 * Helper function for reorderMapbenderWms - recursive building of new tree object
+	 */
+	
+	function recursiveBuildTreeDom($WMCDocDom, $wmsId, $parentId, &$layerIndex, &$newParentId, &$layerListDoc) {
+	    $xpath = new DOMXPath($WMCDocDom);
+	    $rootNamespace = $WMCDocDom->lookupNamespaceUri($WMCDocDom->namespaceURI);
+	    $xpath->registerNamespace('defaultns', $rootNamespace);
+	    $xpath->registerNamespace("wmc", "http://www.opengis.net/context");
+	    $xpath->registerNamespace("mapbender", "http://www.mapbender.org/context");
+	    $xpath->registerNamespace("xlink", "http://www.w3.org/1999/xlink");
+	    //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "parentId from invocation of recursive function: " . $parentId);
+	    //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "layerIndex: " . $layerIndex);
+	    $childs = $this->getChildrenDom($WMCDocDom, $wmsId, $parentId);
+	    if ($parentId == '') {
+	        $newParentId = 0;
+	    } else {
+	        if (count($childs) > 0) {
+	            $newParentId++;
+	        }
+	    }
+	    $layerIndexParent = $layerIndex;
+	    /*foreach($extensions[0]->childNodes as $extension){
+	     echo 'local name: ', $extension->localName, ', prefix: ', $extension->prefix, "<br>";
+	     }*/
+	    /*
+	     * Iterate over all child elements, copy the nodes and alter the pos and parent elements
+	     */
+	    for ($n=$childs->length-1; $n>=0; --$n) {
+	        $layerIndex++;
+	        $posId = $childs[$n]->getElementsByTagName('Extension')[0]->getElementsByTagName('layer_pos')->item(0)->nodeValue;
+	        $parentId = $childs[$n]->getElementsByTagName('Extension')[0]->getElementsByTagName('layer_parent')->item(0)->nodeValue;
+	        //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . $childs[$n]->getElementsByTagName('Title')->item(0)->nodeValue . " (pos: " .$posId. " - parent: " .$parentId. " <-> new pos: " . $layerIndex . " - new parent: " .$layerIndexParent . ")");
+	        $newNode = $childs[$n]->cloneNode(true);
+	        $newNode->getElementsByTagName('Extension')[0]->getElementsByTagName('layer_pos')->item(0)->nodeValue = $layerIndex;
+	        $newNode->getElementsByTagName('Extension')[0]->getElementsByTagName('layer_parent')->item(0)->nodeValue = $layerIndexParent;
+	        $layerListDoc->getElementsByTagName('LayerList')[0]->appendChild( $layerListDoc->importNode( $newNode, true ));
+	        //set new parentId
+	        $parentId = $posId;
+	        //set new parentId as actual pos of child
+	        //$e = new mb_exception('php/mod_qualify_mb_user_wmc.php: ' . "invoce recursion! ");
+	        //invoce recursion
+	        $this->recursiveBuildTreeDom($WMCDocDom, $wmsId, $parentId, $layerIndex, $newParentId, $layerListDoc);
+	    }
+	    return true;
+	}
+	
+	
 	public function removeUnaccessableLayers($wmcXml) {
 		$currentUser = new User(Mapbender::session()->get("mb_user_id"));
 		//declare xpath to pull all layer with given ids from stored wmc docs
@@ -1211,6 +1386,28 @@ SQL;
 			return $xmlDoc->saveXML();
 		}
 		return false;
+	}
+	
+	/**
+	 * Returns a WMC document as root user
+	 * @return String|boolean The document if it exists; else false
+	 * @param $id String the WMC id
+	 */
+	public static function getDocumentRoot ($id) {
+	    $sql = "SELECT wmc FROM mb_user_wmc WHERE wmc_serial_id = $1";
+	    $v = array($id);
+	    $t = array('s');
+	    $res = db_prep_query($sql,$v,$t);
+	    $row = db_fetch_array($res);
+	    if ($row) {
+	        $xmlDoc = new DOMDocument();
+	        $xmlDoc->loadXML($row["wmc"]);
+	        $xmlDoc->encoding = 'UTF-8';
+	        $xmlDoc->preserveWhiteSpace = false;
+	        $xmlDoc->formatOutput = true;
+	        return $xmlDoc->saveXML();
+	    }
+	    return false;
 	}
 
 	/**
