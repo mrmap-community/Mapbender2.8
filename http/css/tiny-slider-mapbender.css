@@ -17,6 +17,7 @@
         left: 0;
         top: 0;
         color: blue;
+	visibility: hidden; /*q&d chromefix*/
     }
 }
 
@@ -70,6 +71,7 @@ height: 150px;
         left: 0;
         top: 0;
         color: blue;
+	visibility: hidden; /*q&d chromefix*/
     }
     
     &:hover {
@@ -117,6 +119,7 @@ background: #333;
         position: absolute;
         bottom: 0;
         color: blue;
+	visibility: hidden; /*q&d chromefix*/
     }
     img {
         margin-bottom: .25rem;
@@ -189,6 +192,8 @@ display:none;
     position: absolute;
     text-transform: uppercase;
     /*z-index:100;*/
-    top: 5px;
-    left: 5px;
+    top: 2px;
+    left: 2px;
+    background-color: #fff;
+    padding: 2px;
 }
