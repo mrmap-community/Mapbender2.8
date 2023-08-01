@@ -171,6 +171,7 @@ class Wfs_2_0_Factory extends WfsFactory {
 			//don't allow double entries - this maybe a parsing mistake
 			if (!in_array($namespaceNode->localName, $namespaceLookupList)) {
 				$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
+				$namespaceLookupList[] = $namespaceNode->localName;
 			}
 		}
 	
