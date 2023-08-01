@@ -165,13 +165,13 @@ class Wfs_2_0_Factory extends WfsFactory {
 		$namespaceLookupList = [];
 		foreach($namespaceList as $namespaceNode){
 			$namespaces[$namespaceNode->nodeValue] = $namespaceNode->localName;
+			$namespaceLookupList[] = $namespaceNode->localName;
 			if($namespaceNode->nodeValue == $targetNamespace){
 				$targetNamespaceNode = $namespaceNode;
 			}
 			//don't allow double entries - this maybe a parsing mistake
 			if (!in_array($namespaceNode->localName, $namespaceLookupList)) {
 				$newFeatureType->addNamespace($namespaceNode->localName, $namespaceNode->nodeValue);
-				$namespaceLookupList[] = $namespaceNode->localName;
 			}
 		}
 	
