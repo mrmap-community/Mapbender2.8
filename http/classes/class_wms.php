@@ -109,7 +109,7 @@ class wms {
     		}
     		if (is_file(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.json")) {
     			//require_once(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.conf");
-    			$configObject = json_decode(file_get_contents("../../conf/excludeHarvestMetadataUrls.json"));
+    			$configObject = json_decode(file_get_contents(__DIR__ . "/../../conf/excludeHarvestMetadataUrls.json"));
     			$this->urlsToExclude = $configObject->urls;
     		}
 	} 
