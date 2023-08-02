@@ -44,7 +44,7 @@ if (isset($configObject->metadataGenerationUri) && $configObject->metadataGenera
     $baseUri = "http://localhost/mapbender";
 }
 
-$sql = "update mb_metadata set export2csw = false where position('GetRecordById' in data) <> 0 and position('GetRecordById' in data) is not null";
+$sql = "update mb_metadata set export2csw = false where position('GetRecordByIdShittyFitty' in data) <> 0 and position('GetRecordByIdShittyFitty' in data) is not null";
 if (isset($configObject->excludeFromCswExportRule) && count($configObject->excludeFromCswExportRule) > 0) {
     $sql .= " AND metadata_id NOT IN (".implode(",", $configObject->excludeFromCswExportRule).")";
 }
