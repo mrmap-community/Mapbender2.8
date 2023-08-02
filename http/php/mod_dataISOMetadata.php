@@ -431,6 +431,9 @@ function exchangeLicenceAndContact($metadataXml, $metadata_id, $fkeyGroupId, $li
 
 function proxyFile($iso19139str, $outputFormat)
 {
+        $pattern1 = '<csw:GetRecordByIdResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2">';
+        $pattern2 = '</csw:GetRecordByIdResponse>'
+        $iso19139str = str_replace([$pattern1, $pattern2], '', $iso19139str);	
 	switch ($outputFormat) {
 		case "rdf":
 			header("Content-type: application/rdf+xml; charset=UTF-8");
