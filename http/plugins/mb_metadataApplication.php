@@ -29,7 +29,8 @@ $(function() {
 	$("#tabs").tabs({ active: 1 })
 });
 
-const regionData = [
+if (typeof regionData === 'undefined') {
+    var regionData = [
         { "name": "Land Hessen", "minx": 7.7724673, "miny": 49.3952723, "maxx": 10.2364142, "maxy": 51.6577888 },
         { "name": "Kreisfreie Stadt Darmstadt", "minx": 8.5581615, "miny": 49.795668, "maxx": 8.7498738, "maxy": 49.9538042 },
         { "name": "Kreisfreie Stadt Frankfurt am Main", "minx": 8.4727605, "miny": 50.0153529, "maxx": 8.8004049, "maxy": 50.2271424 },
@@ -57,12 +58,12 @@ const regionData = [
         { "name": "Schwalm-Eder-Kreis", "minx": 8.9728688, "miny": 50.7728747, "maxx": 9.7811284, "maxy": 51.2576257 },
         { "name": "Landkreis Waldeck-Frankenberg", "minx": 8.4732746, "miny": 50.9354961, "maxx": 9.2218375, "maxy": 51.5189199 },
         { "name": "Werra-Meißner-Kreis", "minx": 9.6237862, "miny": 50.992088, "maxx": 10.2364142, "maxy": 51.4210554 },
-];
+]};
 // Function to populate the multiselect-box with options
 function populateRegionOptions() {
-	const selectBox = document.getElementById('regions');
+	let selectBox = document.getElementById('regions');
 	regionData.forEach((region) => {
-		const option = document.createElement('option');
+		let option = document.createElement('option');
 		option.value = JSON.stringify(region);
 		option.textContent = region.name;
 		selectBox.appendChild(option);
@@ -71,10 +72,10 @@ function populateRegionOptions() {
 
 // Function to calculate the extent of selected regions
 function calculateExtent() {
-	const selectBox = document.getElementById('regions');
-	const selectedOptions = Array.from(selectBox.selectedOptions);
-	const extent = selectedOptions.reduce((acc, option) => {
-		const region = JSON.parse(option.value);
+	let selectBox = document.getElementById('regions');
+	let selectedOptions = Array.from(selectBox.selectedOptions);
+	let extent = selectedOptions.reduce((acc, option) => {
+		let region = JSON.parse(option.value);
 		acc.minx = Math.min(acc.minx, region.minx);
 		acc.miny = Math.min(acc.miny, region.miny);
 		acc.maxx = Math.max(acc.maxx, region.maxx);
