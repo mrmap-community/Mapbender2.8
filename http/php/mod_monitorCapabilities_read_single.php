@@ -100,7 +100,7 @@ switch ($serviceType) {
 		break;
 }
 $str .= "<table cellpadding=10 cellspacing=0 border=0>";
-$str .= "<tr bgcolor='#dddddd'><th align='left'>date</th><th align='left' colspan = 2>"._mb("Status")."</th><th align='center'>"._mb("Response time")."</th></tr>";//Status Antwortzeit
+$str .= "<tr bgcolor='#dddddd'><th align='left'>date</th><th align='left' colspan = 2>"._mb("Status")."</th><th align='center'>"._mb("Response time")."</th><th align='center'>"._mb("Diff")."</th></tr>";//Status Antwortzeit
 
 for ($k=0; $k<count($upload_id); $k++) {
 	$img = "stop.png";
@@ -117,6 +117,18 @@ for ($k=0; $k<count($upload_id); $k++) {
 	$str .= "\n\t\t\t<td><a href='".$upload_url[$k]."' target=_blank><img title='Connect to service' border=0 src = '../img/trafficlights/". $img. "'></a></td>";
 	$str .= "\n\t\t\t<td>" . $comment[$k] . "</td>";
 	$str .= "\n\t\t\t<td align='center'>" . $response_time[$k] . "</td>";
+	if ($status[$k]==0) {
+	    if ($serviceType == "wms") {
+	        $str .= "\n\t\t\t<td align='center'><a href='../php/mod_showCapDiff.php?id=" . $id . "&upload_id=" . $upload_id[$k] . "&serviceType=" . $serviceType ."' target=_blank>Show diff</a></td>";
+	    } else {
+	       $str .= "\n\t\t\t<td align='center'>Diff for wfs not yet available!</td>";
+	    }
+	} else {
+	    //$str .= "\n\t\t\t<td align='center'><a href='../php/mod_showCapDiff.php?id=" . $id . "&upload_id=" . $upload_id[$k] . "&serviceType=" . $serviceType ."' target=_blank>Show diff</a></td>";
+	    //$str .= "\n\t\t\t<td align='center'><a href='../php/mod_monitorCapabilities_read_single_diff.php?wmsid=" . $id . "&upload_id=" . $upload_id[$k] . "' target=_blank>Show diff</a></td>";    
+	    $str .= "\n\t\t\t<td align='center'></td>";
+	    
+	}
 	
 #	$str .= "\n\t\t\t<td><a href='output_".$wms_id[$k]."_".$max.".txt' target=_blank>log</a></td>";
 }
