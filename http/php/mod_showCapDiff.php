@@ -62,22 +62,25 @@ switch ($serviceType) {
 	    if ($upload_id) {
     		$sql = "SELECT cap_diff FROM mb_monitor WHERE fkey_wms_id = $1 and upload_id = $2";
     		$v = array($id, $upload_id);
+    		$t = array('i', 'i');
 	    } else {
 	        $sql = "SELECT cap_diff FROM mb_wms_availability WHERE fkey_wms_id = $1";
 	        $v = array($id);
+	        $t = array('i');
 	    }
 		break;
 	case "wfs":
 	    if ($upload_id) {
     		$sql = "SELECT cap_diff FROM mb_monitor WHERE fkey_wfs_id = $1 and upload_id = $2";
     		$v = array($id, $upload_id);
+    		$t = array('i', 'i');
 	    } else {
 	        $sql = "SELECT cap_diff FROM mb_wfs_availability WHERE fkey_wfs_id = $1";
 	        $v = array($id);
+	        $t = array('i');
 	    }
 		break;
 }
-$t = array('i');
 $res = db_prep_query($sql,$v,$t);
 $cap_diff_row = db_fetch_row($res);
 $html = urldecode($cap_diff_row[0]);
