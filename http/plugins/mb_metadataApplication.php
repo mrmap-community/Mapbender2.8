@@ -59,37 +59,51 @@ if (typeof regionData === 'undefined') {
         { "name": "Landkreis Waldeck-Frankenberg", "minx": 8.4732746, "miny": 50.9354961, "maxx": 9.2218375, "maxy": 51.5189199 },
         { "name": "Werra-Meißner-Kreis", "minx": 9.6237862, "miny": 50.992088, "maxx": 10.2364142, "maxy": 51.4210554 },
 ]};
+
 // Function to populate the multiselect-box with options
 function populateRegionOptions() {
-	let selectBox = document.getElementById('regions');
-	regionData.forEach((region) => {
-		let option = document.createElement('option');
-		option.value = JSON.stringify(region);
-		option.textContent = region.name;
-		selectBox.appendChild(option);
-	});
+        let selectBox = document.getElementById('regions');
+        regionData.forEach((region) => {
+                let option = document.createElement('option');
+                option.value = JSON.stringify(region);
+                option.textContent = region.name;
+                selectBox.appendChild(option);
+        });
 }
 
 // Function to calculate the extent of selected regions
 function calculateExtent() {
-	let selectBox = document.getElementById('regions');
-	let selectedOptions = Array.from(selectBox.selectedOptions);
-	let extent = selectedOptions.reduce((acc, option) => {
-		let region = JSON.parse(option.value);
-		acc.minx = Math.min(acc.minx, region.minx);
-		acc.miny = Math.min(acc.miny, region.miny);
-		acc.maxx = Math.max(acc.maxx, region.maxx);
-		acc.maxy = Math.max(acc.maxy, region.maxy);
-		return acc;
-	}, { minx: -180, miny: -90, maxx: 180, maxy: 90 });
-	// Set the input fields with the bounding box coordinates
-	document.getElementById('west').value = extent.minx;
-	document.getElementById('south').value = extent.miny;
-	document.getElementById('east').value = extent.maxx;
-	document.getElementById('north').value = extent.maxy;
+        let selectBox = document.getElementById('regions');
+        let selectedOptions = Array.from(selectBox.selectedOptions);
+
+        if (selectedOptions.length === 0) {
+                // If no options are selected, use the default extent
+                document.getElementById('west').value = -180;
+                document.getElementById('south').value = -90;
+                document.getElementById('east').value = 180;
+                document.getElementById('north').value = 90;
+                return; // Exit early
+        }
+
+        let extent = { minx: Infinity, miny: Infinity, maxx: -Infinity, maxy: -Infinity };
+
+        selectedOptions.forEach((option) => {
+        let region = JSON.parse(option.value);
+        extent.minx = Math.min(extent.minx, region.minx);
+        extent.miny = Math.min(extent.miny, region.miny);
+        extent.maxx = Math.max(extent.maxx, region.maxx);
+        extent.maxy = Math.max(extent.maxy, region.maxy);
+        });
+
+        // Set the input fields with the bounding box coordinates
+        document.getElementById('west').value = extent.minx;
+        document.getElementById('south').value = extent.miny;
+        document.getElementById('east').value = extent.maxx;
+        document.getElementById('north').value = extent.maxy;
 }
 
 // Call the function to populate the multiselect-box on page load
+
 populateRegionOptions();
 
 //var mapbenderUrl = "<?php echo $mapbenderUrl;?>";
