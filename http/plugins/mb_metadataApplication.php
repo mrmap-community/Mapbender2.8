@@ -81,7 +81,7 @@ function calculateExtent() {
 		acc.maxx = Math.max(acc.maxx, region.maxx);
 		acc.maxy = Math.max(acc.maxy, region.maxy);
 		return acc;
-	}, { minx: Infinity, miny: Infinity, maxx: -Infinity, maxy: -Infinity });
+	}, { minx: -180, miny: -90, maxx: 180, maxy: 90 });
 	// Set the input fields with the bounding box coordinates
 	document.getElementById('west').value = extent.minx;
 	document.getElementById('south').value = extent.miny;
