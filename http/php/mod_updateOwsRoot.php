@@ -17,6 +17,27 @@ require_once(dirname(__FILE__)."/../php/mb_validateSession.php");
 require_once dirname(__FILE__) . "/../classes/class_user.php";
 require_once dirname(__FILE__) . "/../classes/class_wms.php";
 
+//give back every result as json
+header('Content-Type: application/json; charset=utf-8');
+//check if invoked from localhost
+$whitelist = array(
+    //'127.0.0.1',
+    '::1'
+);
+
+$userId = Mapbender::session()->get("mb_user_id");
+if ($userId == false) {
+    $userId = PUBLIC_USER;
+}
+
+if ($userId != '1') {
+    if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)){
+        $resultObject->error->message = 'The service was not invoked from localhost!';
+        echo json_encode($resultObject);
+        die();
+    }
+}
+
 $time_start = microtime(true);
 /*
  * Default values for information from scheduler table
@@ -97,29 +118,7 @@ if (isset($_REQUEST["userId"]) & $_REQUEST["userId"] != "") {
     }
     $userId = $testMatch;
     $testMatch = NULL;
-} else {
-    $userId = Mapbender::session()->get("mb_user_id");
-    if ($userId == false) {
-        $userId = PUBLIC_USER;
-    }
-}
-//check if invoked from localhost
-$whitelist = array(
-    '127.0.0.1',
-    '::1'
-);
-/*echo json_encode($_SERVER['REMOTE_ADDR']);
-die();*/
-if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)){
-    if ($userId != '1') {
-        $resultObject->error->message = 'Your are not the root user!';
-        echo json_encode($resultObject);
-        die();
-    }
-    $resultObject->error->message = 'The service was not invoked from localhost!';
-    echo json_encode($resultObject);
-    die();
-}
+} 
 
 switch ($serviceType) {
     case "WMS":
