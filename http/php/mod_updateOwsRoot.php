@@ -16,12 +16,15 @@
 require_once(dirname(__FILE__)."/../php/mb_validateSession.php");
 require_once dirname(__FILE__) . "/../classes/class_user.php";
 require_once dirname(__FILE__) . "/../classes/class_wms.php";
+require_once(dirname(__FILE__) . "/../classes/class_universal_wfs_factory.php");
 
 //give back every result as json
 header('Content-Type: application/json; charset=utf-8');
+
+$resultObject->success = false;
 //check if invoked from localhost
 $whitelist = array(
-    //'127.0.0.1',
+    '127.0.0.1',
     '::1'
 );
 
@@ -53,7 +56,6 @@ $schedulerOverwrite = null;
 //overwrite categories with categories from service - wms only
 $schedulerOverwriteCategories = null;
 
-$resultObject->success = false;
 //give back every result as json
 header('Content-Type: application/json; charset=utf-8');
 
@@ -81,7 +83,7 @@ foreach ($schedulerParams as $schedulerParam) {
 
 if (isset($_REQUEST["serviceType"]) & $_REQUEST["serviceType"] != "") {
     $testMatch = $_REQUEST["serviceType"];
-    if (!($testMatch == 'wms' or $testMatch == 'wfs')){
+    if (!($testMatch == 'wms' || $testMatch == 'wfs')){
         $resultObject->error->message = 'Parameter serviceType is not valid (wms, wfs).';
         echo json_encode($resultObject);
         die();
@@ -126,10 +128,14 @@ switch ($serviceType) {
         $sql .= "wms_username as \"serviceAuthUser\", wms_password as \"serviceAuthPassword\", wms_auth_type as \"serviceAuthType\", ";
         $sql .= "scheduler.scheduler_publish as \"schedulerPublish\", scheduler.scheduler_overwrite as \"schedulerOverwrite\", ";
         $sql .= "scheduler.scheduler_overwrite_categories as \"schedulerOverwriteCategories\", scheduler.scheduler_searchable as \"schedulerSearchable\" ";
-        
         $sql .= "FROM wms LEFT JOIN scheduler ON wms.wms_id = scheduler.fkey_wms_id WHERE wms_id = $1;";     
         break;
     case "WFS":
+        $sql = "SELECT wfs_id as \"serviceId\", wfs_title as \"serviceTitle\", wfs_owner as \"serviceOwner\", wfs_upload_url as \"serviceUploadUrl\", ";
+        $sql .= "wfs_username as \"serviceAuthUser\", wfs_password as \"serviceAuthPassword\", wfs_auth_type as \"serviceAuthType\", ";
+        $sql .= "scheduler.scheduler_publish as \"schedulerPublish\", scheduler.scheduler_overwrite as \"schedulerOverwrite\", ";
+        $sql .= "scheduler.scheduler_overwrite_categories as \"schedulerOverwriteCategories\", scheduler.scheduler_searchable as \"schedulerSearchable\" ";
+        $sql .= "FROM wfs LEFT JOIN scheduler ON wfs.wfs_id = scheduler.fkey_wfs_id WHERE wfs_id = $1;";     
         break;
 }
 
@@ -146,8 +152,17 @@ if (db_fetch_array( $res ) == false) {
 }
 
 while ($row = db_fetch_array( $res )) {
-    $updateWms = new wms();
-    $updateWms->harvestCoupledDatasetMetadata = true;
+    switch ($serviceType) {
+        case "WMS":
+            $updateWms = new wms();
+            $updateWms->harvestCoupledDatasetMetadata = true;
+            break;
+        case "WFS":
+            $wfsFactory = new UniversalWfsFactory();
+            break;
+    }
+       
+    //extract params for scheduler 
     $schedulerConf = array();
     foreach ($schedulerParams as $schedulerParam) {
         //add result from db to array
@@ -161,42 +176,64 @@ while ($row = db_fetch_array( $res )) {
             }
         }
     }
-    $updateWms->overwrite = $schedulerOverwrite;
-    $updateWms->overwriteCategories = $schedulerOverwriteCategories;
-    $updateWms->setGeoRss = $schedulerPublish;
-    $updateWms->twitterNews = false;
-    $updateWms->schedulerMail = $schedulerMail;
     
-    //echo $row['serviceId'] . "<br>";
     //update service
     if ($row['serviceAuthType'] == "basic" || $row['serviceAuthType'] == "digest"){
         $auth = array();
         $auth['auth_type'] = $row['serviceAuthType'];
         $auth['username'] = $row['serviceAuthUser'];
         $auth['password'] = $row['serviceAuthPassword'];
-        
-        $createObjFromXml = $updateWms->createObjFromXML($row['serviceUploadUrl'], $auth);
-        
+        switch ($serviceType) {
+            case "WMS":
+                $createObjFromXml = $updateWms->createObjFromXML($row['serviceUploadUrl'], $auth);
+                break;
+            case "WFS":
+                $updateWfs = $wfsFactory->createFromUrl($row['serviceUploadUrl'], $auth);
+                break;
+        }  
     } else {
-        $createObjFromXml = $updateWms->createObjFromXML($row['serviceUploadUrl']);
-           
+        switch ($serviceType) {
+            case "WMS":
+                $createObjFromXml = $updateWms->createObjFromXML($row['serviceUploadUrl']);
+                break;
+            case "WFS":
+                $updateWfs = $wfsFactory->createFromUrl($row['serviceUploadUrl'], false);
+                break;
+        }           
     }
     
-    if ($createObjFromXml['success'] == false) {
-        $resultObject->error->message = $createObjFromXml['message'];
-        echo json_encode($resultObject);
-        die();   
-    }
-    $updateWms->owner = $row['serviceOwner'];
-    $updateWms->optimizeWMS($schedulerSearchable);
-    //do the update
-    try {
-        $updateWms->updateObjInDB($row['serviceId']);
-    }
-    catch(Exception $e) {
-        $resultObject->error->message = 'WMS could not be updated - check needed!';
-        echo json_encode($resultObject);
-        die(); 
+    switch ($serviceType) {
+        case "WMS":
+            $updateWms->overwrite = $schedulerOverwrite;
+            $updateWms->overwriteCategories = $schedulerOverwriteCategories;
+            $updateWms->setGeoRss = $schedulerPublish;
+            $updateWms->twitterNews = false;
+            if ($createObjFromXml['success'] == false) {
+                $resultObject->error->message = $createObjFromXml['message'];
+                echo json_encode($resultObject);
+                die();
+            }
+            $updateWms->owner = $row['serviceOwner'];
+            $updateWms->optimizeWMS($schedulerSearchable);
+            //do the update
+            try {
+                $updateWms->updateObjInDB($row['serviceId']);
+            }
+            catch(Exception $e) {
+                $resultObject->error->message = 'WMS could not be updated - check needed!';
+                echo json_encode($resultObject);
+                die();
+            }   
+            break;
+        case "WFS":
+            $updateWfs->overwrite = $schedulerOverwrite;
+            $updateWfs->id = $row['serviceId'];
+            if (is_null($updateWfs) || !$updateWfs->update()) {
+                $resultObject->error->message = 'WFS could not be updated - check needed!';
+                echo json_encode($resultObject);
+                die();
+            }
+            break;
     }
 }
 
@@ -206,19 +243,27 @@ $time_end = microtime(true);
 $execution_time = ($time_end - $time_start);
 
 $resultObject->success = true;
-$resultObject->result->service_title = $updateWms->wms_title;
-$resultObject->result->service_id = $updateWms->wms_id;
+
+switch ($serviceType) {
+    case "WMS":
+        $resultObject->result->service_title = $updateWms->wms_title;
+        $resultObject->result->service_id = $updateWms->wms_id;
+        $resultObject->result->overwrite = $updateWms->overwrite;
+        $resultObject->result->resources_searchable = $schedulerSearchable;
+        $resultObject->result->overwrite_categories = $updateWms->overwriteCategories;
+        $resultObject->result->publish = $schedulerPublish;
+        $resultObject->result->number_of_resources = count($updateWms->objLayer);
+        break;
+    case "WFS":
+        $resultObject->result->service_title = $updateWfs->title;
+        $resultObject->result->service_id = $updateWfs->id;
+        $resultObject->result->overwrite = $updateWfs->overwrite;
+        $resultObject->result->number_of_resources = count($updateWfs->featureTypeArray);
+        break;
+}
 $resultObject->result->service_type = $serviceType;
-//$resultObject->result->info_mail = $updateWms->schedulerMail;
-$resultObject->result->overwrite = $updateWms->overwrite;
-$resultObject->result->resources_searchable = $schedulerSearchable;
-$resultObject->result->overwrite_categories = $updateWms->overwriteCategories;
-$resultObject->result->publish = $schedulerPublish;
-$resultObject->result->scheduler_conf = $schedulerConf;
 $resultObject->result->duration_time = $execution_time;
-$resultObject->result->number_of_resources = count($updateWms->objLayer);
 $resultObject->message = "Service with id " . $serviceId . " updated!";
+$resultObject->result->scheduler_conf = $schedulerConf;
 echo json_encode($resultObject);
-
-
 ?>
