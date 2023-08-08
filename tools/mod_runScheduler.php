@@ -92,6 +92,7 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
 	}
 	//notify per mail if set in scheduler
 	if($wmsToUpdate[$i]['scheduler_mail']) {
+	    $mail_error_message = "";
 	    $admin = new administration();
 		//get all users which have the wms integrated in their guis!
 		$ownerIds = $admin->getOwnerByWms($wmsToUpdate[$i]['wms_id']);
@@ -115,7 +116,7 @@ for ($i=0; $i<count($wmsToUpdate); $i++) {
 			    }
     				for ($m=0; $m<count($ownerMailAddresses); $m++) {
 					    echo $ownerMailAddresses[$m]."\n";
-    				    if (!$admin->sendEmail($from, $from, $ownerMailAddresses[$m], $ownerMailAddresses[$m], "[Mapbender Update Scheduler] One of your WMS has been updated", $body)) {
+    				    if (!$admin->sendEmail($from, $from, $ownerMailAddresses[$m], $ownerMailAddresses[$m], "[Mapbender Update Scheduler] One of your WMS has been updated", $body, $mail_error_message)) {
     					    echo "Notification could not be send!\n";
     					}
     				}
