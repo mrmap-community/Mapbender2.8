@@ -518,9 +518,9 @@ switch ($ajaxResponse->getMethod()) {
                 JSON;
 		    //get back array of datasets - idx = spatial_dataset_identifier
 		    //demo usage
-		    $ajaxResponse->setResult(json_decode($pos_list));
+		    //$ajaxResponse->setResult(json_decode($pos_list));
 		    //activate for productive use
-		    //$ajaxResponse->setResult(json_decode($output));
+		    $ajaxResponse->setResult(json_decode($output));
 		}
 		break;
 	case "generateCache":
