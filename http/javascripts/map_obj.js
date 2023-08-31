@@ -835,7 +835,7 @@ Mapbender.Map = function (options) {
          * https://portal.ogc.org/files/?artifact_id=1081&format=pdf - 7.2.3.3
          * A WMS shall render the requested layers by drawing the leftmost in the list bottommost, the next one over that, and so on.
          */
-        validLayersEncoded.reverse();
+        //validLayersEncoded.reverse();
         var layerNames = validLayersEncoded.join(",");
         url = currentWms.wms_getmap;
         url += mb_getConjunctionCharacter(currentWms.wms_getmap);
