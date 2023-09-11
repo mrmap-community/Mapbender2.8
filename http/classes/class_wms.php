@@ -1914,12 +1914,25 @@ class wms {
 					$this->objLayer[$i]->layer_epsg[$j]["maxx"] ."','". 
 					$this->objLayer[$i]->layer_epsg[$j]["maxy"] ."');");
 			}
+			//begin with the default style if it does exist
 			for($j=0; $j<count($this->objLayer[$i]->layer_style);$j++){
 				if($parent){
 				 echo "parent.";
 				}
-				print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
+				if ($this->objLayer[$i]->layer_style[$j]["name"] == 'default') {
+					print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
+				}
 			}
+				
+			for($j=0; $j<count($this->objLayer[$i]->layer_style);$j++){
+				if($parent){
+					echo "parent.";
+				}
+				if ($this->objLayer[$i]->layer_style[$j]["name"] != 'default') {
+					print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
+				}
+			}
+				
 			//2016 - new for dimension (time and elevation)
 			for($j=0; $j<count($this->objLayer[$i]->layer_dimension);$j++){
 				if($parent){
