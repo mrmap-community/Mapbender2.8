@@ -4152,11 +4152,37 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 				$count_layer_custom_category++;
 			}
 			### handle styles
-			$sql = "SELECT * FROM layer_style WHERE fkey_layer_id = $1 ";
+			//first add default layer
+			$sql = "SELECT * FROM layer_style WHERE fkey_layer_id = $1 AND name IN ('default', 'DEFAULT')";
 			$v = array($this->objLayer[$layer_cnt]->layer_uid);
 			$t = array('i');
 			$res_style = db_prep_query($sql,$v,$t);
 			$count_layer_style = 0;
+			while($row2 = db_fetch_array($res_style)){
+				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["name"]=$row2["name"];
+				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["title"]=$row2["title"];
+				if($wmsowsproxy != ""){
+					if($row2["legendurl"]!=''){
+						$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]=$owsproxyurl.
+						"REQUEST=getlegendgraphic&VERSION=".$this->wms_version."&LAYER=".$this->objLayer[$layer_cnt]->layer_name."&FORMAT=".$row2["legendurlformat"].
+						"&STYLE=".$row2["name"];
+					}
+				}
+				else{
+					if($row2["legendurl"]!=''){
+						$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]=$row2["legendurl"];
+						#$e = new mb_notice("legendurl = ".$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]);
+					}
+				}
+				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurlformat"]=$row2["legendurlformat"];
+				$count_layer_style++;
+			}
+			//second add other layers
+			$sql = "SELECT * FROM layer_style WHERE fkey_layer_id = $1 and name NOT IN ('default', 'DEFAULT')";
+			$v = array($this->objLayer[$layer_cnt]->layer_uid);
+			$t = array('i');
+			$res_style = db_prep_query($sql,$v,$t);
+			//$count_layer_style = 0;
 			while($row2 = db_fetch_array($res_style)){
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["name"]=$row2["name"];
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["title"]=$row2["title"];
