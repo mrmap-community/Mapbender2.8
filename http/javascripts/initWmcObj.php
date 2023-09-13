@@ -363,24 +363,25 @@ if ($getParams['WMS']) {
 					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
 					if (isset($getParams['DATASETID']) && $getParams['DATASETID'] != "") {
 						foreach ($currentWms->objLayer as $layerObj) {
-							if ($layerObj->layer_identifier == $getParams['DATASETID']) {
-								foreach ($layerObj->layer_epsg as $subLayerExtent){
-									if ($subLayerExtent["epsg"] == "EPSG:4326") {
-										// overwrite extend from getApi
-										//$e = new mb_exception("overwrite extent");
-										$bbox = new Mapbender_bbox($subLayerExtent["minx"],$subLayerExtent["miny"],$subLayerExtent["maxx"],$subLayerExtent["maxy"],"EPSG:4326");
-										// check for current epsg and transform if needed
-										if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
-											$bbox->transform($wmcGetApi->mainMap->getEpsg());
-										}
-										$wmcGetApi->mainMap->setExtent($bbox);
-										//overwrite zoom to parameter
-										break;
-									}
-								}
-								break;
-							}
-						
+						    foreach ($layerObj->layer_identifier as $identifier) {
+						        if ($identifier == $getParams['DATASETID']) {
+    								foreach ($layerObj->layer_epsg as $subLayerExtent){
+    									if ($subLayerExtent["epsg"] == "EPSG:4326") {
+    										// overwrite extend from getApi
+    										//$e = new mb_exception("overwrite extent");
+    										$bbox = new Mapbender_bbox($subLayerExtent["minx"], $subLayerExtent["miny"], $subLayerExtent["maxx"], $subLayerExtent["maxy"], "EPSG:4326");
+    										// check for current epsg and transform if needed
+    										if ($wmcGetApi->mainMap->getEpsg() !== "EPSG:4326") {
+    											$bbox->transform($wmcGetApi->mainMap->getEpsg());
+    										}
+    										$wmcGetApi->mainMap->setExtent($bbox);
+    										//overwrite zoom to parameter
+    										break;
+    									}
+    								}
+    								break;
+    							}
+						    }
 						}
 					}
 				}
@@ -581,8 +582,6 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			if ($jsonFileConnector->curlError !== false) {
 			    $e = new mb_exception("javascripts/initWmcObj.php: curl error message: " . $jsonFileConnector->curlError);
 			}
-			//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON: ".$jsonFileConnector->file);
-			//$jsonFile = new connector("http://localhost/mb_trunk/geoportal/testpolygon.json");
 			$geojson = json_validator($jsonFileConnector->file);
 			if ($geojson !== false) {
 			    $someGeojsonGiven = true;
@@ -1166,6 +1165,8 @@ $outputString = "";
 for ($i = 0; $i < count($output); $i++) {
 	$outputString .= administration::convertOutgoingString($output[$i]);
 }
+//$e = new mb_exception("javascripts/initWmcObj.php: output map: " . $outputString);
+
 $wmcFeaturetypeJson = $wmc->featuretypeConfToJavaScript();
 $wfsConfIdString = $wmcGetApi->generalExtensionArray['WFSCONFIDSTRING'];
 if($wfsConfIdString != ""){
