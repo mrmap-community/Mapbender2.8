@@ -482,12 +482,15 @@ class Map {
 					// set all layers of WMS to visible
 					for ($i = 0; $i < count($wmsArray); $i++) {
 						$numLayers = count($wmsArray[$i]->objLayer);
-
 						for ($j = 0; $j < $numLayers; $j++) {
 							$wmsArray[$i]->objLayer[$j]->gui_layer_visible = 0;
 							//layer which has defined a identifier (this came from the search) should be visible
 							if (isset($wmsArray[$i]->objLayer[$j]->layer_identifier)) {
-								$wmsArray[$i]->objLayer[$j]->gui_layer_visible = 1;
+							    foreach($wmsArray[$i]->objLayer[$j]->layer_identifier as $identifier) {
+							        if ($identifier->visible == true) {
+							            $wmsArray[$i]->objLayer[$j]->gui_layer_visible = 1;
+							        }
+							    }
 							}
 						}
 					}
