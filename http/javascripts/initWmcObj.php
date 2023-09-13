@@ -364,7 +364,7 @@ if ($getParams['WMS']) {
 					if (isset($getParams['DATASETID']) && $getParams['DATASETID'] != "") {
 						foreach ($currentWms->objLayer as $layerObj) {
 						    foreach ($layerObj->layer_identifier as $identifier) {
-						        if ($identifier == $getParams['DATASETID']) {
+						        if ($identifier->identifier == $getParams['DATASETID']) {
     								foreach ($layerObj->layer_epsg as $subLayerExtent){
     									if ($subLayerExtent["epsg"] == "EPSG:4326") {
     										// overwrite extend from getApi
