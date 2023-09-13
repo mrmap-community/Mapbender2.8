@@ -1012,14 +1012,14 @@ class wms {
 				}
 				$cnt_identifier = 0;
 				if(mb_strtoupper($element['tag']) == "IDENTIFIER"){
+					$this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier] = $element['value'];
 					if ($datasetId != false) {
 					    if ($datasetId == $element['value']) {
-						  $e = new mb_exception("classes/class_wms.php: found a layer with searched identifier in wms - its name is: ".$this->objLayer[$cnt_layer]->layer_name);
-						  //only set the identifier if a requested datasetId was found
-						  //$this->objLayer[$cnt_layer]->layer_identifier = $element['value'];
+					        $e = new mb_exception("classes/class_wms.php: found a layer with searched identifier in wms - its name is: ".$this->objLayer[$cnt_layer]->layer_name);
+					        //only set the identifier if a requested datasetId was found
+					        $this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->visible = true;
 					    }
 					}
-					$this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier] = $element['value'];
 					$cnt_identifier++;
 				}
 				if(mb_strtoupper($element['tag']) == "TITLE"){
