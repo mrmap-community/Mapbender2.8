@@ -236,6 +236,22 @@
             that.area_of_interest = JSON.parse(multi.toString());
             		
             var mapObj = getMapObjByName('mapframe1');
+            //get list of spatial_dataset_identifier, if some exists
+            sdi_list = [];
+            for (let indexWms = 0; indexWms < mapObj.wms.length; ++indexWms) {
+        		const currentWms = mapObj.wms[indexWms];
+        		for (let indexLayer = 0; indexLayer < currentWms.objLayer.length; ++indexLayer) {
+        			const currentLayer = currentWms.objLayer[indexLayer];
+        			if (((typeof currentLayer.layer_identifier != "undefined") && Array.isArray(currentLayer.layer_identifier) && (currentLayer.layer_identifier.length > 0)) && currentLayer.gui_layer_visible == 1) {
+        				//console.log(parseInt(currentLayer.layer_uid));
+        				for (let indexIdentifier = 0; indexIdentifier < currentLayer.layer_identifier.length; ++indexIdentifier) {
+        				    sdi_list.push(currentLayer.layer_identifier[indexIdentifier].identifier);   
+        				}
+        			}
+        			//console.log(currentLayer);
+        		}
+    		}
+    		console.log(sdi_list);
             //get list of layers db ids
             layer_ids = [];
             // TODO - does deeper hierachies exists?
@@ -245,7 +261,9 @@
         			const currentLayer = currentWms.objLayer[indexLayer];
         			if (((currentLayer.layer_uid != '') || (typeof currentLayer.layer_uid != "undefined")) && currentLayer.gui_layer_visible == 1) {
         				//console.log(parseInt(currentLayer.layer_uid));
-        				layer_ids.push(parseInt(currentLayer.layer_uid));
+        				if (!isNaN(parseInt(currentLayer.layer_uid))) {
+        					layer_ids.push(parseInt(currentLayer.layer_uid));
+        				}
         			}
         		}
     		}
@@ -254,7 +272,7 @@
             fetch('../php/mod_getDatasetIdentifierByLayer.php?layerIds=' + layer_ids.join(','))
                 .then((response) => response.json())
                 	.then((data) => {
-                		that.requestDownloadOptions(data, JSON.parse(multi.toString()));
+                		that.requestDownloadOptions(data.concat(sdi_list), JSON.parse(multi.toString()));
                 	});
                 	
             inProgress = false;
