@@ -752,6 +752,7 @@ function wms_add_data_type_format(datatype,dataformat){
 		wms[wms.length-1].data_format[wms[wms.length-1].data_format.length] = dataformat;
 	}
 }
+
 function wms_addSRS(epsg,minx,miny,maxx,maxy){
 	wms[wms.length-1].gui_epsg[wms[wms.length-1].gui_epsg.length] = epsg;
 	wms[wms.length-1].gui_epsg_supported[wms[wms.length-1].gui_epsg_supported.length] = true;
@@ -760,6 +761,7 @@ function wms_addSRS(epsg,minx,miny,maxx,maxy){
 	wms[wms.length-1].gui_maxx[wms[wms.length-1].gui_maxx.length] = maxx;
 	wms[wms.length-1].gui_maxy[wms[wms.length-1].gui_maxy.length] = maxy;
 }
+
 function wms_addLayerStyle(styleName, styleTitle, count, layerCount, styleLegendUrl, styleLegendUrlFormat){
 	//TODO for debug purposes:	
 	//alert(styleName+":"+styleTitle+":"+count+":"+layerCount+":"+styleLegendUrl+":"+styleLegendUrlFormat);
@@ -775,6 +777,20 @@ function wms_addLayerStyle(styleName, styleTitle, count, layerCount, styleLegend
 		currentLayer.layer_style[count].legendurlformat = styleLegendUrlFormat;
 	}
 }
+
+function wms_addLayerIdentifier(identifier, visible, count, layerCount){
+	//TODO for debug purposes:	
+	//alert(styleName+":"+styleTitle+":"+count+":"+layerCount+":"+styleLegendUrl+":"+styleLegendUrlFormat);
+	//var test = wms.length-1;
+	//alert("add layer style["+count+"] for layer["+layerCount+"] for wms["+test+"]:"+styleLegendUrl);
+	var currentLayer = wms[wms.length-1].objLayer[layerCount]; 
+	if (currentLayer) {
+		currentLayer.layer_identifier[count] = {};
+		currentLayer.layer_identifier[count].identifier = identifier;
+		currentLayer.layer_identifier[count].visible = visible;
+	}
+}
+
 //TODO: add layerstyle handling....
 //layer
 function wms_add_layer(
@@ -831,6 +847,7 @@ function wms_add_layer(
 		parentLayer.has_childs = true;
 	}
 }
+
 function layer_addEpsg(epsg,minx,miny,maxx,maxy){
 	var j = wms[wms.length-1].objLayer.length-1;
 	var k = wms[wms.length-1].objLayer[j].layer_epsg.length;
@@ -842,6 +859,7 @@ function layer_addEpsg(epsg,minx,miny,maxx,maxy){
 	currentLayer.layer_epsg[k].maxx = maxx;
 	currentLayer.layer_epsg[k].maxy = maxy;
 }
+
 //'name', 'units', 'unitSymbol', 'default', 'multipleValues', 'nearestValue', 'current', 'extent'
 //'userValue' from wmc
 function wms_addLayerDimension(name,units,unitSymbol,default1,multipleValues,nearestValue,current,extent,userValue){
@@ -859,6 +877,7 @@ function wms_addLayerDimension(name,units,unitSymbol,default1,multipleValues,nea
 	currentLayer.layer_dimension[k].extent = extent;
 	currentLayer.layer_dimension[k].userValue = userValue;
 }
+
 function wms_layer(
 	layer_parent,
 	wms_layer_uid,
@@ -912,8 +931,10 @@ function wms_layer(
 	this.has_childs = false;
 	this.layer_style = [];
 	this.layer_dimension = [];
+	this.layer_identifier = [];
 	wms_layer_count++;
 }
+
 /**
  * check the scale of the layer
  *
