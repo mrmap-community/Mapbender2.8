@@ -489,6 +489,8 @@ class WmcToXml {
 		$layerExtensionData["layer_epsg"] = $currentLayer->layer_epsg;
 		$layerExtensionData["gui_wms_opacity"] = $currentWms->gui_wms_opacity;
 		$layerExtensionData["layer_featuretype_coupling"] = $currentLayer->layer_featuretype_coupling;
+		//$layerExtensionData["layer_identifier"] = json_encode($currentLayer->layer_identifier);
+		$layerExtensionData["layer_identifier"] = $currentLayer->layer_identifier;
 
 		for ($i = 0; $i < count($currentWms->gui_epsg); $i++) {
 			$found = false;

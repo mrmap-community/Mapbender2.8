@@ -1917,7 +1917,7 @@ SQL;
 	 * @param string $data the data from the XML file
 	 */
 	protected function createObjFromWMC_xml($data) {
-	// store xml
+	   // store xml
 		$this->xml = $data;
 		//$wmcXml = simplexml_load_string(mb_utf8_encode($data));
 		//if ($wmcXml) {
@@ -1925,6 +1925,7 @@ SQL;
 		//}
 		//$e = new mb_exception("class_wmc.php: data: ".$data);
 		//$this->logit($data);
+		//$e = new mb_exception("classes/class_wmc.php - createObjFromWMC_xml: create from xml");
 		$values = administration::parseXml($data);
 		if (!$values) {
 			throw new Exception("WMC document could not be parsed.");
@@ -1935,7 +1936,7 @@ SQL;
 		//
 		$extension = false;		$general = false;		$layerlist = false;
 		$layer = false;  		$layer_dimensionlist = false;         $formatlist = false;	$layer_dataurl = false;
-		$layer_metadataurl = false; 	$stylelist = false;		//$layer_featuretype_coupling = false;
+		$layer_metadataurl = false; 	$stylelist = false;		$layer_identifier = false;//$layer_featuretype_coupling = false;
 
 		//
 		// reset WMC data
@@ -1947,33 +1948,93 @@ SQL;
 		$layerlistArray = array();
 		$layerlistArray["main"] = array();
 		$layerlistArray["overview"] = array();
+		
+		$layerlistArrayNew = array();
+		$layerlistArrayNew["main"] = array();
+		$layerlistArrayNew["overview"] = array();
+		
+		
 		//parse WMC per simpleXML and use xpath instead of old bib
 		//$wmcXml = new SimpleXMLElement($data);
 
 
-		//$wmcXml = simplexml_load_string(mb_utf8_encode($data));
-		//echo (";");
-		//print_r($wmcXml.";");
-		//if ($wmcXml) {
-		//	$e = new mb_exception("class_wmc.php: parsing wmc successfully");
-		//}
-		//print_r($ViewContext);
-		//$wmcXml->registerXPathNamespace('standard','http://www.opengis.net/context');
-		//$title = $wmcXml->xpath("/ViewContext/General/Title");
-		//$wmcXml->registerXPathNamespace('xsi', 'http://www.w3.org/2001/XMLSchema-instance');
-		//$wmcXml->registerXPathNamespace('mapbender', 'http://www.mapbender.org/context');
-		//$wmcXml->registerXPathNamespace('xlink', 'http://www.w3.org/1999/xlink');
-		//$wmcXml->registerXPathNamespace('wmc', 'http://opengis.net/context');
-		//$e = new mb_exception("class_wmc.php: data: ".mb_utf8_encode($data));
-		//$this->wmc_id = $wmcXml->xpath('/ViewContext/@id');
-		//$this->wmc_version = $wmcXml->xpath('/ViewContext/@version');
-		//$title = $wmcXml->xpath('/standard:ViewContext/standard:Title');
-		//var_dump($title);
+		$wmcXml = simplexml_load_string(mb_utf8_encode($data));
 
-		//$e = new mb_exception("class_wmc.php: parsing wmc by xpath: title: ".$title[0]);
-		//$e = new mb_exception("class_wmc.php: parsing wmc by xpath: wmc_version: ".$this->wmc_version);
-        //$e = new mb_exception("");
-        //$e = new mb_exception("class_wmc.php: createObjFromWMC_xml: ".$data);
+		if ($wmcXml) {
+			//$e = new mb_exception("classes/class_wmc.php: parsing wmc successfully");
+		} else {
+		    //$e = new mb_exception("classes/class_wmc.php: wmc could not be parsed by simplexml!");
+		}
+
+		$wmcXml->registerXPathNamespace('standard','http://www.opengis.net/context');
+		
+		$wmcXml->registerXPathNamespace('xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+		$wmcXml->registerXPathNamespace('mapbender', 'http://www.mapbender.org/context');
+		$wmcXml->registerXPathNamespace('xlink', 'http://www.w3.org/1999/xlink');
+		
+		$title = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:Title");
+		$abstract = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:Abstract");
+		
+		$version = $wmcXml->xpath("/standard:ViewContext/@version");
+		$id = $wmcXml->xpath("/standard:ViewContext/@id");
+		
+		
+		//window
+		$window_width = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:Window/@width");
+		$window_height = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:Window/@height");
+		//bbox
+		$bbox_minx = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:BoundingBox/@minx");
+		$bbox_miny = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:BoundingBox/@miny");
+		$bbox_maxx = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:BoundingBox/@maxx");
+		$bbox_maxy = $wmcXml->xpath("/standard:ViewContext/standard:General/standard:BoundingBox/@maxy");
+		
+		//$e = new mb_exception("classes/class_wmc.php: parsing wmc by xpath: title[0]: " . $title[0]);
+		//$e = new mb_exception("classes/class_wmc.php: parsing wmc by xpath: version[0]: " . $version[0]);
+		//iterate over layerlist
+		$wmc_layers = $wmcXml->xpath("/standard:ViewContext/standard:LayerList/standard:Layer");
+		//$e = new mb_exception("classes/class_wmc.php: number of layers: " . count($wmc_layers));
+		foreach ($wmc_layers as $layer) {
+		    //$e = new mb_exception("classes/class_wmc.php: layer title: " . $layer->Title);
+		    $extensions = $layer->Extension->children('mapbender', true);
+		    //$e = new mb_exception("classes/class_wmc.php: layer extension layer_identifier: " .json_encode($extensions->layer_identifier));
+		    //currentLayerNew
+		    $currentLayerNew = array();
+		    $currentLayerNew['queryable'] = (string)$layer->attributes()->queryable;
+		    if ( (string)$layer->attributes()->hidden == "1") {
+		        $currentLayerNew["visible"] = 0;
+		    } else {
+		        $currentLayerNew["visible"] = 1;
+		    }
+		    //lists
+		    $currentLayerNew["format"] = array();
+		    $currentLayerNew["style"] = array();
+		    $currentLayerNew["dimension"] = array();
+		    //formatlist
+		    $format_array = $layer->FormatList->Format;
+		    $cnt_format_array = 0;
+		    foreach($format_array as $format) {
+		        array_push($currentLayerNew["format"],  array("current" => (string)$format->attributes()->current, "name" => (string)$format));
+		        if ((string)$format->attributes()->current == '1') {
+		            $currentLayerNew["formatIndex"] =  $cnt_format_array;
+		        }
+		        $cnt_format_array++;
+		    }
+		    //stylelist
+		    //TODO    
+		    //$e = new mb_exception("classes/class_wmc.php: currentLayerNew: " . json_encode($currentLayerNew));
+		    //hide some layer in overview
+		    //$e =  new mb_exception("classes/class_wmc.php: overview hidden: " . json_encode($extensions));
+		    //$overview_hidden = $extensions->overviewData->children('mapbender, true')->overviewHidden;
+		    $overview_hidden = $extensions->overviewData->overviewHidden;
+		    
+		    if ((string)$overview_hidden == '1') {
+		        //$e =  new mb_exception("classes/class_wmc.php: hide layer from overview!");
+		        array_push($layerlistArrayNew["main"], $currentLayerNew);
+		    } else {
+		        array_push($layerlistArrayNew["overview"], $currentLayerNew);
+		        array_push($layerlistArrayNew["main"], $currentLayerNew);
+		    }
+		}
 
 		foreach ($values as $element) {
 			$tag = strtoupper(administration::sepNameSpace($element['tag']));
@@ -2186,13 +2247,12 @@ SQL;
 				}
 				if ($layer) {
 					if ($tag == "LAYER" && $type == "close") {
-
 					//
 					// After a layer tag is closed,
 					// we have all necessary information to CREATE
 					// a layer object and append it to the WMS object
 					//
-/*if (isset($currentLayer["extension"]["LAYER_FEATURETYPE_COUPLING"]) && $currentLayer["extension"]["LAYER_FEATURETYPE_COUPLING"] !== "") {
+					    /*if (isset($currentLayer["extension"]["LAYER_FEATURETYPE_COUPLING"]) && $currentLayer["extension"]["LAYER_FEATURETYPE_COUPLING"] !== "") {
 	$e = new mb_exception("class_wmc.php: found layer_featuretype_coupling: ".$currentLayer["extension"]["LAYER_FEATURETYPE_COUPLING"]);
 }*/
 						if (isset($currentLayer["extension"]["OVERVIEWHIDDEN"])) {
@@ -2336,21 +2396,36 @@ SQL;
 							$extension = false;
 						}
 						if ($extension == true) {
+						    //$e = new mb_exception('classes/class_wmc.php: extension: layer: ' . $currentLayer['title'] . " - " . json_encode($currentLayer["extension"]));
+						    
 						//
 /*if ($tag == "LAYER_FEATURETYPE_COUPLING" && $currentLayer["extension"][$tag] !== null) {							//if ($value !== "") {
 	$e = new mb_exception("classes/class_wmc.php: createObjFromWMC_xml: layer extension tag:  ".$tag." - value: ".json_encode($currentLayer["extension"][$tag]));	
 }*/
-							if (isset($currentLayer["extension"][$tag])) {
-								if (!is_array($currentLayer["extension"][$tag])) {
-									$firstValue = $currentLayer["extension"][$tag];
-									$currentLayer["extension"][$tag] = array();
-									array_push($currentLayer["extension"][$tag], $firstValue);
-								}
-								array_push($currentLayer["extension"][$tag], $value);
-							}
-							else {
-								$currentLayer["extension"][$tag] = $value;
-							}
+						    /*$e = new mb_exception("classes/class_wmc.php: tag: " . $tag);
+						    $e = new mb_exception("classes/class_wmc.php: value: " . $currentLayer["extension"][$tag]);
+						    $e = new mb_exception("classes/class_wmc.php: type " . gettype($currentLayer["extension"][$tag]));
+						    */
+						    if (isset($currentLayer["extension"][$tag]) && $tag == 'LAYER_IDENTIFIER') {
+						        
+						        //$e = new mb_exception("classes/class_wmc.php: read wmc xml: layer_identifier info json: " . $currentLayer["extension"][$tag]);
+						        //$currentLayer["extension"][$tag] = json_decode($currentLayer["extension"][$tag]);
+						    } else {
+    						    if (isset($currentLayer["extension"][$tag])) {
+    							    /*if ($tag == 'LAYER_IDENTIFIER') {
+    							        $e = new mb_exception('classes/class_wmc.php: try to push extension ' . $tag . ' to object: ' . json_encode($currentLayer["extension"][$tag]));
+    							        //$e = new mb_exception('classes/class_wmc.php: type: ' .gettype($currentLayer["extension"][$tag]));
+    							    }*/
+    								if (!is_array($currentLayer["extension"][$tag])) {
+    									$firstValue = $currentLayer["extension"][$tag];
+    									$currentLayer["extension"][$tag] = array();
+    									array_push($currentLayer["extension"][$tag], $firstValue);
+    								}
+    								array_push($currentLayer["extension"][$tag], $value);
+    							} else {
+    								$currentLayer["extension"][$tag] = $value;
+    							}
+						    }
 						//							}
 						}
 						if ($tag == "EXTENSION" && $type == "open") {
@@ -2377,15 +2452,11 @@ SQL;
 				}
 			}
 		}
-
 		// set WMS data
-
 		$layerlistCompleteArray = array_merge($layerlistArray["main"], $layerlistArray["overview"]);
-
 		for ($i = 0; $i < count($layerlistCompleteArray); $i++) {
 			$this->setLayerData($layerlistCompleteArray[$i]);
 		}
-
 		$wmsArr = $this->mainMap->getWmsArray();
 		for ($i = 0; $i < count($wmsArr); $i++) {
 			$wmsArr[$i]->updateAllOwsProxyUrls();
@@ -2426,26 +2497,21 @@ SQL;
 	private function setLayerData ($currentLayer) {
 		$currentMap = $this->mainMap;
 		$currentMapIsOverview = false;
-
 		if (isset($currentLayer["extension"]["OVERVIEWHIDDEN"])) {
 			$currentMap = $this->overviewMap;
 			$currentMapIsOverview = true;
 		}
-
 		if (is_null($currentMap)) {
 			$e = new mb_exception('class_wmc.php: setLayerData: $currentMap is null. Aborting.');
 			return null;
 		}
-
 		$wmsArray = $currentMap->getWmsArray();
-
 		//
 		// check if current layer belongs to an existing WMS.
 		// If yes, store the index of this WMS in $wmsIndex.
 		// If not, set the value to null.
 		//
 		$wmsIndex = null;
-
 		// find last WMS with the same online resource
 		for ($i = count($wmsArray) - 1; $i >= 0; $i--) {
 			if (isset($currentLayer["url"]) &&
@@ -2454,35 +2520,29 @@ SQL;
 				break;
 			}
 		}
-
 		// Even if this WMS has been found before it could still
 		// be a duplicate! We would have to create a new WMS and
 		// not append this layer to that WMS.
 		// For the overview layer we never add a new wms.
 		// check if this layer is an overview layer. If yes, skip this layer.
 		if ($wmsIndex !== null && !$currentMapIsOverview) {
-
 		// check if this WMS has a layer equal to the current layer.
 		// If yes, this is a new WMS. If not, append this layer
 		// to the existing WMS.
 			$matchingWmsLayerArray = $this->wmsArray[$wmsIndex]->objLayer;
-
 			for ($i = 0; $i < count($matchingWmsLayerArray); $i++) {
 				if ($matchingWmsLayerArray[$i]->layer_name == $currentLayer["name"]) {
-
-				// by re-setting the index to null, a new WMS will be
-				// added below.
+				    // by re-setting the index to null, a new WMS will be
+				    // added below.
 					$wmsIndex = null;
 					break;
 				}
 			}
 		}
-
 		// if yes, create a new WMS ...
 		if ($wmsIndex === null) {
 			$wmsIndex = 0;
 			$wms = new wms();
-
 			//
 			// set WMS data
 			//
@@ -2492,15 +2552,11 @@ SQL;
 			$wms->wms_abstract = $currentLayer["abstract"];
 			$wms->wms_getmap = $currentLayer["url"];
 			$wms->wms_getfeatureinfo = $currentLayer["url"]; // TODO : Add correct data
-
 			$styleIndex = $currentLayer["styleIndex"];
 			$wms->wms_getlegendurl = $currentLayer["style"][$styleIndex]["legendurl"];
-
 			$wms->wms_filter = ""; // TODO : Add correct data
-
 			$formatIndex = $currentLayer["formatIndex"];
 			$wms->gui_wms_mapformat = $currentLayer["format"][$formatIndex]["name"];
-
 			$wms->gui_wms_featureinfoformat = "text/html"; // TODO : Add correct data
 			if($currentLayer["version"] == '1.3.0' || $currentLayer["version"] == '1.0.0'){
 				$wms->gui_wms_exceptionformat = "XML"; // TODO : Add correct data
@@ -2511,12 +2567,9 @@ SQL;
 			$wms->gui_wms_visible = $currentLayer["extension"]["WMS_VISIBLE"];
 			$wms->gui_wms_opacity = $currentLayer["extension"]["GUI_WMS_OPACITY"];
 			$wms->gui_wms_sldurl = $currentLayer["style"][$styleIndex]["sld_url"];
-
 			//things for dimension
 			$wms->gui_wms_dimension_time = false;
 			$wms->gui_wms_dimension_elevation = false;
-			
-			
 			$wms->wms_srs = $currentLayer["epsg"];
 			$wms->gui_epsg = $currentLayer["epsg"];
 			//
@@ -2526,16 +2579,14 @@ SQL;
 				array_push($wms->data_type, "map");
 				array_push($wms->data_format, $currentLayer["format"][$i]["name"]);
 			}
-
 			// add WMS
 			array_push($wmsArray, $wms);
-
 			// the index of the WMS we just added
 			$wmsIndex = count($wmsArray) - 1;
 		}
-
 		// add layer to existing WMS ...
 		$currentWms = $wmsArray[$wmsIndex];
+		//create layer with class_wms.php!  
 		$currentWms->newLayer($currentLayer, null);
 		$currentMap->setWmsArray($wmsArray);
 		return true;

@@ -1540,7 +1540,10 @@ class wms {
 			echo $this->createJsObjFromWMS_($parent);
 		}
 		
-
+    /*
+     * function for creating layer from layer object, that has extensions - seems to be, that this 
+     * will be used to initialize layer from wmc documents! See class wmc -> setLayerData
+     */
 	function newLayer ($currentLayer, $currentExtent) {
 		$pos = $currentLayer["extension"]["LAYER_POS"];
 		$parent = $currentLayer["extension"]["LAYER_PARENT"];
@@ -1664,9 +1667,9 @@ class wms {
 			}
 		}
 
-		//
-		// set layer style
-		//
+		/*
+		 * set layer style
+		 */
 		for ($i = 0; $i < count($currentLayer["style"]); $i++) {
 			$newLayer->layer_style[$i] = array();
 			$newLayer->layer_style[$i]["name"] = $currentLayer["style"][$i]["name"];
@@ -1675,13 +1678,14 @@ class wms {
 			$newLayer->layer_style[$i]["legendurl_format"] = $currentLayer["style"][$i]["legendurl_type"];
 		}
 		/*
-		 * set layer_identifier
+		 * set layer_identifier - TODO - do it like for LAYER_EPSG!
+		 * dont load from wmc - will still have errors!
 		 */
-		for ($i = 0; $i < count($currentLayer["identifier"]); $i++) {
+		/*for ($i = 0; $i < count($currentLayer["extension"]["LAYER_IDENTIFIER"]); $i++) {
 		    $newLayer->layer_identifier[$i] = array();
-		    $newLayer->layer_identifier[$i]["identifier"] = $currentLayer["identifier"][$i]["identifier"];
-		    $newLayer->layer_identifier[$i]["visible"] = $currentLayer["identifier"][$i]["visible"];
-		}
+		    $newLayer->layer_identifier[$i]["identifier"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"];
+		    $newLayer->layer_identifier[$i]["visible"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["visible"];
+		}*/
 		//2016-08-31 add dimension - user value come from wmc standard and client mapobject
 		$dimensionAttributes = array('name', 'units', 'unitSymbol', 'default', 'multipleValues', 'nearestValue', 'current', 'extent','userValue');
 		for ($i = 0; $i < count($currentLayer['dimension']); $i++) {
