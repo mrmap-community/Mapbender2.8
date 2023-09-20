@@ -802,6 +802,7 @@ class SpatialDataCache():
             downloadable_dataset['spatial_dataset_identifier'] = dataset['resourceidentifier']
             downloadable_dataset['time_to_resolve_dataset'] = str(time.time() - start_time_dataset_metadata)
             downloadable_dataset['error_messages'] = []
+            downloadable_dataset['csw'] = self.catalogue_uri
             if metadata:
                 metadata_info = self.extract_info_from_dataset_metadata(metadata)
                 downloadable_dataset['title'] = metadata_info['title']
