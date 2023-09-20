@@ -542,7 +542,9 @@ class WmcToXml {
 			$e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key);
 			foreach ($value as $childKey => $childValue) {
 				$newNode = $this->addExtension($childKey, $childValue);
-				$e_currentExtensionTag->appendChild($newNode);
+				if (!is_null($newNode)) {
+				    $e_currentExtensionTag->appendChild($newNode);
+				}
 			}
 		}
 		else {
