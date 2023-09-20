@@ -818,6 +818,7 @@ class SpatialDataCache():
                 # check if bbox of metadata intersects the area_of_interest polygon 
                 polygon = from_geojson(self.area_of_interest_geojson)
                 bbox_geom = box(float(metadata_info['minx']), float(metadata_info['miny']), float(metadata_info['maxx']), float(metadata_info['maxy']))
+                services = []
                 if intersects(polygon, bbox_geom):
                     #log.info("Try to download " + metadata_info['title'] + " - type: " + dataset['type'] + " - sdi: " + str(metadata_info['spatial_dataset_identifier']))
                     services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
@@ -903,6 +904,7 @@ class SpatialDataCache():
                 downloadable_dataset['download_process_metadata'] = {}
                 download_process_metadata = {}
                 start_time_services_metadata = time.time()
+                services = []
                 services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
                 log.info("number of found services: " + str(len(services)))
