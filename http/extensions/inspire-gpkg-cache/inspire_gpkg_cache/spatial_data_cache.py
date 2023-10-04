@@ -35,12 +35,14 @@ class SpatialDataCache():
     :type catalogue_uri: str
     """
 
-    def __init__(self, data_configuration:dict, area_of_interest_geojson:str, catalogue_uri:str, output_filename:str = False, output_folder:str = False):
+    def __init__(self, data_configuration:dict, area_of_interest_geojson:str, catalogue_uris:list, output_filename:str = False, output_folder:str = False):
         """Constructor method
         """
         self.data_configuration = data_configuration
         self.area_of_interest_geojson = area_of_interest_geojson
-        self.catalogue_uri = catalogue_uri
+        # initially use first entry of catalogue list
+        self.catalogue_uris = catalogue_uris
+        self.catalogue_uri = self.catalogue_uris[0]
         self.csw = CatalogueServiceWeb(self.catalogue_uri)
         self.supported_formats = ["GeoTIFF", "GML", "Database", "shapefile", ]
         self.max_pixels = 3000
@@ -126,7 +128,7 @@ class SpatialDataCache():
         operation. The invocation is done via owslib.
 
         :param fileidentifier: MD_Metadata fileidentifier of an ISO metadata record. Fileidentifiers are often uuids.
-        They identify teh metadata record itself and not the described dataset! TODO: identify the dataset by the usage
+        They identify the metadata record itself and not the described dataset! TODO: identify the dataset by the usage
         of spatial datataset identifier - they identify the dataset itself!
 
         :type fileidentifier: str
@@ -800,6 +802,7 @@ class SpatialDataCache():
             downloadable_dataset['spatial_dataset_identifier'] = dataset['resourceidentifier']
             downloadable_dataset['time_to_resolve_dataset'] = str(time.time() - start_time_dataset_metadata)
             downloadable_dataset['error_messages'] = []
+            downloadable_dataset['csw'] = self.catalogue_uri
             if metadata:
                 metadata_info = self.extract_info_from_dataset_metadata(metadata)
                 downloadable_dataset['title'] = metadata_info['title']
@@ -808,7 +811,6 @@ class SpatialDataCache():
                 downloadable_dataset['fileidentifier'] = metadata_info['fileidentifier']
                 downloadable_dataset['format'] = metadata_info['format']
                 downloadable_dataset['epsg_id'] = metadata_info['epsg_id']
-               
                 #if metadata_info['spatial_dataset_identifier'] is None:
                 #    downloadable_dataset['error_messages'].append('')
                 downloadable_dataset['services'] = []
@@ -816,6 +818,7 @@ class SpatialDataCache():
                 # check if bbox of metadata intersects the area_of_interest polygon 
                 polygon = from_geojson(self.area_of_interest_geojson)
                 bbox_geom = box(float(metadata_info['minx']), float(metadata_info['miny']), float(metadata_info['maxx']), float(metadata_info['maxy']))
+                services = []
                 if intersects(polygon, bbox_geom):
                     #log.info("Try to download " + metadata_info['title'] + " - type: " + dataset['type'] + " - sdi: " + str(metadata_info['spatial_dataset_identifier']))
                     services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
@@ -824,11 +827,9 @@ class SpatialDataCache():
                     downloadable_dataset['fileidentifier'] = ''
                     downloadable_dataset['error_messages'].append('Metadata and the area of interest have no intersections!')
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
-            
                 #log.info("number of found services: " + str(len(services)))
                 # debug - show service information
                 for service in services:
-
                     downloadable_dataset['services'].append(json.loads(self.check_download_options(services[service], str(metadata_info['spatial_dataset_identifier']), str(metadata_info['epsg_id']))))
                     # log.info(services[service].serviceidentification.type + ' - ' + services[service].serviceidentification.version + ' : ' + services[service].distribution.online[0].url)
                     # log.info(self.check_download_options(services[service], str(metadata_info['spatial_dataset_identifier']), str(metadata_info['epsg_id'])))
@@ -836,18 +837,25 @@ class SpatialDataCache():
             else:
                 downloadable_dataset['error_messages'].append('Metadata could not be found in catalogue!')
             downloadable_datasets.append(downloadable_dataset)
+            #reset catalogue to first entry in list
+            self.catalogue_uri = self.catalogue_uris[0]
+            self.csw = CatalogueServiceWeb(self.catalogue_uri) 
         #log.info(json.dumps(downloadable_datasets))
         return json.dumps(downloadable_datasets)
 
     def get_metadata_by_resourceidentifier(self, spatial_dataset_identifier):
         dataset_query = PropertyIsEqualTo('csw:ResourceIdentifier', spatial_dataset_identifier)
-        # look for srv:serviceTypeVersion to find the atom feeds
-        self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
-        if len(self.csw.records) == 1:
-            return list(self.csw.records.values())[0]
-        else:
-            log.info('More than one or no record for resourceidentifier *' + spatial_dataset_identifier + '* found in catalog. Number of records: ' + str(len(self.csw.records)))
-            return False
+        #iterate over list of csw uris - don't forget to reset csw to first one after this!
+        for csw_uri in self.catalogue_uris:
+            self.catalogue_uri = csw_uri
+            self.csw = CatalogueServiceWeb(self.catalogue_uri)
+            # look for srv:serviceTypeVersion to find the atom feeds
+            self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
+            if len(self.csw.records) == 1:
+                return list(self.csw.records.values())[0]
+            else:
+                log.info('More than one or no record for resourceidentifier *' + spatial_dataset_identifier + '* found in catalog. Number of records: ' + str(len(self.csw.records)))
+        return False
 
     def generate_cache(self):
         """function to start generation of cache"""
@@ -896,6 +904,7 @@ class SpatialDataCache():
                 downloadable_dataset['download_process_metadata'] = {}
                 download_process_metadata = {}
                 start_time_services_metadata = time.time()
+                services = []
                 services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
                 log.info("number of found services: " + str(len(services)))
@@ -974,6 +983,8 @@ class SpatialDataCache():
             else:
                 downloadable_dataset['error_messages'].append('No metadata found for spatial dataset identifier')
             downloadable_datasets.append(downloadable_dataset)
+            self.catalogue_uri = self.catalogue_uris[0]
+            self.csw = CatalogueServiceWeb(self.catalogue_uri) 
         log.info(json.dumps(downloadable_datasets))   
         # delete area_of_interest files
         self.clean_tmp_files([self.tmp_output_folder + self.area_of_interest_filename + '.tif', self.tmp_output_folder + self.area_of_interest_filename + '.geojson',])

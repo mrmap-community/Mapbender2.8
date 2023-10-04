@@ -36,6 +36,8 @@ class KMLLine extends KMLGeometry {
 	public function __construct ($geometryString, $epsg) {
 		# KML 2.2
 		if (preg_match("/,/", $geometryString)) {
+		    
+		    $geometryString = trim(preg_replace('/\s+/', ' ', $geometryString));
 			$pointArray = explode(" ", $geometryString);
 			for ($i=0; $i < count($pointArray); $i++) {
 				#

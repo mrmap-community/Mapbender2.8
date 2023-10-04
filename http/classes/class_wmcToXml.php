@@ -489,6 +489,8 @@ class WmcToXml {
 		$layerExtensionData["layer_epsg"] = $currentLayer->layer_epsg;
 		$layerExtensionData["gui_wms_opacity"] = $currentWms->gui_wms_opacity;
 		$layerExtensionData["layer_featuretype_coupling"] = $currentLayer->layer_featuretype_coupling;
+		//$layerExtensionData["layer_identifier"] = json_encode($currentLayer->layer_identifier);
+		$layerExtensionData["layer_identifier"] = $currentLayer->layer_identifier;
 
 		for ($i = 0; $i < count($currentWms->gui_epsg); $i++) {
 			$found = false;
@@ -540,7 +542,9 @@ class WmcToXml {
 			$e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key);
 			foreach ($value as $childKey => $childValue) {
 				$newNode = $this->addExtension($childKey, $childValue);
-				$e_currentExtensionTag->appendChild($newNode);
+				if (!is_null($newNode)) {
+				    $e_currentExtensionTag->appendChild($newNode);
+				}
 			}
 		}
 		else {
