@@ -1545,9 +1545,16 @@ if ($resource == 'wms' or $resource == 'layer'){
 	//if service is secured and http_auth is adjusted show secured url
 	if ($resourceSecured) {
 		$securedLink = HTTP_AUTH_PROXY."/".$layerId."?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
-		$html .= $t_a.$translation['securedCapabilities'].$t_b."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs'  href = '".$securedLink."' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"".$securedLink."\",\"".$translation['securedCapabilities']."\");'>".$translation['showLink']."</a>".$t_c;
+		$securedLinkWithChilds = HTTP_AUTH_PROXY."/".$layerId."?REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS&withChilds=1";
+		$html .= $t_a;
+		$html .= $translation['securedCapabilities'];
+		$html .= $t_b;
+		$html .= "<table class='lesscsstable'>";
+		$html .= $t_a1.$translation['mapbenderCapabilitiesSingleLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a onclick='' class='linkjs' href = '" . $securedLink . "' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"". $securedLink . "\",\"".$translation['mapbenderCapabilitiesSingleLayer']."\");'>" . $translation['showLink'] . "</a>" . $t_c;
+		$html .= $t_a1.$translation['mapbenderCapabilitiesWithSubLayer'].$t_b1."<img class='normalizeicon' src='../img/gnome/edit-select-all.png'><a class='linkjs' href = '" . $securedLinkWithChilds . "' target=_blank>".$translation['showDocument']."</a><br /><img class='normalizeicon' src='../img/osgeo_graphics/geosilk/link.png'><a class='linkjs' onclick='showCapabilitiesUrl(\"". $securedLinkWithChilds ."\",\"".$translation['mapbenderCapabilitiesWithSubLayer']."\");'>".$translation['showLink']."</a>".$t_c;
+		$html .= "</table>";
+		$html .= $t_c;
 	}
-
 	//kml
 	$html .= $t_a.$translation['kml'].$t_b."<a href='../php/mod_interfaceWms4Kml.php?id=".$layerId."'><img style='border: none;width:34px;height:34px' src='../img/misc/kml_icon.gif' title='".$translation['kml']."' alt='' /></a>".$t_c;
 }

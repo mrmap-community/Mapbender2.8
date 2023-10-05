@@ -109,7 +109,7 @@ class wms {
     		}
     		if (is_file(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.json")) {
     			//require_once(dirname(__FILE__) . "/../../conf/excludeHarvestMetadataUrls.conf");
-    			$configObject = json_decode(file_get_contents("../../conf/excludeHarvestMetadataUrls.json"));
+    			$configObject = json_decode(file_get_contents(__DIR__ . "/../../conf/excludeHarvestMetadataUrls.json"));
     			$this->urlsToExclude = $configObject->urls;
     		}
 	} 
@@ -1010,15 +1010,17 @@ class wms {
 				if(mb_strtoupper($element['tag']) == "NAME"){
 					$this->objLayer[$cnt_layer]->layer_name = $element['value'];
 				}
+				$cnt_identifier = 0;
 				if(mb_strtoupper($element['tag']) == "IDENTIFIER"){
+					$this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->identifier = $element['value'];
 					if ($datasetId != false) {
 					    if ($datasetId == $element['value']) {
-						$e = new mb_exception("classes/class_wms.php: found a layer with searched identifier in wms - its name is: ".$this->objLayer[$cnt_layer]->layer_name);
-						//only set the identifier if a requested datasetId was found
-						$this->objLayer[$cnt_layer]->layer_identifier = $element['value'];
+					        $e = new mb_exception("classes/class_wms.php: found a layer with searched identifier in wms - its name is: ".$this->objLayer[$cnt_layer]->layer_name);
+					        //only set the identifier if a requested datasetId was found
+					        $this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->visible = true;
 					    }
 					}
-					//$this->objLayer[$cnt_layer]->layer_identifier = $element['value'];
+					$cnt_identifier++;
 				}
 				if(mb_strtoupper($element['tag']) == "TITLE"){
 					$this->objLayer[$cnt_layer]->layer_title = $this->stripEndlineAndCarriageReturn($element['value']);
@@ -1538,7 +1540,10 @@ class wms {
 			echo $this->createJsObjFromWMS_($parent);
 		}
 		
-
+    /*
+     * function for creating layer from layer object, that has extensions - seems to be, that this 
+     * will be used to initialize layer from wmc documents! See class wmc -> setLayerData
+     */
 	function newLayer ($currentLayer, $currentExtent) {
 		$pos = $currentLayer["extension"]["LAYER_POS"];
 		$parent = $currentLayer["extension"]["LAYER_PARENT"];
@@ -1662,9 +1667,9 @@ class wms {
 			}
 		}
 
-		//
-		// set layer style
-		//
+		/*
+		 * set layer style
+		 */
 		for ($i = 0; $i < count($currentLayer["style"]); $i++) {
 			$newLayer->layer_style[$i] = array();
 			$newLayer->layer_style[$i]["name"] = $currentLayer["style"][$i]["name"];
@@ -1672,6 +1677,15 @@ class wms {
 			$newLayer->layer_style[$i]["legendurl"] = $currentLayer["style"][$i]["legendurl"];
 			$newLayer->layer_style[$i]["legendurl_format"] = $currentLayer["style"][$i]["legendurl_type"];
 		}
+		/*
+		 * set layer_identifier - TODO - do it like for LAYER_EPSG!
+		 * dont load from wmc - will still have errors!
+		 */
+		/*for ($i = 0; $i < count($currentLayer["extension"]["LAYER_IDENTIFIER"]); $i++) {
+		    $newLayer->layer_identifier[$i] = array();
+		    $newLayer->layer_identifier[$i]["identifier"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"];
+		    $newLayer->layer_identifier[$i]["visible"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["visible"];
+		}*/
 		//2016-08-31 add dimension - user value come from wmc standard and client mapobject
 		$dimensionAttributes = array('name', 'units', 'unitSymbol', 'default', 'multipleValues', 'nearestValue', 'current', 'extent','userValue');
 		for ($i = 0; $i < count($currentLayer['dimension']); $i++) {
@@ -1798,6 +1812,7 @@ class wms {
 				$str .= "wms_addSRS('". 
 				$this->wms_srs[$j] ."', null, null, null, null);\n";
 			}
+			//layer styles
 			for($j=0; $j<count($this->objLayer[$i]->layer_style);$j++){
 				if($parent){
 					$str .= "parent.";
@@ -1808,6 +1823,17 @@ class wms {
 					",".$i.
 					",'".$this->objLayer[$i]->layer_style[$j]["legendurl"].
 					"', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');";
+			}
+			//layer identifiers
+			for($j=0; $j<count($this->objLayer[$i]->layer_identifier);$j++){
+			    if($parent){
+			        $str .= "parent.";
+			    }
+			    $str .= "wms_addLayerIdentifier('" . $this->objLayer[$i]->layer_identifier[$j]->identifier .
+			    "', '" . $this->objLayer[$i]->layer_identifier[$j]->visible .
+			    "', " . $j .
+			    "," . $i . 
+			    ");";
 			}
 			//2016 - new for dimension (time and elevation)
 			//$e = new mb_exception("class_wms.php: test for dimension in layer object: count of dimension: ".count($this->objLayer[$i]->layer_dimension));
@@ -1861,7 +1887,6 @@ class wms {
 		}
 		for($i=0; $i<count($this->objLayer); $i++){
 			if($this->objLayer[$i]->layer_name == $layer_name || $this->objLayer[$i]->layer_pos == 0){
-			
 				if($parent){
 					echo "parent.";
 				}
@@ -1914,23 +1939,46 @@ class wms {
 					$this->objLayer[$i]->layer_epsg[$j]["maxx"] ."','". 
 					$this->objLayer[$i]->layer_epsg[$j]["maxy"] ."');");
 			}
+			//begin with the default style if it does exist
 			for($j=0; $j<count($this->objLayer[$i]->layer_style);$j++){
 				if($parent){
 				 echo "parent.";
 				}
-				print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
+				if ($this->objLayer[$i]->layer_style[$j]["name"] == 'default') {
+					print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
+				}
+			}
+			//layer styles	
+			for($j=0; $j<count($this->objLayer[$i]->layer_style);$j++){
+				if($parent){
+					echo "parent.";
+				}
+				if ($this->objLayer[$i]->layer_style[$j]["name"] != 'default') {
+					print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
+				}
+			}
+			//layer identifiers
+			for($j=0; $j<count($this->objLayer[$i]->layer_identifier);$j++){
+			    if($parent){
+			        echo "parent.";
+			    }
+			    print("wms_addLayerIdentifier('" . $this->objLayer[$i]->layer_identifier[$j]->identifier .
+			    "', '" . $this->objLayer[$i]->layer_identifier[$j]->visible .
+			    "', " . $j .
+			    "," . $i .
+			    ");");
 			}
 			//2016 - new for dimension (time and elevation)
 			for($j=0; $j<count($this->objLayer[$i]->layer_dimension);$j++){
 				if($parent){
-				 echo "parent.";
+				    echo "parent.";
 				}
 				//'name', 'units', 'unitSymbol', 'default', 'multipleValues', 'nearestValue', 'current', 'extent'
 				print("wms_addLayerDimension('".$this->objLayer[$i]->layer_dimension[$j]->name."', '".$this->objLayer[$i]->layer_dimension[$j]->units."', '".$this->objLayer[$i]->layer_dimension[$j]->unitSymbol."',  '".$this->objLayer[$i]->layer_dimension[$j]->default."',  '".$this->objLayer[$i]->layer_dimension[$j]->multipleValues."',  '".$this->objLayer[$i]->layer_dimension[$j]->nearestValue."',  '".$this->objLayer[$i]->layer_dimension[$j]->current."', '".$this->objLayer[$i]->layer_dimension[$j]->extent."','".$this->objLayer[$i]->layer_dimension[$j]->userValue."');");
 			}
 		   }	
 		}
-	  }
+    }
 	  
 	  
 	/**
@@ -2239,6 +2287,7 @@ SQL;
 			
 		}
 	}
+	
 	function updateLayer($i,$myWMS,$updateMetadataOnly=false){
 		$e = new mb_notice("class_wms.php: updateLayer");
 		$sql = "SELECT layer_id, layer_searchable, inspire_download FROM layer WHERE fkey_wms_id = $1 AND layer_name = $2";
@@ -2254,21 +2303,17 @@ SQL;
 			return;	
 		}	
 		//don't update title, abstract when not explicitly demanded thru $this->overwrite == true
-
 		$sql = "UPDATE layer SET ";
 		$sql .= "layer_pos = $1, ";
 		$sql .= "layer_parent = $2, ";
-		
 		$sql .= "layer_queryable = $3, ";
 		$sql .= "layer_minscale = $4, ";
 		$sql .= "layer_maxscale = $5, ";
 		$sql .= "layer_dataurl = $6, ";
 		$sql .= "layer_metadataurl = $7, ";
 		$sql .= "layer_searchable = $8, ";
-		
 		$sql .= "inspire_download = $10 ";
 		$sql .= "WHERE layer_id = $9";
-
 		if (!$updateMetadataOnly) {
 			//read inspire_download and layer_searchable from database if update from capabilities
 			$this->objLayer[$i]->inspire_download = $row["inspire_download"];
@@ -2292,7 +2337,6 @@ SQL;
 			$this->objLayer[$i]->layer_parent = '';
 		}
 		$v = array($tmpPos,$this->objLayer[$i]->layer_parent,
-				
 				$this->objLayer[$i]->layer_queryable,$this->objLayer[$i]->layer_minscale,
 				$this->objLayer[$i]->layer_maxscale,$this->objLayer[$i]->layer_dataurl[0]->href,
 				$this->objLayer[$i]->layer_metadataurl[0]->href, $this->objLayer[$i]->layer_searchable,
@@ -2310,7 +2354,6 @@ SQL;
 			$sql .= "layer_title = $1, ";
 			$sql .= "layer_abstract = $2 ";
 			$sql .= "WHERE layer_id = $3";
-			
 			$v = array($this->objLayer[$i]->layer_title,$this->objLayer[$i]->layer_abstract, $l_id);
 			$t = array('s','s','i');
 			$res = db_prep_query($sql,$v,$t);
@@ -2341,6 +2384,7 @@ SQL;
 			}
 		}
 	}
+	
 	function insertGuiLayer($i,$myWMS,$gui_id){
 		//table gui_layer
 		$sql = "INSERT INTO gui_layer (fkey_gui_id, fkey_layer_id, gui_layer_wms_id, ";
@@ -2362,9 +2406,9 @@ SQL;
 			db_rollback();	
 		}	
 	}
+	
 	function appendGuiLayer($i,$myWMS,$gui_id){
 		# table gui_layer
-		
 		$sql = "INSERT INTO gui_layer (fkey_gui_id, fkey_layer_id, gui_layer_wms_id, ";
 		$sql .= "gui_layer_status, gui_layer_selectable, gui_layer_visible, gui_layer_queryable, ";
 		$sql .= "gui_layer_querylayer,gui_layer_minscale,gui_layer_maxscale, gui_layer_priority, gui_layer_style, gui_layer_title) ";
@@ -2383,6 +2427,7 @@ SQL;
 			db_rollback();	
 		}	
 	}
+	
 	function insertSRS($myWMS){
 		for($i=0; $i<count($this->wms_srs);$i++){
 			$sql ="INSERT INTO wms_srs (fkey_wms_id, wms_srs) values($1,$2)";		
@@ -2394,6 +2439,7 @@ SQL;
 			}
 		}	
 	}
+	
 	function insertTermsOfUse ($myWMS) {
 		if (!is_numeric($this->wms_termsofuse)) {
 			return;
@@ -2408,6 +2454,7 @@ SQL;
 		}
 		
 	}
+	
 	function insertFormat($myWMS){
 		for($i=0; $i<count($this->data_type);$i++){
 			$sql ="INSERT INTO wms_format (fkey_wms_id, data_type, data_format) ";
@@ -2420,6 +2467,7 @@ SQL;
 			}
 		}	
 	}
+	
 	function isSupportedSRS($epsg,$layerId) {
 		//request the original capabilities from service
         	$sql = "SELECT layer.layer_name AS layer_name, wms.wms_getcapabilities_doc AS cap from layer,wms WHERE layer.layer_id=".$layerId." AND layer.fkey_wms_id=wms.wms_id";
@@ -2470,15 +2518,15 @@ SQL;
 		$n = new mb_notice("Requested SRS: ".$epsg." is not supported by layer: ".$layerName." with layerId: ".$layerId);
 		return false;
 	}
+	
 	//get all supported srs as an intersection of the supported srs of the root layer and the SRS_ARRAY defined in mapbender.conf  
 	function getSupportedSRS($layerId, $confSrsArray) {
 		//request the original capabilities from service
-        	$sql = "SELECT layer.layer_name AS layer_name, wms.wms_getcapabilities_doc AS cap, wms.wms_id as wms_id FROM layer, wms ".
+        $sql = "SELECT layer.layer_name AS layer_name, wms.wms_getcapabilities_doc AS cap, wms.wms_id as wms_id FROM layer, wms ".
         		"WHERE layer.fkey_wms_id IN (SELECT layer.fkey_wms_id FROM layer WHERE layer.layer_id = " . $layerId . ") ".
         		"AND layer.layer_parent = '' AND layer.fkey_wms_id=wms.wms_id";
-        	$res = db_query($sql);
-        	$row = db_fetch_array($res);
-        
+        $res = db_query($sql);
+        $row = db_fetch_array($res);
 		//parse capabilities to php object - check if it is still loaded to db
 		if ($row['cap'] == '') {
 			$wmsCapXml=simplexml_load_string($this->wms_getcapabilities_doc);	
@@ -2486,13 +2534,12 @@ SQL;
 		else {
 			$wmsCapXml=simplexml_load_string($row['cap']);
 		}
-		
 		if(!isset($wmsCapXml)) {
 			$n = new mb_exception("Problem while parsing capabilities document with simplexml");
 			echo "Problem while parsing capabilities document with simplexml<br>";
 			return false;
-       		}
-       		$wmsId = $row['wms_id'];	
+       	}
+       	$wmsId = $row['wms_id'];	
 		//$n = new mb_exception("wms_id: ".$wmsId);
 		//return false;
 		//$this->xpath('parent::*')- problematic, cause some services have duplicated layer names!
@@ -2505,76 +2552,60 @@ SQL;
 		$layerParentArray = array();
 		$sql = "SELECT layer_title, layer_parent, layer_name FROM layer ".
         			"WHERE layer.layer_id = $layerId";
-        	$res = db_query($sql);
-        	$row = db_fetch_array($res);
+        $res = db_query($sql);
+        $row = db_fetch_array($res);
 		//initialize with layer itself
 		$layerParentArray[0]['id'] = $layerId;
 		$layerParentArray[0]['name'] = $row['layer_name'];
 		$layerParentArray[0]['title'] = $row['layer_title'];
-
 		$layerParent = $row['layer_parent'];
 		//$e = new mb_exception("Type of parent: ". gettype($row['layer_parent']));
-
 		if ($layerParent != '') {
 			$e = new mb_notice("parent found at pos: ".$layerParent);
 			$countParent = 1;
 			while ($layerHasParent) {
 				$sql = "SELECT layer_title, layer_id, layer_parent, layer_name FROM layer ".
         				"WHERE fkey_wms_id = $wmsId AND layer.layer_pos = $layerParent";
-        			$res = db_query($sql);
-        			$row = db_fetch_array($res);
-
+        		$res = db_query($sql);
+        		$row = db_fetch_array($res);
 				$layerParentArray[$countParent]['id'] = $row['layer_id'];
 				$layerParentArray[$countParent]['name'] = $row['layer_name'];
 				$layerParentArray[$countParent]['title'] = $row['layer_title'];
-
 				$layerParent = $row['layer_parent'];
-
 				$countParent++;
 				if ($layerParent == '') {
 					$layerHasParent = false;
 				}
-				
 			}
 		} else {
 			$e = new mb_notice("class_wms.php: no further parents available!");
 		}
-
 		$supportedSrsArray = array();
-
 		for($j=0; $j<count($layerParentArray);$j++){
 			$layerName=$layerParentArray[$j]['name'];
 			//defining the xpath for getting all Layer-tags
 			$xpathLayerName="//Layer[./Name =\"".$layerName."\"]";
-		
 			$layerObject=$wmsCapXml->xpath($xpathLayerName);
-		
 			//for none named layer (only title is set)
-               	 	if (empty($layerObject)){
-                   	    	$xpathLayerName="//Layer[./Title =\"".$layerName."\"]";
-                  		$layerObject=$wmsCapXml->xpath($xpathLayerName);
-               		}
-
+            if (empty($layerObject)){
+                $xpathLayerName="//Layer[./Title =\"".$layerName."\"]";
+                $layerObject=$wmsCapXml->xpath($xpathLayerName);
+            }
 			if(!isset($layerObject[0])) {
 				$n = new mb_notice("Layer has no name and title, BBOX will not be generated for ".$epsg);
 				return false;
 			}
-		
-			
-			
 			//search for the SRS tag of specified layer		
 			$srsElementArray=$layerObject[0]->xpath("SRS");
-			
 			foreach($srsElementArray as $srsElement) {
 				//create an array of the given srsElements -> include also srs written as a space separated list  
 				$srsArray = explode(" ",$srsElement);
 				foreach($srsArray as $srs) {
 					if(in_array(strtoupper($srs),$confSrsArray)) {
 						array_push($supportedSrsArray, strtoupper($srs));
-						
-//						//$n = new mb_notice("Requested SRS: ".$srs." is supported by layer: ".$layerName." with layer_id: ".${$layerParentArray}[$j]['layer_id']);
-                                                //for compatibility reasons (PHP 5 -> 7) changed to
-                                                $n = new mb_notice("Requested SRS: ".$srs." is supported by layer: ".$layerName." with layer_id: ".${$layerParentArray[$j]['layer_id']});
+						//$n = new mb_notice("Requested SRS: ".$srs." is supported by layer: ".$layerName." with layer_id: ".${$layerParentArray}[$j]['layer_id']);
+                        //for compatibility reasons (PHP 5 -> 7) changed to
+                        $n = new mb_notice("Requested SRS: ".$srs." is supported by layer: ".$layerName." with layer_id: ".${$layerParentArray[$j]['layer_id']});
 					}	
 				}
 			}
@@ -2588,6 +2619,7 @@ SQL;
 		}
 		return $supportedSrsArray;
 	}
+	
 	function insertLayerDimension($i) {
 		//first get array of all parent layers with their dimensions
 		//delete old dimension entries
@@ -2641,8 +2673,7 @@ SQL;
 			//push this srs into the currentSrsArray!
 			//array_push($currentSrsArray,$this->objLayer[$i]->layer_epsg[$j]['epsg']);
 		}
-		
-//		GET SRS_ARRAY of mapbender.conf
+        //GET SRS_ARRAY of mapbender.conf
 		if(SRS_ARRAY != "") {
 			$confSrsArray = explode(",",SRS_ARRAY);
 			foreach($confSrsArray as &$srs) {
@@ -2678,16 +2709,14 @@ SQL;
 			}
 			$cnt++;
 		}
-
 		//get all srs which are supported by the parent layer and in array SRS_ARRAY from mapbender.conf
 		//TODO: not only for the root layer but read also all srs from all parent layers!!!
 		$supportedSrs = $this->getSupportedSRS($this->objLayer[$i]->db_id, $confSrsArray);
 		$supportedSrs = array_unique($supportedSrs);
-    		foreach ($supportedSrs as $srs) {
-        		$supportedSrsNew[] = $srs;
-    		}
+    	foreach ($supportedSrs as $srs) {
+        	$supportedSrsNew[] = $srs;
+    	}
 		$supportedSrs = $supportedSrsNew;
-		
 		for($k=0; $k < count($supportedSrs);$k++) {
 			$e = new mb_notice("SRS ".$supportedSrs[$k]." for the layer: ".$this->objLayer[$i]->db_id);
 			//compute this only, if the srs was not already in the current layer - see array epsg!
@@ -2706,13 +2735,13 @@ SQL;
 					$t_bbox = array('i','s','d','d','d','d');
 					$res_bbox = db_prep_query($sql_bbox,$v_bbox,$t_bbox);
 					$n = new mb_notice("Calculation for: ".$supportedSrs[$k]." finished successful.");
-				}
-				else {
+				} else {
 					$e = new mb_exception("Could not transform ".strtoupper($epsg[0])." to ".$supportedSrs[$k].".");
 				}
 			}
 		}
 	}
+	
 	function insertLayerStyle($i){
 		$sql = "DELETE FROM layer_style WHERE fkey_layer_id = $1";
 		$v = array($this->objLayer[$i]->db_id);
@@ -2734,7 +2763,6 @@ SQL;
 	}
 	
 	function insertLayerCategories($i){
-		
 		global $con;
 		$types = array("md_topic", "inspire", "custom");
 		foreach ($types as $cat) {
@@ -2768,20 +2796,15 @@ SQL;
 		$v = array($this->objLayer[$i]->db_id);
 		$t = array('i');
 		$res = db_prep_query($sql,$v,$t);
-		
-//		var_dump($this);
 		$k = $this->objLayer[$i]->layer_keyword;
-//		var_dump($k);
 		for($j=0; $j<count($k); $j++){
-			$keyword_id = "";
-			
+			$keyword_id = "";	
 			while ($keyword_id == "") {
 				$sql = "SELECT keyword_id FROM keyword WHERE UPPER(keyword) = UPPER($1)";
 				$v = array($k[$j]);
 				$t = array('s');
 				$res = db_prep_query($sql,$v,$t);
 				$row = db_fetch_array($res);
-			//print_r($row);
 				if ($row) {
 					$keyword_id = $row["keyword_id"];	
 				}
@@ -2796,14 +2819,12 @@ SQL;
 					}
 				}
 			}
-
 			// check if layer/keyword combination already exists
 			$sql_layerKeywordExists = "SELECT * FROM layer_keyword WHERE fkey_layer_id = $1 AND fkey_keyword_id = $2";
 			$v = array($this->objLayer[$i]->db_id, $keyword_id);
 			$t = array('i', 'i');
 			$res_layerKeywordExists = db_prep_query($sql_layerKeywordExists, $v, $t);
 			$row = db_fetch_array($res_layerKeywordExists);
-			//print_r($row);
 			if (!$row) {
 				$sql1 = "INSERT INTO layer_keyword (fkey_keyword_id,fkey_layer_id)";
 				$sql1 .= "VALUES ($1,$2)";
@@ -3390,13 +3411,11 @@ SQL;
 			$e = new mb_exception("Not found: ".$this->objLayer[$i]->layer_name. " in gui: ".$gui_id);
 			return;	
 		}
-		
 		$sql = "SELECT * FROM gui_layer WHERE fkey_layer_id = $1 and fkey_gui_id = $2";
 		$v = array($l_id,$gui_id);
 		$t = array('i','s');
 		$res = db_prep_query($sql,$v,$t);		
 		while($row = db_fetch_array($res)){
-
 				$sql1 = "UPDATE gui_layer SET gui_layer_title = $1 ";
 				$sql1 .= "WHERE fkey_layer_id = $2 and fkey_gui_id = $3";
 				$v = array($this->objLayer[$i]->layer_title, $l_id,$gui_id);
@@ -3405,49 +3424,49 @@ SQL;
 				if(!$res1){
 					db_rollback();
 				}
-
-			if($this->objLayer[$i]->layer_queryable == 0){
-				$sql1 = "UPDATE gui_layer set gui_layer_queryable = 0, gui_layer_querylayer = 0 ";
-				$sql1 .= "WHERE fkey_layer_id = $1 and fkey_gui_id = $2";
-				$v = array($l_id,$gui_id);
-				$t = array('i','s');
-				$res1 = db_prep_query($sql1,$v,$t);
-				if(!$res1){
-					
-				db_rollback();
-				}
-			}
-			if($this->objLayer[$i]->layer_queryable == 1){
-				$sql1 = "UPDATE gui_layer set gui_layer_queryable = 1 ";
-				$sql1 .= "WHERE fkey_layer_id = $1 and fkey_gui_id = $2";
-				$v = array($l_id,$gui_id);
-				$t = array('i','s');
-				$res1 = db_prep_query($sql1,$v,$t);
-				if(!$res1){
-					
-					db_rollback();
-				}
-			}
-			if($row["gui_layer_minscale"] < $this->objLayer[$i]->layer_minscale){
-				$sql1 = "UPDATE gui_layer set gui_layer_minscale = $1 ";
-				$sql1 .= "WHERE fkey_layer_id = $2 and fkey_gui_id = $3";
-				$v = array($this->objLayer[$i]->layer_minscale,$l_id,$gui_id);
-				$t = array('i','i','s');
-				$res1 = db_prep_query($sql1,$v,$t);
-				if(!$res1){db_rollback();
-				}
-			}
-			if(($row["gui_layer_maxscale"] > $this->objLayer[$i]->layer_maxscale) && ((integer)$this->objLayer[$i]->layer_maxscale <> 0)){
-				$sql1 = "UPDATE gui_layer set gui_layer_maxscale = $1 ";
-				$sql1 .= "WHERE fkey_layer_id = $2 and fkey_gui_id = $3";
-				$v = array($this->objLayer[$i]->layer_maxscale,$l_id,$gui_id);
-				$t = array('i','i','s');
-				$res1 = db_prep_query($sql1,$v,$t);
-				if(!$res1){db_rollback();
-				}
-			}		
-		}
+    			if($this->objLayer[$i]->layer_queryable == 0){
+    				$sql1 = "UPDATE gui_layer set gui_layer_queryable = 0, gui_layer_querylayer = 0 ";
+    				$sql1 .= "WHERE fkey_layer_id = $1 and fkey_gui_id = $2";
+    				$v = array($l_id,$gui_id);
+    				$t = array('i','s');
+    				$res1 = db_prep_query($sql1,$v,$t);
+    				if(!$res1){	
+    				    db_rollback();
+    				}
+    			}
+    			if($this->objLayer[$i]->layer_queryable == 1){
+    				$sql1 = "UPDATE gui_layer set gui_layer_queryable = 1 ";
+    				$sql1 .= "WHERE fkey_layer_id = $1 and fkey_gui_id = $2";
+    				$v = array($l_id,$gui_id);
+    				$t = array('i','s');
+    				$res1 = db_prep_query($sql1,$v,$t);
+    				if(!$res1){
+    					db_rollback();
+    				}
+    			}
+    			if($row["gui_layer_minscale"] < $this->objLayer[$i]->layer_minscale){
+    				$sql1 = "UPDATE gui_layer set gui_layer_minscale = $1 ";
+    				$sql1 .= "WHERE fkey_layer_id = $2 and fkey_gui_id = $3";
+    				$v = array($this->objLayer[$i]->layer_minscale,$l_id,$gui_id);
+    				$t = array('i','i','s');
+    				$res1 = db_prep_query($sql1,$v,$t);
+    				if(!$res1){
+    				    db_rollback();
+    				}
+    			}
+    			if(($row["gui_layer_maxscale"] > $this->objLayer[$i]->layer_maxscale) && ((integer)$this->objLayer[$i]->layer_maxscale <> 0)){
+    				$sql1 = "UPDATE gui_layer set gui_layer_maxscale = $1 ";
+    				$sql1 .= "WHERE fkey_layer_id = $2 and fkey_gui_id = $3";
+    				$v = array($this->objLayer[$i]->layer_maxscale,$l_id,$gui_id);
+    				$t = array('i','i','s');
+    				$res1 = db_prep_query($sql1,$v,$t);
+    				if(!$res1){
+    				    db_rollback();
+    				}
+    			}		
+		  }
 	}
+	
 	function update_gui_wms($myWMS){
 		$mySubmit = null;
 		$sql = "SELECT * FROM gui_wms where fkey_wms_id = $1";
@@ -3834,10 +3853,10 @@ SQL;
 			}
 			$count++;
 		}
-	   }
+	}
 	/** end createObjfromDB **/
 	
-	  /**
+	/**
 	* creatObjfromDBNoGui
 	*
 	*/ 
@@ -3945,7 +3964,6 @@ SQL;
 			$this->data_format[$count_format] = $row3["data_format"];
 			$count_format++;
 		}
-
 		if (defined("SHOW_COUPLED_FEATURETYPES_IN_TREE") && SHOW_COUPLED_FEATURETYPES_IN_TREE == true) {
 			$sql = "SELECT *, f_get_download_options_for_layer(layer_id) as downloadoptions, f_get_layer_featuretype_coupling(array[ layer_id ], TRUE) as featuretypecoupling FROM layer WHERE fkey_wms_id = $1 ORDER BY layer_pos";
 //$e = new mb_exception("show coupling!");
@@ -4039,7 +4057,7 @@ SQL;
 					$featuretypeMetadataUrl = "../php/mod_showLayerToFeaturetypeCoupling.php?outputFormat=html&struct=";
 				}*/
 				$this->objLayer[$layer_cnt]->layer_featuretype_coupling = $this->normalizeLayerFeaturetypeCoupling($row2["featuretypecoupling"]);
-//$e = new mb_exception("coupling json: - no GUI ".$this->normalizeLayerFeaturetypeCoupling($row2["featuretypecoupling"]));					
+                //$e = new mb_exception("coupling json: - no GUI ".$this->normalizeLayerFeaturetypeCoupling($row2["featuretypecoupling"]));					
 			} else {
 				$this->objLayer[$layer_cnt]->layer_featuretype_coupling = null;
 			}
@@ -4139,7 +4157,8 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 				$count_layer_custom_category++;
 			}
 			### handle styles
-			$sql = "SELECT * FROM layer_style WHERE fkey_layer_id = $1 ";
+			//first add default layer
+			$sql = "SELECT * FROM layer_style WHERE fkey_layer_id = $1 AND name IN ('default', 'DEFAULT')";
 			$v = array($this->objLayer[$layer_cnt]->layer_uid);
 			$t = array('i');
 			$res_style = db_prep_query($sql,$v,$t);
@@ -4163,13 +4182,38 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurlformat"]=$row2["legendurlformat"];
 				$count_layer_style++;
 			}
+			//second add other layers
+			$sql = "SELECT * FROM layer_style WHERE fkey_layer_id = $1 and name NOT IN ('default', 'DEFAULT')";
+			$v = array($this->objLayer[$layer_cnt]->layer_uid);
+			$t = array('i');
+			$res_style = db_prep_query($sql,$v,$t);
+			//$count_layer_style = 0;
+			while($row2 = db_fetch_array($res_style)){
+				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["name"]=$row2["name"];
+				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["title"]=$row2["title"];
+				if($wmsowsproxy != ""){
+					if($row2["legendurl"]!=''){
+						$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]=$owsproxyurl.
+						"REQUEST=getlegendgraphic&VERSION=".$this->wms_version."&LAYER=".$this->objLayer[$layer_cnt]->layer_name."&FORMAT=".$row2["legendurlformat"].
+						"&STYLE=".$row2["name"];
+					}
+				}
+				else{
+					if($row2["legendurl"]!=''){
+						$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]=$row2["legendurl"];
+						#$e = new mb_notice("legendurl = ".$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurl"]);
+					}
+				}
+				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurlformat"]=$row2["legendurlformat"];
+				$count_layer_style++;
+			}
 						
 			$count_layer++;
 		}
    }
-	/** end createObjfromDBNoGui **/
+   /** end createObjfromDBNoGui **/
 	
-	  /**
+	/**
 	* function checkObjExistsInDB()
 	*
 	* this function checks wether the onlineresource already exists in the database.
@@ -4268,7 +4312,6 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 			$e = new mb_warning("class_wms.php: selectMyWmsByApplication(): User '" . $currentUser . "' is not allowed to acces application '" . $appId . "'.");
 			return array();
 		}
-		
 		// get WMS of this application
 		$sql = "SELECT fkey_wms_id FROM gui_wms WHERE " . 
 				"fkey_gui_id = $1 ORDER BY gui_wms_position";
@@ -4286,6 +4329,7 @@ WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
 		return $wmsArray;
 	}
 }
+
 class layer extends wms {	
 	var $layer_id;
 	var $layer_parent;
@@ -4297,20 +4341,20 @@ class layer extends wms {
 	var $layer_minscale;
 	var $layer_maxscale;
 	var $layer_dataurl = array();
-    	//var $layer_dataurl_href;
-    	var $layer_metadataurl = array();
+    //var $layer_dataurl_href;
+    var $layer_metadataurl = array();
 	var $layer_searchable;
 	var $inspire_download;
-    	var $layer_keyword = array();
+    var $layer_keyword = array();
 	var $layer_keyword_vocabulary = array();
 	var $layer_epsg = array();
 	var $layer_style = array();
+	var $layer_identifier = array();
 	var $layer_dimension = array();
 	var $layer_md_topic_category_id = array();
 	var $layer_inspire_category_id = array();
 	var $layer_custom_category_id = array();
-        //var $layer_featuretype_coupling;
-	
+    //var $layer_featuretype_coupling;
 	var $gui_layer_wms_id;
 	var $gui_layer_status = 1;
 	var $gui_layer_selectable = 1;

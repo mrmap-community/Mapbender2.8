@@ -482,12 +482,15 @@ class Map {
 					// set all layers of WMS to visible
 					for ($i = 0; $i < count($wmsArray); $i++) {
 						$numLayers = count($wmsArray[$i]->objLayer);
-
 						for ($j = 0; $j < $numLayers; $j++) {
 							$wmsArray[$i]->objLayer[$j]->gui_layer_visible = 0;
 							//layer which has defined a identifier (this came from the search) should be visible
 							if (isset($wmsArray[$i]->objLayer[$j]->layer_identifier)) {
-								$wmsArray[$i]->objLayer[$j]->gui_layer_visible = 1;
+							    foreach($wmsArray[$i]->objLayer[$j]->layer_identifier as $identifier) {
+							        if ($identifier->visible == true) {
+							            $wmsArray[$i]->objLayer[$j]->gui_layer_visible = 1;
+							        }
+							    }
 							}
 						}
 					}
@@ -661,7 +664,7 @@ class Map {
 				$newLayer->gui_layer_maxscale = $currentLayer->gui_layer_maxscale;
 				$newLayer->gui_layer_wfs_featuretype = $currentLayer->gui_layer_wfs_featuretype;
 				$newLayer->gui_layer_title = $currentLayer->gui_layer_title;
-$newLayer->layer_featuretype_coupling = $currentLayer->layer_featuretype_coupling; //TODO - test it!
+                $newLayer->layer_featuretype_coupling = $currentLayer->layer_featuretype_coupling; //TODO - test it!
 
 				// BEWARE THIS IS SUPER UGLY CODE
 				$newLayer->layer_epsg = array();
@@ -681,6 +684,13 @@ $newLayer->layer_featuretype_coupling = $currentLayer->layer_featuretype_couplin
 					$newLayer->layer_style[$z]["title"] = $currentLayer->layer_style[$z]->title ? $currentLayer->layer_style[$z]->title : "default";
 					$newLayer->layer_style[$z]["legendurl"] = $currentLayer->layer_style[$z]->legendurl;
 					$newLayer->layer_style[$z]["legendurlformat"] = $currentLayer->layer_style[$z]->legendurlformat;
+				}
+				// BEWARE THIS IS SUPER UGLY CODE TOO
+				$newLayer->layer_identifier = array();
+				for ($z = 0; $z < count($currentLayer->layer_identifier); $z++) {
+				    $newLayer->layer_identifier[$z] = array();
+				    $newLayer->layer_identifier[$z]["identifier"] = $currentLayer->layer_identifier[$z]->identifier ? $currentLayer->layer_identifier[$z]->identifier : "no identifier available!";
+				    $newLayer->layer_identifier[$z]["visible"] = $currentLayer->layer_identifier[$z]->visible ? $currentLayer->layer_identifier[$z]->visible : "false";
 				}
 				//
 				$newLayer->layer_dimension = array();

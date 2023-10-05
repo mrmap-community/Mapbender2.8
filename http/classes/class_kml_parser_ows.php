@@ -162,9 +162,9 @@ require_once(dirname(__FILE__)."/../classes/class_kml_placemark.php");
 		$doc->preserveWhiteSpace = false;
 		$doc->loadXML($kml);
 		$xpath = new DOMXPath($doc);
-		$xpath->registerNamespace("kml","http://earth.google.com/kml/2.2");
-		$xpath->registerNamespace("http://www.opengis.net/kml/2.2");
-
+		//$xpath->registerNamespace("kml","http://earth.google.com/kml/2.2");
+		//$xpath->registerNamespace("http://www.opengis.net/kml/2.2");
+		$xpath->registerNamespace("kml","http://www.opengis.net/kml/2.2");
 		$styles =array();
 		$styleNodes = $xpath->query("/kml:kml/kml:Document/kml:Style");
 
