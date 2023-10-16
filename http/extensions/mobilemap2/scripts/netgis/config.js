@@ -63,8 +63,8 @@ netgis.config =
 	
 	URL_SEARCH_PROXY:		"",
 	URL_SEARCH_REQUEST:		"../../geoportal/gaz_geom_mobile.php",
-	URL_BACKGROUND_HYBRID:		"https://basisdienste.geoportal.hessen.de/mapcache/tms/1.0.0/luftbild@UTM32",
-	URL_BACKGROUND_AERIAL:	        "https://inspire-hessen.de/raster/wms/dop20/ows",
+	URL_BACKGROUND_HYBRID:		"https://prototyp.geoportal.hessen.de/mapcache/tms/1.0.0/hybrid@UTM32",
+	URL_BACKGROUND_AERIAL:	        "https://www.gds-srv.hessen.de/cgi-bin/lika-services/ogc-free-images.ows?language=ger",
 
 	URL_FEATURE_INFO_PROXY:		"",
 	

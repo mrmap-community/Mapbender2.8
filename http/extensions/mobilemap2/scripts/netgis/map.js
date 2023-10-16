@@ -163,7 +163,7 @@ netgis.map =
 					url: netgis.config.URL_BACKGROUND_AERIAL + "?",
 					params:
 					{
-						"LAYERS":		"OI.OrthoimageCoverage",
+						"LAYERS":		"he_dop20_rgb",
 						"FORMAT":		"image/jpeg",
 						"TRANSPARENT":	"false",
 						"VERSION":		"1.1.1"
@@ -918,7 +918,7 @@ netgis.map =
 				[
 					new netgis.component.Parent( backGroup ),
 					new netgis.component.Layer( -1 ),
-					new netgis.component.Title( "Hybrid" ),
+					new netgis.component.Title( "Karte-HE" ),
 					new netgis.component.MapLayer( backLayerHybrid ),
 					new netgis.component.Active()
 				]
@@ -930,7 +930,8 @@ netgis.map =
 					new netgis.component.Parent( backGroup ),
 					new netgis.component.Layer( -1 ),
 					new netgis.component.Title( "Luftbild" ),
-					new netgis.component.MapLayer( backLayerAerial )
+					new netgis.component.MapLayer( backLayerAerial ),
+                                        new netgis.component.Active()
 				]
 			);
 	
