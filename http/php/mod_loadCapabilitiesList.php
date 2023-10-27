@@ -62,19 +62,20 @@ include '../include/dyn_css.php';
 .select1{
    position:absolute;
    top:210px;
-   width:270px;
+   width:400px;
 }
 .text2{
    font-family: Arial, Helvetica, sans-serif;
    font-size : 15px;
    position:absolute;
    top:190px;
-   left:300px;
+   left:410px;
 }
 .select2{
    position:absolute;
    top:210px;
-   left:300px;
+   left:410px;
+   width:200px;
 }
 .getcapabilities{
    font-family: Arial, Helvetica, sans-serif;
@@ -212,7 +213,7 @@ if (count($ownguis)>0){
 	$sql .= ") ORDER BY gui_name";	
 	$res = db_prep_query($sql, $v, $t);
 	$count=0;
-	echo"<select size='8' name='guiList' style='width:200px' onClick='submit()'>";
+	echo"<select size='8' name='guiList' style='width:300px' onClick='submit()'>";
 	while($row = db_fetch_array($res)){
 		$gui_name[$count]=$row["gui_name"];
 		$gui_description[$count]=$row["gui_description"];
@@ -240,7 +241,7 @@ if (count($ownguis)>0){
 		$t = array('s');
 		$res = db_prep_query($sql,$v,$t);	
 		$count=0;
-		echo"<select size='8' name='wmsList' style='width:200px'>";
+		echo"<select size='8' name='wmsList' style='width:300px'>";
 	
 		while($row = db_fetch_array($res)){
 			if ($row["wms_title"]!=""){
@@ -251,7 +252,7 @@ if (count($ownguis)>0){
 		}
 		echo "</select><br><br>";
 	}else{
-		echo"<select size='8' name='wmsList' style='width:200px' on Click='submit()'>";
+		echo"<select size='8' name='wmsList' style='width:300px' on Click='submit()'>";
 		echo "</select><br><br>";
 	}
 	echo "</td>";
