@@ -154,7 +154,7 @@ class OwsContext {
 	        if (count($resource->resourceMetadata) >= 1) {
 	            $properties->resourceMetadata = $resource->resourceMetadata;
 	        }
-	        $feature->offerings = array();
+	        $properties->offerings = array();
 	        
 	        //kml
 	        
@@ -180,7 +180,7 @@ class OwsContext {
 					$jsonOffering->extension[] = $extension;
 				}
 
-	            $feature->offerings[] = $jsonOffering;
+	            $properties->offerings[] = $jsonOffering;
 	            
 	        }
 	        $properties->minScaleDenominator = (double)$resource->minScaleDenominator;
