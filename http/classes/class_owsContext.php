@@ -481,6 +481,10 @@ class OwsContext {
 		if ($myWmc->has_local_data) {
 		    $localData = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:kmls");
 		    $localDataOrder = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:kmlOrder");
+		    if ( empty( $localData ) ) {
+		        $localData = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:KMLS");
+		        $localDataOrder = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:KMLORDER");
+		    }
 		    $localData = $localData[0];
 		    $localDataOrder= $localDataOrder[0];
 		    //use first entry
