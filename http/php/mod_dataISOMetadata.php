@@ -47,8 +47,8 @@ $forceCache = false;
 foreach ($_REQUEST as $key => $val) {
 	$_REQUEST[strtoupper($key)] = $val;
 }
+header("Access-Control-Allow-Origin: *");
 //example mapbender uuid: 2494d033-ccdd-cdd7-71c6-3e3c195e1d85
-
 //validate request params
 if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 	//validate uuid
