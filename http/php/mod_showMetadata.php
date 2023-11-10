@@ -1408,6 +1408,8 @@ if ($resource == 'wmc' ) {
 	$e = new mb_notice("mod_showMetadata: wmcid for disclaimer: ".$resourceMetadata['contentid']);
 	$touWmcConnector = new connector($mapbenderProtocol."localhost".$_SERVER['SCRIPT_NAME']."/../mod_getWmcDisclaimer.php?&id=".$resourceMetadata['contentid']."&languageCode=".$languageCode."&hostName=".$hostName);
 	$tou = $touWmcConnector->file;
+	$tou = str_replace("<div style='padding:10px;display:block;text-align:center;'><a href='javascript:window.close()'>Fenster schliessen</a></div>", "", $tou);
+
 }
 if ($tou == ''){
 	$html .= $translation['noTouInformation'];
