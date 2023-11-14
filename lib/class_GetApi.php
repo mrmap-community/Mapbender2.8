@@ -20,8 +20,8 @@ class GetApi {
 	private $zoom = array();
 	private $geojsonzoom;
 	private $geojsonzoomscale;	
-        private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is given 
-	
+    private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is given 
+	private $nonedefaultwmc; //parameter for special wmc which maybe independent of application wmc - application can be started with other wmc than default wmc 
 	/**
 	 * @param array $input
 	 */
@@ -61,6 +61,9 @@ class GetApi {
 				case "DATASETID":
 					$this->datasetid = $this->normalizeDatasetIdInput($value);
 					break;
+				case "NONEDEFAULTWMC":
+				    $this->nonedefaultwmc = $this->normalizeNoneDefaultWmcInput($value);
+				    break;
 			}
 		}
 	}
@@ -129,6 +132,14 @@ class GetApi {
 		return $this->datasetid;
 	}
 
+	/*
+	 *
+	 *
+	 */
+	public function getNoneDefaultWmc(){
+	    return $this->nonedefaultwmc;
+	}
+	
 	/**
 	 * Returns an array of zoom parameters
 	 * @return array
@@ -157,7 +168,7 @@ class GetApi {
 			}
 		}
 
-// check if each layer has at least an id, if not, delete
+        // check if each layer has at least an id, if not, delete
 		$i = 0;
 		while ($i < count($input)) {
 			if (!is_array($input[$i]) || !isset($input[$i]["id"]) || !is_numeric($input[$i]["id"])) {
@@ -391,6 +402,20 @@ class GetApi {
 		}
 		return $datasetId;
 	}
+	
+	private function normalizeNoneDefaultWmcInput($input){
+	    $noneDefaultWmc = false;
+	    $testMatch = $input;
+	    $pattern = '/^[0-9]*$/';
+	    if (!preg_match($pattern, $testMatch)){
+	        $e = new mb_exception("lib/classGetApi.php: Get parameter NONEDEFAULTWMC has forbidden values - will be set to false!");
+	    } else {
+	        $noneDefaultWmc = $testMatch;
+	    }
+	    return $noneDefaultWmc;
+	}
+	
+	
 }
 
 ?>
