@@ -230,7 +230,8 @@ $getParams = array(
 	"GEOJSON"=>getConfiguration("GEOJSON"),
 	"GEOJSONZOOM"=>getConfiguration("GEOJSONZOOM"),
 	"GEOJSONZOOMOFFSET"=>getConfiguration("GEOJSONZOOMOFFSET"),
-	"ZOOM"=>getConfiguration("ZOOM")
+	"ZOOM"=>getConfiguration("ZOOM"),
+    "NONEDEFAULTWMC"=>getConfiguration("NONEDEFAULTWMC")
 );
 $getApi = new GetApi($getParams);
 /*
@@ -239,25 +240,48 @@ WMC ID
 $startWmcId = false;
 $e = new mb_notice("javascript/initWmcObj.php: Check WMC GET API");
 $inputWmcArray = $getApi->getWmc();
-if ($inputWmcArray) {
-	$e = new mb_notice("javascript/initWmcObj.php: some WMC id was set thru Get Api!");
-	foreach ($inputWmcArray as $input) {
-	// Just make it work for a single Wmc
-		try {
-			$wmcGetApi = WmcFactory::createFromDb($input["id"]);
-			// update urls from wmc with urls from database if id is given
-			//$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
-			$updatedWMC = $wmcGetApi->updateUrlsFromDb();
-	        $wmcGetApi->createFromXml($updatedWMC);
-            //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
-            $startWmcId = $input["id"];
-			// increment load count
-			$wmcGetApi->incrementWmcLoadCount();
-		}
-		catch (Exception $e) {
-			new mb_exception("javascripts/initWmcObj.php: Failed to load WMC from DB via ID. Keeping original WMC.");
-		}
-	}
+$noneDefaultWmc = $getApi->getNoneDefaultWmc();
+if (is_numeric($noneDefaultWmc)) {
+    //some noneDefaultWmc is set - this has presedence for standard wmc!
+    try {
+        $wmcGetApi = WmcFactory::createFromDb($noneDefaultWmc);
+        // update urls from wmc with urls from database if id is given
+        //$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
+        $updatedWMC = $wmcGetApi->updateUrlsFromDb();
+        $wmcGetApi->createFromXml($updatedWMC);
+        // increment load count
+        $wmcGetApi->incrementWmcLoadCount();
+    }
+    catch (Exception $e) {
+        new mb_exception("javascripts/initWmcObj.php: Failed to load WMC from DB via ID (nonedefaultwmc). Keeping original WMC.");
+    }
+    //get wmc id for application metadata
+    //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
+    if ($inputWmcArray) {
+        $startWmcId = $inputWmcArray[0]['id'];
+    }
+    $e = new mb_exception("javascripts/initWmcObj.php: found nonedefaultwmc: " . $noneDefaultWmc . " wmc for starting application: " . $startWmcId);
+} else {
+    if ($inputWmcArray) {
+    	$e = new mb_notice("javascript/initWmcObj.php: some WMC id was set thru Get Api!");
+    	foreach ($inputWmcArray as $input) {
+    	// Just make it work for a single Wmc
+    		try {
+    			$wmcGetApi = WmcFactory::createFromDb($input["id"]);
+    			// update urls from wmc with urls from database if id is given
+    			//$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
+    			$updatedWMC = $wmcGetApi->updateUrlsFromDb();
+    	        $wmcGetApi->createFromXml($updatedWMC);
+                //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
+                $startWmcId = $input["id"];
+    			// increment load count
+    			$wmcGetApi->incrementWmcLoadCount();
+    		}
+    		catch (Exception $e) {
+    			new mb_exception("javascripts/initWmcObj.php: Failed to load WMC from DB via ID. Keeping original WMC.");
+    		}
+    	}
+    }
 }
 /*
 WMS
