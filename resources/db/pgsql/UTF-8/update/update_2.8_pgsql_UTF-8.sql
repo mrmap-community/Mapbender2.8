@@ -1088,4 +1088,39 @@ CREATE OR REPLACE VIEW search_dataset_view AS
                           WHERE (mb_metadata_1.fkey_mb_group_id IS NULL OR mb_metadata_1.fkey_mb_group_id = 0) AND mb_metadata_1.fkey_mb_user_id = user_dep.fkey_mb_user_id_from_users AND mb_metadata_1.the_geom IS NOT NULL AND mb_metadata_1.searchable IS TRUE AND mb_metadata_1.type='dataset') mb_metadata (metadata_id, uuid, origin, includeincaps, fkey_mb_group_id, schema, createdate, changedate, lastchanged, link, linktype, md_format, title, abstract, searchtext, status, type, harvestresult, harvestexception, export2csw, tmp_reference_1, tmp_reference_2, spatial_res_type, spatial_res_value, ref_system, format, inspire_charset, inspire_top_consistence, fkey_mb_user_id, responsible_party, individual_name, visibility, locked, copyof, constraints, fees, classification, browse_graphic, inspire_conformance, preview_image, the_geom, lineage, datasetid, randomid, update_frequency, datasetid_codespace, bounding_geom, inspire_whole_area, inspire_actual_coverage, datalinks, inspire_download, transfer_size, md_license_source_note, responsible_party_name, responsible_party_email, searchable, load_count, fkey_mb_group_id_1, mb_group_id, mb_group_name, mb_group_title, mb_group_country, mb_group_stateorprovince, mb_group_logo_path, fkey_mb_user_id_from_users)) dataset_dep
           ORDER BY dataset_dep.dataset_id) datasets;
 
+-- add new field for alternateTitle
+
+
+-- Column: wms_alternate_title
+
+-- ALTER TABLE wms DROP COLUMN wms_alternate_title;
+
+ALTER TABLE wms ADD COLUMN wms_alternate_title character varying(255);
+
+-- Column: wfs_alternate_title
+
+-- ALTER TABLE wfs DROP COLUMN wfs_alternate_title;
+
+ALTER TABLE wfs ADD COLUMN wfs_alternate_title character varying(255);
+
+-- Column: alternate_title
+
+-- ALTER TABLE mb_metadata DROP COLUMN alternate_title;
+
+ALTER TABLE mb_metadata ADD COLUMN alternate_title character varying(255);
+
+UPDATE wms SET wms_alternate_title = '' WHERE wms_alternate_title IS NULL;
+UPDATE wfs SET wfs_alternate_title = '' WHERE wfs_alternate_title IS NULL;
+UPDATE mb_metadata SET alternate_title = '' WHERE alternate_title IS NULL;
+
+ALTER TABLE wms ALTER COLUMN wms_alternate_title SET NOT NULL;
+ALTER TABLE wms ALTER COLUMN wms_alternate_title SET DEFAULT ''::character varying;
+
+ALTER TABLE wfs ALTER COLUMN wfs_alternate_title SET NOT NULL;
+ALTER TABLE wfs ALTER COLUMN wfs_alternate_title SET DEFAULT ''::character varying;
+
+ALTER TABLE mb_metadata ALTER COLUMN alternate_title SET NOT NULL;
+ALTER TABLE mb_metadata ALTER COLUMN alternate_title SET DEFAULT ''::character varying;
+
+
 
