@@ -722,7 +722,7 @@ class SpatialDataCache():
         # middle_phi = polygon_box[1] + (polygon_box[3] - polygon_box[1]) / 2
         delta_lon_deg = polygon_box[2] - polygon_box[0]
         delta_lat_deg = polygon_box[3] - polygon_box[1]
-        # delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(360 / middle_phi * 2 * math.pi) / 360 * delta_lon_deg
+        # delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(middle_phi * 2 * math.pi / 360) / 360 * delta_lon_deg
         # delta_lat_m = 2 * math.pi * 6378137.0 / 360 * delta_lat_deg
         width = math.sqrt((delta_lon_deg * delta_lat_deg) / number_of_boxes)
         n_rows = math.ceil(delta_lat_deg / width)
