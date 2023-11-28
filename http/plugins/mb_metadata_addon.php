@@ -80,6 +80,10 @@ $(function() {
 			<input class="required" name="title" id="title"/>
 		</fieldset>
 		<fieldset>
+			<legend><?php echo _mb("Resource alternate title");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("Optional alternate title. Only one entry is supported at the moment!");?>'}" src="../img/questionmark.png" alt="" /></legend>
+			<input name="alternate_title" id="alternate_title"/>
+		</fieldset>
+		<fieldset>
 			<legend><?php echo _mb("Resource abstract");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("This is a brief narrative summary of the content of the resource.");?>'}" src="../img/questionmark.png" alt="" /></legend>
 			<input class="required" name="abstract" id="abstract"/>
 		</fieldset>
