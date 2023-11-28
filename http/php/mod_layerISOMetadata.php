@@ -116,7 +116,7 @@ function fillISO19139($iso19139, $recordId) {
 		// next function is for normal mapbender installations and read the info directly from the wms and layer tables
 		$sql = "SELECT ";
 		$sql .= "layer.layer_id,layer.layer_name, layer.layer_title, layer.layer_abstract, layer.layer_pos, layer.layer_parent, layer.layer_minscale, layer.layer_maxscale, layer.uuid,";
-		$sql .= "wms.wms_title, wms.wms_abstract, wms.wms_id, wms.fees, wms.accessconstraints, wms.contactperson, ";
+		$sql .= "wms.wms_title, wms.wms_alternate_title, wms.wms_abstract, wms.wms_id, wms.fees, wms.accessconstraints, wms.contactperson, ";
 		$sql .= "wms.contactposition, wms.contactorganization, wms.address, wms.city, wms_timestamp, wms_owner, ";
 		$sql .= "wms.stateorprovince, wms.postcode, wms.contactvoicetelephone, wms.contactfacsimiletelephone, wms.wms_owsproxy,";
 		$sql .= "wms.contactelectronicmailaddress, wms.country, wms.fkey_mb_group_id, ";
@@ -339,6 +339,20 @@ function fillISO19139($iso19139, $recordId) {
 	$title_cs->appendChild ( $titleText );
 	$title->appendChild ( $title_cs );
 	$CI_Citation->appendChild ( $title );
+	
+	//add optional alternateTitle element
+	$alternateTitle = $iso19139->createElement("gmd:alternateTitle");
+	$alternateTitle_cs = $iso19139->createElement("gco:CharacterString");
+	if (isset($mapbenderMetadata['wms_alternate_title'])) {
+	    $alternateTitleText = $iso19139->createTextNode($mapbenderMetadata['wms_alternate_title']);
+	} else {
+	    $alternateTitleText = $iso19139->createTextNode("title not given");
+	}
+	$alternateTitle_cs->appendChild($alternateTitleText);
+	$alternateTitle->appendChild($alternateTitle_cs);
+	if ($alternateTitleText !== "") {
+	    $CI_Citation->appendChild($alternateTitle);
+	}	
 	
 	// Create date elements B5.2-5.4 - format will be only a date - no dateTime given
 	// Do things for B 5.2 date of publication

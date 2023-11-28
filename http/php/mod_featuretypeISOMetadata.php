@@ -164,7 +164,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
                 . ",ft.featuretype_latlon_bbox as bbox"
 //                . ",ft.layer_pos,ft.layer_parent,ft.layer_minscale,ft.layer_maxscale"                                   ########## ft.layer_pos latlon_bbox ??
 //                
-                . ",wfs.uuid as wfs_uuid,wfs.wfs_title,wfs.wfs_abstract,wfs.wfs_id,wfs.fees,wfs.accessconstraints"
+                . ",wfs.uuid as wfs_uuid,wfs.wfs_title,wfs.wfs_alternate_title,wfs.wfs_abstract,wfs.wfs_id,wfs.fees,wfs.accessconstraints"
                 . ",wfs.individualname,wfs.positionname,wfs.providername,wfs.deliverypoint,wfs.city,wfs.wfs_timestamp"
                 . ",wfs.wfs_timestamp_create,wfs.wfs_owner,wfs.administrativearea,wfs.postalcode,wfs.voice"
                 . ",wfs.facsimile,wfs.wfs_owsproxy,wfs.electronicmailaddress,wfs.country,wfs.fkey_mb_group_id"
@@ -256,7 +256,7 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString',
             isset($mbMeta['wfs_title']) ? $mbMeta['wfs_title']." - ".$mbMeta['featuretype_title']." - ".$serviceTypeTitle : "title not given");
 
-    $pos = 0;
+    
 	//Create date elements B5.2-5.4 - format will be only a date - no dateTime given
 	//Do things for B 5.2 date of publication
 	/*if (isset($mbMeta['wfs_timestamp_create'])) {
@@ -269,6 +269,13 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
             "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
 	}*/
     
+    //add optional alternateTitle
+    if (isset($mbMeta['wfs_alternate_title']) && $mbMeta['wfs_alternate_title'] !=="") {
+        $xmlBuilder->addValue($MD_Metadata,
+            './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString',
+            $mbMeta['wfs_alternate_title']);
+    }
+    $pos = 0;
 	//Do things for B 5.3 date of revision
 	if (isset($mbMeta['wfs_timestamp'])) {
         $pos++;
