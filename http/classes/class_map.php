@@ -484,7 +484,7 @@ class Map {
 						$numLayers = count($wmsArray[$i]->objLayer);
 						for ($j = 0; $j < $numLayers; $j++) {
 							$wmsArray[$i]->objLayer[$j]->gui_layer_visible = 0;
-							//layer which has defined a identifier (this came from the search) should be visible
+							//layer which has defined a identifier (this came from the search) and should be visible
 							if (isset($wmsArray[$i]->objLayer[$j]->layer_identifier)) {
 							    foreach($wmsArray[$i]->objLayer[$j]->layer_identifier as $identifier) {
 							        if ($identifier->visible == true) {
@@ -686,11 +686,18 @@ class Map {
 					$newLayer->layer_style[$z]["legendurlformat"] = $currentLayer->layer_style[$z]->legendurlformat;
 				}
 				// BEWARE THIS IS SUPER UGLY CODE TOO
+				//new 2023 - handling of layer_identifiers
 				$newLayer->layer_identifier = array();
 				for ($z = 0; $z < count($currentLayer->layer_identifier); $z++) {
 				    $newLayer->layer_identifier[$z] = array();
-				    $newLayer->layer_identifier[$z]["identifier"] = $currentLayer->layer_identifier[$z]->identifier ? $currentLayer->layer_identifier[$z]->identifier : "no identifier available!";
-				    $newLayer->layer_identifier[$z]["visible"] = $currentLayer->layer_identifier[$z]->visible ? $currentLayer->layer_identifier[$z]->visible : "false";
+				    if (isset($currentLayer->layer_identifier[$z]->identifier)) {
+				        //$e = new mb_exception('classes/class_map.php: createFromJs: read found layer identifier: ' . json_encode($currentLayer->layer_identifier));
+				        
+    				    $newLayer->layer_identifier[$z]["identifier"] = $currentLayer->layer_identifier[$z]->identifier;// ? $currentLayer->layer_identifier[$z]->identifier;
+    				    if (isset($currentLayer->layer_identifier[$z]->identifier) && $currentLayer->layer_identifier[$z]->identifier !== '') {
+    				        $newLayer->layer_identifier[$z]["visible"] = $currentLayer->layer_identifier[$z]->visible ? $currentLayer->layer_identifier[$z]->visible : "false";
+    				    }
+    				}
 				}
 				//
 				$newLayer->layer_dimension = array();

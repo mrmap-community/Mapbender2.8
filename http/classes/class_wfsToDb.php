@@ -67,8 +67,8 @@ class WfsToDb {
 		$sql .= "city , deliverypoint , administrativearea , ";
 		$sql .= "postalcode , voice , facsimile , ";
 		$sql .= "electronicmailaddress , country , ";
- 		$sql .= "wfs_owner, wfs_timestamp, wfs_timestamp_create, uuid, wfs_username, wfs_password, wfs_auth_type, wfs_owsproxy) ";
-		$sql .= "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14 ,$15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31)";
+ 		$sql .= "wfs_owner, wfs_timestamp, wfs_timestamp_create, uuid, wfs_username, wfs_password, wfs_auth_type, wfs_owsproxy, wfs_alternate_title) ";
+		$sql .= "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14 ,$15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)";
 		if (!($aWfs->auth)) {
 			$aWfs->auth['username'] = "";
 			$aWfs->auth['password'] = "";
@@ -114,10 +114,11 @@ class WfsToDb {
 			$aWfs->auth['username'],
 			$aWfs->auth['password'],
 			$aWfs->auth['auth_type'],
-			$wfs_owsproxy
+			$wfs_owsproxy,
+		    $aWfs->alternate_title
 		);
 			
-		$t = array('s', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 'i', 'i','i','s','s','s','s','s');
+		$t = array('s', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 's', 'i', 'i','i','s','s','s','s','s','s');
 	
 		$res = db_prep_query($sql, $v, $t);
 	
@@ -179,7 +180,7 @@ class WfsToDb {
 		//they don't come from the capabilities!
 		if (!$updateMetadataOnly) {
 			//read network_access from database
-			$sql = "SELECT wfs_network_access, wfs_max_features, inspire_annual_requests from wfs WHERE wfs_id = $1 ";
+			$sql = "SELECT wfs_network_access, wfs_max_features, inspire_annual_requests, wfs_alternate_title from wfs WHERE wfs_id = $1 ";
 			$v = array($aWfs->id);
 			$t = array('i');
 			$res = db_prep_query($sql,$v,$t);
@@ -187,6 +188,7 @@ class WfsToDb {
 			$aWfs->wfs_network_access = $row["wfs_network_access"];
 			$aWfs->wfs_max_features = $row["wfs_max_features"];
 			$aWfs->inspire_annual_requests = $row["inspire_annual_requests"];
+			$aWfs->alternate_title = $row["wfs_alternate_title"];
 			//$e = new mb_notice("class_wms.php: wfs_network_access from database: ".$aWfs->wfs_network_access);
 		}
 		//if network access is either stored in database nor given thru object, set it too a default value 0
@@ -207,7 +209,7 @@ class WfsToDb {
 			$sql = "UPDATE wfs SET wfs_version = $1, wfs_name = $2, wfs_getcapabilities = $3, wfs_getcapabilities_doc = $4, ";
 			$sql .= "wfs_upload_url = $5, wfs_describefeaturetype = $6, wfs_getfeature = $7, ";
 			$sql .= "wfs_transaction = $8, wfs_timestamp = $9, wfs_network_access = $10, fkey_mb_group_id = $11, ";
-			$sql .=  "wfs_max_features = $12, inspire_annual_requests = $13, wfs_username = $14, wfs_password = $15, wfs_auth_type = $16, wfs_license_source_note = $18 ";
+			$sql .=  "wfs_max_features = $12, inspire_annual_requests = $13, wfs_username = $14, wfs_password = $15, wfs_auth_type = $16, wfs_license_source_note = $18, wfs_alternate_title = $19 ";
 			$sql .= "WHERE wfs_id = $17";
 			$v = array(
 				$aWfs->getVersion(),
@@ -227,9 +229,10 @@ class WfsToDb {
 				$aWfs->auth['password'],
 				$aWfs->auth['auth_type'],
 				$aWfs->id,
-				$aWfs->wfs_license_source_note
+				$aWfs->wfs_license_source_note,
+			    $aWfs->alternate_title
 			);
-			$t = array('s','s','s','s','s','s','s','s','s','i','i','i','i','s','s','s','i','s');
+			$t = array('s','s','s','s','s','s','s','s','s','i','i','i','i','s','s','s','i','s','s');
 			$e = new mb_notice("class_wfsToDb.php: UPDATING WFS " . $aWfs->id);
 			$res = db_prep_query($sql, $v, $t);
 			if (!$res) {
@@ -241,7 +244,7 @@ class WfsToDb {
 			$e = new mb_exception("classes/class_wfsToDb.php: - function update - from metadata editor");
 			//only update wfs elements that are given by metadata editor - noc technical things!
 			$sql = "UPDATE wfs SET wfs_timestamp = $1, wfs_network_access = $2, fkey_mb_group_id = $3, ";
-			$sql .=  "wfs_max_features = $4, inspire_annual_requests = $5, wfs_license_source_note = $7 ";
+			$sql .=  "wfs_max_features = $4, inspire_annual_requests = $5, wfs_license_source_note = $7, wfs_alternate_title = $8 ";
 			$sql .= "WHERE wfs_id = $6";
 			$v = array(
 				strtotime("now"),
@@ -250,10 +253,11 @@ class WfsToDb {
 				$aWfs->wfs_max_features,
 				$aWfs->inspire_annual_requests,
 				$aWfs->id,
-				$aWfs->wfs_license_source_note
+				$aWfs->wfs_license_source_note,
+			    $aWfs->alternate_title
 			);
 			
-			$t = array('s','i','i','i','i','i','s');
+			$t = array('s','i','i','i','i','i','s','s');
 			$e = new mb_notice("class_wfsToDb.php: UPDATING WFS - metadata editor elements only - " . $aWfs->id);
 			$res = db_prep_query($sql, $v, $t);
 			if (!$res) {
@@ -283,7 +287,8 @@ class WfsToDb {
 			$sql .= "wfs_network_access = $16, ";
 			$sql .= "wfs_max_features = $17, ";
 			$sql .= "fkey_mb_group_id = $18, ";
-			$sql .= "wfs_license_source_note = $20 ";
+			$sql .= "wfs_license_source_note = $20, ";
+			$sql .= "wfs_alternate_title = $21 ";
 			$sql .= " WHERE wfs_id = $19";
 			$v = array($aWfs->title,
 					$aWfs->summary,
@@ -304,9 +309,10 @@ class WfsToDb {
 					$aWfs->wfs_max_features,
 					$aWfs->fkey_mb_group_id,
 					$aWfs->id,
-					$aWfs->wfs_license_source_note
+					$aWfs->wfs_license_source_note,
+			        $aWfs->alternate_title
 				);
-			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','i','i','i','i','s');
+			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','i','i','i','i','s','s');
 			$res = db_prep_query($sql,$v,$t);
 			if(!$res){
 				db_rollback();
@@ -582,7 +588,7 @@ class WfsToDb {
 	        $aWfsFeatureTypeNamespace->name,
 	        $aWfsFeatureTypeNamespace->value
 	    );
-	    $e = new mb_notice("classes/class_wfsToDb.php: look for namespaces in db: " . json_encode($v) . " - sql: " . $sql_check );
+	    $e = new mb_exception("classes/class_wfsToDb.php: look for namespaces in db: " . json_encode($v) . " - sql: " . $sql_check );
 	    $t = array("i", "i", "s", "s");
 	    $res_check = db_prep_query($sql_check, $v, $t);
 	    
@@ -1271,6 +1277,7 @@ class WfsToDb {
 	 * @param $aWfsFeatureType WfsFeatureType
 	 */
 	private static function insertFeatureType ($aWfsFeatureType) {
+	    //$e = new mb_exception('classes/class_wfsToDb.php: insertFeaturetype: name: ' . $aWfsFeatureType->name);
 		$uuid = new Uuid();
 		$sql = "INSERT INTO wfs_featuretype (fkey_wfs_id, featuretype_name, " . 
 				"featuretype_title, featuretype_abstract, featuretype_searchable, featuretype_srs, featuretype_latlon_bbox, uuid, inspire_download, featuretype_schema, featuretype_schema_problem) " . 
