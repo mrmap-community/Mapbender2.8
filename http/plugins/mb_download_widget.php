@@ -487,8 +487,11 @@
     	download_configuration.dataset_configuration.datasets = [];
     	for (sdi in sdiArray) {
     	    entry = {};
-    	    entry['resourceidentifier'] = sdiArray[sdi];
-    		download_configuration.dataset_configuration.datasets.push(entry);
+    	    //delete empty identifier from list
+    	    if (sdiArray[sdi] != "") {
+    	        entry['resourceidentifier'] = sdiArray[sdi];
+    		    download_configuration.dataset_configuration.datasets.push(entry);
+    		}
     	}
     	$('#load-options-spinner').show();
     	$.ajaxSetup({async:true});
