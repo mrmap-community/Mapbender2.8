@@ -333,6 +333,10 @@ class searchMetadata
 					case "date":
 						$this->orderBy = " ORDER BY wms_timestamp DESC ";
 						break;
+					//Ticket 6655: Changed order of Datasetsearch subservices 
+					case "intern":
+						$this->orderBy = " ORDER BY wms_id,layer_title ASC";					
+						break;
 					default:
 						$this->orderBy = " ORDER BY load_count DESC";
 				}
@@ -714,10 +718,14 @@ class searchMetadata
 			$countUniqueLayers = count($uniqueAllCoupledLayers);
 			$countUniqueFeaturetypes = count($uniqueAllCoupledFeaturetypes);
 			if ($countUniqueLayers >= 1) {
-				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, $this->orderBy, implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
+				//Ticket 6655: Changed order of Datasetsearch subservices
+				//als Argument für OrderBy wurde in dem Aufruf 'intern' gesetzt, damit die Layer nach layer_title und wms_id sortiert werden. Dafür wurde oben eine switch - Anweisung um 'intern' erweitert (Zeile 317)
+				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, 'intern', implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https);
 				$srvCount = 0;
 				foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
+					
 					foreach ($server->layer as $layer) {
+						
 						$layerSearchArray[$layer->id] = $srvCount;
 						//pull inspire downloadoptions from layer information
 						foreach ($layer->downloadOptions as $downloadOption) {
@@ -727,6 +735,7 @@ class searchMetadata
 						}
 						//TODO!: do this also for the next hierachylevel - maybe invoke it recursive!!!
 						foreach ($layer->layer as $sublayer) {
+							
 							$layerSearchArray[$sublayer->id] = $srvCount;
 							//pull inspire downloadoptions from layer information
 							foreach ($sublayer->downloadOptions as $downloadOption) {
@@ -749,31 +758,31 @@ class searchMetadata
 					$srvCount++;
 				}
 			}
+/*
+//Ticket 6655: Changed order of Datasetsearch subservices
+zum Sortieren der Treffer bei Datensatzsuche nach title:	
+$layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
+
+
+*/
+			$layer_id_sorted = array();
+			
+			foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
+				foreach ($server->layer as $layer) {
+				
+					$layer_id_sorted[] = $layer->id;
+			
+				}
+			}
+			
+			$this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
+			
+			
+			
 			//insert objects into dataset result list
 			for ($i = 0; $i < count($datasetMatrix); $i++) {
-				$layerCount = 0;
-				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
-					
-					//first add whole srv result
-					$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-					$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
-					# not only add the service object, but also the layer title, ...
-					# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
-					// extract layer with id from subtree
-					if (is_array($subTree->layer) && isset($layer->id)) {
-						$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
-					
-						//reinitialize layer array
-						if ($coupledLayer != false) {
-							//delete sublayers from found layer !
-							unset($coupledLayer->layer);
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
-						}
-					}
-					//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-					$layerCount++;
-				}
+			//Ticket 6655: Changed order of Datasetsearch subservices
+			//Some lines were deleted due to this change -> In case of issues compare this against rlp branch	
 				$featuretypeCount = 0;
 				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype as $ft) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype[$featuretypeCount]->srv = json_decode($coupledFeaturetypes->internalResult, true)->wfs->srv[$featuretypeSearchArray[$ft->id]];
@@ -791,6 +800,8 @@ class searchMetadata
 				//check for atom feed entry
 				if ($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']] != null) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds = json_decode($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']]);
+					//Ticket 6655: Changed order of Datasetsearch subservices
+					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
 				} else {
 					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
 					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
@@ -799,19 +810,57 @@ class searchMetadata
 							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
 						}
 					}
+					//Ticket 6655: Changed order of Datasetsearch subservices
+					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
 				}
-				/*if ($featuretypeCount == 0 && $layerCount == 0) {
-					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/"));
-					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
-					foreach ($downloadOptionsFromMetadata->{$datasetMatrix[$i]['fileidentifier']}->option as $dlOption) {
-						if ($dlOption->type == "downloadlink" || $dlOption->type == "distribution" || $dlOption->type == "remotelist") {
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
-						}
-					}
-				}*/
 			}
 		}
 	}
+//Ticket 6655: Changed order of Datasetsearch subservices
+//$matrix ist Matrix von oben
+//$sorted_id_list ist die nach Titeln und WMS sortierte LayerID Liste
+
+
+	private function sortMetadataJSON($matrix, $sorted_id_list,$coupled_layers,$layerSearchArray){
+		
+		$layerCount = 0;
+		// erste Schleife geht über die Datensätze
+	    for ($i = 0; $i < count($matrix); $i++) {
+			
+				$a =array();
+				//im Kopf der Schleife: unsortierte Layer, aber pro Datensatz (srv[$i]), deshalb der ganze Aufwand
+				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
+					
+					$kandidat = $layer->id;
+					
+					for($j = 0;$j < count($sorted_id_list);$j++){
+						//es wird geschaut, an welcher Stelle in der sortierten Liste sich der Layer befindet und die Position wird in array a eingefügt
+						if($kandidat == $sorted_id_list[$j]){
+							$a[] = $j;
+							
+						}
+						
+					}
+					
+				}
+				sort($a);
+				$c = 0;
+				for($p = 0;$p < count($a); $p++){
+						for($k = 0; $k < count($sorted_id_list); $k++){
+							if($k == $a[$p]){
+								
+								
+								$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $sorted_id_list[$k];
+								$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = json_decode($coupled_layers->internalResult)->wms->srv[$layerSearchArray[$sorted_id_list[$k]]];
+								
+								$c++;
+								break;
+							}
+						}
+				}
+		}
+	}
+
 
 	private function generateApplicationMetadataJSON($res, $n)
 	{
