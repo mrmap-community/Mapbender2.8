@@ -156,7 +156,7 @@ function close_exportMapimage(){
 </tr>
 
 </table>  
-<div id="buttons" align='right'>
+<div id="buttons" align='left'>
 		<input type='button' name='expImg_ok' value="OK" onclick='exportMapimage();'>
 		<input type='button' name='expImg_close' value="Close" onclick='close_exportMapimage();'>
 </div>
