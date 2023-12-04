@@ -515,7 +515,6 @@ class Map {
 				}
 			}
 
-
 			if ($options["show"] && is_numeric($options["show"]) && !isset($options["visible"])) {
 				$e = new mb_exception("show");
 				// set all layers of WMS to visible
@@ -533,10 +532,19 @@ class Map {
 				}
 			}
 		}
-
+		//$e = new mb_exception('classes/class_map.php: new wms array(before merging): ' . json_encode($wmsArray));
+		//write wmc xml before and after merging to debug 
+		/*$myfile = fopen(TMPDIR . "/wms_array_wmc_new.json", "w") or die("Unable to open file!");
+		 fwrite($myfile, json_encode($wmsArray));
+		 fclose($myfile);
+		 $myfile = fopen(TMPDIR . "/wms_array_wmc_before.json", "w") or die("Unable to open file!");
+		 fwrite($myfile, json_encode($this->wmsArray));
+		 fclose($myfile);*/
 		$this->wmsArray = wms::merge(array_merge($this->wmsArray, $wmsArray));
+		/*$myfile = fopen(TMPDIR . "/wms_array_wmc_merged.json", "w") or die("Unable to open file!");
+		fwrite($myfile, json_encode($this->wmsArray));
+		fclose($myfile);*/
 	}
-
 
 	// ------------------------------------------------------------------------
 	// Instantiation

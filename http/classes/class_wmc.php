@@ -2404,18 +2404,12 @@ SQL;
 }*/
 						    /*$e = new mb_exception("classes/class_wmc.php: tag: " . $tag);
 						    $e = new mb_exception("classes/class_wmc.php: value: " . $currentLayer["extension"][$tag]);
-						    $e = new mb_exception("classes/class_wmc.php: type " . gettype($currentLayer["extension"][$tag]));
-						    */
-						    if (isset($currentLayer["extension"][$tag]) && $tag == 'LAYER_IDENTIFIER') {
-						        
-						        //$e = new mb_exception("classes/class_wmc.php: read wmc xml: layer_identifier info json: " . $currentLayer["extension"][$tag]);
-						        //$currentLayer["extension"][$tag] = json_decode($currentLayer["extension"][$tag]);
+						    $e = new mb_exception("classes/class_wmc.php: type " . gettype($currentLayer["extension"][$tag]));*/
+						    if (isset($currentLayer["extension"][$tag]) && $tag === 'LAYER_IDENTIFIER') {
+						        $e = new mb_exception("classes/class_wmc.php: read wmc xml: layer_identifier info json: " . $value);
+						        $currentLayer["extension"][$tag] = json_decode($value);
 						    } else {
     						    if (isset($currentLayer["extension"][$tag])) {
-    							    /*if ($tag == 'LAYER_IDENTIFIER') {
-    							        $e = new mb_exception('classes/class_wmc.php: try to push extension ' . $tag . ' to object: ' . json_encode($currentLayer["extension"][$tag]));
-    							        //$e = new mb_exception('classes/class_wmc.php: type: ' .gettype($currentLayer["extension"][$tag]));
-    							    }*/
     								if (!is_array($currentLayer["extension"][$tag])) {
     									$firstValue = $currentLayer["extension"][$tag];
     									$currentLayer["extension"][$tag] = array();

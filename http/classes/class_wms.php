@@ -1680,18 +1680,18 @@ class wms {
 			$newLayer->layer_style[$i]["legendurl_format"] = $currentLayer["style"][$i]["legendurl_type"];
 		}
 		/*
-		 * set layer_identifier - TODO - do it like for LAYER_EPSG!
-		 * dont load from wmc - will still have errors!
+		 * LAYER_IDENTIFIER will be an json string in the XML Document - ist should be parsed before!
 		 */
 		$countNotEmptyLayerIdentifier = 0;
-		for ($i = 0; $i < count($currentLayer["extension"]["LAYER_IDENTIFIER"]); $i++) {
+		$newLayer->layer_identifier = json_decode($currentLayer["extension"]["LAYER_IDENTIFIER"]);
+		/*for ($i = 0; $i < count($currentLayer["extension"]["LAYER_IDENTIFIER"]); $i++) {
 		    if ($currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"] !== "no identifier available!") {
 		        $newLayer->layer_identifier[$countNotEmptyLayerIdentifier] = array();
 		        $newLayer->layer_identifier[$countNotEmptyLayerIdentifier]["identifier"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"];
 		        $newLayer->layer_identifier[$countNotEmptyLayerIdentifier]["visible"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["visible"];
     		    $countNotEmptyLayerIdentifier++;
 		    }
-		}
+		}*/
 		//2016-08-31 add dimension - user value come from wmc standard and client mapobject
 		$dimensionAttributes = array('name', 'units', 'unitSymbol', 'default', 'multipleValues', 'nearestValue', 'current', 'extent','userValue');
 		for ($i = 0; $i < count($currentLayer['dimension']); $i++) {
@@ -3848,6 +3848,36 @@ SQL;
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurlformat"]=$row2["legendurlformat"];
 				$count_layer_style++;
 			}
+			//pull datasetids from ows_relation_metadata - maybe combine them with identifier from db, if those are available somewhen!
+			/*
+			 * - 2023-11-29
+			 */
+			/*$admin = new administration();
+			$e = new mb_exception("classes/class_wms.php - select dataset_ids from database (createObjFromDB)!");
+			$sql = "SELECT metadata_id, uuid, datasetid, datasetid_codespace from mb_metadata WHERE ";
+			$sql .= "metadata_id IN (SELECT fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id = $1) AND searchable IS TRUE ";
+			$v = array($layer_id);
+			$t = array('i');
+			$res_identifier = db_prep_query($sql, $v, $t);
+			$datasetIdentifier = array();
+			while($row = db_fetch_array($res_identifier)){
+			    $orgaInfo = $admin->getOrgaInfoFromRegistry('metadata', $row['metadata_id'], 0);
+			    $codespace = $admin->getIdentifierCodespaceFromRegistry($orgaInfo, $row);
+			    if ($row['datasetid'] != '') {
+			        $datasetIdentifier[] = $codespace . $row['datasetid'];
+			    } else {
+			        $datasetIdentifier[] = $codespace . $row['uuid'];
+			    }
+			}
+			$e = new mb_exception('class_wms.php: createObjFromDB -> found number of layeridentifiers: ' . count($datasetIdentifier));
+			//add identifier to layer object
+			$count_layer_identifier = 0;
+			foreach ($datasetIdentifier as $identifier) {
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->identifier = $identifier;
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->visible = false;
+			    $count_layer_identifier++;
+			    $e = new mb_exception('class_wms.php: layeridentifier: ' . $identifier);
+			}*/
 			//handle layer dimensions (first only time and elevation!)
 			$sql = "SELECT * FROM layer_dimension WHERE fkey_layer_id = $1 AND ( name = 'time' OR name = 'elevation')";
 			$v = array($layer_id);
@@ -4122,7 +4152,36 @@ SQL;
 				$this->objLayer[$layer_cnt]->layer_dimension[$count_layer_dimension]->userValue = "";
 				$count_layer_dimension++;
 			}
-
+			//pull datasetids from ows_relation_metadata - maybe combine them with identifier from db, if those are available somewhen!
+			/*
+			 * - 2023-11-29
+			 * TODO: use an alternate approach to pull all coupled resources in one select for each wms 
+			 */
+			/*$admin = new administration();
+			$e = new mb_exception("classes/class_wms.php - select dataset_ids from database (createObjFromDBNoGui)!");
+			$sql = "SELECT metadata_id, uuid, datasetid, datasetid_codespace from mb_metadata WHERE ";
+			$sql .= "metadata_id IN (SELECT fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id = $1) AND searchable IS TRUE ";
+			$v = array($this->objLayer[$layer_cnt]->layer_uid);
+			$t = array('i');
+			$res_identifier = db_prep_query($sql, $v, $t);
+			$datasetIdentifier = array();
+			while($row = db_fetch_array($res_identifier)){
+			    $orgaInfo = $admin->getOrgaInfoFromRegistry('metadata', $row['metadata_id'], 0);
+			    $codespace = $admin->getIdentifierCodespaceFromRegistry($orgaInfo, $row);
+			    if ($row['datasetid'] != '') {
+			        $datasetIdentifier[] = $codespace . $row['datasetid'];
+			    } else {
+			        $datasetIdentifier[] = $codespace . $row['uuid'];
+			    }
+			}
+			$e = new mb_exception('class_wms.php: createObjFromDBNoGui -> found number of layeridentifiers: ' . count($datasetIdentifier));
+			//add identifier to layer object
+			$count_layer_identifier = 0;
+			foreach ($datasetIdentifier as $identifier) {
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->identifier = $identifier;
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->visible = false;
+			    $count_layer_identifier++;
+			}*/
 			// read out keywords
 			$sql = "SELECT keyword FROM keyword, layer_keyword 
 WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";
