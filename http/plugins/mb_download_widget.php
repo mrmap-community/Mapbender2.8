@@ -97,7 +97,7 @@
 		downloadDialog.append($(spinnerHtml));
 		downloadDialog.append($(datasetListHtml));
 		downloadDialog.dialog({
-			width: 350,
+			width: 370,
 			autoOpen: false,
 			position: [o.$target.offset().left+20, o.$target.offset().top+80]
 		}).bind("dialogclose", function () {
@@ -406,7 +406,8 @@
         		datasetLink = $(document.createElement('a')).appendTo(columnContainer);
         		datasetLink.attr({'target':'_blank'});
         		//datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
-        		datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=' + encodeURIComponent(data[dataset_id]['csw'] + '?request=GetRecordById&service=CSW&version=2.0.2&ElementSetName=full&OUTPUTSCHEMA=http://www.isotc211.org/2005/gmd&Id=' + data[dataset_id]['fileidentifier'])});
+        		//datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=' + encodeURIComponent(data[dataset_id]['csw'] + '?request=GetRecordById&service=CSW&version=2.0.2&ElementSetName=full&OUTPUTSCHEMA=http://www.isotc211.org/2005/gmd&Id=' + data[dataset_id]['fileidentifier'])});
+        		datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_exportIso19139.php?url=' + encodeURIComponent(data[dataset_id]['csw'] + '?request=GetRecordById&service=CSW&version=2.0.2&ElementSetName=full&OUTPUTSCHEMA=http://www.isotc211.org/2005/gmd&Id=' + data[dataset_id]['fileidentifier']) + '&resolveCoupledResources=true'});
         		datasetTitle = $(document.createElement('i')).appendTo(datasetLink);
         		datasetTitle.append(data[dataset_id]['title']);
         		if (data[dataset_id]['error_messages'].length > 0) {
