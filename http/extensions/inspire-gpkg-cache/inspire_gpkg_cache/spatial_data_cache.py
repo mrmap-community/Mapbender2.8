@@ -422,7 +422,10 @@ class SpatialDataCache():
                                 spatial_dataset_identifier_array.append(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
                                 log.info(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
                             # find 
-                            index_of_featuretype = spatial_dataset_identifier_array.index(spatial_dataset_identifier)
+                            try:
+                                index_of_featuretype = spatial_dataset_identifier_array.index(spatial_dataset_identifier)
+                            except:
+                                index_of_featuretype = False
                             # log.info("index of featuretype: " + str(index_of_featuretype))
                             if isinstance(index_of_featuretype, int):
                                 # get name of featuretype
@@ -829,7 +832,7 @@ class SpatialDataCache():
         downloadable_datasets = []
         start_time_check = time.time()
         for dataset in self.data_configuration['datasets']:
-            log.info(dataset['resourceidentifier'])
+            log.info('ResourceIdentifier: ' + dataset['resourceidentifier'])
             downloadable_dataset = {}
             start_time_dataset_metadata = time.time()
             metadata = self.get_metadata_by_resourceidentifier(dataset['resourceidentifier'])
@@ -858,10 +861,10 @@ class SpatialDataCache():
                     services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 else :
                     # unset fileidentifier because it does not make sense to download this dataset 
-                    downloadable_dataset['fileidentifier'] = ''
+                    # downloadable_dataset['fileidentifier'] = ''
                     downloadable_dataset['error_messages'].append('Metadata and the area of interest have no intersections!')
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
-                #log.info("number of found services: " + str(len(services)))
+                # log.info("number of found services: " + str(len(services)))
                 # debug - show service information
                 for service in services:
                     downloadable_dataset['services'].append(json.loads(self.check_download_options(services[service], str(metadata_info['spatial_dataset_identifier']), str(metadata_info['epsg_id']))))
@@ -871,17 +874,18 @@ class SpatialDataCache():
             else:
                 downloadable_dataset['error_messages'].append('Metadata could not be found in catalogue!')
             downloadable_datasets.append(downloadable_dataset)
-            #reset catalogue to first entry in list
+            # reset catalogue to first entry in list
             self.catalogue_uri = self.catalogue_uris[0]
             self.csw = CatalogueServiceWeb(self.catalogue_uri) 
-        #log.info(json.dumps(downloadable_datasets))
+        # log.info(json.dumps(downloadable_datasets))
         return json.dumps(downloadable_datasets)
 
     def get_metadata_by_resourceidentifier(self, spatial_dataset_identifier):
         dataset_query = PropertyIsEqualTo('csw:ResourceIdentifier', spatial_dataset_identifier)
-        #iterate over list of csw uris - don't forget to reset csw to first one after this!
+        # iterate over list of csw uris - don't forget to reset csw to first one after this!
         for csw_uri in self.catalogue_uris:
             self.catalogue_uri = csw_uri
+            log.info('Search in catalogue: ' + csw_uri);
             self.csw = CatalogueServiceWeb(self.catalogue_uri)
             # look for srv:serviceTypeVersion to find the atom feeds
             self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
