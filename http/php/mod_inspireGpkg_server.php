@@ -105,7 +105,7 @@ switch ($ajaxResponse->getMethod()) {
 		}
 		if ($configurationValid == false) {
 		    $ajaxResponse->setSuccess(false);
-		    $ajaxResponse->setMessage(_mb("Some spatial dataset identifier is not valid!"));
+		    $ajaxResponse->setMessage(_mb("Some spatial dataset identifier is not valid! Actually only urls are supported!"));
 		} else {
 		    $ajaxResponse->setSuccess(true);
 		    $ajaxResponse->setMessage(_mb("Method checkOptions requested."));
@@ -114,7 +114,7 @@ switch ($ajaxResponse->getMethod()) {
 		    //$e = new mb_exception('/usr/bin/python3 /tmp/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
 		    
 		    $output = exec('/usr/bin/python3.9 ../extensions/inspire-gpkg-cache/cli_invoke.py ' . "'" . json_encode($configuration) . "'" . " " . "'checkOptions'" );
-		    //$e = new mb_exception("output of python method check_options: " . $output);
+		    $e = new mb_exception("output of python method check_options: " . $output);
 		    //die();
 		    
 		    // some example json files for testing the client
