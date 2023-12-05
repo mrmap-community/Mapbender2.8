@@ -245,7 +245,10 @@
         			if (((typeof currentLayer.layer_identifier != "undefined") && Array.isArray(currentLayer.layer_identifier) && (currentLayer.layer_identifier.length > 0)) && currentLayer.gui_layer_visible == 1) {
         				//console.log(parseInt(currentLayer.layer_uid));
         				for (let indexIdentifier = 0; indexIdentifier < currentLayer.layer_identifier.length; ++indexIdentifier) {
-        				    sdi_list.push(currentLayer.layer_identifier[indexIdentifier].identifier);   
+        				    //only add identifier that are not empty!
+        				    if (currentLayer.layer_identifier[indexIdentifier].identifier != "") {
+        				    	sdi_list.push(currentLayer.layer_identifier[indexIdentifier].identifier);   
+        				    }
         				}
         			}
         			//console.log(currentLayer);
@@ -397,15 +400,22 @@
     		if (typeof data[dataset_id]['title'] != "undefined") {
         		datasetLink = $(document.createElement('a')).appendTo(columnContainer);
         		datasetLink.attr({'target':'_blank'});
-        		datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
-        		datasetTitle = $(document.createElement('b')).appendTo(datasetLink);
+        		//datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
+        		datasetLink.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=' + encodeURIComponent(data[dataset_id]['csw'] + '?request=GetRecordById&service=CSW&version=2.0.2&ElementSetName=full&OUTPUTSCHEMA=http://www.isotc211.org/2005/gmd&Id=' + data[dataset_id]['fileidentifier'])});
+        		datasetTitle = $(document.createElement('i')).appendTo(datasetLink);
         		datasetTitle.append(data[dataset_id]['title']);
+        		if (data[dataset_id]['error_messages'].length > 0) {
+        			datasetLink.attr({'title': data[dataset_id]['error_messages'].join(' - ')});
+        			datasetLink.attr({'style':'color: red;'});
+        		} else {
+        			datasetLink.attr({'title': data[dataset_id]['spatial_dataset_identifier']});
+        		}
     		} else {
     			datasetInfo = $(document.createElement('div')).appendTo(columnContainer);
         		datasetInfo.attr({'style':'color: red;'});
         		//datasetInfo.attr({'href':'https://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D' + data[dataset_id]['fileidentifier']});
         		datasetInfoTitle = $(document.createElement('i')).appendTo(datasetInfo);
-        		datasetInfoTitle.attr({'title':'<?php echo _mb("Dataset not found in catalogue!");?>'});
+        		datasetInfoTitle.attr({'title':'<?php echo _mb("Dataset not found in catalogues (Regional, DE, EU)! Last checked CSW: " );?>' + data[dataset_id]['csw']});
         		datasetInfoTitle.append(data[dataset_id]['spatial_dataset_identifier']);
     		}
     		serviceType = [];
@@ -479,7 +489,7 @@
 	};
 	
     this.requestDownloadOptions = function (sdiArray, area_of_interest) {
-    	//console.log(sdiArray);
+    	console.log(sdiArray);
     	
     	var download_configuration = {}
     	download_configuration.area_of_interest = area_of_interest;
