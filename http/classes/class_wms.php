@@ -23,6 +23,7 @@ class wms {
 	var $wms_status;
 	var $wms_version;
 	var $wms_title;
+	var $wms_alternate_title;
 	var $wms_abstract;
 	var $wms_getcapabilities;
 	var $wms_getcapabilities_doc;
@@ -1011,8 +1012,12 @@ class wms {
 					$this->objLayer[$cnt_layer]->layer_name = $element['value'];
 				}
 				$cnt_identifier = 0;
+				//parse all identifiers from capabilities - but actually we have no way to store them into the database!
+				//the information will be only available by the instrinsic ows_relation_metadata after the registration process!
 				if(mb_strtoupper($element['tag']) == "IDENTIFIER"){
 					$this->objLayer[$cnt_layer]->layer_identifier[$cnt_identifier]->identifier = $element['value'];
+					//if class is invoked with special identifier (e.g. to search some layer in caps) - activate this layer - 
+					//set it to be visible (only needed for js mapobject!) - INSPIRE special
 					if ($datasetId != false) {
 					    if ($datasetId == $element['value']) {
 					        $e = new mb_exception("classes/class_wms.php: found a layer with searched identifier in wms - its name is: ".$this->objLayer[$cnt_layer]->layer_name);
@@ -1605,7 +1610,6 @@ class wms {
 		$newLayer->gui_layer_maxscale = $currentLayer["extension"]["GUI_MAXSCALE"];
 		
 		$newLayer->layer_abstract = $currentLayer["abstract"];
-
 		//
 		// set layer epsg
 		//
@@ -1631,7 +1635,6 @@ class wms {
 				$layerMaxXArray = $currentLayer["extension"]["MAXX"];
 				$layerMaxYArray = $currentLayer["extension"]["MAXY"];
 			}
-
 			for ($i=0; $i < count($layerEpsgArray); $i++) {
 				$currentLayerEpsg = array();
 				$currentLayerEpsg["epsg"] = $layerEpsgArray[$i];
@@ -1666,7 +1669,6 @@ class wms {
 				);
 			}
 		}
-
 		/*
 		 * set layer style
 		 */
@@ -1678,13 +1680,17 @@ class wms {
 			$newLayer->layer_style[$i]["legendurl_format"] = $currentLayer["style"][$i]["legendurl_type"];
 		}
 		/*
-		 * set layer_identifier - TODO - do it like for LAYER_EPSG!
-		 * dont load from wmc - will still have errors!
+		 * LAYER_IDENTIFIER will be an json string in the XML Document - ist should be parsed before!
 		 */
+		$countNotEmptyLayerIdentifier = 0;
+		$newLayer->layer_identifier = json_decode($currentLayer["extension"]["LAYER_IDENTIFIER"]);
 		/*for ($i = 0; $i < count($currentLayer["extension"]["LAYER_IDENTIFIER"]); $i++) {
-		    $newLayer->layer_identifier[$i] = array();
-		    $newLayer->layer_identifier[$i]["identifier"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"];
-		    $newLayer->layer_identifier[$i]["visible"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["visible"];
+		    if ($currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"] !== "no identifier available!") {
+		        $newLayer->layer_identifier[$countNotEmptyLayerIdentifier] = array();
+		        $newLayer->layer_identifier[$countNotEmptyLayerIdentifier]["identifier"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["identifier"];
+		        $newLayer->layer_identifier[$countNotEmptyLayerIdentifier]["visible"] = $currentLayer["extension"]["LAYER_IDENTIFIER"][$i]["visible"];
+    		    $countNotEmptyLayerIdentifier++;
+		    }
 		}*/
 		//2016-08-31 add dimension - user value come from wmc standard and client mapobject
 		$dimensionAttributes = array('name', 'units', 'unitSymbol', 'default', 'multipleValues', 'nearestValue', 'current', 'extent','userValue');
@@ -1824,7 +1830,7 @@ class wms {
 					",'".$this->objLayer[$i]->layer_style[$j]["legendurl"].
 					"', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');";
 			}
-			//layer identifiers
+			//layer identifiers since 2023-11-21
 			for($j=0; $j<count($this->objLayer[$i]->layer_identifier);$j++){
 			    if($parent){
 			        $str .= "parent.";
@@ -1957,7 +1963,7 @@ class wms {
 					print("wms_addLayerStyle('".$this->objLayer[$i]->layer_style[$j]["name"]."', '".addslashes($this->objLayer[$i]->layer_style[$j]["title"])."', ".$j.",".$i.",'".$this->objLayer[$i]->layer_style[$j]["legendurl"]."', '".$this->objLayer[$i]->layer_style[$j]["legendurlformat"]."');");
 				}
 			}
-			//layer identifiers
+			//layer identifiers since 2021-11-21 - to have a list of identifiers in map js object
 			for($j=0; $j<count($this->objLayer[$i]->layer_identifier);$j++){
 			    if($parent){
 			        echo "parent.";
@@ -2058,11 +2064,12 @@ class wms {
 			$uuid,
 			$this->inspire_annual_requests,
 			$this->wms_license_source_note,
-		    $this->wms_spatial_security
+		    $this->wms_spatial_security,
+		    $this->wms_alternate_title
 		);
 		$t = array(
 			's','s','s','s','s','s','s','s','s','s','s','s','s','s','s','s',
-			's','s','s','s','s','s','i','i','i','s','s','s','s','s','s','s','s','i','s','s'
+			's','s','s','s','s','s','i','i','i','s','s','s','s','s','s','s','s','i','s','s','s'
 		);
 		$res = db_prep_query($sql,$v,$t);
 		if(!$res){
@@ -2977,7 +2984,7 @@ SQL;
 		//they don't come from the capabilities!
 		if (!$updateMetadataOnly) {
 			//read network_access from database
-			$sql = "SELECT wms_network_access, fkey_mb_group_id, wms_max_imagesize, inspire_annual_requests, wms_license_source_note, wms_bequeath_licence_info, wms_bequeath_contact_info from wms WHERE wms_id = $1 ";
+			$sql = "SELECT wms_network_access, fkey_mb_group_id, wms_max_imagesize, inspire_annual_requests, wms_license_source_note, wms_bequeath_licence_info, wms_bequeath_contact_info, wms_alternate_title from wms WHERE wms_id = $1 ";
 			$v = array($myWMS);
 			$t = array('i');
 			$res = db_prep_query($sql,$v,$t);
@@ -2989,6 +2996,7 @@ SQL;
 			$this->wms_bequeath_licence_info = $row["wms_bequeath_licence_info"];
 			$this->wms_bequeath_contact_info = $row["wms_bequeath_contact_info"];
 			$this->fkey_mb_group_id = $row["fkey_mb_group_id"];
+			$this->wms_alternate_title = $row["wms_alternate_title"];
 		}
 		$e = new mb_exception('bequeath_licence: '.$this->wms_bequeath_licence_info);
 		//if network access is either stored in database nor given thru object, set it too a default value 0
@@ -3024,14 +3032,15 @@ SQL;
 		$sql .= "inspire_annual_requests = $20, ";
 		$sql .= "wms_license_source_note = $21, ";
 		$sql .= "wms_bequeath_licence_info= $22, ";
-		$sql .= "wms_bequeath_contact_info = $23 ";
+		$sql .= "wms_bequeath_contact_info = $23, ";
+		$sql .= "wms_alternate_title = $24 ";
 		//$sql .= "uuid = $15 ";
 		$sql .= " WHERE wms_id = $15";
 		$v = array($this->wms_version,$this->wms_getcapabilities,
 			$this->wms_getmap,$this->wms_getfeatureinfo,$this->wms_getlegendurl,
 			$admin->char_encode($this->wms_getcapabilities_doc),$this->wms_upload_url,strtotime("now"),
-			$this->wms_supportsld,$this->wms_userlayer,$this->wms_userstyle,$this->wms_remotewfs,$this->wms_network_access, $this->fkey_mb_group_id ,$myWMS, $this->wms_max_imagesize, $authType, $username, $password, $this->inspire_annual_requests,$this->wms_license_source_note, $this->wms_bequeath_licence_info, $this->wms_bequeath_contact_info);
-		$t = array('s','s','s','s','s','s','s','i','s','s','s','s','i','i','i','i','s','s','s','i','s','i','i');
+			$this->wms_supportsld,$this->wms_userlayer,$this->wms_userstyle,$this->wms_remotewfs,$this->wms_network_access, $this->fkey_mb_group_id ,$myWMS, $this->wms_max_imagesize, $authType, $username, $password, $this->inspire_annual_requests,$this->wms_license_source_note, $this->wms_bequeath_licence_info, $this->wms_bequeath_contact_info, $this->wms_alternate_title);
+		$t = array('s','s','s','s','s','s','s','i','s','s','s','s','i','i','i','i','s','s','s','i','s','i','i','s');
 		$res = db_prep_query($sql,$v,$t);
 		if(!$res){
 			db_rollback();
@@ -3060,14 +3069,15 @@ SQL;
 			//$sql .= "inspire_annual_requests = $20, ";
 			$sql .= "wms_bequeath_licence_info = $21, ";
 			$sql .= "wms_bequeath_contact_info = $22, ";
-			$sql .= "fkey_mb_group_id = $17 ";
+			$sql .= "fkey_mb_group_id = $17, ";
+			$sql .= "wms_alternate_title = $23";
 			#$sql .= "uuid = $18 ";
 			$sql .= " WHERE wms_id = $18";
 			$v = array($this->wms_title,$this->wms_abstract,$this->fees,$this->accessconstraints,
 				$this->contactperson,$this->contactposition,$this->contactorganization,$this->address,
 				$this->city,$this->stateorprovince,$this->postcode,$this->country,$this->contactvoicetelephone,
-				$this->contactfacsimiletelephone,$this->contactelectronicmailaddress,$this->wms_network_access, $this->fkey_mb_group_id , $myWMS, $this->wms_max_imagesize, $this->wms_license_source_note, $this->wms_bequeath_licence_info, $this->wms_bequeath_contact_info);
-			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','i','i','i','i','s','i','i');
+				$this->contactfacsimiletelephone,$this->contactelectronicmailaddress,$this->wms_network_access, $this->fkey_mb_group_id , $myWMS, $this->wms_max_imagesize, $this->wms_license_source_note, $this->wms_bequeath_licence_info, $this->wms_bequeath_contact_info, $this->wms_alternate_title);
+			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','s','s','i','i','i','i','s','i','i','s');
 			$res = db_prep_query($sql,$v,$t);
 			if(!$res){
 				db_rollback();	
@@ -3600,6 +3610,7 @@ SQL;
 				$this->wms_id = $row2["wms_id"];
 				$this->wms_version = $row2["wms_version"];
 				$this->wms_title = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_title"]));
+				$this->wms_alternate_title = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_alternate_title"]));
 				$this->wms_abstract = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_abstract"]));
 				$wmsowsproxy = $row2["wms_owsproxy"];
 				$this->wms_spatial_security = $row2["wms_spatial_security"];
@@ -3837,6 +3848,36 @@ SQL;
 				$this->objLayer[$layer_cnt]->layer_style[$count_layer_style]["legendurlformat"]=$row2["legendurlformat"];
 				$count_layer_style++;
 			}
+			//pull datasetids from ows_relation_metadata - maybe combine them with identifier from db, if those are available somewhen!
+			/*
+			 * - 2023-11-29
+			 */
+			/*$admin = new administration();
+			$e = new mb_exception("classes/class_wms.php - select dataset_ids from database (createObjFromDB)!");
+			$sql = "SELECT metadata_id, uuid, datasetid, datasetid_codespace from mb_metadata WHERE ";
+			$sql .= "metadata_id IN (SELECT fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id = $1) AND searchable IS TRUE ";
+			$v = array($layer_id);
+			$t = array('i');
+			$res_identifier = db_prep_query($sql, $v, $t);
+			$datasetIdentifier = array();
+			while($row = db_fetch_array($res_identifier)){
+			    $orgaInfo = $admin->getOrgaInfoFromRegistry('metadata', $row['metadata_id'], 0);
+			    $codespace = $admin->getIdentifierCodespaceFromRegistry($orgaInfo, $row);
+			    if ($row['datasetid'] != '') {
+			        $datasetIdentifier[] = $codespace . $row['datasetid'];
+			    } else {
+			        $datasetIdentifier[] = $codespace . $row['uuid'];
+			    }
+			}
+			$e = new mb_exception('class_wms.php: createObjFromDB -> found number of layeridentifiers: ' . count($datasetIdentifier));
+			//add identifier to layer object
+			$count_layer_identifier = 0;
+			foreach ($datasetIdentifier as $identifier) {
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->identifier = $identifier;
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->visible = false;
+			    $count_layer_identifier++;
+			    $e = new mb_exception('class_wms.php: layeridentifier: ' . $identifier);
+			}*/
 			//handle layer dimensions (first only time and elevation!)
 			$sql = "SELECT * FROM layer_dimension WHERE fkey_layer_id = $1 AND ( name = 'time' OR name = 'elevation')";
 			$v = array($layer_id);
@@ -3872,6 +3913,7 @@ SQL;
 			$this->wms_id = $row2["wms_id"];
 			$this->wms_version = $row2["wms_version"];
 			$this->wms_title = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_title"]));
+			$this->wms_alternate_title = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_alternate_title"]));
 			$this->wms_abstract = administration::convertIncomingString($this->stripEndlineAndCarriageReturn($row2["wms_abstract"]));
 			$wmsowsproxy = $row2["wms_owsproxy"];
 			$this->wms_spatial_security = $row2["wms_spatial_security"];
@@ -4110,7 +4152,36 @@ SQL;
 				$this->objLayer[$layer_cnt]->layer_dimension[$count_layer_dimension]->userValue = "";
 				$count_layer_dimension++;
 			}
-
+			//pull datasetids from ows_relation_metadata - maybe combine them with identifier from db, if those are available somewhen!
+			/*
+			 * - 2023-11-29
+			 * TODO: use an alternate approach to pull all coupled resources in one select for each wms 
+			 */
+			/*$admin = new administration();
+			$e = new mb_exception("classes/class_wms.php - select dataset_ids from database (createObjFromDBNoGui)!");
+			$sql = "SELECT metadata_id, uuid, datasetid, datasetid_codespace from mb_metadata WHERE ";
+			$sql .= "metadata_id IN (SELECT fkey_metadata_id FROM ows_relation_metadata WHERE fkey_layer_id = $1) AND searchable IS TRUE ";
+			$v = array($this->objLayer[$layer_cnt]->layer_uid);
+			$t = array('i');
+			$res_identifier = db_prep_query($sql, $v, $t);
+			$datasetIdentifier = array();
+			while($row = db_fetch_array($res_identifier)){
+			    $orgaInfo = $admin->getOrgaInfoFromRegistry('metadata', $row['metadata_id'], 0);
+			    $codespace = $admin->getIdentifierCodespaceFromRegistry($orgaInfo, $row);
+			    if ($row['datasetid'] != '') {
+			        $datasetIdentifier[] = $codespace . $row['datasetid'];
+			    } else {
+			        $datasetIdentifier[] = $codespace . $row['uuid'];
+			    }
+			}
+			$e = new mb_exception('class_wms.php: createObjFromDBNoGui -> found number of layeridentifiers: ' . count($datasetIdentifier));
+			//add identifier to layer object
+			$count_layer_identifier = 0;
+			foreach ($datasetIdentifier as $identifier) {
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->identifier = $identifier;
+			    $this->objLayer[$layer_cnt]->layer_identifier[$count_layer_identifier]->visible = false;
+			    $count_layer_identifier++;
+			}*/
 			// read out keywords
 			$sql = "SELECT keyword FROM keyword, layer_keyword 
 WHERE keyword_id = fkey_keyword_id AND fkey_layer_id = $1";

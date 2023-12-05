@@ -177,7 +177,12 @@ class SpatialDataCache():
         log.info("Spatial Dataset Identifier from metadata record: " + metadata_info['spatial_dataset_identifier'])
         if len(metadata.identification.distance) >= 1:
             if metadata.identification.uom[0] and metadata.identification.distance[0]:
-                uom = metadata.identification.uom[0].split("#")[1]
+                #log.info("uom: " + str(metadata.identification.uom[0]))
+                '''implement two different ways'''
+                if '#' in metadata.identification.uom[0]:
+                    uom = metadata.identification.uom[0].split("#")[1]
+                else:
+                    uom = metadata.identification.uom[0]
                 ground_resolution = float(metadata.identification.distance[0].replace('m', ''))
                 metadata_info['spatial_res_type'] = "groundResolution"
                 metadata_info['spatial_res_value'] = ground_resolution
@@ -417,7 +422,10 @@ class SpatialDataCache():
                                 spatial_dataset_identifier_array.append(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
                                 log.info(str(spatial_dataset_identifier_codespaces[i].text) + str(spatial_dataset_identifier_codes[i].text))
                             # find 
-                            index_of_featuretype = spatial_dataset_identifier_array.index(spatial_dataset_identifier)
+                            try:
+                                index_of_featuretype = spatial_dataset_identifier_array.index(spatial_dataset_identifier)
+                            except:
+                                index_of_featuretype = False
                             # log.info("index of featuretype: " + str(index_of_featuretype))
                             if isinstance(index_of_featuretype, int):
                                 # get name of featuretype
@@ -669,7 +677,7 @@ class SpatialDataCache():
         middle_phi = polygon_box[1] + (polygon_box[3] - polygon_box[1]) / 2
         delta_lon_deg = polygon_box[2] - polygon_box[0]
         delta_lat_deg = polygon_box[3] - polygon_box[1]
-        delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(360 / middle_phi * 2 * math.pi) / 360 * delta_lon_deg
+        delta_lon_m = 2 * math.pi * 6378137.0 * math.cos(middle_phi * 2 * math.pi / 360) / 360 * delta_lon_deg
         delta_lat_m = 2 * math.pi * 6378137.0 / 360 * delta_lat_deg
         # calculate groundResolution from scale
         # dpi = 150
@@ -759,13 +767,42 @@ class SpatialDataCache():
         tree = ET.fromstring(orig_metadata_xml)
         # extract metadata date
         md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}Date")
-        # set new metadata date
         current_date = datetime.now()
-        md_date[0].text = current_date.strftime('%Y-%m-%d')
+        if not md_date:
+            '''
+            <gmd:dateStamp>
+                <gco:DateTime>2023-11-06T07:18:10</gco:DateTime>
+            </gmd:dateStamp> 
+            '''
+            #try to find DateTime instead
+            md_date = tree.findall("./{http://www.isotc211.org/2005/gmd}dateStamp/{http://www.isotc211.org/2005/gco}DateTime")
+            # set new metadata dateTime
+            md_date[0].text = current_date.strftime('%Y-%m-%dT%H:%M:%S')
+        else:
+            # set new metadata date
+            md_date[0].text = current_date.strftime('%Y-%m-%d')
         md_identifier = tree.findall("./{http://www.isotc211.org/2005/gmd}fileIdentifier/{http://www.isotc211.org/2005/gco}CharacterString")
         md_identifier[0].text = str(uuid.uuid4())
         crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gco}CharacterString")
-        crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
+        if not crs_code:
+            '''
+            <gmd:referenceSystemInfo>
+            <gmd:MD_ReferenceSystem>
+            <gmd:referenceSystemIdentifier>
+            <gmd:RS_Identifier>
+            <gmd:code>
+            <gmx:Anchor xlink:title="DHDN / 3GK zone 2" xlink:href="http://www.opengis.net/def/crs/EPSG/0/31466">EPSG:31466</gmx:Anchor>
+            </gmd:code>
+            </gmd:RS_Identifier>
+            </gmd:referenceSystemIdentifier>
+            </gmd:MD_ReferenceSystem>
+            </gmd:referenceSystemInfo>
+            '''
+            crs_code = tree.findall("./{http://www.isotc211.org/2005/gmd}referenceSystemInfo/{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem/{http://www.isotc211.org/2005/gmd}referenceSystemIdentifier/{http://www.isotc211.org/2005/gmd}RS_Identifier/{http://www.isotc211.org/2005/gmd}code/{http://www.isotc211.org/2005/gmx}Anchor")
+            crs_code[0].set('href', "http://www.opengis.net/def/crs/EPSG/0/4326")
+            crs_code[0].text = 'EPSG:4326'
+        else:
+            crs_code[0].text = "urn:ogc:def:crs:EPSG:4326"
         md_format = tree.findall("./{http://www.isotc211.org/2005/gmd}distributionInfo/{http://www.isotc211.org/2005/gmd}MD_Distribution/{http://www.isotc211.org/2005/gmd}distributionFormat/{http://www.isotc211.org/2005/gmd}MD_Format/{http://www.isotc211.org/2005/gmd}name/{http://www.isotc211.org/2005/gco}CharacterString")
         if type == 'vector':
             md_format[0].text = 'GeoJSON'
@@ -795,7 +832,7 @@ class SpatialDataCache():
         downloadable_datasets = []
         start_time_check = time.time()
         for dataset in self.data_configuration['datasets']:
-            log.info(dataset['resourceidentifier'])
+            log.info('ResourceIdentifier: ' + dataset['resourceidentifier'])
             downloadable_dataset = {}
             start_time_dataset_metadata = time.time()
             metadata = self.get_metadata_by_resourceidentifier(dataset['resourceidentifier'])
@@ -824,10 +861,10 @@ class SpatialDataCache():
                     services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
                 else :
                     # unset fileidentifier because it does not make sense to download this dataset 
-                    downloadable_dataset['fileidentifier'] = ''
+                    # downloadable_dataset['fileidentifier'] = ''
                     downloadable_dataset['error_messages'].append('Metadata and the area of interest have no intersections!')
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
-                #log.info("number of found services: " + str(len(services)))
+                # log.info("number of found services: " + str(len(services)))
                 # debug - show service information
                 for service in services:
                     downloadable_dataset['services'].append(json.loads(self.check_download_options(services[service], str(metadata_info['spatial_dataset_identifier']), str(metadata_info['epsg_id']))))
@@ -837,20 +874,25 @@ class SpatialDataCache():
             else:
                 downloadable_dataset['error_messages'].append('Metadata could not be found in catalogue!')
             downloadable_datasets.append(downloadable_dataset)
-            #reset catalogue to first entry in list
+            # reset catalogue to first entry in list
             self.catalogue_uri = self.catalogue_uris[0]
             self.csw = CatalogueServiceWeb(self.catalogue_uri) 
-        #log.info(json.dumps(downloadable_datasets))
+        # log.info(json.dumps(downloadable_datasets))
         return json.dumps(downloadable_datasets)
 
     def get_metadata_by_resourceidentifier(self, spatial_dataset_identifier):
         dataset_query = PropertyIsEqualTo('csw:ResourceIdentifier', spatial_dataset_identifier)
-        #iterate over list of csw uris - don't forget to reset csw to first one after this!
+        # iterate over list of csw uris - don't forget to reset csw to first one after this!
         for csw_uri in self.catalogue_uris:
             self.catalogue_uri = csw_uri
+            log.info('Search in catalogue: ' + csw_uri);
             self.csw = CatalogueServiceWeb(self.catalogue_uri)
             # look for srv:serviceTypeVersion to find the atom feeds
-            self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
+            try:
+                self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
+            except:
+                log.info('An error occured when requesting the catalogue for identifier *' + spatial_dataset_identifier + '* - search in next catalogue!')
+                continue
             if len(self.csw.records) == 1:
                 return list(self.csw.records.values())[0]
             else:

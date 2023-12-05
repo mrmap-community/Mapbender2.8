@@ -20,8 +20,8 @@ class GetApi {
 	private $zoom = array();
 	private $geojsonzoom;
 	private $geojsonzoomscale;	
-        private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is given 
-	
+    private $datasetid; //new parameter to find a layer with a corresponding identifier element - solves the INSPIRE data service coupling after retrieving the ows from a dataset search via CSW interface! Only relevant, if a WMS is given 
+	private $nonedefaultwmc; //parameter for special wmc which maybe independent of application wmc - application can be started with other wmc than default wmc 
 	/**
 	 * @param array $input
 	 */
@@ -61,6 +61,9 @@ class GetApi {
 				case "DATASETID":
 					$this->datasetid = $this->normalizeDatasetIdInput($value);
 					break;
+				case "NONEDEFAULTWMC":
+				    $this->nonedefaultwmc = $this->normalizeNoneDefaultWmcInput($value);
+				    break;
 			}
 		}
 	}
@@ -129,6 +132,14 @@ class GetApi {
 		return $this->datasetid;
 	}
 
+	/*
+	 *
+	 *
+	 */
+	public function getNoneDefaultWmc(){
+	    return $this->nonedefaultwmc;
+	}
+	
 	/**
 	 * Returns an array of zoom parameters
 	 * @return array
@@ -145,6 +156,26 @@ class GetApi {
 		return $this->wmc;
 	}
 
+	/*
+	 * Functions to validate parameter values
+	 */
+	public function validate_integer($testMatch) {
+	    $pattern = '/^[0-9]*$/';
+	    if (!preg_match($pattern, $testMatch)){
+	       return false;
+	    } else {
+	        return true;
+	    }
+	}
+	
+	public function validate_integer_csv() {
+	    
+	}
+	
+	public function validate_gui_id() {
+	    
+	}
+	
 	// for possible inputs see http://www.mapbender.org/GET-Parameter#WMC
 	private function normalizeWmcInput ($input) {
 		// assume WMC=12,13,14
@@ -157,7 +188,7 @@ class GetApi {
 			}
 		}
 
-// check if each layer has at least an id, if not, delete
+        // check if each layer has at least an id, if not, delete
 		$i = 0;
 		while ($i < count($input)) {
 			if (!is_array($input[$i]) || !isset($input[$i]["id"]) || !is_numeric($input[$i]["id"])) {
@@ -173,10 +204,13 @@ class GetApi {
 	// for possible inputs see http://www.mapbender.org/GET-Parameter#LAYER
 	// for test cases, see http://www.mapbender.org/Talk:GET-Parameter#LAYER
 	private function normalizeLayerInput ($input) {
+	    //$e = new mb_exception("lib/class_GetApi.php: keys: " . json_encode($keys));
 		if (is_array($input)) {
 			$keys = array_keys($input);
+			//$e = new mb_exception("lib/class_GetApi.php: keys: " . json_encode($keys));
 			$isSingleLayer = false;
 			foreach ($keys as $key) {
+			    //$e = new mb_exception("lib/class_GetApi.php: check key: " . json_encode($key));
 				if (!is_numeric($key)) {
 					$isSingleLayer = true;
 					break;
@@ -187,7 +221,48 @@ class GetApi {
 				$input[0] = array();
 				foreach ($keys as $key) {
 					if (!is_numeric($key)) {
-						$input[0][$key] = $input[$key];
+					    //check values for keys - begin with querylayer
+					    switch ($key) {
+					        case "querylayer":
+					            if (!in_array($input[$key], array('0','1'))) {
+					                //throw away input!
+					                $e = new mb_exception("lib/class_GetApi.php: key: " . $key . " has a not allowed value: " . $input[$key]);
+					            } else {
+					                $input[0][$key] = $input[$key];
+					            }
+					            break;
+					        case "zoom":
+					            if (!in_array($input[$key], array('0','1'))) {
+					                //throw away input!
+					                $e = new mb_exception("lib/class_GetApi.php: key: " . $key . " has a not allowed value: " . $input[$key]);
+					            } else {
+					                $input[0][$key] = $input[$key];
+					            }
+					            break;
+					        case "visible":
+					            if (!in_array($input[$key], array('0','1'))) {
+					                //throw away input!
+					                $e = new mb_exception("lib/class_GetApi.php: key: " . $key . " has a not allowed value: " . $input[$key]);
+					            } else {
+					                $input[0][$key] = $input[$key];
+					            }
+					            break;
+					        case "id":
+					            if (!$this->validate_integer($input[$key])) {
+					                //throw away input!
+					                $e = new mb_exception("lib/class_GetApi.php: key: " . $key . " has a not allowed value: " . $input[$key]);
+					            } else {
+					                $input[0][$key] = $input[$key];
+					            }
+					            break;
+					        /*
+					         * zoom, visible, application, id are possible
+					         * TODO: check them all ;-)
+					         */
+					        default:
+					            $input[0][$key] = $input[$key];
+					            break;
+					    }
 						unset($input[$key]);
 					}
 				}
@@ -391,6 +466,20 @@ class GetApi {
 		}
 		return $datasetId;
 	}
+	
+	private function normalizeNoneDefaultWmcInput($input){
+	    $noneDefaultWmc = false;
+	    $testMatch = $input;
+	    $pattern = '/^[0-9]*$/';
+	    if (!preg_match($pattern, $testMatch)){
+	        $e = new mb_exception("lib/classGetApi.php: Get parameter NONEDEFAULTWMC has forbidden values - will be set to false!");
+	    } else {
+	        $noneDefaultWmc = $testMatch;
+	    }
+	    return $noneDefaultWmc;
+	}
+	
+	
 }
 
 ?>

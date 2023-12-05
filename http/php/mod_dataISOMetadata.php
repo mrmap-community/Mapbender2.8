@@ -47,8 +47,8 @@ $forceCache = false;
 foreach ($_REQUEST as $key => $val) {
 	$_REQUEST[strtoupper($key)] = $val;
 }
+header("Access-Control-Allow-Origin: *");
 //example mapbender uuid: 2494d033-ccdd-cdd7-71c6-3e3c195e1d85
-
 //validate request params
 if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 	//validate uuid
@@ -737,6 +737,20 @@ function fillISO19139($iso19139, $recordId)
 	$title_cs->appendChild($titleText);
 	$title->appendChild($title_cs);
 	$CI_Citation->appendChild($title);
+	
+	//add optional alternateTitle element
+	$alternateTitle = $iso19139->createElement("gmd:alternateTitle");
+	$alternateTitle_cs = $iso19139->createElement("gco:CharacterString");
+	if (isset($mb_metadata['alternate_title'])) {
+	    $alternateTitleText = $iso19139->createTextNode($mb_metadata['alternate_title']);
+	} else {
+	    $alternateTitleText = $iso19139->createTextNode("title not given");
+	}
+	$alternateTitle_cs->appendChild($alternateTitleText);
+	$alternateTitle->appendChild($alternateTitle_cs);
+	if ($alternateTitleText !== "") {
+	   $CI_Citation->appendChild($alternateTitle);
+	}	
 
 	#Do things for B 5.3 date of revision
 	//this should be created from the information of maintenance if available

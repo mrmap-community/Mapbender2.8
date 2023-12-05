@@ -178,7 +178,7 @@ if (session_id() !== $_REQUEST["sid"]) {
     header("Location: " . $redirectUrl);
     die();
 } else {
-    //$e = new mb_exception("Current session_id() identical to requested SID!");
+    $e = new mb_notice("Current session_id() identical to requested SID!");
 }
 //$e = new mb_exception("l180");
 //this is the request which may have been redirected
@@ -699,11 +699,16 @@ function getImage($log_id, $or, $auth = false, $mask = false)
 {
     global $reqParams;
     global $imageformats;
+    //$e = new mb_exception("owsproxy/http/index.php: req params: " . json_encode($reqParams) . " - img formats: " . json_encode($imageformats));
+    
     if (!in_array($reqParams['format'], $imageformats)) {
+        //$e = new mb_exception("owsproxy/http/index.php: not in formatlist ");
         $header = "Content-Type: image/png";
     } else {
-        $header = "Content-Type: ".$reqParams['format'];
+        //$e = new mb_exception("owsproxy/http/index.php: found in formatlist ");
+        $header = "Content-Type: ". stripslashes($reqParams['format']);
     }
+    //$e = new mb_exception("owsproxy/http/index.php: header: " .$header);
     //log the image_requests to database
     //log the following to table mb_proxy_log
     //timestamp,user_id,getmaprequest,amount pixel,price - but do this only for wms to log - therefor first get log tag out of wms!
@@ -1356,13 +1361,16 @@ function checkLayerPermission($wms_id, $l, $userId)
 
 function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask = null)
 {
-    global $reqParams, $n, $postData, $query;
+    global $reqParams, $n, $postData, $query, $owsproxyString, $wfsId, $sid;
     //debug
     $startTime = microtime();
     if ($postData == false) {
         $d = new connector();
         if (strtoupper($reqParams["resulttype"]) == "HITS") {
             $d->set("timeOut", "200");
+        }
+        if ($header !== false) {
+            //$d->set("externalHeaders", $header);
         }
 	    //check POST/GET
 	    if ($query->reqMethod !== 'POST') {
@@ -1371,7 +1379,9 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 $d->load($url, $auth);
             } else {
                 #$d = new connector($url);
+                
                 $d->load($url);
+                
             }
 	    } else {
 	        #$d = new connector();
@@ -1386,8 +1396,11 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
                 $d->load($url);
             }
 	    }
+	    
 	    $content = $d->file;
 	    $httpCode = $d->httpCode;
+	    //$e = new mb_exception("owsproxy/http/index.php: content: " . $content);
+	    //$e = new mb_exception("owsproxy/http/index.php: http code: " . $httpCode);
     } else {
         $postInterfaceObject = new connector();
         $postInterfaceObject->set('httpType','POST');
@@ -1528,6 +1541,10 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         return true;
     } elseif (strtoupper($reqParams["request"]) == "GETFEATURE") {
         $startTime = microtime();
+        //new 2023-10-11: exchange url of describefeaturetype operation in collection to allow parsing of the schema
+        $proxyUrl = OWSPROXY . "/" . $sid . "/" . $owsproxyString;
+        $describeFeaturetypeUrl = getWfsOperationUrl($owsproxyString, 'DescribeFeatureType', 'Get');
+        $content = str_replace(rtrim($describeFeaturetypeUrl, '?'), $proxyUrl, $content);
         //parse featureCollection and get number of objects
         //only possible if features should be logged!
         if ($log_id !== false) {

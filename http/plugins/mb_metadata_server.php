@@ -242,6 +242,7 @@ SQL;
 			"wms_id",
 			"wms_abstract",
 			"wms_title",
+		    "wms_alternate_title",
 			"fees",
 			"accessconstraints",
 			"contactperson",
@@ -377,7 +378,7 @@ SQL;
 		$wfsId = $ajaxResponse->getParameter("id");
 		getWfs($wfsId);
 		$sql = <<<SQL
-SELECT wfs_id, wfs_abstract, wfs_title, fees, accessconstraints, 
+SELECT wfs_id, wfs_abstract, wfs_title, wfs_alternate_title, fees, accessconstraints, 
 individualname, positionname, providername, voice, 
 facsimile, deliverypoint, city, 
 administrativearea, postalcode, country, electronicmailaddress,
@@ -390,6 +391,7 @@ SQL;
 		$resultObj['wfs_id'] = $row['wfs_id'];
 		$resultObj['summary'] = $row['wfs_abstract'];
 		$resultObj['title'] = $row['wfs_title'];
+		$resultObj['alternate_title'] = $row['wfs_alternate_title'];
 		$resultObj['fees'] = $row['fees'];
 		$resultObj['accessconstraints'] = $row['accessconstraints'];
 		$resultObj['individualName'] = $row['individualname'];
@@ -403,8 +405,8 @@ SQL;
 		$resultObj['postalCode'] = $row['postalcode'];
 		$resultObj['country'] = $row['country'];
 		$resultObj['electronicMailAddress'] = $row['electronicmailaddress'];
-		$resultObj['wfs_timestamp'] = $row['wfs_timestamp'] != "" ? date('d.m.Y', $row['wfs_timestamp']) : "";
-		$resultObj['wfs_timestamp_create'] = $row['wfs_timestamp_create'] != "" ? date('d.m.Y', $row['wfs_timestamp_create']) : "";
+		$resultObj['timestamp'] = $row['wfs_timestamp'] != "" ? date('d.m.Y', $row['wfs_timestamp']) : "";
+		$resultObj['timestamp_create'] = $row['wfs_timestamp_create'] != "" ? date('d.m.Y', $row['wfs_timestamp_create']) : "";
 		$resultObj['wfs_network_access'] = $row['wfs_network_access'];
 		$resultObj['wfs_max_features'] = $row['wfs_max_features'];
 		$resultObj['fkey_mb_group_id'] = $row['fkey_mb_group_id'];
@@ -895,6 +897,7 @@ SQL;
 				$columns = array(
 					"wms_abstract",
 					"wms_title",
+				    "wms_alternate_title",
 					"fees",
 					"accessconstraints",
 					"contactperson",
@@ -1081,6 +1084,7 @@ SQL;
 				$columns = array(
 					"summary", 
 					"title", 
+				    "alternate_title",
 					"fees", 
 					"accessconstraints", 
 					"individualName", 
@@ -1302,6 +1306,7 @@ SQL;
 			$resultObj["link"] = $mbMetadata->href; //char
 			//$resultObj["linktype"] = $mbMetadata->type; //char
 			$resultObj["title"] = $mbMetadata->title; //char -- prefill from layer/ft
+			$resultObj["alternate_title"] = $mbMetadata->alternate_title; //char -- prefill from layer/ft
 			$resultObj["abstract"] = $mbMetadata->abstract; //char - prefill from layer/ft
 			//$resultObj["format"] = $mbMetadata->dataFormat; //char
 			$resultObj["ref_system"] = $mbMetadata->refSystem; //char
@@ -1437,6 +1442,7 @@ SQL;
 			$resultObj["link"] = $mbMetadata->href; //char
 			$resultObj["linktype"] = $mbMetadata->type; //char
 			$resultObj["title"] = $mbMetadata->title; //char -- prefill from layer/ft
+			$resultObj["alternate_title"] = $mbMetadata->alternate_title; //char -- prefill from layer/ft
 			$resultObj["abstract"] = $mbMetadata->abstract; //char - prefill from layer/ft
 			$resultObj["format"] = $mbMetadata->dataFormat; //char
 			$resultObj["ref_system"] = $mbMetadata->refSystem; //char
@@ -1671,6 +1677,7 @@ SQL;
 			//$mbMetadata->fileIdentifier = $metadataId;
 			$mbMetadata->href = $data->link;
 			$mbMetadata->title = $data->title;
+			$mbMetadata->alternate_title = $data->alternate_title;
 			$mbMetadata->abstract = $data->abstract;
 			$mbMetadata->dataFormat = $data->format;
 			$mbMetadata->refSystem = $data->ref_system;
@@ -1896,9 +1903,11 @@ SQL;
 		} else {
 			$mbMetadata->export2Csw = 'f';
 		}
-
 		if (isset($data->title)) {
 			$mbMetadata->title = $data->title;
+		}
+		if (isset($data->alternate_title)) {
+		    $mbMetadata->alternate_title = $data->alternate_title;
 		}
 		if (isset($data->abstract)) {
 			$mbMetadata->abstract = $data->abstract;

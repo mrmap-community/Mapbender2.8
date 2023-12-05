@@ -96,6 +96,7 @@ class WmcToXml {
 		}
 
 		$currentWmsArray = $this->wmc->mainMap->getWmsArray();
+		//$e = new mb_exception("classes/class_wmcToXml.php: wmsArray of mainMap: " . json_encode($currentWmsArray));
 		$currentMap = $this->wmc->mainMap;
 		for ($i = 0; $i < count($currentWmsArray); $i++) {
 			$currentWms = $currentWmsArray[$i];
@@ -441,7 +442,7 @@ class WmcToXml {
 			return null;
 		}
 	}
-
+	
 	private function createLayerFormatListNode ($currentWms) {
 		$e_layer_format = $this->doc->createElement("FormatList");
 
@@ -489,9 +490,8 @@ class WmcToXml {
 		$layerExtensionData["layer_epsg"] = $currentLayer->layer_epsg;
 		$layerExtensionData["gui_wms_opacity"] = $currentWms->gui_wms_opacity;
 		$layerExtensionData["layer_featuretype_coupling"] = $currentLayer->layer_featuretype_coupling;
-		//$layerExtensionData["layer_identifier"] = json_encode($currentLayer->layer_identifier);
-		$layerExtensionData["layer_identifier"] = $currentLayer->layer_identifier;
-
+		$layerExtensionData["layer_identifier"] = $currentLayer->layer_identifier; //json_string
+        //add epsg part
 		for ($i = 0; $i < count($currentWms->gui_epsg); $i++) {
 			$found = false;
 			for ($j = 0; $j < count($layerExtensionData["layer_epsg"]); $j++) {
@@ -534,23 +534,30 @@ class WmcToXml {
 	}
 
 	private function addExtension ($key, $value) {
-		if (is_array($value)) {
-			if (is_numeric($key)) {
-				$key = "data" . $key;
-			}
-//			$e_currentExtensionTag = $this->doc->createElementNS($this->wmc->extensionNamespaceUrl, $this->wmc->extensionNamespace.":".$key);
-			$e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key);
-			foreach ($value as $childKey => $childValue) {
-				$newNode = $this->addExtension($childKey, $childValue);
-				if (!is_null($newNode)) {
-				    $e_currentExtensionTag->appendChild($newNode);
-				}
-			}
-		}
-		else {
-//			$e_currentExtensionTag = $this->doc->createElementNS($this->wmc->extensionNamespaceUrl, $this->wmc->extensionNamespace.":".$key, $value);
-			$e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key, $value);
-		}
+	    if ($key === "layer_identifier") {
+	       //$e = new mb_exception("classes/class_wmcToXml.php: ->addExtension: key: " . $key . " - value: " . json_encode($value));
+	       //in this case add layer_identifier as json string!
+	       $e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key, json_encode($value));
+	    } else { 
+    		if (is_array($value)) {
+    			if (is_numeric($key)) {
+    				$key = "data" . $key;
+    			}
+    //			$e_currentExtensionTag = $this->doc->createElementNS($this->wmc->extensionNamespaceUrl, $this->wmc->extensionNamespace.":".$key);
+    			$e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key);
+    			foreach ($value as $childKey => $childValue) {
+    				$newNode = $this->addExtension($childKey, $childValue);
+    				if (!is_null($newNode)) {
+    				    $e_currentExtensionTag->appendChild($newNode);
+    				} else {
+    				    $e = new mb_exception("classes/class_wmcToXml.php: could not add subnode!");
+    				}
+    			}
+    		} else {
+    //			$e_currentExtensionTag = $this->doc->createElementNS($this->wmc->extensionNamespaceUrl, $this->wmc->extensionNamespace.":".$key, $value);
+    			$e_currentExtensionTag = $this->doc->createElement($this->wmc->extensionNamespace.":".$key, $value);
+    		}
+	    }
 		return $e_currentExtensionTag;
 	}
 

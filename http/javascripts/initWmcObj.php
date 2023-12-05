@@ -184,7 +184,6 @@ if ($removeUnaccessableLayers->success == true){
 		$removeUnaccessableLayers = true;
 	}
 }
-
 /* TODO: if no GET API is given then don't do the following things*******************
 Create new WMC with services from GET API
 https://mb2wiki.mapbender2.org/GET-Parameter
@@ -195,12 +194,9 @@ Look in wmc xml ****************************************************************
 /*
 ************************************************************************************
 */
-
 $wmcGetApi = WmcFactory::createFromXml($wmc->toXml());
-
 //$e = new mb_exception("javascripts/initWmcObj.php: write initial wmc obj to {TMPDIR}/class_wmc0.json");//
 //json_encode($wmcGetApi);//: ".json_encode($wmcGetApi));
-
 /*if($h = fopen(TMPDIR . "/tmp_wmc0.json","w")){
     $content = json_encode($wmcGetApi) .chr(13).chr(10);
     if(!fwrite($h,$content)){
@@ -208,7 +204,6 @@ $wmcGetApi = WmcFactory::createFromXml($wmc->toXml());
     }
     fclose($h);
 }*/
-
 //$e = new mb_notice("javascripts/initWmcObj.php: initial wmc doc: ".$wmc->toXml());
 //$e = new mb_exception("javascripts/initWmcObj.php: initial wmc from xml: ".json_encode($wmcGetApi));
 //die();
@@ -230,7 +225,8 @@ $getParams = array(
 	"GEOJSON"=>getConfiguration("GEOJSON"),
 	"GEOJSONZOOM"=>getConfiguration("GEOJSONZOOM"),
 	"GEOJSONZOOMOFFSET"=>getConfiguration("GEOJSONZOOMOFFSET"),
-	"ZOOM"=>getConfiguration("ZOOM")
+	"ZOOM"=>getConfiguration("ZOOM"),
+    "NONEDEFAULTWMC"=>getConfiguration("NONEDEFAULTWMC")
 );
 $getApi = new GetApi($getParams);
 /*
@@ -239,25 +235,48 @@ WMC ID
 $startWmcId = false;
 $e = new mb_notice("javascript/initWmcObj.php: Check WMC GET API");
 $inputWmcArray = $getApi->getWmc();
-if ($inputWmcArray) {
-	$e = new mb_notice("javascript/initWmcObj.php: some WMC id was set thru Get Api!");
-	foreach ($inputWmcArray as $input) {
-	// Just make it work for a single Wmc
-		try {
-			$wmcGetApi = WmcFactory::createFromDb($input["id"]);
-			// update urls from wmc with urls from database if id is given
-			//$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
-			$updatedWMC = $wmcGetApi->updateUrlsFromDb();
-	        $wmcGetApi->createFromXml($updatedWMC);
-            //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
-            $startWmcId = $input["id"];
-			// increment load count
-			$wmcGetApi->incrementWmcLoadCount();
-		}
-		catch (Exception $e) {
-			new mb_exception("javascripts/initWmcObj.php: Failed to load WMC from DB via ID. Keeping original WMC.");
-		}
-	}
+$noneDefaultWmc = $getApi->getNoneDefaultWmc();
+if (is_numeric($noneDefaultWmc)) {
+    //some noneDefaultWmc is set - this has presedence for standard wmc!
+    try {
+        $wmcGetApi = WmcFactory::createFromDb($noneDefaultWmc);
+        // update urls from wmc with urls from database if id is given
+        //$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
+        $updatedWMC = $wmcGetApi->updateUrlsFromDb();
+        $wmcGetApi->createFromXml($updatedWMC);
+        // increment load count
+        $wmcGetApi->incrementWmcLoadCount();
+    }
+    catch (Exception $e) {
+        new mb_exception("javascripts/initWmcObj.php: Failed to load WMC from DB via ID (nonedefaultwmc). Keeping original WMC.");
+    }
+    //get wmc id for application metadata
+    //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
+    if ($inputWmcArray) {
+        $startWmcId = $inputWmcArray[0]['id'];
+    }
+    $e = new mb_exception("javascripts/initWmcObj.php: found nonedefaultwmc: " . $noneDefaultWmc . " wmc for starting application: " . $startWmcId);
+} else {
+    if ($inputWmcArray) {
+    	$e = new mb_notice("javascript/initWmcObj.php: some WMC id was set thru Get Api!");
+    	foreach ($inputWmcArray as $input) {
+    	// Just make it work for a single Wmc
+    		try {
+    			$wmcGetApi = WmcFactory::createFromDb($input["id"]);
+    			// update urls from wmc with urls from database if id is given
+    			//$e = new mb_exception("javascripts/initWmcObj.php: wmc->updateUrlsFromDb");
+    			$updatedWMC = $wmcGetApi->updateUrlsFromDb();
+    	        $wmcGetApi->createFromXml($updatedWMC);
+                //set variable to decide if application metadata can be accessed afterwards NEW 2019-11-28
+                $startWmcId = $input["id"];
+    			// increment load count
+    			$wmcGetApi->incrementWmcLoadCount();
+    		}
+    		catch (Exception $e) {
+    			new mb_exception("javascripts/initWmcObj.php: Failed to load WMC from DB via ID. Keeping original WMC.");
+    		}
+    	}
+    }
 }
 /*
 WMS
@@ -342,7 +361,8 @@ if ($getParams['WMS']) {
 				  				   
 					$resultOfWmsParsing = $currentWms->createObjFromXML($val, false, $getParams['DATASETID']);
 					//Set zoom to extent of wms 
-					//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
+//$e = new mb_exception("javascripts/initWmcObj.php: wms object to add: ".json_encode($currentWms));
+					//has a layer_identifier array, cause it is created from capabilities!
 					//$e = new mb_exception("javascripts/initWmcObj.php: first layer layer_epsg: ".json_encode($currentWms->objLayer[0]->layer_epsg[0]));
 					//find layer epsg of service where epsg=EPSG:4326
 					foreach ($currentWms->objLayer[0]->layer_epsg as $layerExtent) {
@@ -361,10 +381,18 @@ if ($getParams['WMS']) {
 						}
 					}
 					//search for bbox of special layer - overwrite the bbox of the wms if such a layer was found!
+					//example: http://localhost/mapbender/frames/index.php?&gui_id=Geoportal-RLP&WMS=https%3A%2F%2Fhaleconnect.com%2Fows%2Fservices%2Forg.789.ffa9f2a0-54d8-4f18-961c-196230496a0a_wms%3FSERVICE%3DWMS%26Request%3DGetCapabilities&DATASETID=haleconnect.com%2F995c10be-a9df-448f-9031-7b35eb0964f6_TN.RoadTransportNetwork.RoadLink
 					if (isset($getParams['DATASETID']) && $getParams['DATASETID'] != "") {
 						foreach ($currentWms->objLayer as $layerObj) {
+						    //$e = new mb_exception("javascripts/initWmcObj.php: iterate over identifier!");
+						    //uses the first occurence of a layer with this identifier - not all! TODO: create combined bbox of all layers which have this identifier defined!
 						    foreach ($layerObj->layer_identifier as $identifier) {
-						        if ($identifier->identifier == $getParams['DATASETID']) {
+						        /*$e = new mb_exception("javascripts/initWmcObj.php: layer_identifier: " . $identifier->identifier);
+						        $e = new mb_exception("javascripts/initWmcObj.php: DATASETID: " . str_replace('\/', '/', urldecode($getParams['DATASETID'])));
+						        $e = new mb_exception("javascripts/initWmcObj.php: DATASETID urlencoded: " . urldecode($getParams['DATASETID']));
+						        */
+						        if ($identifier->identifier == str_replace('\/', '/', urldecode($getParams['DATASETID']))) {
+						            $e = new mb_exception("javascripts/initWmcObj.php: DATASETID found zoom to extent!");
     								foreach ($layerObj->layer_epsg as $subLayerExtent){
     									if ($subLayerExtent["epsg"] == "EPSG:4326") {
     										// overwrite extend from getApi
@@ -387,11 +415,22 @@ if ($getParams['WMS']) {
 				}
 				if ($resultOfWmsParsing['success'] == true) {
 					array_push($wmsArray, $currentWms);
+					//this is only the array of the wms that are given via getapi
+					//$e = new mb_exception('javascripts/initWmcObj.php: new wms array(before merging): ' . json_encode($wmsArray));
 					$options['visible'] = $multipleAssocArray['visible'] === "1" ?
 						true : false;
 					$options['zoom'] = $multipleAssocArray['zoom'] === "1" ?
 						true : false;
+					//write wmc xml before and after merging
+					/*$wmc_old = $wmcGetApi->toXml();
+					$myfile = fopen(TMPDIR . "/wmc_before.xml", "w") or die("Unable to open file!");
+					fwrite($myfile, $wmc_old);
+					fclose($myfile);*/
 					$wmcGetApi->mergeWmsArray($wmsArray, $options);
+					/*$wmc_new = $wmcGetApi->toXml();
+					$myfile = fopen(TMPDIR . "/wmc_after.xml", "w") or die("Unable to open file!");
+					fwrite($myfile, $wmc_new);
+					fclose($myfile);*/
 					$wmsArray = array();
 					$multipleAssocArray = array();
 				} else {
@@ -802,7 +841,19 @@ if (true) {
 // TODO test following
 // workaround to have a fully merged WMC for loading
 //$e = new mb_exception("javascripts/initWmcObj.php: xml generate - tmp_wmc2.json!");//
+//debug
+/*$myfile = fopen(TMPDIR . "/wms_array_wmc_merged_2.json", "w") or die("Unable to open file!");
+fwrite($myfile, json_encode($wmcGetApi->mainMap->getWmsArray()));
+fclose($myfile);*/
+//$e = new mb_exception("javascripts/initWmcObj.php: before export to xml");//
+//information about layer
 $xml = $wmcGetApi->toXml();
+//$e = new mb_exception("javascripts/initWmcObj.php: " . $xml);
+//$e = new mb_exception("javascripts/initWmcObj.php: after export to xml");//
+//debug
+/*$myfile = fopen(TMPDIR . "/wmc_merged_2.xml", "w") or die("Unable to open file!");
+fwrite($myfile, $xml);
+fclose($myfile);*/
 /*
 if($h = fopen(TMPDIR . "/tmp_wmc2.json","w")){
     $content = json_encode($wmcGetApi) .chr(13).chr(10);
@@ -824,7 +875,13 @@ if ($removeUnaccessableLayers == true) {
 $wmcGetApi = new wmc();
 // For debuggin purposes
 // New Object with merged layers and other features - why?? TODO test 
+//$e = new mb_exception("javascripts/initWmcObj.php: create from xml");
 $wmcGetApi->createFromXml($xml);	
+//debug
+/*$xml2 = $wmcGetApi->toXml();
+$myfile = fopen(TMPDIR . "/wmc_merged_3.xml", "w") or die("Unable to open file!");
+fwrite($myfile, $xml2);
+fclose($myfile);*/
 //$e = new mb_exception("javascripts/initWmcObj.php: new wmc from saved xml generated - tmp_wmc3.json!");//
 /*
 if($h = fopen(TMPDIR . "/tmp_wmc3.json","w")){

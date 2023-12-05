@@ -296,7 +296,7 @@ if ($representationType == "htmlComplete") {
 }
 $mapPhpParameters = htmlentities($urlParameters, ENT_QUOTES, CHARSET);
 $mapPhpParameters .= "&amp;".htmlentities($_SERVER["QUERY_STRING"]);
-
+//TODO - validate further GET params - e.g. querylayers ... - do this also in index_ext.php!
 //$e = new mb_exception("index.php: mapPhpParameters: ".$mapPhpParameters);
 if ($representationType == "htmlComplete") {
 	$html .= "<script type='text/javascript' src='../javascripts/map.php?".$mapPhpParameters."'></script>".$linebreak;
