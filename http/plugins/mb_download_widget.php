@@ -306,6 +306,8 @@
         });
     };
     
+   
+    
     var validateAndSendForm = function () {
     	//alert('test');
     	//console.log('validate and send form');
@@ -495,11 +497,12 @@
     	download_configuration.area_of_interest = area_of_interest;
     	download_configuration.dataset_configuration = {};
     	download_configuration.dataset_configuration.datasets = [];
-    	for (sdi in sdiArray) {
+    	var uniqueSdiArray = sdiArray.filter((value, index, array) => array.indexOf(value) === index);
+    	for (sdi in uniqueSdiArray) {
     	    entry = {};
     	    //delete empty identifier from list
-    	    if (sdiArray[sdi] != "") {
-    	        entry['resourceidentifier'] = sdiArray[sdi];
+    	    if (uniqueSdiArray[sdi] != "") {
+    	        entry['resourceidentifier'] = uniqueSdiArray[sdi];
     		    download_configuration.dataset_configuration.datasets.push(entry);
     		}
     	}
