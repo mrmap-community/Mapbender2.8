@@ -12,6 +12,8 @@ options.mergeWmc = typeof options.mergeWmc === "number" ? options.mergeWmc : 0;
 options.appendWmc = typeof options.appendWmc === "number" ? options.appendWmc : 0;
 options.publishWmc = typeof options.publishWmc === "number" ? options.publishWmc : 0;
 options.showWmc = typeof options.showWmc === "number" ? options.showWmc : 1;
+//options.exportWmc = typeof options.exportWmc === "number" ? options.exportWmc : 1;
+options.exportWmc = 1;
 options.openLayers = typeof options.openLayers === "number" ? options.openLayers : 1;
 options.openLayersUrl = typeof options.openLayersUrl === "number" ? options.openLayersUrl : 1;
 options.deleteWmc = typeof options.deleteWmc === "number" ? options.deleteWmc : 1;
@@ -71,6 +73,9 @@ var originalI18nObject = {
 	"messageAppendSuccess":"WMC has been appended successfully.",
 	"labelDisplayWmc": "display WMC XML",
 	"labelWmcDocument": "WMC Document",
+	"labelOwsContextJsonDocument": "OWS Context - json",
+	"labelExportWmc": "Export",
+	"labelOwsContext": "Ows Context",
 	"labelOpenLayersExport": "export to OpenLayers",
 	"confirmLoadAnyway": "load Service anyway?",
 	"labelUploadCheckbox": "Update URLs and layer name/titles"
@@ -96,6 +101,7 @@ var LoadWmcApi = function () {
 	var wmcTable;
 	var $wmcPopup = null;
 	var $wmcDisplayPopup = null;
+	
 	var $wmcOpenLayersPopup = null;
 	var $wmcOpenLayersUrlPopup = null;
 	var $wmcMobilePopup = null;
@@ -166,6 +172,12 @@ var LoadWmcApi = function () {
 		title: translatedI18nObject.labelMobileUrl,
 		method: "getMobileUrl"
 	};
+	
+	var EXPORT_WMC_OPTIONS = {
+			src: "../img/owc_small.png",
+			title: "OWS Context"
+	};
+	
 
 	this.events = {
 		loaded: new Mapbender.Event()
@@ -243,7 +255,22 @@ var LoadWmcApi = function () {
 			pos: [700,50]
 		}).parent().css({position:"absolute"});
 	};
-
+	
+	this.showWmcOwsContextJson = function (id) {
+		that.hideDependendWindows();
+		var url = "../php/mod_exportWmc.php?outputFormat=json&wmcId=" + id;
+		var $wmcDisplayPopup = $('<div class="wmcDisplayPopup"><a href="'+ url + '&download=true' +'" target="_blank"><h3>Download</h3><img src="../img/gnome/document-save.png"/></a><br><br><iframe style="width:99%;height:99%;" src="' + url + '"></iframe></div>');
+		$wmcDisplayPopup.dialog({
+			title: translatedI18nObject.labelOwsContextJsonDocument,
+			bgiframe: true,
+			autoOpen: true,
+			modal: false,
+			width: 600,
+			height: 500,
+			pos: [700,50]
+		}).parent().css({position:"absolute"});
+	};
+	
 	this.hideWmcXml = function () {
 		if($('.wmcDisplayPopup').size() > 0) {
 			$('.wmcDisplayPopup').dialog('destroy');
@@ -459,6 +486,7 @@ var LoadWmcApi = function () {
 				(options.appendWmc ? "<th>" + t.labelAppend + "</td>" : "") +
 				(options.publishWmc ? "<th>" + t.labelPublic + "</td>" : "") +
 				(options.showWmc ? "<th>" + t.labelShow + "</td>" : "") +
+				(options.exportWmc ? "<th>" + t.labelOwsContext + "</td>" : "") +
 				(options.showApi ? "<th>" + t.labelApi + "</td>" : "") +
 				(options.editWmc ? "<th>" + t.labelEditWmc + "</td>" : "") +
 				(options.deleteWmc ? "<th>" + t.labelDelete + "</td>" : "") +
@@ -710,7 +738,16 @@ var LoadWmcApi = function () {
 			}
 		);
 	};
-
+	
+	var createExportOwsContextCell = function (wmc) {
+		return createTableCell(
+			EXPORT_WMC_OPTIONS,
+			function(){
+				that.showWmcOwsContextJson(wmc.id);
+			}
+		);
+	};
+	
 	var createEditWmcCell = function (wmc) {
 		return createTableCell(
 			EDIT_WMC_OPTIONS,
@@ -808,6 +845,9 @@ var LoadWmcApi = function () {
 				}
 				if (options.showWmc) {
 					$tr.append(createDisplayWmcCell(currentWmc));
+				}
+				if (options.exportWmc) {
+					$tr.append(createExportOwsContextCell(currentWmc));
 				}
 				if (options.showApi) {
 					$tr.append(createApiWmcCell(currentWmc));

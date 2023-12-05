@@ -27,6 +27,7 @@ abstract class Ows {
 	var $id;
 	var $name;
 	var $title;
+	var $alternate_title;
 	var $summary;
 	var $uploadUrl;
 	var $getCapabilities;

@@ -146,19 +146,15 @@ class OwsContext {
 	    foreach ($this->resource as $resource) {
 	        $feature = new stdClass();
 	        $feature->type = "Feature";
-	        
 	        $properties = new stdClass();
 	        $properties->title = (string)$resource->title;
 	        $properties->abstract = (string)$resource->abstract;
 	        $properties->updated = "";
-	        
 	        $properties->links->previews = array("href" => $resource->preview[0], "type" => "image/jpeg", "length" => 100 , "title" => "Preview for Layer XY");
-	        	
-	        if (count($resource->resourceMetadata) > 1) {
+	        if (count($resource->resourceMetadata) >= 1) {
 	            $properties->resourceMetadata = $resource->resourceMetadata;
 	        }
-	        
-	        $feature->offerings = array();
+	        $properties->offerings = array();
 	        
 	        //kml
 	        
@@ -184,7 +180,7 @@ class OwsContext {
 					$jsonOffering->extension[] = $extension;
 				}
 
-	            $feature->offerings[] = $jsonOffering;
+	            $properties->offerings[] = $jsonOffering;
 	            
 	        }
 	        $properties->minScaleDenominator = (double)$resource->minScaleDenominator;
@@ -283,9 +279,9 @@ class OwsContext {
 		$feedOwcDisplayMmPerPixelText =  $owsContextDoc->createTextNode($this->creator->creatorDisplay->mmPerPixel);
 		$feedOwcDisplayMmPerPixel->appendChild($feedOwcDisplayMmPerPixelText);
 		$feedOwcDisplay->appendChild($feedOwcDisplayMmPerPixel);
-                $atomFeed->appendChild($feedOwcDisplay);
+        $atomFeed->appendChild($feedOwcDisplay);
 		//rights
-                //category
+        //category
 		//optional areaOfInterest
 		if (isset($this->areaOfInterest) && $this->areaOfInterest !== "") {
 			$feedAreaOfInterest = $owsContextDoc->createElement("georss:where");
@@ -445,7 +441,6 @@ class OwsContext {
 		$creator->creatorDisplay = $creatorDisplay;
 		//add creator to object
 		$this->setCreator($creator);
-
         //decide which wmc to load - if local data exists - load whole xml		
 		if ($myWmc->has_local_data) {
 		    $wmcXml = wmc::getDocumentWithPublicData($wmcId);
@@ -456,7 +451,6 @@ class OwsContext {
 		} else {
 		    $wmcXml = $myWmc->toXml();
 		}
-		
 		//get the layers as single resources
 		libxml_use_internal_errors(true);
 		try {
@@ -482,18 +476,24 @@ class OwsContext {
 		/*
 		 * Extract digitized json objects with simplestyle-spec, if exists and transform them to kml by mapbenders classes - see conf/geoJsonSimpleStyle.json
 		 */
-		//$e = new mb_exception("test export geojson");
 		$kmlData = false;
 		if ($myWmc->has_local_data) {
 		    $localData = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:kmls");
 		    $localDataOrder = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:kmlOrder");
+		    if ( empty( $localData ) ) {
+		        $localData = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:KMLS");
+		        $localDataOrder = $WMCDoc->xpath("/wmc:ViewContext/wmc:General/wmc:Extension/mapbender:KMLORDER");
+		    }
+		    $localData = $localData[0];
+		    $localDataOrder= $localDataOrder[0];
 		    //use first entry
 		    //before, check if data is encoded 
 		    if (strpos($localData, 'base64_') === 0) {
 		        $localData = base64_decode(str_replace('base64_', '', $localData));
 		    }
-		    $localData = json_decode($localData[0]);
-		    $localDataOrder = json_decode($localDataOrder[0]);
+		    //$e = new mb_exception("classes/class_owsContext.php: localdata from geojson: " . $localData);
+		    $localData = json_decode($localData);
+		    $localDataOrder = json_decode($localDataOrder);
 		    $mergedKml = new Kml();
 		    $kmlArray = array();
 		    foreach ($localDataOrder as $collectionTitle) {
@@ -519,8 +519,7 @@ class OwsContext {
 		    $owsContextResource->folder = '/0';
 		    $owsContextResourceOffering->addContent($owsContextResourceOfferingContent);
 		    $owsContextResource->addOffering($owsContextResourceOffering);
-		    $this->addResource($owsContextResource);
-		    
+		    $this->addResource($owsContextResource); 
 		}
 		/*
 		 * End of KML generation
@@ -532,7 +531,6 @@ class OwsContext {
 		 * Pull information about the layer from mapbender registry - coupled dataset-metadata and monitoring information
 		 */
 		$layerIdArray = array_filter($WMCDoc->xpath("/wmc:ViewContext/wmc:LayerList/wmc:Layer/wmc:Extension/mapbender:layer_id"));
-		
 		//$e = new mb_exception("layer_ids: ".json_encode($layerIdArray, false));
 		if (count($layerIdArray) > 0) {
 		    $c = 1;
@@ -540,7 +538,7 @@ class OwsContext {
 		    $t = array();
     		// Select relevant information from mapbender database if some layer_ids are given
     		$sql = "select * from (select layer_info.*, ows_relation_metadata.fkey_metadata_id ";
-    		$sql .= "from (select layer.fkey_wms_id, layer_id, last_status, availability from ";
+    		$sql .= "from (select layer.fkey_wms_id as wms_id, layer_id, last_status, availability from ";
     		$sql .= "layer left outer join mb_wms_availability on layer.fkey_wms_id = mb_wms_availability.fkey_wms_id where layer_searchable = 1 and layer_id in (";
     		for($i=0; $i<count($layerIdArray); $i++){
     		    if($i>0){ $sql .= ",";}
@@ -597,8 +595,14 @@ class OwsContext {
 			$owsContextResource->title = $layer->Title;
 			$owsContextResource->abstract = $layer->Abstract;
 			//add information about the dataset-metadata which is coupled
-			foreach ($layerInfoArray[array_search($layerId, array_column($layerInfoArray, 'layerId'))]['metadata'] as $metadataUuid) {
-			    $owsContextResource->resourceMetadata[] = MAPBENDER_PATH . "/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $metadataUuid;
+			/*if ($layerInfoArray[array_search($layerId, array_column($layerInfoArray, 'layerId'))]['metadata'][0] != null) {
+			    $e = new mb_exception('classes/class_owsContext.php: metadata for layer ' . $layerId . ' : ' . json_encode($layerInfoArray[array_search($layerId, array_column($layerInfoArray, 'layerId'))]['metadata']));  
+			}*/
+			if ($layerInfoArray[array_search($layerId, array_column($layerInfoArray, 'layerId'))]['metadata'][0] != null) {
+    			foreach ($layerInfoArray[array_search($layerId, array_column($layerInfoArray, 'layerId'))]['metadata'] as $metadataUuid) {
+    			    $owsContextResource->resourceMetadata[] = MAPBENDER_PATH . "/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $metadataUuid;
+    			}
+    			//$e = new mb_exception('classes/class_owsContext.php: ' . json_encode($owsContextResource->resourceMetadata));
 			}
 			//add offering
 			$owsContextResourceOffering = new OwsContextResourceOffering();

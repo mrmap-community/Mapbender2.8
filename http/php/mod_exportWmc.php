@@ -70,7 +70,8 @@ if ($wmcExists) {
     $owsContext->readFromInternalWmc($existingWmcId);
     switch($outputFormat) {
         case "json":
-            header("Content-Type: application/json");
+            header( "Content-Type: application/json" );
+            header ( "Access-Control-Allow-Origin: " . "*");
             echo $owsContext->export("json");
             break;
         case "atom":

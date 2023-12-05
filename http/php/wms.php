@@ -109,7 +109,8 @@ function createExceptionXml ($errorCode, $errorMessage) {
 // check if service param is set
 //
 if (!isset($service) || $service === "" || $service != "WMS") {
-	header("Content-type: application/xhtml+xml; charset=UTF-8");
+	header ( "Content-type: application/xhtml+xml; charset=UTF-8" );
+	header ( "Access-Control-Allow-Origin: *" );
 	echo createExceptionXml("", "Parameter SERVICE invalid");
 	die;
 }
@@ -119,7 +120,8 @@ if (!isset($service) || $service === "" || $service != "WMS") {
 //
 if (!isset($requestType) || $requestType === "" || ($service == "WMS" && $requestType != "GetCapabilities")) {
 	//header("Content-type: application/xhtml+xml; charset=UTF-8");
-	header("Content-type: application/vnd.ogc.wms_xml; charset=UTF-8");
+	header ( "Content-type: application/vnd.ogc.wms_xml; charset=UTF-8" );
+	header ( "Access-Control-Allow-Origin: *" );
 	echo createExceptionXml("", "Parameter REQUEST invalid");
 	die;
 }
@@ -137,7 +139,8 @@ if (!isset($version) || $version === "" || ($service == "WMS" && $version != "1.
 //
 if (!isset($layerId) || !is_numeric($layerId)) {
 	// TO DO: create exception XML
-	header("Content-type: application/xhtml+xml; charset=UTF-8");
+	header ( "Content-type: application/xhtml+xml; charset=UTF-8" );
+	header ( "Access-Control-Allow-Origin: *" );
 	echo createExceptionXml("Layer not defined", "Unknown layer id " . $layerId);
 	die;
 }
@@ -154,7 +157,8 @@ $wms_row = db_fetch_array($res_wms_sql);
 
 if (!$wms_row["wms_id"]) {
 	// TODO: create exception XML
-	header("Content-type: application/xhtml+xml; charset=UTF-8");
+	header ( "Content-type: application/xhtml+xml; charset=UTF-8" );
+	header ( "Access-Control-Allow-Origin: *" );
 	echo createExceptionXml("Layer not defined", "Unknown layer id " . $layerId);
 	die;
 }
@@ -223,13 +227,15 @@ $updateSequenceDb = intval($wms_row["wms_timestamp"]);
 if ($updateSequence) {
 	if ($updateSequence > $updateSequenceDb) {
 		// Exception: code=InvalidUpdateSequence
-		header("Content-type: application/xhtml+xml; charset=UTF-8");
+		header ( "Content-type: application/xhtml+xml; charset=UTF-8" );
+		header ( "Access-Control-Allow-Origin: *" );
 		echo createExceptionXml("InvalidUpdateSequence", "Invalid update sequence");
 		die;
 	}
 	else if ($updateSequence == $updateSequenceDb) {
 		// Exception: code=CurrentUpdateSequence
-		header("Content-type: application/xhtml+xml; charset=UTF-8");
+		header ( "Content-type: application/xhtml+xml; charset=UTF-8" );
+		header ( "Access-Control-Allow-Origin: *" );
 		echo createExceptionXml("CurrentUpdateSequence", "Current update sequence");
 		die;
 	}
@@ -1506,6 +1512,6 @@ if ($withChilds) {
 }
 $layer->appendChild($subLayer);
 header("Content-type: application/xhtml+xml; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
+header ( "Access-Control-Allow-Origin: *" );
 echo $doc->saveXml();
 ?>

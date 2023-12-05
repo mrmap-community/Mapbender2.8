@@ -1620,7 +1620,7 @@ function checkLayerPermission($wms_id, $l, $userId)
 
 function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask = null)
 {
-    global $reqParams, $n, $postData, $query;
+    global $reqParams, $n, $postData, $query, $owsproxyString, $wfsId;
     header ( "Access-Control-Allow-Origin: " . "*");
     $startTime = microtime();
     if ($postData == false) {
@@ -1787,6 +1787,16 @@ function getDocumentContent($log_id, $url, $header = false, $auth = false, $mask
         return true;
     } elseif (strtoupper($reqParams["request"]) == "GETFEATURE") {
         $startTime = microtime();
+        //new 2023-10-11: exchange url of describefeaturetype operation in collection to allow parsing of the schema
+        $owsproxyUrl = parse_url(OWSPROXY);
+        if ($owsproxyUrl['port'] == '80' || $owsproxyUrl['port'] == '') {
+            $port = "";
+        } else {
+            $port = ":" . $owsproxyUrl['port'];
+        }
+        $proxyUrl = $owsproxyUrl['scheme'] . "://" . $owsproxyUrl['host'] . $port . "/registry/wfs/" . $wfsId;
+        $describeFeaturetypeUrl = getWfsOperationUrl($owsproxyString, 'DescribeFeatureType', 'Get');
+        $content = str_replace(rtrim($describeFeaturetypeUrl, '?'), $proxyUrl, $content);
         //parse featureCollection and get number of objects
         //only possible if features should be logged!
         if ($log_id !== false) {

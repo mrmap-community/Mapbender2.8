@@ -18,6 +18,11 @@
 		<img class="metadata_img" title="<?php echo _mb("INSPIRE 1.1: resource title");?>" src="../img/misc/inspire_eu_klein.png" alt="" />
 	</p>
 	<p>
+		<label for="wms_alternate_title"><?php echo _mb("WMS Alternate Title (Registry)");?>:</label>
+		<input name="wms_alternate_title" id="wms_alternate_title"/>
+		<img class="help-dialog" title="<?php echo _mb("Alternate title (ISO19139)");?>" src="../img/questionmark.png" alt="" help="{text:'<?php echo _mb("Alternate title element as defined in ISO19115. Only one alternate title is possible at the moment!");?>'}"/>
+	</p>
+	<p>
     	<label for="wms_abstract"><?php echo _mb("WMS Abstract (OWS)");?>:</label>
     	<input name="wms_abstract" id="wms_abstract"/>
     	<img class="metadata_img" title="<?php echo _mb("INSPIRE 1.2: resource abstract");?>" src="../img/misc/inspire_eu_klein.png" alt="" />

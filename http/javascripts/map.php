@@ -94,7 +94,8 @@ for ($i = 0; $i < count($extFileArray); $i++) {
 	}
 }
 //unset($_GET['WMS']);
-echo "var getParams = ".json_encode($_GET).";";
+//unset($_GET['querylayer']);
+echo "var getParams = " . json_encode($_GET) . ";";
 //
 // Load internal JavaScript libraries
 //

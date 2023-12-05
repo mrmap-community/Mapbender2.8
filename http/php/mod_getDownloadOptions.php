@@ -275,7 +275,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					//new 2019/07
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "REST";
-					$downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('OGC API - Features (Draft)').": ".$row['title']." - "._mb("based on WFS 2.0.0+ datasource");
+					$downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('OGC API - Features').": ".$row['title'];
 					//service metadata:
 					$downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_featuretypeISOMetadata.php?SERVICETYPE=ogcapifeatures&SERVICE=WFS&outputFormat=iso19139&Id=".$row['resource_id'];
 					$downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
