@@ -396,6 +396,9 @@
     	columnContainer = $(document.createElement('th')).appendTo(rowContainer);
     	vectorTitle = $(document.createElement('b')).appendTo(columnContainer);
     	vectorTitle.append("<?php echo _mb('Raster');?>");
+    	columnContainer = $(document.createElement('th')).appendTo(rowContainer);
+    	serviceTitle = $(document.createElement('b')).appendTo(columnContainer);
+    	serviceTitle.append("<?php echo _mb('Service Info');?>");	
     	for (dataset_id in data) {
     		rowContainer = $(document.createElement('tr')).appendTo(tableContainer);
     		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
@@ -446,7 +449,17 @@
     		} else {
     			rasterCheck.attr({'disabled':'disabled'});
     		}
-
+    		columnContainer = $(document.createElement('th')).appendTo(rowContainer);
+    		if (typeof data[dataset_id]['services'] !== "undefined"  &&  data[dataset_id]['services'].length > 0) {
+        		serviceCheck = $(document.createElement('img')).appendTo(this.columnContainer);
+    			serviceCheck.attr({'src':'../img/server_map-ilink.png'});
+    			serviceCheck.attr({'width':'20'});
+    			serviceCheck.attr({'height':'20'});
+    			//serviceCheck.attr({'onClick':'test = window.open("data:text/json,"' + encodeURIComponent(JSON.stringify(data[dataset_id]['services'])) + ', "_blank");test.focus();'});
+    			//serviceCheck.attr({'onClick':'alert("' + JSON.stringify(data[dataset_id]['services']) + '")'});
+    			//serviceCheck.attr({'onClick':'alert("' + JSON.stringify(data[dataset_id]['services']) + '")'});
+    			serviceCheck.attr({'title': JSON.stringify(data[dataset_id]['services'])});
+			}
     	}
     	submitContainer = $(document.createElement('input')).appendTo(formContainer);
     	submitContainer.attr({'type':'button'});
