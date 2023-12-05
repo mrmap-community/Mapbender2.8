@@ -888,7 +888,11 @@ class SpatialDataCache():
             log.info('Search in catalogue: ' + csw_uri);
             self.csw = CatalogueServiceWeb(self.catalogue_uri)
             # look for srv:serviceTypeVersion to find the atom feeds
-            self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
+            try:
+                self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
+            except:
+                log.info('An error occured when requesting the catalogue for identifier *' + spatial_dataset_identifier + '* - search in next catalogue!')
+                continue
             if len(self.csw.records) == 1:
                 return list(self.csw.records.values())[0]
             else:
