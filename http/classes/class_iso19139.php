@@ -96,9 +96,9 @@ class Iso19139 {
 	function __construct() {
 		//initialize empty iso19139 object
 		$this->fileIdentifier = "";
-		$title->title = "empty iso19139 object title";
-		$title->alternate_title = "";
-		$title->abstract = "empty iso19139 object abstract";
+		$this->title = "empty iso19139 object title";
+		$this->alternate_title = "";
+		$this->abstract = "empty iso19139 object abstract";
 		$this->createDate = "1900-01-01";
 		$this->changeDate = "1900-01-01";
 		$this->metadata = "";
