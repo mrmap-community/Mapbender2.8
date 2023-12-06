@@ -1421,7 +1421,7 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 	c-0.09,0.08-0.17,0.18-0.27,0.24c-1.1,0.66-1.83,2.33-0.61,3.01C29.21,20.41,34.22,18.79,35.67,18.45z M27.18,10.08
 	c-0.28-0.38-0.53-0.9-1.06-0.58c-0.44,0.26-0.86,0.66-0.48,1.34c0.28,0.49,0.41,1.07,0.64,1.59c0.09,0.21,0.3,0.37,0.46,0.56
 	c0.21-0.47,0.34-0.84,0.53-1.18C27.59,11.21,27.61,10.66,27.18,10.08z"/>
-</svg>Geopackage Export<span style=''border:1px solid;padding: 1px 4px;margin-left:15px;font-style: italic;font-weight:bold;''>beta</span>','a','../plugins/mb_download_widget_2019.php','../widgets/w_digitize.js,../extensions/RaphaelJS/raphael-1.4.7.min.js','mapframe1','jq_ui','http://www.mapbender.org/index.php/Measure');
+</svg>Geopackage Export<span style=''border:1px solid;padding: 1px 4px;margin-left:15px;font-style: italic;font-weight:bold;''>beta</span>','a','../plugins/mb_download_widget.php','../widgets/w_digitize.js,../extensions/RaphaelJS/raphael-1.4.7.min.js','mapframe1','jq_ui','http://www.mapbender.org/index.php/Measure');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-Hessen-2019','sdi_download_widget','css','/* INSERT sdi_download_widget -> elementVar -> css (text/css) */
 
 #toolsContainer #sdi_download_widget svg {
