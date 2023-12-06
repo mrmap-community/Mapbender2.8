@@ -101,6 +101,7 @@
 			autoOpen: false,
 			position: [o.$target.offset().left+20, o.$target.offset().top+80]
 		}).bind("dialogclose", function () {
+			$('#' + o.id).removeClass("myOnClass");
 			button.stop();
 			$(this).find('.digitize-image').unbind('click');
 			that.destroy();
@@ -544,6 +545,7 @@
  	this.activate = function () {
  		console.log('activate');
 		downloadDialog.dialog("open");
+		$('#toolsContainer').hide() && $('a.toggleToolsContainer').removeClass('activeToggle');
 		/*if (!$('#dataset-list').length) {
 			$('#dataset-list-header').hide();
 		}*/
