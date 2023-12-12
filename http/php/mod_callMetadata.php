@@ -16,6 +16,7 @@
 require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 //require_once(dirname(__FILE__)."/../../conf/geoportal.conf");#???
 require_once(dirname(__FILE__)."/../classes/class_metadata.php");
+require_once(dirname(__FILE__)."/../classes/class_administration.php");
 require_once(dirname(__FILE__)."/../classes/class_json.php");
 
 //initialize request parameters:
@@ -496,6 +497,11 @@ if ($resultTarget == 'web' or $resultTarget == 'debug') {
 		$searchResources = "wms";
 		$searchPages = "1";
 	}
+}
+
+if (DEFINED("SEARCH_LOG") && SEARCH_LOG == true) {
+    $admin = new administration();
+    $admin->logSearchInterfaceUsage ($_SERVER['HTTP_REFERER'], $searchURL, $searchText, $_SERVER['HTTP_USER_AGENT'], null);
 }
 
 //convert the respources and the pagenumbers into arrays

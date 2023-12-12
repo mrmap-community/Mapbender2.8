@@ -5,6 +5,7 @@ require_once(dirname(__FILE__)."/../classes/class_json.php");
 //classes for csw handling
 require_once(dirname(__FILE__)."/../classes/class_cswClient.php");
 require_once(dirname(__FILE__)."/../classes/class_csw.php");
+require_once(dirname(__FILE__)."/../classes/class_administration.php");
 //************************************************************************************
 //parsing parameters
 //************************************************************************************
@@ -473,6 +474,13 @@ if ($resultTarget == 'web' or $resultTarget == 'debug') {
 //convert the respources and the pagenumbers into arrays
 $searchResourcesArray = explode(",",$searchResources);
 $searchPages = explode(",",$searchPages);
+
+//$originFromHeader - maybe alternative to referer $_SERVER['HTTP_REFERER']
+if (DEFINED("SEARCH_LOG") && SEARCH_LOG === true) {
+    $admin = new administration();
+    $admin->logSearchInterfaceUsage ($_SERVER['HTTP_REFERER'], $searchURL, $searchText, $_SERVER['HTTP_USER_AGENT'], $catalogueId);
+}
+
 //************************************************************************************
 //build query - one solution is combining all textfilter with single <And> tags, other solution maybe like filter as "*searchText1*searchText2*searchText3*"
 //single leads to a lower amount of results ! - mmh - how does the filter will be evaluated?
