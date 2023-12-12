@@ -501,7 +501,7 @@ if ($resultTarget == 'web' or $resultTarget == 'debug') {
 
 if (DEFINED("SEARCH_LOG") && SEARCH_LOG == true) {
     $admin = new administration();
-    $admin->logSearchInterfaceUsage ($_SERVER['HTTP_REFERER'], $searchURL, $searchText, $_SERVER['HTTP_USER_AGENT'], null);
+    $admin->logSearchInterfaceUsage ($_SERVER['HTTP_REFERER'], delTotalFromQuery("searchId", $searchURL), $searchText, $_SERVER['HTTP_USER_AGENT'], null);
 }
 
 //convert the respources and the pagenumbers into arrays
