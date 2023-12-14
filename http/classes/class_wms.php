@@ -23,7 +23,7 @@ class wms {
 	var $wms_status;
 	var $wms_version;
 	var $wms_title;
-	var $wms_alternate_title;
+	var $wms_alternate_title = '';
 	var $wms_abstract;
 	var $wms_getcapabilities;
 	var $wms_getcapabilities_doc;
@@ -2026,8 +2026,8 @@ class wms {
 		$sql .= "accessconstraints, contactperson, contactposition, contactorganization, address, city, ";
 		$sql .= "stateorprovince, postcode, country, contactvoicetelephone, contactfacsimiletelephone, contactelectronicmailaddress, ";
 		$sql .= "wms_owner,wms_timestamp,wms_timestamp_create,wms_username,wms_password,wms_auth_type,";
-		$sql .= "wms_supportsld, wms_userlayer, wms_userstyle, wms_remotewfs, uuid, inspire_annual_requests, wms_license_source_note, wms_spatial_security) ";
-		$sql .= "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36)";
+		$sql .= "wms_supportsld, wms_userlayer, wms_userstyle, wms_remotewfs, uuid, inspire_annual_requests, wms_license_source_note, wms_spatial_security, wms_alternate_title) ";
+		$sql .= "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37)";
 		$v = array(
 			$this->wms_version,
 			$this->wms_title,

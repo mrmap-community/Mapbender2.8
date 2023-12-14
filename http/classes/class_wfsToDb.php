@@ -58,6 +58,9 @@ class WfsToDb {
 	 */
 	public static function insert ($aWfs, $owner=false) {
 		db_begin();
+		if (is_null($aWfs->alternate_title)) {
+		    $aWfs->alternate_title = "";
+		}
 		$uuid = new Uuid();
 		$sql = "INSERT INTO wfs (wfs_version, wfs_name, wfs_title, wfs_abstract, ";
 		$sql .= "wfs_getcapabilities, wfs_getcapabilities_doc, wfs_upload_url, ";
@@ -203,6 +206,9 @@ class WfsToDb {
 		//$e = new mb_exception("awfs_username: ".$aWfs->auth['username']);
 		$admin = new administration();
 		db_begin();
+		if (is_null($aWfs->alternate_title)) {
+		    $aWfs->alternate_title = "";
+		}
 		// update WFS
 		if (!$updateMetadataOnly) {
 			$e = new mb_notice("classes/class_wfsToDb.php: - function update - not from metadata editor");
