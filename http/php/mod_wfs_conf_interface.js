@@ -168,7 +168,7 @@ var WfsConfInterface = function (options) {
 
 	var wfsArray = [];
 	var wfsConfArray = [];
-
+	
 	// get available WFS ("new" mode)
 	var getWfsFromDb = function (options) {
 		var req = new Mapbender.Ajax.Request({
@@ -205,6 +205,48 @@ var WfsConfInterface = function (options) {
 				}
 				if (typeof options.callback === "function") {
 					options.callback(wfsConfArray);
+				}
+			}
+		});
+		req.send();	
+	};
+	
+	// get available WFS configuration array (names and ids) ("edit" mode)
+	var getWfsConfsFromDb2 = function (options) {
+		var req = new Mapbender.Ajax.Request({
+			method : "getWfsConfs2",
+			parameters : {},
+			url: "../php/mod_wfs_conf_server.php",
+			callback: function (result, success, message) {
+				if (result !== null) {
+					wfsConfArray = result;
+				}
+				if (typeof options !== "object") {
+					return;
+				}
+				if (typeof options.callback === "function") {
+					options.callback(wfsConfArray);
+				}
+			}
+		});
+		req.send();	
+	};
+	
+	// get one single WFS configuration ("edit" mode)
+	var getWfsConfFromDb = function (wfsConfId) {
+		var req = new Mapbender.Ajax.Request({
+			method : "getWfsConfById",
+			async: false,
+			parameters : {
+				"wfsConfId": wfsConfId
+			},
+			url: "../php/mod_wfs_conf_server.php",
+			callback: function (result, success, message) {
+				if (result !== null) {
+					wfsConfObj = result;
+					onSelectWfsConf(wfsConfObj[0]);
+					//alert(JSON.stringify(wfsConfObj));
+					//return result;
 				}
 			}
 		});
@@ -266,7 +308,9 @@ var WfsConfInterface = function (options) {
 		return null;
 	};
 
-	var getWfsConfById = function (id) {
+/*	var getWfsConfById = function (id) {
+		//new - call by ajax - but in sync
+		//
 		// find WFS Conf in WFS Conf array
 		for (var i = 0; i < wfsConfArray.length; i++) {
 			if (wfsConfArray[i].id === id) {
@@ -275,7 +319,7 @@ var WfsConfInterface = function (options) {
 		}
 		return null;
 	};
-	
+*/	
 	var getWfsConfIndex = function (id) {
 		// find WFS Conf in WFS Conf array
 		for (var i = 0; i < wfsConfArray.length; i++) {
@@ -440,8 +484,10 @@ var WfsConfInterface = function (options) {
 		$select.change(function () {
 			if (this.selectedIndex !== 0) {
 				var wfsConfId = parseInt(this.value);
-				var wfsConf = getWfsConfById(wfsConfId);
-				onSelectWfsConf(wfsConf);
+				//var wfsConf = getWfsConfById(wfsConfId);
+				//onSelectWfsConf(wfsConf);
+				//do this by sync ajax call - to pull only one wfs-conf
+				getWfsConfFromDb(wfsConfId);
 			}
 		});
 		$select.removeAttr("disabled");
@@ -1112,7 +1158,7 @@ var WfsConfInterface = function (options) {
 				isNotBusy.trigger();
 			}
 		});
-		getWfsConfsFromDb({
+		getWfsConfsFromDb2({
 			"callback": function(wfsConfArray){
 				fillWfsConfSelectBox(wfsConfArray);
 				isNotBusy.trigger();
