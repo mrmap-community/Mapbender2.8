@@ -281,7 +281,7 @@ var WfsConfInterface = function (options) {
 					$("#wfs_conf_id").val(result.id);
 	
 					// update WFS conf array (add the latest entry)
-					getWfsConfsFromDb({
+					getWfsConfsFromDb2({
 						"callback": function(wfsConfArray) {
 							isNotBusy.trigger();
 							alert(message);
@@ -1133,7 +1133,7 @@ var WfsConfInterface = function (options) {
 		"Create new WFS configuration" + 
 		"</a></li>" + 
 		"<li><a href='mod_wfs_conf_edit.html'>" + 
-		"Edit existing WFS configuration" + 
+		"Edit existing WFS configuration (only assigned are listed!)" + 
 		"</a></li>" + 
 		"</ul>";
 
