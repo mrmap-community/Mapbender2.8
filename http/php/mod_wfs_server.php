@@ -94,7 +94,7 @@ function getServices(){
 		$sql .= "$" . $i;
 		array_push($t, "i");
 	}
-	$sql .= ") ORDER BY wfs_title";
+	$sql .= ") ORDER BY wfs_id";
 	$res = db_prep_query($sql, $v, $t);
 	while($row = db_fetch_array($res)){
 		array_push($services['id'], $row['wfs_id']);
