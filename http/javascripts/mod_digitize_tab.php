@@ -23,7 +23,9 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">'
 $digitize_conf_filename = "digitize_default.conf";
 include '../include/dyn_css.php';
 ?>
+<link rel="stylesheet" href="../extensions/jquery-ui-1.7.2.custom/css/ui-customized_4_digitize/jquery-ui-1.7.3.custom.css">
 <script type='text/javascript' src='../extensions/jquery-ui-1.7.2.custom/js/jquery-1.3.2.min.js'></script>
+<script type='text/javascript' src='../extensions/jquery-ui-1.7.2.custom/js/jquery-ui-1.7.2.custom.min.js'></script>
 <script type='text/javascript'>
 /**
  * Package: digitize
@@ -310,6 +312,7 @@ if (typeof snapping === "undefined") {
 
 var wfsWindow;	
 var wfsConf = [];
+//initialize geometryArray
 var d;
 var mod_digitize_width;
 var mod_digitize_height;
@@ -345,6 +348,9 @@ try {if(mod_digitize_elName){}}catch(e) {mod_digitize_elName = "digitize";}
 try {if(nonTransactionalEditable){}}catch(e) {nonTransactionalEditable = false;}
 try {if(updatePointGeometriesInstantly){}}catch(e) {updatePointGeometriesInstantly = false;}
 try {if(addCloneGeometryButton){}}catch(e) {addCloneGeometryButton = false;}
+//upload button for geojson object
+try {if(uploadGeometryButton){}}catch(e) {uploadGeometryButton = false;}
+
 
 if (typeof featuresMustHaveUniqueId === "undefined") {
 	var featuresMustHaveUniqueId = false;
@@ -458,6 +464,20 @@ function appendGeometryArrayFromKML () {
 	}
 }
 
+/**
+ * Append geometries from geojson
+ */
+function appendGeometryArrayFromGeojson (geojson) {
+	//var geojson = {"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[6.943788107601935,50.34489163223837],[6.976541720328418,50.367952714990246],[7.030462639450878,50.356286361484216],[6.993285169641387,50.30438162115576],[6.949897754655705,50.30092595283579],[6.90572751077115,50.315429291224255],[6.943788107601935,50.34489163223837]]]},"properties":{"title":"title","name":"test polygon","description":"Beschreibung CDATA","area":"37550777.7753","boundary-length":"0","stroke":"#555555","stroke-opacity":"1","stroke-width":"2","fill":"#555555","fill-opacity":"0.5","uuid":"7425ca67-9e75-11ee-994d-29230180d387","updated":"2023-12-19T13:49:39.207Z","created":"2023-12-19T13:49:39.207Z"}}]};
+	try {
+		d = new parent.GeometryArray();
+		d.importGeoJSON(geojson);
+		executeDigitizeSubFunctions();
+	}
+	catch (e) {
+		var exc = new parent.Mb_warning(e);
+	}
+}
 
 // ------------------------------------------------------------------------------------------------------------------------
 // --- polygon, line, point insertion (begin) ----------------------------------------------------------------------------------------------
@@ -997,7 +1017,10 @@ function completeInitialization() {
 	setStyleForTargetFrame();
 	checkDigitizeTag();
 	initialiseSnapping();
-//		appendGeometryArrayFromKML();
+//appendGeometryArrayFromKML();
+//test - import geometry from 
+//appendGeometryArrayFromGeojson();
+//showGeoJsonImportForm();
 	if (!nonTransactionalEditable) {
 		initialiseHighlight();
 	}
@@ -1870,8 +1893,9 @@ function updateListOfGeometries(){
 		for (var i = d.count()-1 ; i >= 0; i--) {
 //			if (d.get(i).get(-1).isComplete() && (nonTransactionalEditable || isTransactional(d.get(i)))) {
 			if ((nonTransactionalEditable || isTransactional(d.get(i)))) {
-	
+	            //alert(d.get(i).toText());
 				// for the geometries from a kml, there is another save dialogue
+				//appendGeometryArrayFromGeojson();
 				if (d.get(i).isFromKml()) {
 					// if the kml is in the db (id = id in database)
 					if (d.get(i).e.getElementValueByName("Mapbender:id")) {
@@ -2175,6 +2199,20 @@ function wfsExistsForGeom(geom, wfsConf) {
 	return false;
 }
 
+function showGeoJsonImportForm() {
+    //html = "<div><p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the &apos;x&apos; icon.</p></div>";
+	parent.writeTag(mod_digitize_elName, "geoJsonImportForm", "<div>Testdialog</div>");
+	$( function() {
+		$( "#geoJsonImportForm" ).dialog(
+				{
+				      title: "import",
+				      height: "auto",
+				      width: 50
+				});
+
+		
+	} );
+}
 
 function showWfsKml (geometryIndex) {
 	wfsKmlWindow = open("", "wfsattributes", "width="+wfsWindowWidth+", height="+wfsWindowHeight+", resizable, dependent=yes, scrollbars=yes");
@@ -3217,6 +3255,7 @@ function applyMessages() {
 <!-- 		<img id="digitizeBack" style="position:absolute;top:28;left:84" src="../img/button_digitize/back_on.png" title="" onclick="digitizeHistory.back()" name="digitizeBack"/>
 		<img id="digitizeForward" style="position:absolute;top:28;left:112" src="../img/button_digitize/forward_on.png" title="" onclick="digitizeHistory.forward()" name="digitizeForward"/>
  -->
+ 		<div id='geoJsonImportForm' title="GeoJson"></div>
 		<div id='digButtons'></div>
 		<div style='position:absolute;top:60px;left:5px' id='listOfGeometries' class='digitizeGeometryList'></div>
 	</body>
