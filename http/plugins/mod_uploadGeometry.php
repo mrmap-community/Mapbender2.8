@@ -1,31 +1,35 @@
-/**
- * Package: uploadGeometry
- *
- * Description:
- * The user enters a coordinate tuple and selects the corresponding SRS 
- * from a select box. After submitting this form, Mapbender transforms
- * the coordinate tuple to the current SRS and zooms to the location.
- * 
- * Files:
- *  - http/javascripts/mod_uploadGeometry.php
- *  - http/php/mod_uploadGeometry_server.php
- *
- * SQL:
- *
- * Help:
- * http://www.mapbender.org/uploadGeometry.php
- *
- * Maintainer:
- * http://www.mapbender.org/User:Armin_Retterath
- * 
- * Parameters:
- *
- * License:
- * Copyright (c) 2009, Open Source Geospatial Foundation
- * This program is dual licensed under the GNU General Public License 
- * and Simplified BSD license.  
- * http://svn.osgeo.org/mapbender/trunk/mapbender/license/license.txt
- */
+/******************************************************************************
+*
+* MIT - Copyright 2022 https://github.com/mrmap-community/
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+* files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+* modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the 
+* Software is furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+* WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+* $Id$
+*
+* Project:  https://github.com/mrmap-community/Mapbender2.8
+* Purpose:  Package for uploading geometries into digitize guis
+* Author:   Armin Retterath, armin.retterath@gmail.com
+*
+* Files
+*  - http/plugins/mod_uploadGeometry.php
+*  - http/plugins/mb_geometry_server.php
+*
+* SQL:
+*
+* INSERT INTO gui_element(fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element, e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires, e_url) VALUES('Geoportal-RLP','uploadGeometry',2,1,'upload','Upload geometry','div','../img/button_blue_red/zoomFull_off.png','',180,95,24,24,1000,'','','div','../plugins/mod_uploadGeometry.php','','mapframe1','','http://www.mapbender.org/index.php/GeometryImport');
+* INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES('Geoportal-RLP', 'uploadGeometry', 'digitizeId', 'digitize', '' ,'var');
+*
+*
+******************************************************************************/
 
 <?php
 require_once(dirname(__FILE__)."/../php/mb_validateSession.php");
