@@ -22,6 +22,7 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">'
 <?php
 $digitize_conf_filename = "digitize_default.conf";
 include '../include/dyn_css.php';
+//include '../include/dyn_js.php';
 ?>
 <link rel="stylesheet" href="../extensions/jquery-ui-1.7.2.custom/css/ui-customized_4_digitize/jquery-ui-1.7.3.custom.css">
 <script type='text/javascript' src='../extensions/jquery-ui-1.7.2.custom/js/jquery-1.3.2.min.js'></script>
@@ -3087,9 +3088,13 @@ function dbGeom(type, m, callback, dbWfsConfId) {
 			e.name.splice(elementsToDelete[i] - i, 1);
 			e.value.splice(elementsToDelete[i] - i, 1);
 		}
-		
-		var geoJson = d.featureToString(m);
 
+		if (switchAxisOrder == true && type === 'insert') {
+			console.log("axis order will be switched before insert - see conf file!");
+			var geoJson = d.featureToString(m, switchAxisOrder);
+		} else {
+			var geoJson = d.featureToString(m);
+		}
 		parent.mb_ajax_post(
 			"../extensions/geom2wfst.php", 
 			{

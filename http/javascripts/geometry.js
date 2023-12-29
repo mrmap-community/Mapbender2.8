@@ -636,9 +636,12 @@ GeometryArray.prototype.importGeoJSON = function (geoJSON) {
 	return true;
 };
 
-GeometryArray.prototype.featureToString = function (i) {
+GeometryArray.prototype.featureToString = function (i, switchAxisOrder = false) {
+	/*if (switchAxisOrder == true) {
+		alert("GeometryArray.prototype.featureToString - switchAxisOrder=true");
+	}*/
 	var str = "{\"type\": \"FeatureCollection\", \"features\": [";
-	str += this.get(i).toString();
+	str += this.get(i).toString(switchAxisOrder);
 	str += "]}";
 	return str;
 };
@@ -919,8 +922,11 @@ MultiGeometry.prototype.toText = function () {
 	return text;		
 };
 
-MultiGeometry.prototype.toString = function () {
-	var str = this.toStringWithoutProperties();
+MultiGeometry.prototype.toString = function (switchAxisOrder = false) {
+	/*if (switchAxisOrder == true) {
+		alert("MultiGeometry.prototype.toString - switchAxisOrder=true");
+	}*/
+	var str = this.toStringWithoutProperties(switchAxisOrder);
 	
 	// properties
 	var propString = this.e.toString();
@@ -965,7 +971,10 @@ MultiGeometry.prototype.isRectangle = function () {
 	return false;
 };
 
-MultiGeometry.prototype.toStringWithoutProperties = function () {
+MultiGeometry.prototype.toStringWithoutProperties = function (switchAxisOrder = false) {
+	/*if (switchAxisOrder == true) {
+		alert("MultiGeometry.prototype.toStringWithoutProperties - switchAxisOrder=true");
+	}*/
 	var str = "{\"type\": \"Feature\", ";
 
 	var epsg = this.getEpsg();
@@ -1010,18 +1019,17 @@ MultiGeometry.prototype.toStringWithoutProperties = function () {
 		for (var i = 0; i < len; i++) {
 			if (i > 0) {
 				str += ",";
-			}		
-			str += this.get(i).toString();
+			}	
+			str += this.get(i).toString(switchAxisOrder);
 		}
 		str += "]";
 	}
 	else if (len === 1) {
-		str += this.get(0).toString();
+		str += this.get(0).toString(switchAxisOrder);
 	}
 	else {
 		str += "[]";
 	}
-
 	str += "}";
 
 // this closing curly bracket is added in toString()
@@ -1582,7 +1590,10 @@ Geometry.prototype.bufferLine = function(bufferX, bufferY){
 	return ret;	
 };
 
-Geometry.prototype.toString = function () {
+Geometry.prototype.toString = function (switchAxisOrder = false) {
+	/*if (switchAxisOrder == true) {
+		alert("Geometry.prototype.toString - switchAxisOrder");
+	}*/
 	var str = "";
 	if (this.geomType == geomType.polygon) {
 		str += "[[";
@@ -1590,25 +1601,43 @@ Geometry.prototype.toString = function () {
 			if (i > 0) {
 				str += ", ";
 			}
-			str += this.get(i).toString();
+			if (switchAxisOrder == true) {
+				let  newPoint = new Point(this.get(i).y,this.get(i).x,this.get(i).z);
+				str += newPoint.toString();
+			} else {
+				str += this.get(i).toString();
+			}
 		}
 		if (this.count() > 0 && !this.get(0).equals(this.get(i-1))) {
-			str += ", " + this.get(0).toString();
+			if (switchAxisOrder == true) {
+				let  newPoint = new Point(this.get(0).y,this.get(0).x,this.get(0).z);
+				str += ", " + newPoint.toString();
+			} else {
+				str += ", " + this.get(0).toString();
+			}
 		}
-
 		if (typeof(this.innerRings) == "object" && this.innerRings.count() > 0) {
 			for (var j = 0; j < this.innerRings.count(); j++) {
 				var currentRing = this.innerRings.get(j);
-
 				str += "],[";
 				for (var i = 0; i < currentRing.count(); i++) {
 					if (i > 0) {
 						str += ", ";
 					}
-					str += currentRing.get(i).toString();
+					if (switchAxisOrder == true) {
+						let  newPoint = new Point(currentRing.get(i).y,currentRing.get(i).x,currentRing.get(i).z);
+						str += newPoint.toString();
+					} else {
+						str += currentRing.get(i).toString();
+					}
 				}
 				if (currentRing.count() > 0 && !currentRing.get(0).equals(currentRing.get(i-1))) {
-					str += ", " + currentRing.get(0).toString();
+					if (switchAxisOrder == true) {
+						let  newPoint = new Point(currentRing.get(0).y,currentRing.get(0).x,currentRing.get(0).z);
+						str += ", " + newPoint.toString();
+					} else {
+						str += ", " + currentRing.get(0).toString();
+					}
 				}
 			}
 		}
@@ -1620,14 +1649,23 @@ Geometry.prototype.toString = function () {
 			if (i > 0) {
 				str += ", ";
 			}
-			str += this.get(i).toString();
+			if (switchAxisOrder == true) {
+				let  newPoint = new Point(this.get(i).y,this.get(i).x,this.get(i).z);
+				str += newPoint.toString();
+			} else {
+				str += this.get(i).toString();
+			}
 		}
 		str += "]";
 	}
 	else if (this.geomType == geomType.point) {
-		str += this.get(0).toString();
-	}
-	
+		if (switchAxisOrder == true) {
+			let  newPoint = new Point(this.get(0).y,this.get(0).x,this.get(0).z);
+			str += newPoint.toString();
+		} else {
+			str += this.get(0).toString();
+		}
+	}	
 	return str;
 };
 
