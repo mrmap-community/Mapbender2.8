@@ -469,17 +469,17 @@ function appendGeometryArrayFromGeojson (geojson) {
 // --- polygon, line, point insertion (begin) ----------------------------------------------------------------------------------------------
 
 function appendGeometryArray(obj) {
-	console.log('before executePreFunctions');
+	//console.log('before executePreFunctions');
 	executeDigitizePreFunctions();
-	console.log('after executePreFunctions');
-	console.log(JSON.stringify(obj));
-	console.log(JSON.stringify(d));
-	console.log(JSON.stringify(featuresMustHaveUniqueId));
+	//console.log('after executePreFunctions');
+	//console.log(JSON.stringify(obj));
+	//console.log(JSON.stringify(d));
+	//console.log(JSON.stringify(featuresMustHaveUniqueId));
 	d.union(obj, featuresMustHaveUniqueId);
-	console.log("list after union: " + JSON.stringify(d));
-	console.log('after union');
+	//console.log("list after union: " + JSON.stringify(d));
+	//console.log('after union');
 	executeDigitizeSubFunctions();
-	console.log('after executeDigitizeSubFunctions');
+	//console.log('after executeDigitizeSubFunctions');
 }
 
 function mod_digitize_go(e){
@@ -2971,8 +2971,13 @@ function dbGeom(type, m, callback, dbWfsConfId) {
 			e.name.splice(elementsToDelete[i] - i, 1);
 			e.value.splice(elementsToDelete[i] - i, 1);
 		}
-		
-		var geoJson = d.featureToString(m);
+
+		if (switchAxisOrder == true && type === 'insert') {
+			console.log("axis order will be switched before insert - see conf file!");
+			var geoJson = d.featureToString(m, switchAxisOrder);
+		} else {
+			var geoJson = d.featureToString(m);
+		}
 
 		parent.mb_ajax_post(
 			"../extensions/geom2wfst.php", 
