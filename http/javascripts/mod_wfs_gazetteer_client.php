@@ -139,7 +139,7 @@ try {if(removeSpatialRequestHighlight){}}catch(e) {removeSpatialRequestHighlight
 //Element var to force switch of axis order 
 //needed under some 
 //circumstances - new geoserver wth old wfs version ...
-try {if(switchAxisOrder){}}catch(e) {switchAxisOrder = 0;}
+try {if(switchAxisOrder){}}catch(e) {switchAxisOrder = '0';}
 
 //Element var to force request a crs which differ from crs values given in wfs capabilities!
 try {if(forceCrsFromMap){}}catch(e) {forceCrsFromMap = 0;}
