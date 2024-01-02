@@ -136,10 +136,10 @@ try {if(enableSearchWithoutParams){}}catch(e) {enableSearchWithoutParams = 0;}
 //Element var to remove spatialrequest highlighting when firing search
 try {if(removeSpatialRequestHighlight){}}catch(e) {removeSpatialRequestHighlight = 0;}
 
-//Element var to force ignoring the latLonSrsJson for special crs (core(epsg.php)
-//otherwise the x,y coords in the spatial request are switched - needed under some 
+//Element var to force switch of axis order 
+//needed under some 
 //circumstances - new geoserver wth old wfs version ...
-try {if(ignoreLatLonSrs){}}catch(e) {ignoreLatLonSrs = 0;}
+try {if(switchAxisOrder){}}catch(e) {switchAxisOrder = 0;}
 
 //Element var to force request a crs which differ from crs values given in wfs capabilities!
 try {if(forceCrsFromMap){}}catch(e) {forceCrsFromMap = 0;}
@@ -1367,11 +1367,8 @@ function validate(){
 				isLatLonSrs	= null;
 				var latLonSrsArray = parent.$.parseJSON(latLonSrsJson);
 				//give option to ignore latLonSrs definitions!
-				if(parent.$.inArray(srs, latLonSrsArray) != -1) {
-					if (ignoreLatLonSrs !== '0') {
-						//alert(ignoreLatLonSrs);
-						isLatLonSrs	= 1;
-					}
+				if(parent.$.inArray(srs, latLonSrsArray) != -1 || switchAxisOrder !== '0') {
+					isLatLonSrs	= 1;
 				}
 				var currentAndCondition = "";
 				if(spatialRequestGeom.geomType == "polygon"){
