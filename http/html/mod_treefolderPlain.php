@@ -1070,7 +1070,8 @@ function initArray(){
 									}
 									if(typeof mb_mapObj[i].wms[ii].objLayer[iii].layer_style !== 'undefined' && mb_mapObj[i].wms[ii].objLayer[iii].layer_style.length > 1){
 										//TODO: add id for image to alter title after selection!
-										controls.push('<img width="14" height="14" onclick="openStyleDialog(' + i + ',' + ii + ',' + iii, ');" title="Style: ' + mb_mapObj[i].wms[ii].objLayer[iii].gui_layer_style + '" src="' + imagedir + '/palette.png" />');
+										controls.push('<img width="14" height="14" onclick="openStyleDialog(' + i + ',' + ii + ',' + iii, ');" title="Select style" src="' + imagedir + '/palette.png" />');
+										//controls.push('<img width="14" height="14" onclick="openStyleDialog(' + i + ',' + ii + ',' + iii, ');" title="Style: ' + mb_mapObj[i].wms[ii].objLayer[iii].gui_layer_style + '" src="' + imagedir + '/palette.png" />');
 									}
 									//dimension buttons
 									if (activatedimension == 'true') {
