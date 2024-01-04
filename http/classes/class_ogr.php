@@ -198,6 +198,8 @@ class Ogr {
             "GML2-GZIP" => "GML",
             "application/xml" => "GML",
             "GML" => "GML",
+            # fix for qgis sending empty format string
+            "" => "GML",
             
             "csv" => "CSV",
             "text/csv" => "CSV",
@@ -208,6 +210,7 @@ class Ogr {
             
             "text/javascript" => "UNSUPPORTED",
             "excel" => "UNSUPPORTED",
+            "application/json" => "UNSUPPORTED",
             "excel2007" => "UNSUPPORTED"
         ); 
         
