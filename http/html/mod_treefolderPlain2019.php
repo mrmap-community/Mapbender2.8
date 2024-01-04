@@ -555,6 +555,9 @@ function openStyleDialog(j,k,l){
 		k=selectedWMS;
 		l=selectedLayer;
 	}
+	/*console.log("openStyleDialog - j: " + j);
+	console.log("openStyleDialog - k: " + k);
+	console.log("openStyleDialog - l: " + l);*/
 	var my= mb_mapObj[j].wms[k].objLayer[l];
 	var dialogHtml = "<select id='styleSelect'>";
 	for (var i=0;i < my.layer_style.length;i++) {
@@ -565,7 +568,10 @@ function openStyleDialog(j,k,l){
 		dialogHtml += ">" + my.layer_style[i].title + "</option>";
 	}
 	dialogHtml += "</select>";
-
+	//reinitialize changeStyleDialog
+    if ($("#changeStyleDialog").length == 1) {
+    	$("#changeStyleDialog").remove();
+    }
 	if(my.layer_style.length > 1) {
 		$("<div id='changeStyleDialog' title='<?php echo _mb('Change layer style');?>'><?php echo _mb('Please select a style');?>: </div>").dialog(
 			{
@@ -728,15 +734,22 @@ function updateParent(path){
 }
 
 function handleSelectedWMS(path){
-	if(lock_update)return;
+	//console.log("handleSelectedWMS path: " + path);
+	if(lock_update){
+		//console.log("lock update: " + lock_update);
+		return;
+	}
 	var t = path.split("|");
-	var wms_id = t[t.length-1].substr(4);
+	//path always begin with root_id|wms_{wms_id}|... 
+	var wms_id = t[1].substr(4);
+	//console.log("handleSelectedWMS wms_id: " + wms_id);
 	var reset_lock=!lock_check;
 	var ind =  getMapObjIndexByName(mod_treeGDE_map);
-	var wms =  getWMSIndexById(mod_treeGDE_map,wms_id);
+	//console.log("handleSelectedWMS ind: " + ind);
+	var wms =  getWMSIndexById(mod_treeGDE_map, wms_id);
+	//console.log("handleSelectedWMS wms: " + wms);
 	var layername =  mb_mapObj[ind].wms[wms].objLayer[0].layer_name;
 	var bChk = IsChecked(path, 0);
-
 	// in this case, only the root layer visibility/querylayer
 	// needs to be adjusted, without cascading the changes to
 	// its children

@@ -556,17 +556,26 @@ function openStyleDialog(j,k,l){
 		k=selectedWMS;
 		l=selectedLayer;
 	}
-	var my= mb_mapObj[j].wms[k].objLayer[l];
+	/*console.log("openStyleDialog - j: " + j);
+	console.log("openStyleDialog - k: " + k);
+	console.log("openStyleDialog - l: " + l);*/
+	var my = mb_mapObj[j].wms[k].objLayer[l];
+	//console.log(my);
 	var dialogHtml = "<select id='styleSelect'>";
 	for (var i=0;i < my.layer_style.length;i++) {
-		dialogHtml += "<option value='" + my.layer_style[i].name + "'";
+		dialogHtml += "<option title='" + my.layer_style[i].name + "' value='" + my.layer_style[i].name + "'";
 		if(my.layer_style[i].name == my.gui_layer_style) {
 			dialogHtml += " selected";
 		}
 		dialogHtml += ">" + my.layer_style[i].title + "</option>";
 	}
 	dialogHtml += "</select>";
-
+    //console.log("dialogHtml: " + dialogHtml);
+    //delete changeStyleDialog, if already exists!
+    //console.log("changeStyleDialog length: " + $("#changeStyleDialog").length);
+    if ($("#changeStyleDialog").length == 1) {
+    	$("#changeStyleDialog").remove();
+    }
 	if(my.layer_style.length > 1) {
 		$("<div id='changeStyleDialog' title='<?php echo _mb('Change layer style');?>'><?php echo _mb('Please select a style');?>: </div>").dialog(
 			{
@@ -728,15 +737,20 @@ function updateParent(path){
 }
 
 function handleSelectedWMS(path){
-	if(lock_update)return;
+	//console.log("handleSelectedWMS path: " + path);
+	if(lock_update){
+		//console.log("lock update: " + lock_update);
+		return;
+	}
 	var t = path.split("|");
-	var wms_id = t[t.length-1].substr(4);
+	//console.log("handleSelectedWMS t.length: " + t.length);
+	var wms_id = t[1].substr(4);
+	//path always begin with root_id|wms_{wms_id}|... 
 	var reset_lock=!lock_check;
 	var ind =  getMapObjIndexByName(mod_treeGDE_map);
-	var wms =  getWMSIndexById(mod_treeGDE_map,wms_id);
+	var wms =  getWMSIndexById(mod_treeGDE_map, wms_id);
 	var layername =  mb_mapObj[ind].wms[wms].objLayer[0].layer_name;
 	var bChk = IsChecked(path, 0);
-
 	// in this case, only the root layer visibility/querylayer
 	// needs to be adjusted, without cascading the changes to
 	// its children
@@ -744,7 +758,6 @@ function handleSelectedWMS(path){
 		var l = mb_mapObj[ind].wms[wms].getLayerByLayerName(layername);
 		l.gui_layer_visible = bChk ? 1 : 0;
 		l.gui_layer_querylayer = bChk ? 1 : 0;
-
 		mb_restateLayers(mod_treeGDE_map,wms_id);
 		if (!lock_maprequest) {
 			setSingleMapRequest(mod_treeGDE_map,wms_id);
@@ -1054,6 +1067,10 @@ function initArray(){
 										//controls.push('<a href="'+mb_mapObj[i].wms[ii].objLayer[iii].layer_featuretype_coupling+'"'+' target=\'_blank\' onclick="featuretype_window = window.open(this.href,\'Featuretype Data\',\'Width=450, Height=350,scrollbars=yes,menubar=yes,toolbar=yes\'); featuretype_window.focus(); return false;"><img width="18" height="18" alt="'+msgObj.tooltipFeaturetypeCoupling+'" title="'+msgObj.tooltipFeaturetypeCoupling+'" src="'+imagedir+'/../gnome/accessories-dictionary.png" /></a>');
 										controls.push('<img width="18" height="18" coupling="'+btoa(mb_mapObj[i].wms[ii].objLayer[iii].layer_featuretype_coupling)+'" onclick="alert(atob(this.getAttribute(\'coupling\')))" alt="'+msgObj.tooltipFeaturetypeCoupling+'" title="'+msgObj.tooltipFeaturetypeCoupling+'" src="'+imagedir+'/../osgeo_graphics/geosilk/application_view_columns.png" />');
 										//controls.push('<img width="18" height="18" onclick="alert('+mb_mapObj[i].wms[ii].objLayer[iii].layer_featuretype_coupling+');" alt="'+msgObj.tooltipFeaturetypeCoupling+'" title="'+msgObj.tooltipFeaturetypeCoupling+'" src="'+imagedir+'/../osgeo_graphics/geosilk/application_view_columns.png" />');
+									}
+									if(typeof mb_mapObj[i].wms[ii].objLayer[iii].layer_style !== 'undefined' && mb_mapObj[i].wms[ii].objLayer[iii].layer_style.length > 1){
+										//TODO: add id for image to alter title after selection!
+										controls.push('<img width="14" height="14" onclick="openStyleDialog(' + i + ',' + ii + ',' + iii, ');" title="Style: ' + mb_mapObj[i].wms[ii].objLayer[iii].gui_layer_style + '" src="' + imagedir + '/palette.png" />');
 									}
 									//dimension buttons
 									if (activatedimension == 'true') {
