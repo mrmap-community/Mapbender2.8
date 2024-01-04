@@ -849,6 +849,8 @@ Mapbender.Map = function (options) {
         
         url += "LAYERS=" + layerNames + "&";
         url += "STYLES=";
+        //reverse style names if layers are reversed!
+        //validLayers.reverse();
         for (var j = 0; j < validLayers.length; j++) {
             if (j > 0) {
                 url += ",";
@@ -858,7 +860,7 @@ Mapbender.Map = function (options) {
             typeof currentWms.getCurrentStyleByLayerName(validLayers[j]) !== "undefined") {
                 url += encodeURIComponent(currentWms.getCurrentStyleByLayerName(validLayers[j]));
             }
-        }
+        }     
         url += "&";
         if (currentWms.wms_version != "1.3.0") {
 		url += "SRS=" + this.epsg + "&";
