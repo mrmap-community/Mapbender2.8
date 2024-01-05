@@ -1581,6 +1581,11 @@ class wms {
 //		$newLayer->layer_searchable = $currentLayer["searchable"];
 		$newLayer->gui_layer_wms_id = $currentLayer["extension"]["WMS_ID"];
 		$newLayer->gui_layer_status = $currentLayer["extension"]["GUI_STATUS"];
+		//read info from wmc confs 
+		$styleIndex = $currentLayer['styleIndex'];
+		/*if ($styleIndex >= 0 && $styleIndex < count($currentLayer["style"]) && $currentLayer["style"][$styleIndex]["name"] != "") {
+		  $e = new mb_exception("class_wms.php: current layer style name: " . $currentLayer["style"][$styleIndex]["name"]);
+		}*/
 		if ($styleIndex >= 0 && $styleIndex < count($currentLayer["style"])) {
 			$newLayer->gui_layer_style = $currentLayer["style"][$styleIndex]["name"];
 		}

@@ -2359,6 +2359,7 @@ SQL;
 							array_push($currentLayer["style"], array("current" => $attributes["current"]));
 							if ($attributes["current"] == "1") {
 								$currentLayer["styleIndex"] = count($currentLayer["style"]) - 1;
+								//$currentLayer["extension"]["gui_layer_style"] = $currentLayer["style"][$index]["name"];
 							}
 						}
 						if ($tag == "STYLELIST" && $type == "close") {
@@ -2547,6 +2548,7 @@ SQL;
 			$wms->wms_getmap = $currentLayer["url"];
 			$wms->wms_getfeatureinfo = $currentLayer["url"]; // TODO : Add correct data
 			$styleIndex = $currentLayer["styleIndex"];
+			//$wms->gui_wms_mapformat = $currentLayer["format"][$formatIndex]["name"];
 			$wms->wms_getlegendurl = $currentLayer["style"][$styleIndex]["legendurl"];
 			$wms->wms_filter = ""; // TODO : Add correct data
 			$formatIndex = $currentLayer["formatIndex"];

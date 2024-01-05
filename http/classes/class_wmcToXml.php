@@ -563,42 +563,31 @@ class WmcToXml {
 
 	private function createLayerStyleNode ($currentWms, $currentLayer) {
 		$e_layer_stylelist = $this->doc->createElement("StyleList");
-
 		for ($k = 0; $k < count($currentLayer->layer_style); $k++) {
-
 			$currentStyle = $currentLayer->layer_style[$k];
-
 			$layerStyle_current = 0;
-			if ($k === 0){
+			//set style selected gui_layer_style to current
+			if ($currentLayer->gui_layer_style == $currentStyle["name"]){
+			    //$e = new mb_exception("classes/class_wmcToXml.php: " . $currentLayer->gui_layer_style);	    
 				$layerStyle_current = 1; // To do: insert proper data
 			}
-
 			$e_layer_style = $this->doc->createElement("Style");
-
 			$layerStyleSLD = "";
-
 			if ($layerStyleSLD) {
 				$e_layer_style_or = $this->doc->createElement("OnlineResource");
 				$e_layer_style_or->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 				$e_layer_style_or->setAttribute("xlink:type", "simple");
 				$e_layer_style_or->setAttribute("xlink:href", $currentWms->gui_wms_sldurl);
 				$e_layer_style->appendChild($e_layer_style_or);
-			}
-			else{
-
+			} else {
 				if ($layerStyle_current == 1){
 					$e_layer_style->setAttribute("current", "1");
 				}
-
 				$e_layer_style_name = $this->doc->createElement("Name", $currentStyle["name"]);
 				$e_layer_style->appendChild($e_layer_style_name);
-
 				$e_layer_style_title = $this->doc->createElement("Title", $currentStyle["title"]);
 				$e_layer_style->appendChild($e_layer_style_title);
-
-
 				$e_layer_style_legendurl = $this->doc->createElement("LegendURL");
-
 				//TODO: determine correct layer style entries
 				$layerStyle_legendUrl_width = ""; // TODO : add proper data
 				$layerStyle_legendUrl_height = ""; // TODO : add proper data
@@ -606,7 +595,6 @@ class WmcToXml {
 				$e_layer_style_legendurl->setAttribute("width", $layerStyle_legendUrl_width);
 				$e_layer_style_legendurl->setAttribute("height", $layerStyle_legendUrl_height);
 				$e_layer_style_legendurl->setAttribute("format", $layerStyle_legendUrl_format);
-
 				$e_layer_style_legendurl_or = $this->doc->createElement("OnlineResource");
 				$e_layer_style_legendurl_or->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
 				$e_layer_style_legendurl_or->setAttribute("xlink:type", "simple");
