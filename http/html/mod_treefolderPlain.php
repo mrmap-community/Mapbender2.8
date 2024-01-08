@@ -40,6 +40,10 @@ msgObj.tooltipMoveSelectionDown = '<?php echo _mb("Moves the selection down");?>
 msgObj.tooltipMetadata = '<?php echo _mb("Show metadata");?>';
 msgObj.tooltipDownload = '<?php echo _mb("Download dataset");?>';
 msgObj.tooltipFeaturetypeCoupling = '<?php echo _mb("Coupled featuretypes");?>';
+msgObj.tooltipTimeDimension = '<?php echo _mb("TIME dimension handler");?>';
+msgObj.tooltipElevationDimension = '<?php echo _mb("Elevation dimension handler");?>';
+msgObj.unsetDimension = '<?php echo _mb("Unset dimension");?>';
+
 
 if (typeof(localizetree) === 'undefined')localizetree = 'false';
 
@@ -805,7 +809,7 @@ function handleSelection(path, box){
 	}
 }
 
-function setDimensionUserValue(j,k,l,dimensionIndex,userValue) {
+function setDimensionUserValue(j,k,l,dimensionIndex,userValue,dimensionName) {
 	if(!j && !k&& !l){
 		j=selectedMap;
 		k=selectedWMS;
@@ -816,7 +820,9 @@ function setDimensionUserValue(j,k,l,dimensionIndex,userValue) {
 	//delete all userValues from other layers of this wms
 	for (var k=0;k< myWms.objLayer.length;k++) {
 		for (var i=0;i< myWms.objLayer[k].layer_dimension.length;i++) {
-			myWms.objLayer[k].layer_dimension[i].userValue = "";
+			if (myWms.objLayer[k].layer_dimension[i].name == dimensionName) {
+				myWms.objLayer[k].layer_dimension[i].userValue = "";
+			}
 		}
 	}
 	my.layer_dimension[dimensionIndex].userValue = userValue;
@@ -851,7 +857,7 @@ function snapToDiscreteValue(userValue,extent) {
 	return jsonValue.data[0].value;
 }
 
-function openDimensionSelectHtml(j,k,l,dimensionIndex) {
+function openDimensionSelectHtml(j,k,l,dimensionIndex,dimensionName) {
 	if(!j && !k&& !l){
 		j=selectedMap;
 		k=selectedWMS;
@@ -864,6 +870,72 @@ function openDimensionSelectHtml(j,k,l,dimensionIndex) {
 	var userValue = mb_mapObj[j].wms[k].objLayer[l].layer_dimension[dimensionIndex].userValue; //not already defined in mapobj!!
 	var extent = mb_mapObj[j].wms[k].objLayer[l].layer_dimension[dimensionIndex].extent;
 	var dimdefault = mb_mapObj[j].wms[k].objLayer[l].layer_dimension[dimensionIndex].default;
+
+    if (dimensionName == 'elevation') {
+        console.log("elevation selected - extent: " + extent );
+        var extentArray = extent.split(",");
+        console.log(extentArray);
+        
+        //test for simple discrete values
+    	var elevationDialogHtml = "<select id='elevationSelect'>";
+    	for (var i=0;i < extentArray.length;i++) {
+    		elevationDialogHtml += "<option title='" + extentArray[i] + "' value='" + extentArray[i] + "'";
+    		if(extentArray[i] == myWms.gui_wms_dimension_elevation) {
+    			elevationDialogHtml += " selected";
+    		}
+    		elevationDialogHtml += ">" + extentArray[i] + "</option>";
+    	}
+    	elevationDialogHtml += "</select>";
+
+    	//msgObj.unsetDimension
+    	elevationDialogHtml += "<br>";
+    	elevationDialogHtml += msgObj.unsetDimension + " ";
+    	//elevationDialogHtml += "<img src='../img/cross.png' width='18px', height='18px' title='" + msgObj.unsetDimension + "' onclick='setDimensionUserValue(" + j + "," + k + "," + l + "," + dimensionIndex + "," + "\'\',\'elevation\');'/>";
+    	//elevationDialogHtml += "<img id='delete_elevation_dimension' src='../img/cross.png' width='18px', height='18px' title='" + msgObj.unsetDimension + "' onclick='setDimensionUserValue(" + j + "," + k + "," + l + "," + dimensionIndex + "," + "\"\",\"elevation\");alert(\"1\");Mapbender.modules[mod_treeGDE_map].setMapRequest();alert(\"2\");'>";
+    	//$("#elevationSelect").value="";
+    	var defaultElevation = mb_mapObj[j].wms[k].objLayer[l].layer_dimension[dimensionIndex].default;
+    	
+    	elevationDialogHtml += "<img id='delete_elevation_dimension' src='../img/cross.png' width='18px', height='18px' title='" + msgObj.unsetDimension + "' onclick='$(\"#elevationSelect\").val(\"" + defaultElevation + "\").change();'>";
+    	//mb_mapObj[j].wms[k].objLayer[l].layer_dimension[dimensionIndex].default
+
+
+    	
+        //console.log("dialogHtml: " + dialogHtml);
+        //delete changeStyleDialog, if already exists!
+        //console.log("changeStyleDialog length: " + $("#changeStyleDialog").length);
+        /*if ($("#changeStyleDialog").length == 1) {
+        	$("#changeStyleDialog").remove();
+        }*/
+    	if(extentArray.length > 1) {
+    		$("<div id='selectDimensionDialog' title='<?php echo _mb('Change layer elevation');?>'><?php echo _mb('Please select an elevation');?>: </div>").dialog(
+    			{
+    				bgiframe: true,
+    				autoOpen: true,
+    				modal: false,
+    				buttons: {
+    					"<?php echo _mb('Close');?>": function(){
+    						$(this).dialog('close').remove();
+    					}
+    				}
+    			}
+    		);
+    		$(elevationDialogHtml).appendTo("#selectDimensionDialog");
+    		$("#elevationSelect").change(function() {
+    			myWms.gui_wms_dimension_elevation = this.options[this.selectedIndex].value;
+    			//alert();
+    			//only delete other elevation settings - not the time settings because we want to combine them!
+    			setDimensionUserValue(j,k,l,dimensionIndex,myWms.gui_wms_dimension_elevation,'elevation');
+    			//only set map request for current service!
+    			console.log("wms_id to reload: " + mb_mapObj[j].wms[k].wms_id);
+    			//console.log(mb_mapObj[j].wms[k].objLayer[l].layer_dimension[dimensionIndex].default);
+    			
+    			Mapbender.modules[mod_treeGDE_map].setSingleMapRequest(mod_treeGDE_map,mb_mapObj[j].wms[k].wms_id);
+    			//Mapbender.modules[mod_treeGDE_map].setMapRequest();
+    		});
+    	}
+        return;
+    }
+	
 	var dialogHtml = "<div id='timeline'></div>";
 	$("<div id='selectDimensionDialog' title='<?php echo _mb('Select layer dimension');?>'><?php echo _mb('Please select a value for TIME. One single element can be dragged on timeline after selection. Scale may be altered by scrolling.');?>: </div>").dialog(
 		{
@@ -916,7 +988,7 @@ function openDimensionSelectHtml(j,k,l,dimensionIndex) {
 					item.start = new Date(snapToDiscreteValue(item.start.toISOString(),extent));
 					item.content = item.start.toISOString();
 					myWms.gui_wms_dimension_time = makeDateTimeBetter(item.start.toISOString());
-					setDimensionUserValue(j,k,l,dimensionIndex,myWms.gui_wms_dimension_time);
+					setDimensionUserValue(j,k,l,dimensionIndex,myWms.gui_wms_dimension_time,'time');
 					Mapbender.modules[mod_treeGDE_map].setSingleMapRequest(mod_treeGDE_map,mb_mapObj[j].wms[k].wms_id);
 					callback(item);
 				};
@@ -930,7 +1002,7 @@ function openDimensionSelectHtml(j,k,l,dimensionIndex) {
 				timeline.on('select', function (properties) {
 					if (properties.event.type == "tap") {
 						myWms.gui_wms_dimension_time = makeDateTimeBetter(timeline.itemsData._data[timeline.getSelection()].content);
-						setDimensionUserValue(j,k,l,dimensionIndex,myWms.gui_wms_dimension_time);
+						setDimensionUserValue(j,k,l,dimensionIndex,myWms.gui_wms_dimension_time,'time');
 						Mapbender.modules[mod_treeGDE_map].setSingleMapRequest(mod_treeGDE_map,mb_mapObj[j].wms[k].wms_id);
 					}
 				});
@@ -1096,11 +1168,20 @@ function initArray(){
 										}
 										if (timeDimensionAvailable === true) {
 											text = JSON.stringify(mb_mapObj[i].wms[ii].objLayer[iii].layer_dimension[timeDimensionIndex]);
-											controls.push('<img onclick="openDimensionSelectHtml('+i+','+ii+','+iii+','+timeDimensionIndex+');" width="18" height="18" alt="'+msgObj.tooltipTimeDimension+'" title="'+msgObj.tooltipTimeDimension+'" src="'+imagedir+'/../gnome/preferences-system-time.png" />');	
+											controls.push('<img onclick="openDimensionSelectHtml('+i+','+ii+','+iii+','+timeDimensionIndex+',\'time\');" width="18" height="18" alt="'+msgObj.tooltipTimeDimension+'" title="'+msgObj.tooltipTimeDimension+'" src="'+imagedir+'/../gnome/preferences-system-time.png" />');	
 											if (timeUserValue !== undefined && timeUserValue !== false && timeUserValue !== "" && timeUserValue !== "undefined") {
 											controls.push('<b>'+timeUserValue+'</b>');
 											//set gui_wms_dimension_time to value of layer - only one layer of a wms should have the userValue defined - if more have this, the last one will overwrite all earlier!
 											mb_mapObj[i].wms[ii].gui_wms_dimension_time = timeUserValue;
+											}
+										}
+										if (elevationDimensionAvailable === true) {
+											text = JSON.stringify(mb_mapObj[i].wms[ii].objLayer[iii].layer_dimension[elevationDimensionIndex]);
+											controls.push('<img onclick="openDimensionSelectHtml('+i+','+ii+','+iii+','+elevationDimensionIndex+', \'elevation\');" width="18" height="18" alt="'+msgObj.tooltipElevationDimension+'" title="'+msgObj.tooltipElevationDimension+'" src="'+imagedir+'/../button_altitude_profile/button_altitude_profile.png" />');	
+											if (elevationUserValue !== undefined && elevationUserValue !== false && elevationUserValue !== "" && elevationUserValue !== "undefined") {
+											controls.push('<b>'+elevationUserValue+'</b>');
+											//set gui_wms_dimension_time to value of layer - only one layer of a wms should have the userValue defined - if more have this, the last one will overwrite all earlier!
+											mb_mapObj[i].wms[ii].gui_wms_dimension_elevation = elevationUserValue;
 											}
 										}
 									}
