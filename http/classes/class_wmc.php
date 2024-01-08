@@ -682,8 +682,10 @@ class wmc {
 		$resStyle = db_prep_query($sql,$v,$t);
 		//get result as array
 		$style = array();
+		$styleNameArray = array();
 		while($row = db_fetch_array($resStyle)) {
 			$style[$row["fkey_layer_id"]][$row["name"]] [$row["legendurlformat"]] = $row["legendurl"];
+			$styleNameArray[] = $row["name"];
 			//$e = new mb_notice($row["fkey_layer_id"] . " : " . $row["name"]. " - legendurl: ".$row["legendurl"]." - format: ".$row["legendurlformat"]);
 		}
 		//pull all information about dimension - first only this information, that makes sense
@@ -869,6 +871,20 @@ class wmc {
 						}
 					}
 				}
+				//only allow those styles, that exists in the database if the services are registrated there! TODO!!!!
+				//delete all other entries - they maybe older!
+				$styleId = 0;
+				foreach($layer->StyleList->Style as $styleObject) {
+				    //$e = new mb_exception("classes/class_wmc.php: check if *" . $styleObject->Name . "* is in ". json_encode($styleNameArray));
+				    if (!in_array($styleObject->Name, $styleNameArray)) {
+				        //$e = new mb_exception("classes/class_wmc.php: try to unset styleObject");
+				        unset($layer->StyleList[$styleId]);
+				        $styleId++;
+				        
+				    }
+				}
+				//TODO: add other actual styles from database!
+				
 				foreach($layerDoc->xpath('/Layer/DimensionList/Dimension[@name="time" and @units="ISO8601"]') as $dimensionObject) {
 					foreach ($attributeNames as $attributeName) {
 						//$e = new mb_exception("set ".$attributeName." attribute of dimension object to ".$dimension[(integer)$layerId]["time"][$attributeName]);
