@@ -1122,5 +1122,70 @@ ALTER TABLE wfs ALTER COLUMN wfs_alternate_title SET DEFAULT ''::character varyi
 ALTER TABLE mb_metadata ALTER COLUMN alternate_title SET NOT NULL;
 ALTER TABLE mb_metadata ALTER COLUMN alternate_title SET DEFAULT ''::character varying;
 
+--new table to log invocation of mapbender search interface
 
+-- Table: si_log
+
+-- DROP TABLE si_log;
+
+CREATE TABLE si_log
+(
+  log_id serial NOT NULL,
+  createdate timestamp without time zone,
+  lastchanged timestamp without time zone NOT NULL DEFAULT now(),
+  referrer text,
+  query_string text,
+  search_text varchar(1024),
+  user_agent varchar(1024),
+  fkey_catalogue_id integer,
+  log_count bigint,
+  CONSTRAINT si_logc_fkey_catalogue_id_fkey FOREIGN KEY (fkey_catalogue_id)
+      REFERENCES cat (cat_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE CASCADE
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE si_log
+  OWNER TO mapbenderdbuser;
+
+-- Index: idx_si_log_query_string
+
+-- DROP INDEX idx_si_log_query_string;
+
+CREATE INDEX idx_si_log_query_string
+  ON si_log
+  USING btree
+  (query_string);
+  
+-- Index: idx_si_log_referrer
+
+-- DROP INDEX idx_si_log_referrer;
+
+CREATE INDEX idx_si_log_referrer
+  ON si_log
+  USING btree
+  (referrer);
+  
+-- Index: idx_si_log_user_agent
+
+-- DROP INDEX idx_si_log_user_agent;
+
+CREATE INDEX idx_si_log_user_agent
+  ON si_log
+  USING btree
+  (user_agent);
+
+-- Trigger: update_si_log_lastchanged on si_log
+
+-- DROP TRIGGER update_si_log_lastchanged ON si_log;
+
+CREATE TRIGGER update_si_log_lastchanged
+  BEFORE UPDATE
+  ON si_log
+  FOR EACH ROW
+  EXECUTE PROCEDURE update_lastchanged_column();
+
+GRANT ALL ON TABLE si_log TO mapbenderdbuser;
+GRANT ALL ON SEQUENCE si_log_log_id_seq TO mapbenderdbuser;
 

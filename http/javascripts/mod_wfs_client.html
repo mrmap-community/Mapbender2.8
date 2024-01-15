@@ -315,7 +315,7 @@ function appendWfsConfData(dsJson){
 	if(typeof(o.id)=="undefined")
 		return;
 	for(var i=0; i<o.id.length; i++){
-		appendOption(document.forms[0].wfsConfList, o.id[i] + " " + o.abstract[i], o.id[i], false);
+		appendOption(document.forms[0].wfsConfList, o.abstract[i] + ' (' + o.id[i] + ')', o.id[i], false);
 	}
 }
 
@@ -332,7 +332,7 @@ function appendGuiConfs(dsJson){
 	list.innerHTML = '';
 	for(var i=0; i<dsJson.assignedConfs.length; i++){
 		var confAbstract = getConfAbstract(dsJson.assignedConfs[i]);
-		appendOption(list, confAbstract, dsJson.assignedConfs[i], false);
+		appendOption(list, confAbstract + ' (' + dsJson.assignedConfs[i] + ')', dsJson.assignedConfs[i], false);
 	}
 }
 function appendOption(boxObject, optionText, optionValue, selected){

@@ -769,6 +769,86 @@ class administration {
 		$wmc = new wmc();
 		return $wmc->getDocument($id);
 	}
+	
+	/**
+	 * functions to log access to search interfaces to database.
+	 *
+	 * @param referrer			         http header referer! string
+	 * @param query_string		         query string
+	 * @param search_text		         search text string
+	 * @param user_agent                 user agent string
+	 * @param catalogue_id               id or null if search is internal
+	 * @return boolean			         true or false
+	 */
+	function logSearchInterfaceUsage ($referrer, $query_string, $search_text, $user_agent, $catalogue_id) {
+	    if ($referrer == null){
+	        $referrer = '';
+	    }
+	    // only log usage, if SEARCH_LOG is defined in mapbender.conf
+	    //if (DEFINED("SEARCH_LOG") && SEARCH_LOG == true && isset($referrer) && $referrer !=="" && $referrer !== false) {
+	        $logId = $this->isSILogEntryAlreadyInDB($referrer, $query_string, $user_agent, $catalogue_id);
+	        if ($logId != false) {
+	            $sql = <<<SQL
+UPDATE si_log SET log_count = log_count + 1 WHERE log_id = $1
+SQL;
+	            $v = array(
+	                $logId
+	            );
+	            $t = array('i');
+	            $res = db_prep_query($sql,$v,$t);
+	            return true;
+	        } else {
+	            //create new record cause search has not been invoced so far
+	            $sql = <<<SQL
+INSERT INTO si_log (createdate, referrer, query_string, search_text, user_agent, fkey_catalogue_id, log_count) VALUES (now(), $1, $2, $3, $4, $5, 1)
+SQL;
+	            $v = array(
+	                $referrer,
+	                $query_string,
+	                $search_text,
+	                $user_agent,
+	                $catalogue_id
+	            );
+	            $t = array('s', 's', 's', 's', 'i');
+	            $res = db_prep_query($sql,$v,$t);
+	            return true;
+	        }
+	    //}
+	}
+	
+	function isSILogEntryAlreadyInDB($referrer, $query_string, $user_agent, $catalogue_id) {
+	    if ($catalogue_id == null) {
+	        $sql = <<<SQL
+    SELECT log_id FROM si_log WHERE fkey_catalogue_id is null AND query_string = $1 AND user_agent = $2 AND referrer = $3 ORDER BY lastchanged DESC
+    SQL;
+	        $v = array(
+	            $query_string,
+	            $user_agent,
+	            $referrer
+	        );
+	        $t = array('s', 's', 's');
+	    } else {
+    	    $sql = <<<SQL
+    SELECT log_id FROM si_log WHERE fkey_catalogue_id = $1 AND query_string = $2 AND user_agent = $3 AND referrer = $4 ORDER BY lastchanged DESC
+    SQL;
+    	    $v = array(
+    	        $catalogue_id,
+    	        $query_string,
+    	        $user_agent,
+    	        $referrer
+    	    );
+    	    $t = array('i', 's', 's', 's');
+	    }
+	    $res = db_prep_query($sql,$v,$t);
+	    while ($row = db_fetch_array($res)){
+	        $logId[] = $row['log_id'];
+	    }
+	    if (count($logId) > 0) {
+	        return $logId[0];
+	    } else {
+	        return false;
+	    }
+	}	
 
      /**
       * functions to log referrer for external invoced ogc api feature requests to database.
@@ -802,7 +882,7 @@ SQL;
 	                $wfs_id,
 	                $wfs_featuretype_id
 	            );
-	            $t = array('s',i,i);
+	            $t = array('s','i','i');
 	            $res = db_prep_query($sql,$v,$t);
 	            return true;
 	        }

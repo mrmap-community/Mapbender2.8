@@ -59,6 +59,56 @@ class Ogr {
         list ( $usec, $sec ) = explode ( " ", microtime () );
         return (( float ) $usec + ( float ) $sec);
     }
+    
+    public function getFormat($geometryFilename) {
+        $result = shell_exec('ogrinfo '.$geometryFilename);
+        //get successful or not
+        $e = new mb_exception("classes/class_ogr.php: reult of ogrinfo: " . $result);
+        if (strpos($result, 'successful') !== false) {
+            //using driver `GeoJSON' successful
+            preg_match_all('#using driver `(.*?)\' successful#', $result, $match);
+            $e = new mb_exception("classes/class_ogr.php: match: " . json_encode($match));
+            if (count($match[1]) == 1) {
+                return $match[1][0];
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Function to transform given GML features to geojson
+     */
+    public function transform($inputFilename, $inputFormat, $targetFormat, $targetCrs) {
+        switch ($targetFormat) {
+            case "GeoJSON":
+                $appendix = 'geojson';
+                break;
+            case "GML":
+                $appendix = 'gml';
+                break;
+        }
+        if ($this->useRamdisk && $this->ramdiskAvailable) {
+            $tmpDir = $this->ramdiskPath;
+        } else {
+            $tmpDir = TMPDIR;
+        }
+        $filenameUniquePart = "ogr_transform_".time()."_".uniqid();
+        $targetFilename = $tmpDir . "/" . $filenameUniquePart . "." . $appendix;
+        $e = new mb_exception("classes/class_ogr.php: result of ogrcommand: " . 'ogr2ogr -t_srs "'. $targetCrs .'" -f "' . $targetFormat . '" '.$targetFilename.' '. $inputFilename.' -lco WRITE_BBOX=YES');
+        exec('ogr2ogr -t_srs "'. $targetCrs .'" -f "' . $targetFormat . '" '.$targetFilename.' '. $inputFilename.' -lco WRITE_BBOX=YES', $output);
+        
+        if($h = fopen($targetFilename, "r")){
+            $result = fread($h, filesize($targetFilename));
+            fclose($h);
+            return $result;
+        } else {
+            return false;
+        }
+    }
+    
     /**
      * Function to transform given GML features to geojson 
      */

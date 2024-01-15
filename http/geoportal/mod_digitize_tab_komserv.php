@@ -22,11 +22,8 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">'
 <?php
 $digitize_conf_filename = "digitize_default.conf";
 include '../include/dyn_css.php';
-//include '../include/dyn_js.php';
 ?>
-<link rel="stylesheet" href="../extensions/jquery-ui-1.7.2.custom/css/ui-customized_4_digitize/jquery-ui-1.7.3.custom.css">
 <script type='text/javascript' src='../extensions/jquery-ui-1.7.2.custom/js/jquery-1.3.2.min.js'></script>
-<script type='text/javascript' src='../extensions/jquery-ui-1.7.2.custom/js/jquery-ui-1.7.2.custom.min.js'></script>
 <script type='text/javascript'>
 /**
  * Package: digitize
@@ -313,7 +310,6 @@ if (typeof snapping === "undefined") {
 
 var wfsWindow;	
 var wfsConf = [];
-//initialize geometryArray
 var d;
 var mod_digitize_width;
 var mod_digitize_height;
@@ -349,9 +345,6 @@ try {if(mod_digitize_elName){}}catch(e) {mod_digitize_elName = "digitize";}
 try {if(nonTransactionalEditable){}}catch(e) {nonTransactionalEditable = false;}
 try {if(updatePointGeometriesInstantly){}}catch(e) {updatePointGeometriesInstantly = false;}
 try {if(addCloneGeometryButton){}}catch(e) {addCloneGeometryButton = false;}
-//upload button for geojson object
-try {if(uploadGeometryButton){}}catch(e) {uploadGeometryButton = false;}
-
 
 if (typeof featuresMustHaveUniqueId === "undefined") {
 	var featuresMustHaveUniqueId = false;
@@ -424,16 +417,8 @@ function hideHelptext(helptextId) {
 }
 function getMousePosition(e) {
 	var map = parent.getMapObjByName(mod_digitize_target);
-	var pos =  map.getMousePosition(e);
 
-	// http://bugs.jquery.com/ticket/7319
-	if( $.browser.msie ) {
-		var doc = parent.$(e.target.ownerDocument);
-		pos.x = pos.x + doc.scrollLeft();
-		pos.y = pos.y + doc.scrollTop();
-	}
-
-	return pos;
+	return map.getMousePosition(e);
 }
 
 
@@ -484,9 +469,17 @@ function appendGeometryArrayFromGeojson (geojson) {
 // --- polygon, line, point insertion (begin) ----------------------------------------------------------------------------------------------
 
 function appendGeometryArray(obj) {
+	//console.log('before executePreFunctions');
 	executeDigitizePreFunctions();
+	//console.log('after executePreFunctions');
+	//console.log(JSON.stringify(obj));
+	//console.log(JSON.stringify(d));
+	//console.log(JSON.stringify(featuresMustHaveUniqueId));
 	d.union(obj, featuresMustHaveUniqueId);
+	//console.log("list after union: " + JSON.stringify(d));
+	//console.log('after union');
 	executeDigitizeSubFunctions();
+	//console.log('after executeDigitizeSubFunctions');
 }
 
 function mod_digitize_go(e){
@@ -792,7 +785,6 @@ var basepointPointIndex = null;
 var basepointDragActive = false;
 
 function handleBasepoint(obj,memberIndex, geometryIndex, ringIndex, pointIndex){
-
 	if (!(
 		mod_digitizeEvent == button_move || 
 		mod_digitizeEvent == button_insert || 
@@ -814,19 +806,15 @@ function handleBasepoint(obj,memberIndex, geometryIndex, ringIndex, pointIndex){
 	}
 	basepointPointIndex = pointIndex;
 	
-    // The eventhandlers get unbound before being bound again to ensure
-    // they are only called once - see http://trac.osgeo.org/mapbender/ticket/879 
 	if(mod_digitizeEvent == button_move){
 		mod_digitize_timeout();
 		basepointObject.style.cursor = 'move';
-		parent.$(basepointObject).unbind("mousedown", parent.frames[mod_digitize_elName].selectBasepoint);
 		parent.$(basepointObject).bind("mousedown", parent.frames[mod_digitize_elName].selectBasepoint);
 	}
 
 	if(mod_digitizeEvent == button_delete){
 		mod_digitize_timeout();
 		basepointObject.style.cursor = 'crosshair';
-		parent.$(basepointObject).unbind("mousedown", parent.frames[mod_digitize_elName].deleteBasepoint);
 		parent.$(basepointObject).bind("mousedown", parent.frames[mod_digitize_elName].deleteBasepoint);
 	}
 }
@@ -1018,10 +1006,7 @@ function completeInitialization() {
 	setStyleForTargetFrame();
 	checkDigitizeTag();
 	initialiseSnapping();
-//appendGeometryArrayFromKML();
-//test - import geometry from 
-//appendGeometryArrayFromGeojson();
-//showGeoJsonImportForm();
+//		appendGeometryArrayFromKML();
 	if (!nonTransactionalEditable) {
 		initialiseHighlight();
 	}
@@ -1715,7 +1700,7 @@ function drawDashedLine(){
 								
 							}
 							if(isMoveOrInsertOrDelete) {
-								smPArray[smPArray.length] = "onmouseover='window.frames[\""+mod_digitize_elName+"\"].handleBasepoint(this,"+i+","+j+","+k+")' ;";
+								smPArray[smPArray.length] = " onmouseover='window.frames[\""+mod_digitize_elName+"\"].handleBasepoint(this,"+i+","+j+","+k+")' ;";
 							}
 							smPArray[smPArray.length] = ">";
 							if (isPolygon || isLine) {
@@ -1836,6 +1821,8 @@ function evaluateDashes(start, end, memberIndex, geomIndex, ringIndex, pointInde
 }
 
 function isTransactional(geom) {
+	console.log("isTransactional: " + JSON.stringify(geom) + typeof(geom.wfs_conf) + " " + geom.wfs_conf + " " + wfsConf.length);
+
 //	alert(typeof(geom.wfs_conf) + " " + geom.wfs_conf + " " + wfsConf.length);
 	if (typeof(geom.wfs_conf) == 'number') {
 		if (geom.wfs_conf >= 0 && geom.wfs_conf < wfsConf.length) {			
@@ -1849,6 +1836,10 @@ function isTransactional(geom) {
 		}
 	}
 	else if (typeof(geom.wfs_conf) == 'undefined') {
+		console.log("wfs_conf is undefined - maybe transactional!");
+		return true;
+	} else {
+		console.log("type of wfs_conf: " + typeof(geom.wfs_conf) + " stringified: " + JSON.stringify(geom.wfs_conf));
 		return true;
 	}
 }
@@ -1887,16 +1878,18 @@ function getName (geom) {
 }
 
 function updateListOfGeometries(){
+    console.log("updateListOfGeometries");
 	var listOfGeom = "<ul>";
 	if (d.count() > 0) {
 		wfsConf = parent.get_complete_wfs_conf();
+		console.log(JSON.stringify(wfsConf));
 		//for (var i = 0 ; i < d.count(); i ++) {
 		for (var i = d.count()-1 ; i >= 0; i--) {
 //			if (d.get(i).get(-1).isComplete() && (nonTransactionalEditable || isTransactional(d.get(i)))) {
+	        console.log("check if geometry is transactional!");
 			if ((nonTransactionalEditable || isTransactional(d.get(i)))) {
-	            //alert(d.get(i).toText());
+				console.log("is transactional: " + JSON.stringify(d.get(i)));
 				// for the geometries from a kml, there is another save dialogue
-				//appendGeometryArrayFromGeojson();
 				if (d.get(i).isFromKml()) {
 					// if the kml is in the db (id = id in database)
 					if (d.get(i).e.getElementValueByName("Mapbender:id")) {
@@ -2200,20 +2193,6 @@ function wfsExistsForGeom(geom, wfsConf) {
 	return false;
 }
 
-function showGeoJsonImportForm() {
-    //html = "<div><p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the &apos;x&apos; icon.</p></div>";
-	parent.writeTag(mod_digitize_elName, "geoJsonImportForm", "<div>Testdialog</div>");
-	$( function() {
-		$( "#geoJsonImportForm" ).dialog(
-				{
-				      title: "import",
-				      height: "auto",
-				      width: 50
-				});
-
-		
-	} );
-}
 
 function showWfsKml (geometryIndex) {
 	wfsKmlWindow = open("", "wfsattributes", "width="+wfsWindowWidth+", height="+wfsWindowHeight+", resizable, dependent=yes, scrollbars=yes");
@@ -2344,7 +2323,27 @@ function showWfs(geometryIndex) {
 		"var data = $.parseJSON(window.opener.stripslashes($(this).attr('data'), true));" +
 		"var defaults = {};" +
 		"var settings = $.extend({}, defaults, data);" + 
-		"$(this).datepicker(settings);" + 
+		/*"$.datepicker.regional['de'] = {
+		closeText: 'schließen',
+		prevText: '&#x3c;zurück',
+		nextText: 'Vor&#x3e;',
+		currentText: 'heute',
+		monthNames: ['Januar','Februar','März','April','Mai','Juni',
+		'Juli','August','September','Oktober','November','Dezember'],
+		monthNamesShort: ['Jan','Feb','Mär','Apr','Mai','Jun',
+		'Jul','Aug','Sep','Okt','Nov','Dez'],
+		dayNames: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],
+		dayNamesShort: ['So','Mo','Di','Mi','Do','Fr','Sa'],
+		dayNamesMin: ['So','Mo','Di','Mi','Do','Fr','Sa'],
+		weekHeader: 'Wo',
+		dateFormat: 'dd.mm.yy',
+		firstDay: 1,
+		isRTL: false,
+		showMonthAfterYear: false,
+		yearSuffix: ''};
+*/
+		//"$(this).datepicker.setDefaults($.datepicker.regional['de']);" +
+		"$(this).datepicker({dateFormat: 'yy-mm-dd', changeYear: true, yearRange: '1950:2050',monthNames: ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],dayNames: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'], monthNamesShort: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],dayNamesMin: ['So','Mo','Di','Mi','Do','Fr','Sa']});" + 
 		"});";
 	
 	onChangeText += datePickerText;
@@ -2378,19 +2377,6 @@ function showWfs(geometryIndex) {
 	"});";
 	
 	onChangeText += uploaderText;
-
-        var targetObject = parent.getMapObjByName("mapframe1");
-	var mapExtentObj = targetObject.extent;
-        var mapExtent = mapExtentObj.minx + ","+ mapExtentObj.miny +","+ mapExtentObj.maxx + ","+ mapExtentObj.maxy;
-
-	var mapSelectBoxText = "$('.hasMapdependentSelect').each(function () { \n" +
-		"var data = $.parseJSON(window.opener.stripslashes($(this).attr('data'), true));\n" +
-		"data.bbox='"+ mapExtent + "';\n"+
-		"var defaults = {};\n" +
-		"var settings = $.extend({}, defaults, data);\n" +
-		"$(this).mapdependentSelect(settings);\n" +
-		"});\n";
-	onChangeText  += mapSelectBoxText;
 	
 	str += "\t<select name='wfs' size='" + wfsConf.length + "'";
 	str += " onChange=\""+ onChangeText +"\"";
@@ -2425,16 +2411,16 @@ function showWfs(geometryIndex) {
 		var headStr = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=<?php echo CHARSET;?>'><style type='text/css'>" + wfsConf[defaultIndex]['g_style'] + "</style>";
 		headStr += '<link rel="stylesheet" type="text/css" href="../extensions/jquery-ui-1.7.2.custom/development-bundle/themes/base/ui.all.css" />';
 		headStr += '<style type="text/css">'
-		headStr += 'a.tabheader {float:left; margin: 0 3px 0 0;padding: 1px 5px;text-decoration: none;color: #999;background-color: #F5F5F5;border: 1px solid #999;border-bottom: 0; }';
-		headStr += 'a.tabheader.active {float:left; color: #666;background-color: transparent;border-color: #666;border-bottom: 0px solid #FFF;cursor: default; }';
-		headStr += 'div.tabcontent {clear:left; visibility: hidden;display: none;margin: 1px 0 5px 0;padding: 5px;border: 1px solid #666; }';
+		headStr += 'a.tabheader { margin: 0 3px 0 0;float:left;padding: 1px 5px;text-decoration: none;color: #999;background-color: #F5F5F5;border: 1px solid #999;border-bottom: 0; }';
+		headStr += 'a.tabheader.active { float:left;color: #666;background-color: transparent;border-color: #666;border-bottom: 0px solid #FFF;cursor: default; }';
+		headStr += 'div.tabcontent { visibility: hidden;display: none;clear:left;margin: 1px 0 5px 0;padding: 5px;border: 1px solid #666; }';
 		headStr += 'div.helptext { visibility: hidden;display: none;position: absolute;top: 5%;left: 5%;width: 85%;padding: 5px;color: #000;background-color: #EEEEEE;border: 1px solid #000;-moz-border-radius: 10px;-webkit-border-radius: 10px;}';
 		headStr += 'div.helptext p { margin: 0 ; }';
 		headStr += 'div.helptext p a.close { display: block;margin: 5px auto;text-align: center; }';
 		headStr += 'a img { vertical-align: middle;border: 0; }';
 		headStr += '.mandatory { border:1px solid red; }';
 		headStr += '</style>';
-		headStr += '</head><body onload="window.opener.toggleTabs(\''+initialTab+'\'); ' + datePickerText + uploaderText + mapSelectBoxText + '">';
+		headStr += '</head><body onload="window.opener.toggleTabs(\''+initialTab+'\'); ' + datePickerText + uploaderText + '">';
 		wfsWindow.document.write(headStr);
 	}
 	else {
@@ -2446,7 +2432,6 @@ function showWfs(geometryIndex) {
 	str += "<script type='text/javascript' src='../extensions/jquery-ui-1.7.1.w.o.effects.min.js'><\/script>";
 	str += "<script type='text/javascript' src='../plugins/jq_upload.js'><\/script>";
 	str += "<script type='text/javascript' src='../extensions/jqjson.js'><\/script>";
-        str += "<script type='text/javascript' src='../plugins/mapdependentSelectBox.js'><\/script>";
 	str += "</body></html>";
 	wfsWindow.document.write(str);
 	wfsWindow.document.close();
@@ -2495,42 +2480,6 @@ function prepareSelectBox (formElementHtml, categoryName, isMandatory, elementLa
 	return formElementHtml;
 }
 
-function prepareMapdependentSelect (formElementHtml, categoryName, isMandatory, elementLabel, elementValue, styleId) {
-	var classString = (styleId == '0') ? "" : styleId;
-	var patternString = "<select";
-	var pattern = new RegExp(patternString);
-	// set category
-	if (categoryName) {
-		formElementHtml = formElementHtml.replace(pattern, patternString + " category='" + categoryName + "' ");
-	}
-
-	if (isMandatory) {
-		// set border if mandatory
-		classString += "hasMapdependentSelect mandatory";
-	}
-	classString = (classString !== "") ? " class='"+classString+"' " : " ";
-	formElementHtml = formElementHtml.replace(pattern, patternString + classString);
-
-	// set name of select box to elementlabel
-	patternString = "name\s*=\s*\\*'\w+\\*'";
-	pattern = new RegExp(patternString);
-	if (pattern.test(formElementHtml)) {
-		formElementHtml = formElementHtml.replace(pattern, "name='" + elementLabel + "'");
-	}
-	else {
-		patternString = "<select";
-		pattern = new RegExp(patternString);
-		formElementHtml = formElementHtml.replace(pattern, "<select name='" + elementLabel + "'");
-	}
-
-	// preselect the correct entry of the box
-	// not so easy because this can happen after the WFSsearch returns results
-	// so give it an extra attribute which can be parsed bythe javascript side of things
-
-	formElementHtml = formElementHtml.replace(pattern,patternString + " elementvalue='"+elementValue + "' ");
-	return formElementHtml;
-}
-
 function prepareDatepicker (formElementHtml, categoryName, isMandatory, elementLabel, elementValue, styleId) {
 	var classString = (styleId == '0') ? "" : styleId;
 	var patternString = "<input";
@@ -2564,48 +2513,6 @@ function prepareDatepicker (formElementHtml, categoryName, isMandatory, elementL
 	patternString = "<input";
 	pattern = new RegExp(patternString);
 	formElementHtml = formElementHtml.replace(pattern, patternString + " value='"+elementValue+"'");
-
-	return formElementHtml;
-}
-
-function prepareCheckbox (formElementHtml, categoryName, isMandatory, elementLabel, elementValue, styleId) {
-	var classString = (styleId == '0') ? "" : styleId;
-	var patternString = "<input";
-	var pattern = new RegExp(patternString);
-		
-	// set category
-	if (categoryName) {
-		formElementHtml = formElementHtml.replace(pattern, patternString + " category='" + categoryName + "' ");
-	}
-
-	if (isMandatory) {
-		// set border if mandatory
-		classString += " mandatory";
-	}
-	classString = (classString !== "") ? " class='"+classString+"' " : " ";
-	formElementHtml = formElementHtml.replace(pattern, patternString + classString);
-
-	// set name of input to elementlabel
-	patternString = "name\s*=\s*\\*('|\")\w+\\*('|\")";
-	pattern = new RegExp(patternString);
-	if (pattern.test(formElementHtml)) {
-		formElementHtml = formElementHtml.replace(pattern, "name='" + elementLabel + "'");
-	}
-	else {
-		patternString = "<input";
-		pattern = new RegExp(patternString);
-		formElementHtml = formElementHtml.replace(pattern, "<input name='" + elementLabel + "'");
-	}
-	
-	// preselect the correct entry
-	patternString = "<input";
-	pattern = new RegExp(patternString);
-	if(elementValue !== "") {
-		formElementHtml = formElementHtml.replace(pattern, patternString + " checked value='"+elementValue+"'");
-	}
-	else {
-		formElementHtml = formElementHtml.replace(pattern, patternString);
-	}
 
 	return formElementHtml;
 }
@@ -2830,16 +2737,6 @@ function buildElementForm(wfsConfIndex, memberIndex){
 							if (pattern.test(formElementHtml)) {
 								formElementHtml = prepareUploadField(formElementHtml, "", isMandatory, elementLabel, elementValue, styleId);
 							}
-                            var patternString = "hasMapdependentSelect";
-							pattern = new RegExp(patternString);
-							if (pattern.test(formElementHtml)) {
-								formElementHtml = prepareMapdependentSelect(formElementHtml, "", isMandatory, elementLabel, elementValue, styleId);
-							}
-                            var patternString = "checkbox";
-							pattern = new RegExp(patternString);
-							if (pattern.test(formElementHtml)) {
-								formElementHtml = prepareCheckbox(formElementHtml, "", isMandatory, elementLabel, elementValue, styleId);
-							}
 							str += formElementHtml;
 						}
 						
@@ -2997,20 +2894,6 @@ function dbGeom(type, m, callback, dbWfsConfId) {
 						errorMessage = msgObj.messageErrorFormEvaluation;
 					}
 				}
-				else if (myform.elements[i].type == "checkbox"){
-					if (myform.elements[i].id) {
-						var elementId = String(myform.elements[i].id).replace(/mb_digitize_form_/, "");
-						if(myform.elements[i].checked == true) {
-							d.get(m).e.setElement(elementId, myform.elements[i].value);
-						}
-						else {
-							d.get(m).e.setElement(elementId, "");
-						}
-					}
-					else {
-						errorMessage = msgObj.messageErrorFormEvaluation;
-					}
-				}
 			}
 		}
 		else {
@@ -3095,6 +2978,7 @@ function dbGeom(type, m, callback, dbWfsConfId) {
 		} else {
 			var geoJson = d.featureToString(m);
 		}
+
 		parent.mb_ajax_post(
 			"../extensions/geom2wfst.php", 
 			{
@@ -3260,7 +3144,6 @@ function applyMessages() {
 <!-- 		<img id="digitizeBack" style="position:absolute;top:28;left:84" src="../img/button_digitize/back_on.png" title="" onclick="digitizeHistory.back()" name="digitizeBack"/>
 		<img id="digitizeForward" style="position:absolute;top:28;left:112" src="../img/button_digitize/forward_on.png" title="" onclick="digitizeHistory.forward()" name="digitizeForward"/>
  -->
- 		<div id='geoJsonImportForm' title="GeoJson"></div>
 		<div id='digButtons'></div>
 		<div style='position:absolute;top:60px;left:5px' id='listOfGeometries' class='digitizeGeometryList'></div>
 	</body>

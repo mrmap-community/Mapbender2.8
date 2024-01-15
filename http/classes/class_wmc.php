@@ -682,8 +682,19 @@ class wmc {
 		$resStyle = db_prep_query($sql,$v,$t);
 		//get result as array
 		$style = array();
+		$styleNameArray = array();
+		$dbStyleArray = array();
+		$numberOfStyles = 0;
 		while($row = db_fetch_array($resStyle)) {
+		    
+		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->name = $row["name"];
+		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->title = $row["title"];
+		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->legendurl = $row["legendurl"];
+		    $dbStyleArray[$row["fkey_layer_id"]][$numberOfStyles]->legendurlformat = $row["legendurlformat"];
+		    $numberOfStyles++;
+		    
 			$style[$row["fkey_layer_id"]][$row["name"]] [$row["legendurlformat"]] = $row["legendurl"];
+			$styleNameArray[] = $row["name"];
 			//$e = new mb_notice($row["fkey_layer_id"] . " : " . $row["name"]. " - legendurl: ".$row["legendurl"]." - format: ".$row["legendurlformat"]);
 		}
 		//pull all information about dimension - first only this information, that makes sense
@@ -833,7 +844,7 @@ class wmc {
 				if (defined("SHOW_COUPLED_FEATURETYPES_IN_TREE") && SHOW_COUPLED_FEATURETYPES_IN_TREE == true) {
 					//put it in layer extension layer_featuretype_coupling
 					if ($row['featuretypecoupling'] !== "[]") {
-//$e = new mb_exception("class_wmc.php: updateUrlsFromDb: featuretypecoupling:".$row['featuretypecoupling']." - layer: ".(integer)$layerId);
+                        //$e = new mb_exception("class_wmc.php: updateUrlsFromDb: featuretypecoupling:".$row['featuretypecoupling']." - layer: ".(integer)$layerId);
 						//$resultOfXpath = reset($WMCDoc->xpath("/wmc:ViewContext/wmc:LayerList/wmc:Layer[wmc:Extension/mapbender:layer_id='".(integer)$layerId."']/wmc:DimensionList/wmc:Dimension[@name=\"time\" and @units=\"ISO8601\"]/@".$attributeName));
 						//$resultOfXpath->{0} = $dimension[(integer)$layerId]["time"][$attributeName];
 					}
@@ -841,33 +852,90 @@ class wmc {
 				//Help for problem with xlink:href attributes: http://php.net/manual/de/class.simplexmlelement.php!!!!!
 				//exchange legend urls
 				$layerDoc = simplexml_load_string($layer->saveXML());
-				if (isset($row["wms_owsproxy"]) && $row["wms_owsproxy"] != '' && !is_null($row["wms_owsproxy"])) {
-					if($layer->StyleList->Style->LegendURL->OnlineResource){
-						$arURL = parse_url($layer->StyleList->Style->LegendURL->OnlineResource->attributes('xlink', true)->href);
-						$query = $arURL["query"];
-						$url = $wmsGetLegendUrl . $query;
-						$layer->StyleList->Style->LegendURL->OnlineResource->attributes('xlink', true)->href = $url;
-					}
+				//style handling
+				//compare layer style list from wmc with layer style list from db and actualize wmc style list on demand
+				/*
+				 * example from wmc:
+				 * <StyleList>
+				 <Style>
+				 <Name>icon-eu_reg00625_fd_gl_t_isoarea_isa</Name>
+				 <Title>icon-eu_reg00625_fd_gl_t_isoarea_isa</Title>
+				 <LegendURL width="" height="" format="">
+				 <OnlineResource xlink:type="simple" xlink:href="https://maps.dwd.de/geoserver/dwd/wms?request=GetLegendGraphic&version=1.1.1&format=image%2Fpng&width=20&height=20&layer=Icon-eu_reg00625_fd_gl_T"/>
+				 </LegendURL>
+				 </Style>
+				 <Style current="1">
+				 <Name>icon-eu_reg00625_fd_gl_t_isoarea_tkb</Name>
+				 <Title>icon-eu_reg00625_fd_gl_t_isoarea_tkb</Title>
+				 <LegendURL width="" height="" format="">
+				 <OnlineResource xlink:type="simple" xlink:href="https://maps.dwd.de/geoserver/dwd/wms?request=GetLegendGraphic&version=1.1.1&format=image%2Fpng&width=20&height=20&layer=Icon-eu_reg00625_fd_gl_T&style=icon-eu_reg00625_fd_gl_t_isoarea_tkb"/>
+				 </LegendURL>
+				 </Style>
+				 <Style>
+				 <Name>default-style-WAM</Name>
+				 <Title>WAM style</Title>
+				 <LegendURL width="" height="" format="">
+				 <OnlineResource xlink:type="simple" xlink:href="https://maps.dwd.de/geoserver/dwd/wms?request=GetLegendGraphic&version=1.1.1&format=image%2Fpng&width=20&height=20&layer=WAM"/>
+				 </LegendURL>
+				 </Style>
+				 </StyleList>
+				 
+				 example from database:
+				 $style[$row["fkey_layer_id"]][$row["name"]] [$row["legendurlformat"]] = $row["legendurl"];
+				 $style["911"]["icon-eu_reg00625_fd_gl_t_isoarea_isa"]["image/png"] = "https://..../legend.png"
+				 $style[(integer)$layerId][(string)$styleObject->Name][$mimeType]
+				 json encoded:
+				 
+				 {
+				 "icon-eu_reg00625_fd_gl_t_isoarea_isa": {
+				 "image\\/png": "https:\\/\\/maps.dwd.de\\/geoserver\\/dwd\\/wms?request=GetLegendGraphic&version=1.1.1&format=image%2Fpng&width=20&height=20&layer=Icon-eu_reg00625_fd_gl_T"
+				 },
+				 "icon-eu_reg00625_fd_gl_t_isoarea_tkb": {
+				 "image\\/png": "https:\\/\\/maps.dwd.de\\/geoserver\\/dwd\\/wms?request=GetLegendGraphic&version=1.1.1&format=image%2Fpng&width=20&height=20&layer=Icon-eu_reg00625_fd_gl_T&style=icon-eu_reg00625_fd_gl_t_isoarea_tkb"
+				 },
+				 "default-style-WAM": {
+				 "image\\/png": "https:\\/\\/maps.dwd.de\\/geoserver\\/dwd\\/wms?request=GetLegendGraphic&version=1.1.1&format=image%2Fpng&width=20&height=20&layer=WAM"
+				 }
+				 }
+				 */
+				//get name of current style
+				$currentStyle = $layerDoc->xpath('/Layer/StyleList/Style[@current="1"]');
+				$currentStyle = $currentStyle[0];
+				//$e = new mb_exception("classes/class_wmc.php: current style json: " . json_encode($currentStyle));
+				//$e = new mb_exception("classes/class_wmc.php: current style name: " . $currentStyle->Name);
+				$currentStyleName = $currentStyle->Name;
+				if ($currentStyleName && $currentStyleName !== "" ) {
+				    //$e = new mb_exception("classes/class_wmc.php: current style name: " . $currentStyle->Name);
 				} else {
-					foreach($layerDoc->xpath('/Layer/StyleList/Style[@current="1"]') as $styleObject) {
-						//only one current style is possible!
-						//if old legendurl was given, exchange it with new from database
-						if($styleObject->LegendURL->OnlineResource){
-							//check mimetype
-							if (isset($styleObject->LegendURL->attributes()->format) && isset($style[(integer)$layerId][(string)$styleObject->Name][(string)$styleObject->LegendURL->attributes()->format])) {
-								$mimeType = (string)$styleObject->LegendURL->attributes()->format;
-
-							} else {
-								$mimeType = 'image/png';
-							}
-							$e = new mb_notice("class_wmc: mimetype for legendurl: ".$mimeType);
-							if (isset($style[(integer)$layerId][(string)$styleObject->Name][$mimeType]) && $style[(integer)$layerId][(string)$styleObject->Name][$mimeType] != '') {
-								$e = new mb_notice("class_wmc: exchange old legendurl url : ".$layer->StyleList->Style->LegendURL->OnlineResource->attributes('xlink', true)->href." with new legendurl: ".$style[(integer)$layerId][(string)$styleObject->Name][$mimeType]);
-								$layer->StyleList->Style->LegendURL->OnlineResource->attributes('xlink', true)->href = $style[(integer)$layerId][(string)$styleObject->Name][$mimeType];
-							}
-
-						}
-					}
+				    //try to use an existing default style as current style!
+				    $currentStyleName = "default";
+				}
+				//delete all existing style entries from wmc for this layer
+				//$e = new mb_exception("classes/class_wmc.php: number of styles for layer: " .  count($layer->StyleList->Style));
+				//$e = new mb_exception("classes/class_wmc.php: xml of layer stylelist: " . $layer->StyleList->asXml());
+				unset($layer->StyleList->Style);
+				//iterate over all styles from db ($dbStyleArray) and create style entries for them
+				foreach($dbStyleArray[(integer)$layerId] as $dbStyle){
+				    $actualStyle = $layer->StyleList->addChild('Style');
+				    if ($dbStyle->name == $currentStyleName) {
+				        $actualStyle->addAttribute('current', '1');
+				    }
+				    $actualName = $actualStyle->addChild('Name');
+				    dom_import_simplexml($actualName)->nodeValue = $dbStyle->name;
+				    $actualTitle = $actualStyle->addChild('Title');
+				    dom_import_simplexml($actualTitle)->nodeValue = $dbStyle->title;
+				    $actualLegendUrl = $actualStyle->addChild('LegendURL');
+				    $actualLegendUrl->addAttribute('wmc:format', (string)$dbStyle->legendurlformat, 'http://www.opengis.net/context');
+				    $actualLegendOnlineResource = $actualLegendUrl->addChild('OnlineResource');
+				    $actualLegendOnlineResource->addAttribute('xlink:type', 'simple','http://www.w3.org/1999/xlink');
+				    $legendUrl = $dbStyle->legendurl;
+				    //TODO - exchange link to GetLegendGraphic with proxy, if proxy is activated!
+				    if (isset($row["wms_owsproxy"]) && $row["wms_owsproxy"] != '' && !is_null($row["wms_owsproxy"])) {
+    				    $arURL = parse_url($legendUrl);
+    				    $query = $arURL["query"];
+    				    $legendUrl = $wmsGetLegendUrl . $query;
+				    }
+				    $actualLegendOnlineResource->addAttribute('xlink:href', $legendUrl, 'http://www.w3.org/1999/xlink');
 				}
 				foreach($layerDoc->xpath('/Layer/DimensionList/Dimension[@name="time" and @units="ISO8601"]') as $dimensionObject) {
 					foreach ($attributeNames as $attributeName) {
@@ -2359,6 +2427,7 @@ SQL;
 							array_push($currentLayer["style"], array("current" => $attributes["current"]));
 							if ($attributes["current"] == "1") {
 								$currentLayer["styleIndex"] = count($currentLayer["style"]) - 1;
+								//$currentLayer["extension"]["gui_layer_style"] = $currentLayer["style"][$index]["name"];
 							}
 						}
 						if ($tag == "STYLELIST" && $type == "close") {
@@ -2547,6 +2616,7 @@ SQL;
 			$wms->wms_getmap = $currentLayer["url"];
 			$wms->wms_getfeatureinfo = $currentLayer["url"]; // TODO : Add correct data
 			$styleIndex = $currentLayer["styleIndex"];
+			//$wms->gui_wms_mapformat = $currentLayer["format"][$formatIndex]["name"];
 			$wms->wms_getlegendurl = $currentLayer["style"][$styleIndex]["legendurl"];
 			$wms->wms_filter = ""; // TODO : Add correct data
 			$formatIndex = $currentLayer["formatIndex"];

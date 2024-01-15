@@ -58,7 +58,6 @@ Mapbender.events.init.register(function () {
 		callback: function (data) {
 			tab_open(options.digitizeId);
 
-
 			var digitizeArray = new GeometryArray();
 
 			var wfsConf = get_complete_wfs_conf();
@@ -71,12 +70,23 @@ Mapbender.events.init.register(function () {
 				}
 				return null;
 			};
-			
 			for (var i in data.selectedRows) {
-				digitizeArray.importGeoJSON(data.selectedRows[i].toString());
+				//console.log(data.selectedRows[i].toString());
+				if ((typeof(options.switchAxisOrder) != "undefined") && options.switchAxisOrder === 'true') {
+					console.log("switch axis order as defined in element var!");
+					digitizeArray.importGeoJSON(data.selectedRows[i].toString(true));
+				} else {
+					digitizeArray.importGeoJSON(data.selectedRows[i].toString());
+				}
 				digitizeArray.get(-1).wfs_conf = 
 					getJsWfsConfIdByDbWfsConfId(wfsConf, parseInt(data.WFSConf.wfs_conf_id));
+				//console.log(JSON.stringify(wfsConf));
+				//console.log(data.WFSConf.wfs_conf_id);
+				//console.log(getJsWfsConfIdByDbWfsConfId(wfsConf, parseInt(data.WFSConf.wfs_conf_id)));
 			}
+			//console.log(options.digitizeId);
+			//console.log(JSON.stringify(digitizeArray));
+			
 			window.frames[options.digitizeId].appendGeometryArray(digitizeArray);
 			tab_open(options.digitizeId);
 			resultList.hide();

@@ -43,6 +43,21 @@ Mapbender.events.init.register(function(){
     }
     
     var bbox = feature.getBBox();
+    
+    if (typeof options.switchAxisOrder != 'undefined' && options.switchAxisOrder == 'true') {
+    	console.log("switchAxisOrder defined in element var!");
+    	let minx = bbox[0].x;
+    	let miny = bbox[0].y;
+    	let maxx = bbox[1].x;
+    	let maxy = bbox[1].y;
+    	bbox[0].x = miny;
+    	bbox[0].y = minx;
+    	bbox[1].x = maxy;
+    	bbox[1].y = maxx;
+    }
+    
+    //console.log(JSON.stringify(bbox));
+    
     var bufferFloat = parseFloat(me.WFSConf.g_buffer);
     var buffer = new Point(bufferFloat,bufferFloat);
     bbox[0] = bbox[0].minus(buffer);
