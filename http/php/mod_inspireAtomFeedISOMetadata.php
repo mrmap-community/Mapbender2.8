@@ -282,7 +282,11 @@ SQL;
 			
 			// $mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d",strtotime($mb_metadata['lastchanged']));
 			$mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
-			$mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
+			if ($mbMetadata ['responsible_party_email'] != '') {
+			    $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
+			} else {
+			    $mapbenderMetadata ['serviceDepartmentMail'] = "kontakt@geoportal.rlp.de";
+			}
 			$mapbenderMetadata ['serviceGroupId'] = $mbMetadata ['fkey_mb_group_id'];
 			$mapbenderMetadata ['serviceOwnerId'] = $mbMetadata ['fkey_mb_user_id'];
 			// TODO!
