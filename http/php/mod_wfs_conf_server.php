@@ -27,8 +27,6 @@ $ajaxResponse = new AjaxResponse($_REQUEST);
 $command = $ajaxResponse->getMethod();
 
 switch ($command) {
-
-
 	case "getWfsConfsFromId":
 		$wfsConfIdString = $ajaxResponse->getParameter("wfsConfIdString");
 
@@ -50,13 +48,27 @@ switch ($command) {
 		$ajaxResponse->setResult($result);
 		$ajaxResponse->send();
 	break;
+	case "getWfsConfById" :
+	    $wfsConfId = $ajaxResponse->getParameter("wfsConfId");
+	    $currentUser = new User(Mapbender::session()->get("mb_user_id"));
+	    $wfsConfIds = $currentUser->getWfsConfByWfsOwner();
+	    if ($wfsConfIds === null) {
+	        $wfsConfIds = array();
+	    }
+	    $result = array();
+	    if (in_array((string)$wfsConfId, $wfsConfIds)) {
+	        $currentWfsConf = WfsConfiguration::createFromDb($wfsConfId);
+	        $result[]= $currentWfsConf;
+	    }
+	    $ajaxResponse->setResult($result);
+	    $ajaxResponse->send();
+	    break;
 	case "getWfsConfs" : 
 		$currentUser = new User(Mapbender::session()->get("mb_user_id"));
 		$wfsConfIds = $currentUser->getWfsConfByWfsOwner();
 		if ($wfsConfIds === null) {
 			$wfsConfIds = array();
 		}
-		
 		$result = array();
 		foreach ($wfsConfIds as $id) {
 			$currentWfsConf = WfsConfiguration::createFromDb($id);
@@ -67,20 +79,35 @@ switch ($command) {
 		$ajaxResponse->setResult($result);
 		$ajaxResponse->send();
 		break;
-
+	//pull only abstr and id - cause the whole list will be too big if some user has many wfs-confs
+	case "getWfsConfs2" :
+	    $currentUser = new User(Mapbender::session()->get("mb_user_id"));
+	    $wfsConfIds = $currentUser->getWfsConfByWfsOwner();
+	    if ($wfsConfIds === null) {
+	        $wfsConfIds = array();
+	    }
+	    $result = array();
+	    foreach ($wfsConfIds as $id) {
+	        $currentWfsConf = WfsConfiguration::createFromDb($id);
+	        $entry = new stdClass();
+	        if ($currentWfsConf !== null) {
+	            $entry->id = $currentWfsConf->id;
+	            $entry->abstr = $currentWfsConf->abstr;
+	            $result[]= $entry;
+	        }
+	    }
+	    $ajaxResponse->setResult($result);
+	    $ajaxResponse->send();
+	    break;
 	case "getWfs" : 
 		$aWFS = new wfs_conf();
 		$aWFS->getallwfs(Mapbender::session()->get("mb_user_id"));
-		
 		$result = array();
-		
 		for ($i = 0; $i < count($aWFS->wfs_id); $i++) {
 			// featuretypes
-			
 			$featuretypeArray = array();
 			$aWFS->getfeatures($aWFS->wfs_id[$i]);
 			for ($j = 0; $j < count($aWFS->features->featuretype_id); $j++) {
-
 				// featuretype elements
 				$ftElementArray = array();
        			$aWFS->getelements($aWFS->features->featuretype_id[$j]);
@@ -91,7 +118,6 @@ switch ($command) {
 						"type" => $aWFS->elements->element_type[$k]
 					);
 				}
-
                 $featuretypeArray[]= array(
 					"id" => $aWFS->features->featuretype_id[$j],
                 	"name" => $aWFS->features->featuretype_name[$j],
@@ -99,7 +125,6 @@ switch ($command) {
 					"elementArray" => $ftElementArray
 				);
 			}
-
 			$result[]= array(
 				"id" => $aWFS->wfs_id[$i],
 				"name" => $aWFS->wfs_name[$i],
@@ -110,9 +135,7 @@ switch ($command) {
 				"getFeature" => $aWFS->wfs_getfeature[$i],
 				"featuretypeArray" => $featuretypeArray
 			);
-
 		}
-
 		$ajaxResponse->setResult($result);
 		$ajaxResponse->send();
 		break;

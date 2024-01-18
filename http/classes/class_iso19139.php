@@ -96,9 +96,9 @@ class Iso19139 {
 	function __construct() {
 		//initialize empty iso19139 object
 		$this->fileIdentifier = "";
-		$title->title = "empty iso19139 object title";
-		$title->alternate_title = "";
-		$title->abstract = "empty iso19139 object abstract";
+		$this->title = "empty iso19139 object title";
+		$this->alternate_title = "";
+		$this->abstract = "empty iso19139 object abstract";
 		$this->createDate = "1900-01-01";
 		$this->changeDate = "1900-01-01";
 		$this->metadata = "";
@@ -337,6 +337,9 @@ XML;
 			//alternate title
 			$this->alternate_title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString');
 			$this->alternate_title = $this->alternate_title[0];
+			if (is_null($this->alternate_title) || !isset($this->alternate_title) || $this->alternate_title == false) {
+			    $this->alternate_title = '';
+			}
 			//dataset identifier - howto model into md_metadata?
 			//check where datasetid is defined - maybe as RS_Identifier or as MD_Identifier see http://inspire.jrc.ec.europa.eu/documents/Metadata/INSPIRE_MD_IR_and_ISO_v1_2_20100616.pdf page 18
 			//First check if MD_Identifier is set, then check if RS_Identifier is used!
@@ -2515,6 +2518,7 @@ SQL;
 		//check if the timestamp of an existing metadata element is not newer than the timestamp of the current metadata object!!!!
 		//TODO
 		//problem: <<<SQL have a limited number of chars!
+		
 		if ($changeAuthorization == true) {
 		    $sql = "UPDATE mb_metadata SET link = $1, origin = $18, md_format = $2, data = $3, ";
 		    $sql .= "linktype = $4, uuid = $5, title = $6, createdate = $7, changedate = $8, lastchanged = now(), ";
