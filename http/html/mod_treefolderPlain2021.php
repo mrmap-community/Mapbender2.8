@@ -945,9 +945,8 @@ function openDimensionSelectHtml(j,k,l,dimensionIndex,dimensionName) {
 			bgiframe: true,
 			autoOpen: true,
 			modal: false,
-			width: 400,
-			closeOnEscape: false,
-			open: function(event, ui) { $( "div[aria-labelledby='ui-dialog-title-selectDimensionDialog']" ).children().children(".ui-dialog-titlebar-close").hide()}, //hide closing x - but only for element with special id!!!
+			width: 500,
+			position: ['right',60],
 			buttons: {
 				"<?php echo _mb('Close');?>": function(){
 					$('selectDimensionDialog').remove();
