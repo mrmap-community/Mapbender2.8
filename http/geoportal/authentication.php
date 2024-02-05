@@ -57,6 +57,8 @@ if (is_array($isAuthenticated) != false) {
 //NEW Filed required "ALTER TABLE mapbender.mb_user ADD COLUMN mb_user_last_login_date date;"
 	$sql = "UPDATE mb_user SET";
 	$sql .= " mb_user_last_login_date = now()";
+	# Set mb_user_password_ticket to empty string
+	$sql .= ", mb_user_password_ticket = ''";
 	$V[0] = Mapbender::session()->get('mb_user_id');
 	$T[0] = 'i';
 	$sql .= 'WHERE mb_user_id = $1';
