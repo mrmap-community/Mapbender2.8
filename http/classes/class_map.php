@@ -1,6 +1,7 @@
 <?php
 require_once(dirname(__FILE__)."/../classes/class_bbox.php");
 require_once(dirname(__FILE__)."/../classes/class_cache.php");
+require_once(dirname(__FILE__)."/../classes/class_crs.php");
 /**
  * Representing a map object, identical to the JS object in javascripts/map.js
  * @class
@@ -170,49 +171,47 @@ class Map {
 	 * @return new box for given poi (array) and scale (int)
 	 */
 	public function getBboxFromPoiScale($point, $scale, $pointEpsg = false, $mapResolutionDpi = MB_RESOLUTION){
-		$geographicEpsgArray = array("EPSG:4326","EPSG:3857","EPSG:900913");
-		/*$scale;
-		$xtenty;
-		$bbox = $this->getExtentInfo();*/
 		$mapSetEpsg = $this->getEpsg();
-        	if ($pointEpsg == false) { // point is interpreted as given in epsg of gui/wmc
-		    if (in_array($mapSetEpsg, $geographicEpsgArray)) {
-			//wms 1.3.0 spec 
-			//$scale = $distanceInDeegree * ((6378137 * M_PI) / 180) / $this->getHeight() / 0.00028;
-			//calculate it from height of image cause lat direction always has right great circle distances
-			$distanceInDeegree = $this->getHeight() * 0.00028 * (double)$scale * 360.0 / (2.0 * M_PI * 6378137.0);
-
-			//$e = new mb_exception("distance in deegree: ".$distanceInDeegree. " - scale: ".$scale. " - height: ".$this->getHeight());			
-			$bbox[0] = $point[0] - ($distanceInDeegree / 2);
-		        $bbox[1] = $point[1] - ($distanceInDeegree / 2);
-		        $bbox[2] = $point[0] + ($distanceInDeegree / 2);
-		        $bbox[3] = $point[1] + ($distanceInDeegree / 2);
-		    } else {
-		        $xtenty = $scale / ($mapResolutionDpi * 100) * $this->getWidth(); //x width in m
-		        $ytenty = $scale / ($mapResolutionDpi * 100) * $this->getHeight();
-		        $bbox[0] = $point[0] - ($xtenty / 2);
-		        $bbox[1] = $point[1] - ($ytenty / 2);
-		        $bbox[2] = $point[0] + ($xtenty / 2);
-		        $bbox[3] = $point[1] + ($ytenty / 2);
-		    }
-		    return $bbox;
+		$crs = new Crs($mapSetEpsg);
+		if ($pointEpsg !== false && $pointEpsg !== $mapSetEpsg) {
+		    //transform point to mapset epsg
+		    //SELECT st_asewkt(st_transform(ST_PointFromText('POINT(7 50)', 4326),25832)) AS geom
+		    $point = "POINT(" . (string)$point[0] . " " . (string)$point[1] .")";
+		    $sql = "SELECT st_asewkt(st_transform(ST_PointFromText($1, $2::INT),$3::INT)) AS geom";
+		    $var1 = $point;
+		    $var2 = (string)explode(':', $pointEpsg)[1];
+		    $var3 = (string)explode(':', $mapSetEpsg)[1];
+		    $v = array($var1, $var2, $var3);
+		    $t = array('s', 's', 's');
+		    $res = db_prep_query($sql, $v, $t);
+		    db_fetch_row($res);
+		    $newPoint = db_result($res, 0, 'geom');
+		    //extract new coordinates
+		    preg_match("/\([^\]]*\)/", $newPoint , $matches);
+		    $e = new mb_notice("classes/class_map.php:  matches[0]: " . $matches[0]);
+		    $point = explode(' ',str_replace(')','',str_replace('(', '', $matches[0])));
+		    $e = new mb_notice("classes/class_map.php: point: " . json_encode($point));
 		}
-
-		/*if ($this->getEpsg() == "EPSG:4326") {
-			$pxLenx = ($bbox[2] - $bbox[0]) / $this->getWidth();
-			$pxLeny = ($bbox[3] - $bbox[1]) / $this->getHeight();
-			$lat_from = ((($bbox[3] - $bbox[1]) / 2) * M_PI) / 180;
-			$lat_to = ((($bbox[3] - $bbox[1]) / 2 + $pxLeny) * M_PI) / 180;
-			$lon_from = ((($bbox[2] - $bbox[0]) / 2) * M_PI) / 180;
-			$lon_to = ((($bbox[2] - $bbox[0]) / 2 + $pxLeny) * M_PI) / 180;
-			$dist = 6371229 * acos(sin($lat_from) * sin($lat_to) + cos($lat_from) * cos($lat_to) * cos($lon_from - $lon_to));
-			$scale = ($dist / sqrt(2)) * ($mapResolutionDpi * 100);
-		}
-		else {
-			$xtenty = $bbox[3] - $bbox[1];
-			$scale = ($xtenty / $this->getHeight()) * ($mapResolutionDpi * 100);
-		}
-		return round($scale);*/
+		$e = new mb_notice("classes/class_map.php:  epsgType: " . $crs->epsgType);
+        if ($crs->epsgType == 'geographic 2D') {
+            //wms 1.3.0 spec 
+            //$scale = $distanceInDeegree * ((6378137 * M_PI) / 180) / $this->getHeight() / 0.00028;
+        	//calculate it from height of image cause lat direction always has right great circle distances
+        	$distanceInDeegree = $this->getHeight() * 0.00028 * (double)$scale * 360.0 / (2.0 * M_PI * 6378137.0);
+        	//$e = new mb_exception("distance in deegree: ".$distanceInDeegree. " - scale: ".$scale. " - height: ".$this->getHeight());			
+        	$bbox[0] = $point[0] - ($distanceInDeegree / 2);
+    		$bbox[1] = $point[1] - ($distanceInDeegree / 2);
+    		$bbox[2] = $point[0] + ($distanceInDeegree / 2);
+    		$bbox[3] = $point[1] + ($distanceInDeegree / 2);
+    	} else {
+    		$xtenty = $scale / ($mapResolutionDpi * 100) * $this->getWidth(); //x width in m
+    		$ytenty = $scale / ($mapResolutionDpi * 100) * $this->getHeight();
+    		$bbox[0] = $point[0] - ($xtenty / 2);
+    		$bbox[1] = $point[1] - ($ytenty / 2);
+    		$bbox[2] = $point[0] + ($xtenty / 2);
+    		$bbox[3] = $point[1] + ($ytenty / 2);
+        }
+		return $bbox;
 	}
 
 	/**
