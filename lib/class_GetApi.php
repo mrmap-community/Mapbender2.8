@@ -368,8 +368,9 @@ class GetApi {
 				}
 				break;
 			case 4:
+			    $e = new mb_notice(json_encode($inputArray));
 				//check if last element begins with epsg: - then it will be the case, that zoom to coordinate with scale and special epsg is requested
-				if (strpos(strtolower($inputArray[3], "epsg:") === 0 ) && is_numeric($inputArray[0]) && is_numeric($inputArray[1]) && is_numeric($inputArray[2])) {
+				if (strpos(strtolower($inputArray[3]), "epsg") === 0  && is_numeric($inputArray[0]) && is_numeric($inputArray[1]) && is_numeric($inputArray[2]) ) {
 					//extract epsg code ...
 					//create point object with scale ...
 					return $inputArray;
