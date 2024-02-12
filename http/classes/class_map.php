@@ -193,19 +193,27 @@ class Map {
 		    $e = new mb_notice("classes/class_map.php: point: " . json_encode($point));
 		}
 		$e = new mb_notice("classes/class_map.php:  epsgType: " . $crs->epsgType);
-        if ($crs->epsgType == 'geographic 2D') {
+		$xtenty = $scale / ($mapResolutionDpi * 100) * $this->getWidth(); //x width in m
+		$ytenty = $scale / ($mapResolutionDpi * 100) * $this->getHeight();
+        if (strtolower($crs->epsgType) == 'geographic 2d') {
+            //lon/lat
+            $R = 6371000.0;
+            $rho = 180.0 / M_PI;
+            $perimeterlon = $xtenty * $rho / $R;
+            $perimeterlat = $ytenty * $rho / ($R * cos((float)(point[1]) / $rho));
             //wms 1.3.0 spec 
             //$scale = $distanceInDeegree * ((6378137 * M_PI) / 180) / $this->getHeight() / 0.00028;
+            //$e = new mb_exception("classes/class_map.php:  height: " . $this->getHeight());
         	//calculate it from height of image cause lat direction always has right great circle distances
-        	$distanceInDeegree = $this->getHeight() * 0.00028 * (double)$scale * 360.0 / (2.0 * M_PI * 6378137.0);
+        	//$distanceInDeegree = $this->getHeight() * 0.00028 * (double)$scale * 360.0 / (2.0 * M_PI * 6378137.0);
         	//$e = new mb_exception("distance in deegree: ".$distanceInDeegree. " - scale: ".$scale. " - height: ".$this->getHeight());			
-        	$bbox[0] = $point[0] - ($distanceInDeegree / 2);
-    		$bbox[1] = $point[1] - ($distanceInDeegree / 2);
-    		$bbox[2] = $point[0] + ($distanceInDeegree / 2);
-    		$bbox[3] = $point[1] + ($distanceInDeegree / 2);
+        	$bbox[0] = $point[0] - ($perimeterlon / 2);
+        	$bbox[1] = $point[1] - ($perimeterlat / 2);
+        	$bbox[2] = $point[0] + ($perimeterlon / 2);
+        	$bbox[3] = $point[1] + ($perimeterlat / 2);
+    		$e = new mb_notice("classes/class_map.php:  bbox: " . json_encode($bbox));
+    		//TODO - check why this give not back real extent
     	} else {
-    		$xtenty = $scale / ($mapResolutionDpi * 100) * $this->getWidth(); //x width in m
-    		$ytenty = $scale / ($mapResolutionDpi * 100) * $this->getHeight();
     		$bbox[0] = $point[0] - ($xtenty / 2);
     		$bbox[1] = $point[1] - ($ytenty / 2);
     		$bbox[2] = $point[0] + ($xtenty / 2);
