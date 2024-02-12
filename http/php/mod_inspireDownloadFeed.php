@@ -1945,6 +1945,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				//exchange formats
 				$feedEntryCopyXml = str_replace($mapbenderMetadata[$i]->output_formats[0],$mapbenderMetadata[$i]->output_formats[$j],$feedEntryCopyXml);
 				$feedEntryCopyXml = str_replace(rawurlencode($mapbenderMetadata[$i]->output_formats[0]),rawurlencode($mapbenderMetadata[$i]->output_formats[$j]),$feedEntryCopyXml);
+				$feedEntryCopyXml = str_replace("application/gml+xml", $mapbenderMetadata[$i]->output_formats[$j], $feedEntryCopyXml);
 				$feedEntryCopyXmlDOM = $feedDoc->createDocumentFragment();
 				$feedEntryCopyXmlDOM->appendXML($feedEntryCopyXml);
 				$feed->appendChild($feedEntryCopyXmlDOM);
