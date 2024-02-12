@@ -596,7 +596,12 @@ function addBboxEntry($bboxWfsArray, &$bboxWfs, &$countBbox, &$multiPolygonText,
     } else {
         //split bbox in two half bboxes and call the function for each of the bboxes
         $e = new mb_notice("php/mod_inspireDownloadFeed.php: split bboxes in two parts");
-        $firstBbox = array($minxWfs, $minyWfs, $maxxWfs, $minyWfs + ($maxyWfs - $minyWfs) / 2);
+        //first check which side - use the longer side to split
+        if (($maxxWfs - $minxWfs) >= ($maxyWfs - $minyWfs)) {
+            $firstBbox = array($minxWfs, $minyWfs, $minxWfs + ($maxxWfs - $minxWfs) / 2, $maxyWfs);
+        } else {
+            $firstBbox = array($minxWfs, $minyWfs, $maxxWfs, $minyWfs + ($maxyWfs - $minyWfs) / 2);
+        }
         $bboxFilter = getBboxFilter($firstBbox, $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
         //count features in current bbox
         $featureHitsBbox = $wfs->countFeatures( $featuretypeName, $bboxFilter, false, false, false, 'GET');
@@ -611,7 +616,11 @@ function addBboxEntry($bboxWfsArray, &$bboxWfs, &$countBbox, &$multiPolygonText,
             addBboxEntry($firstBbox, $bboxWfs, $countBbox, $multiPolygonText, $featureHitsBbox, $crs, $wfs, $maxFeatureCount, $featuretypeName, $geometryFieldName);
         }
         //second bbox
-        $secondBbox = array($minxWfs, $minyWfs + ($maxyWfs - $minyWfs) / 2, $maxxWfs, $maxyWfs);
+        if (($maxxWfs - $minxWfs) >= ($maxyWfs - $minyWfs)) {
+            $secondBbox = array($minxWfs + ($maxxWfs - $minxWfs) / 2, $minyWfs, $maxxWfs, $maxyWfs);
+        } else {
+            $secondBbox = array($minxWfs, $minyWfs + ($maxyWfs - $minyWfs) / 2, $maxxWfs, $maxyWfs);
+        }
         $bboxFilter = getBboxFilter($secondBbox, $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
         //count features in current bbox
         $featureHitsBbox = $wfs->countFeatures( $featuretypeName, $bboxFilter, false, false, false, 'GET');
