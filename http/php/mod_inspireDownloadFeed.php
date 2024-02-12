@@ -645,14 +645,21 @@ function getGeometryFieldNameFromMapbenderDb($mapbenderGeoemtryFieldName, $mapbe
     return $geometryFieldName;
 }
 
-function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxisOrder) {
+function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxisOrder=false) {
+    if ($switchAxisOrder) {
+        $newBbox[0] = $bbox[1];
+        $newBbox[1] = $bbox[0];
+        $newBbox[2] = $bbox[3];
+        $newBbox[3] = $bbox[2];
+        $bbox = $newBbox;
+    }
     //if geometry name has an namespace - separate them for wfs 1.1.0
     if (strpos($geometryFieldName, ':') !== false) {
         $ftNamespace = explode(':', $geometryFieldName);
         $ftNamespace = $ftNamespace[0];
         $geometryFieldNameWithoutNamespace = str_replace($ftNamespace . ":", "", $geometryFieldName);
     } else {
-        $geometryFieldNameWithoutNamespace = geometryFieldName;
+        $geometryFieldNameWithoutNamespace = $geometryFieldName;
     }
     switch ($wfs_version) {
         case "2.0.0":
@@ -666,7 +673,7 @@ function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxi
             $bboxFilter .= '</gml:Envelope>';
             $bboxFilter .= '</fes:BBOX>';
             $bboxFilter .= '</fes:Filter>';
-            $bboxFilter = rawurlencode(utf8_decode($bboxFilter));
+            //$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
             break;
         case "2.0.2":
             $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>';
@@ -679,7 +686,7 @@ function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxi
             $bboxFilter .= '</gml:Envelope>';
             $bboxFilter .= '</fes:BBOX>';
             $bboxFilter .= '</fes:Filter>';
-            $bboxFilter = rawurlencode(utf8_decode($bboxFilter));
+            //$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
             break;
         case "1.1.0":
             $bboxFilter = '<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc"><ogc:BBOX>';
@@ -698,7 +705,8 @@ function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxi
                 $bboxFilter .= $bbox[0].','.$bbox[1].' '.$bbox[2].','.$bbox[3];
                 //}
                 $bboxFilter .= '</gml:coordinates></gml:Box></ogc:BBOX></ogc:Filter>';
-                $bboxFilter = rawurlencode(utf8_decode($bboxFilter));
+                //$e = new mb_exception("php/mod_inspireDownloadFeed.php: bbox filter wfs 1.1.0: " . $bboxFilter);
+                //$bboxFilter = rawurlencode(utf8_decode($bboxFilter));
                 break;
     }
     return $bboxFilter;
@@ -1541,16 +1549,10 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					//change axis order if crs definition and service needs it
 					if ($alterAxisOrder == true) {
 						$e = new mb_exception("mod_inspireDownloadFeed.php: axis order should be altered!");
-						$currentBboxNew = $currentBbox;
-						$currentBboxGetFeature[0] = $currentBboxNew[1];
-						$currentBboxGetFeature[1] = $currentBboxNew[0];
-						$currentBboxGetFeature[2] = $currentBboxNew[3];
-						$currentBboxGetFeature[3] = $currentBboxNew[2];
-					} else {
-						$currentBboxGetFeature = $currentBbox;
 					}
+					$currentBboxGetFeature = $currentBbox;
 					$geometryFieldName = getGeometryFieldNameFromMapbenderDb($mapbenderMetadata[$i]->geometry_field_name[0], $mapbenderMetadata[$i]->featuretype_name);
-					$bboxFilter = getBboxFilter($currentBboxGetFeature, $crs, $wfs->getVersion(), $geometryFieldName, $switchAxisOrder);
+					$bboxFilter = getBboxFilter($currentBboxGetFeature, $crs, $wfs->getVersion(), $geometryFieldName, $alterAxisOrder);
 					//check if owsproxy is activated for wfs - if so, use absolute url of wfs
 					//e.g.: www.geoportal.rlp.de/registry/wfs/{wfs_id}? - important - there has to be one wfsconf defined and assigned!
 					if ($admin->getWFSOWSstring($mapbenderMetadata[$i]->wfs_id) == false) {
@@ -1567,7 +1569,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 						//use first output format which have been found - TODO - check if it should be pulled from featuretype instead from wfs 
 						$gFLink .= "&outputFormat=".rawurlencode($mapbenderMetadata[$i]->output_formats[0]);
 					}
-					$gFLink .= "&FILTER=".$bboxFilter;
+					$gFLink .= "&FILTER=".rawurlencode(utf8_decode($bboxFilter));
 					$getFeatureLink[] = $gFLink;
 					$featureTypeName[] = $mapbenderMetadata[$i]->featuretype_name;
 					$featureTypeBbox[] = $bboxWfs[$mapbenderMetadata[$i]->featuretype_name][$l];
