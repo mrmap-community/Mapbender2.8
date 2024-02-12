@@ -1109,7 +1109,7 @@ $e = new mb_notice("javascripts/initWmcObj.php: session GML zoom done");
 $e = new mb_notice("javascripts/initWmcObj.php: check ZOOM API");
 $zoom = $getApi->getZoom();
 if(is_array($zoom)) {
-    $e = new mb_exception("javascripts/initWmcObj.php: check ZOOM API: ".implode(',', $zoom));
+    $e = new mb_notice("javascripts/initWmcObj.php: check ZOOM API: ".implode(',', $zoom));
 }
 if (count($zoom) == 3) {
     //add zoom[2] to x and y and set bbox
@@ -1122,11 +1122,12 @@ if (count($zoom) == 3) {
     //$e = new mb_exception(json_encode($newExtent));
     //$e = new mb_exception(json_encode($wmcGetApi->mainMap->getEpsg()));
     $bbox = new Mapbender_bbox(
-	$newExtent[0],
-	$newExtent[1],
-	$newExtent[2],
-	$newExtent[3],
-	$epsg = $wmcGetApi->mainMap->getEpsg());
+	   $newExtent[0],
+	   $newExtent[1],
+	   $newExtent[2],
+	   $newExtent[3],
+	   $epsg = $wmcGetApi->mainMap->getEpsg()
+    );
     $wmcGetApi->mainMap->setExtent($bbox);
     //render point at middle position 
 }
@@ -1138,7 +1139,9 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 			$zoom[1],
 			$zoom[2],
 			$zoom[3],
-			$epsg = $zoom[4]);
+			$epsg = $zoom[4]
+		);
+		
 	} else {
 		//check if zoom with scale and epsg is requested 
 		if (strpos(strtolower($zoom[3]), "epsg") === 0  && is_numeric($zoom[0]) && is_numeric($zoom[1]) && is_numeric($zoom[2])) {
@@ -1146,7 +1149,6 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 			$point = array($zoom[0], $zoom[1]);
 			$scale = $zoom[2];
 			$newExtent = $wmcGetApi->mainMap->getBboxFromPoiScale($point, $scale, $zoom[3]);
-			$e = new mb_notice("javascripts/initWmcObject.php: calculated extent: " . json_encode($newExtent));
 			$bbox = new Mapbender_bbox(
 			    $newExtent[0],
 			    $newExtent[1],
@@ -1154,7 +1156,7 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 			    $newExtent[3],
 			    $epsg = $wmcGetApi->mainMap->getEpsg()
 			);
-			$wmcGetApi->mainMap->setExtent($bbox);
+			//$wmcGetApi->mainMap->setExtent($bbox);
 			//maybe easier to guild geojson before ...
 			//calculate bbox from central point with scale (or offset in m) - depends on epsg
 		} else {		
@@ -1166,10 +1168,13 @@ if (count($zoom) == 4 || count($zoom) == 5) {
 				$zoom[1],
 				$zoom[2],
 				$zoom[3],
-				$epsg = $wmcGetApi->mainMap->getEpsg());
+				$epsg = $wmcGetApi->mainMap->getEpsg()
+			);
+			//$wmcGetApi->mainMap->setExtent($bbox);
 		}
 	}
-	$wmcGetApi->mainMap->setExtent($bbox);
+	$e = new mb_notice("javascripts/initWmcObject.php: calculated extent: " . json_encode($bbox));
+	$wmcGetApi->mainMap->setExtent($bbox);		
 }
 // check if something have to be shown in disclaimer
 if (
