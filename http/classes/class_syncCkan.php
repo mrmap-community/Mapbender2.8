@@ -1050,68 +1050,100 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
         return json_encode($syncList);    
     }
 
+    private function logSyncResultToDb($startTime, $dataSourceType, $orgaId, $created, $updated, $deleted, $error_messages, $result){
+        //create new record
+        $sql = <<<SQL
+INSERT INTO ckan_sync_log (begin_time, end_time, datasource_type, fkey_mb_group_id, created, updated, deleted, error_messages, result) VALUES ($1, now(), $2, $3, $4, $5, $6, $7, $8)
+SQL;
+        $v = array(
+            $startTime,
+            $dataSourceType,
+            $orgaId,
+            $created,
+            $updated,
+            $deleted,
+            $error_messages,
+            $result
+        );
+        $t = array('s', 's', 'i', 'i','i', 'i', 's', 's');
+        $res = db_prep_query($sql,$v,$t);
+        return true;
+    }
+    
     /***
 	syncListJson - Format:
 
     */
     public function syncSingleDataSource($syncListJson, $dataSourceType, $checkOrgaIdentity = false) {
-	$dataSourceTypeArrayWithViews = array("portalucsw","mapbender");
+        /*
+         * New 2024 - log result of snyc process to mapbender database
+         */
+        $startTime = date('Y-m-d H:i:s');
+        $error_messages = array();
+        //$this->logSyncResultToDb($startTime, $endTime, $dataSourceType, $orgaId, $created, $updated, $deleted, $error_messages, $result);
+        /*
+         * 
+         */
+	    $dataSourceTypeArrayWithViews = array("portalucsw","mapbender");
         $resultObject = new stdClass();
         $resultObject->help = "Syncing datasource of type ".$dataSourceType." for organization with id: ".$this->syncOrgaId;
-	$syncList = json_decode($syncListJson);
+	    $syncList = json_decode($syncListJson);
         $numberOfDeletedPackages = 0;
         $numberOfCreatedPackages = 0;
         $numberOfUpdatedPackages = 0; 
-	if ($checkOrgaIdentity == true && (integer)$syncList->id !== $this->syncOrgaId) {
-	    $e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): Id from json is not identical to id from class! Sync will not be started!");
+	    if ($checkOrgaIdentity == true && (integer)$syncList->id !== $this->syncOrgaId) {
+	        $e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): Id from json is not identical to id from class! Sync will not be started!");
             $resultObject->success = false;
             $resultObject->error->message = "Organization id for the invoked sync process could not be obtained - please check the id!";
+            $this->logSyncResultToDb($startTime, $dataSourceType, $this->syncOrgaId, $numberOfCreatedPackages, $numberOfUpdatedPackages, $numberOfDeletedPackages, json_encode($resultObject->error->message), json_encode($resultObject));
             return json_encode($resultObject);
-	} else {
-	    //read ckan api-key from database again, because we wont transfer it via json thru the web ;-)
-	    $sql = "SELECT mb_group_ckan_api_key_text FROM mb_group WHERE mb_group_id = $1"; 
+	    } else {
+	        //read ckan api-key from database again, because we wont transfer it via json thru the web ;-)
+	        $sql = "SELECT mb_group_ckan_api_key_text FROM mb_group WHERE mb_group_id = $1"; 
             $v = array($this->syncOrgaId);
-	    $t = array('s');
-	    $res = db_prep_query($sql, $v, $t);
-	    //$e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): syncList->update: ".json_encode($syncList->update));
-	    //$e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): syncList->delete: ".json_encode($syncList->delete));
-	    //$e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): syncList->create: ".json_encode($syncList->create));
-
-	    if ($res) {
-	        $row = db_fetch_assoc($res);
-	        $ckanApiKey = $row['mb_group_ckan_api_key_text'];
-	        $ckan = new ckanApi($ckanApiKey, CKAN_SERVER_IP);
+	        $t = array('s');
+	        $res = db_prep_query($sql, $v, $t);
+	        //$e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): syncList->update: ".json_encode($syncList->update));
+	        //$e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): syncList->delete: ".json_encode($syncList->delete));
+	        //$e = new mb_exception("classes/class_syncCkan.php (syncSingleDataSource): syncList->create: ".json_encode($syncList->create));
+	        if ($res) {
+	            $row = db_fetch_assoc($res);
+	            $ckanApiKey = $row['mb_group_ckan_api_key_text'];
+	            $ckan = new ckanApi($ckanApiKey, CKAN_SERVER_IP);
                 $ckan->base_url = $this->ckanApiProtocol.'://'.$this->ckanApiUrl.'/api/3/';
                 $ckan->api_version = $this->ckanApiVersion;
-	    } else {
-	        $e = new mb_exception("classes/class_syncCkan.php: No api-key found for mapbender group: ".$this->syncOrgaId);
-	        return false;
-	    }
-	    //delete orphaned datasets
+	        } else {
+	            $e = new mb_exception("classes/class_syncCkan.php: No api-key found for mapbender group: ".$this->syncOrgaId);
+	            $error_messages[] = "No api-key found for mapbender group: ".$this->syncOrgaId;
+	            $this->logSyncResultToDb($startTime, $dataSourceType, $this->syncOrgaId, $numberOfCreatedPackages, $numberOfUpdatedPackages, $numberOfDeletedPackages, json_encode($error_messages), null);
+	            return false;
+	        }
+	        //delete orphaned datasets
             foreach($syncList->delete as $ckanNameToDelete) {
-	        switch ($dataSourceType) {
-		    case "portalucsw":
-		        //TODO - PortalU Problem lowercase/uppercase
-		        $ckanNameToDelete = strtolower($ckanNameToDelete);
-		        break;
-		    case "ckan":
-		        break;
-	        }		
+	            switch ($dataSourceType) {
+		            case "portalucsw":
+		                //TODO - PortalU Problem lowercase/uppercase
+		                $ckanNameToDelete = strtolower($ckanNameToDelete);
+		                break;
+		            case "ckan":
+		                break;
+	            }		
                 $result = $ckan->action_package_delete("{\"id\":\"".$ckanNameToDelete."\"}");
                 if ($result->success == true) {
                     $e = new mb_notice("classes/class_syncCkan.php: Ckan package with name ".$ckanNameToDelete." successfully deleted!");
                     $numberOfDeletedPackages++;
                 } else {
                     $e = new mb_exception("classes/class_syncCkan.php: A problem occured while trying to delete ckan package with name ".$ckanNameToDelete);
+                    $error_messages[] = "A problem occured while trying to delete ckan package with name " . $ckanNameToDelete;
                 }
             }
-	    //$e = new mb_exception("classes/class_syncCkan.php: complete syncList as json: ".$syncListJson);
+	        //$e = new mb_exception("classes/class_syncCkan.php: complete syncList as json: ".$syncListJson);
             foreach ($syncList->datasource_metadata as $datasetMetadata) {
-		//$e = new mb_exception("classes/class_syncCkan.php: try to sync dataset with id: ".$datasetMetadata->id);
+		        //$e = new mb_exception("classes/class_syncCkan.php: try to sync dataset with id: ".$datasetMetadata->id);
                 if (in_array($datasetMetadata->id, $syncList->update) || in_array($datasetMetadata->id, $syncList->create)) {
-		    //do some special preproccessing 
-		    switch ($dataSourceType) {
-		        case "mapbender":
+		            //do some special preproccessing 
+		            switch ($dataSourceType) {
+		                case "mapbender":
                             $layerArrayMetadata = array();
                             $featuretypeArrayMetadata = array();
                             foreach ($datasetMetadata->resources->coupledResources->layerIds as $layerId) {
@@ -1120,83 +1152,86 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                             foreach ($datasetMetadata->resources->coupledResources->featuretypeIds as $featuretypeId) {
                                $featuretypeArrayMetadata[] = $featuretypeId;
                             }
-			    $resourceJson->id = $datasetMetadata->id; //find by id and name name:http://docs.ckan.org/en/latest/api/
-		            break;
-		        case "portalucsw":
-			    //override uuid with lowercase representation of uuid - problem of portalu implementation
-			    $resourceJson->id = strtolower($datasetMetadata->id);
+			                $resourceJson->id = $datasetMetadata->id; //find by id and name name:http://docs.ckan.org/en/latest/api/
+		                    break;
+		                case "portalucsw":
+			                //override uuid with lowercase representation of uuid - problem of portalu implementation
+			                $resourceJson->id = strtolower($datasetMetadata->id);
                             break;
                         default:
-			    $resourceJson->id = $datasetMetadata->id;
-			    break;
-		    }
+			                $resourceJson->id = $datasetMetadata->id;
+			                break;
+		            }
                     $result = $ckan->action_package_show(json_encode($resourceJson));
                     if ($result->success == true) {
-		        //try to do an update
-			//first try to read from datasource
-		        switch ($dataSourceType) {
-		            case "mapbender":
-			        $resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
-			        break;
-		            case "portalucsw":
-			        $resultCkanRepresentation = $this->getCkanRepresentationFromCsw($syncList->id, $datasetMetadata->id, $syncList->ckan_orga_ident, $syncList->name, $syncList->email, $this->topicDataThemeCategoryMap, $syncList->ckan_filter);
-		                break;
-			    default:
+		                //try to do an update
+			            //first try to read from datasource
+		                switch ($dataSourceType) {
+		                    case "mapbender":
+			                    $resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
+			                    break;
+		                    case "portalucsw":
+			                    $resultCkanRepresentation = $this->getCkanRepresentationFromCsw($syncList->id, $datasetMetadata->id, $syncList->ckan_orga_ident, $syncList->name, $syncList->email, $this->topicDataThemeCategoryMap, $syncList->ckan_filter);
+		                        break;
+			                default:
                                 //TODO: pull ckan json object from remote ckan source and transform it into central object - map attributes!!!!
-				//$e = new mb_exception("classes/class_syncCkan.php: try to pull json object from remote ckan - id: ".$datasetMetadata->id);
-				$resultCkanRepresentation = $this->getCkanRepresentationFromCkan($syncList->ckan_api_url, $syncList->ckan_api_version, $datasetMetadata->id, $syncList->central_filter, $syncList->ckan_orga_ident);
-			
-				//$resultCkanRepresentation = false;
-			        //$resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
-			        break;
-		        }
-			//if reading was successful
+				                //$e = new mb_exception("classes/class_syncCkan.php: try to pull json object from remote ckan - id: ".$datasetMetadata->id);
+				                $resultCkanRepresentation = $this->getCkanRepresentationFromCkan($syncList->ckan_api_url, $syncList->ckan_api_version, $datasetMetadata->id, $syncList->central_filter, $syncList->ckan_orga_ident);
+				                //$resultCkanRepresentation = false;
+			                    //$resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
+			                    break;
+		                }
+			            //if reading was successful
                         if ($resultCkanRepresentation != false) {
-			    //try to do an update via api
+			                //try to do an update via api
                             $result = $ckan->action_package_update($resultCkanRepresentation['json']);
-			    //try to update views if they exists in this dataSourceType
+			                //try to update views if they exists in this dataSourceType
                             if ($result->success == true) {
                                 if (in_array($dataSourceType, $dataSourceTypeArrayWithViews)) {
                                     $viewsUpdateProtocol = $this->recreateResourceViews($ckan, $result, $resultCkanRepresentation);
-				}
+				                }
                                 $numberOfUpdatedPackages++;
                             } else {
+                                $error_messages[] = "An error occured while trying to update ".$resultCkanRepresentation['json'];
                                 $e = new mb_exception("classes/class_syncCkan.php: An error occured while trying to update ".$resultCkanRepresentation['json']);
                             }
                         } else {
+                            $error_messages[] = "An error occured while generate json from external source";
                             $e = new mb_exception("classes/class_syncCkan.php: An error occured while generate json from external source");
                         }
                     } else {
                         //create new package
-			//first read from external source 
-		        switch ($dataSourceType) {
-		            case "mapbender":
-			         $resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
-			        break;
-		            case "portalucsw":
-			        $resultCkanRepresentation = $this->getCkanRepresentationFromCsw($syncList->id, $datasetMetadata->id, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $syncList->ckan_filter);
-		                break;
-			    default:
-				//TODO: pull ckan json object from remote ckan source and transform it into central object - map attributes!!!!
-				//$e = new mb_exception("classes/class_syncCkan.php: try to pull json object from remote ckan - id: ".$datasetMetadata->id);
-				$resultCkanRepresentation = $this->getCkanRepresentationFromCkan($syncList->ckan_api_url, $syncList->ckan_api_version, $datasetMetadata->id, $syncList->central_filter, $syncList->ckan_orga_ident);
-				//$resultCkanRepresentation = false;
-			        //$resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
-			        break;
-		        }
-			//if read from source was successful
+			            //first read from external source 
+		                switch ($dataSourceType) {
+		                    case "mapbender":
+			                    $resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
+			                    break;
+		                    case "portalucsw":
+			                    $resultCkanRepresentation = $this->getCkanRepresentationFromCsw($syncList->id, $datasetMetadata->id, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $syncList->ckan_filter);
+		                        break;
+			                default:
+				                //TODO: pull ckan json object from remote ckan source and transform it into central object - map attributes!!!!
+				                //$e = new mb_exception("classes/class_syncCkan.php: try to pull json object from remote ckan - id: ".$datasetMetadata->id);
+				                $resultCkanRepresentation = $this->getCkanRepresentationFromCkan($syncList->ckan_api_url, $syncList->ckan_api_version, $datasetMetadata->id, $syncList->central_filter, $syncList->ckan_orga_ident);
+				                //$resultCkanRepresentation = false;
+			                    //$resultCkanRepresentation = $this->getCkanRepresentation($datasetMetadata->id, $layerArrayMetadata, $featuretypeArrayMetadata, $syncList->ckan_orga_ident, $syncList->title, $syncList->email, $this->topicDataThemeCategoryMap, $datasetMetadata->resource_type);
+			                    break;
+		                }
+			            //if read from source was successful
                         if ($resultCkanRepresentation != false) {
                             $result = $ckan->action_package_create($resultCkanRepresentation['json']);
-			    //if creation from external source was successful - try to create
+			                //if creation from external source was successful - try to create
                             if ($result->success == true) {
-				$numberOfCreatedPackages++;
-				if (in_array($dataSourceType, $dataSourceTypeArrayWithViews)) {
-                                   $viewsUpdateProtocol = $this->recreateResourceViews($ckan, $result, $resultCkanRepresentation);
+				                $numberOfCreatedPackages++;
+				                if (in_array($dataSourceType, $dataSourceTypeArrayWithViews)) {
+                                    $viewsUpdateProtocol = $this->recreateResourceViews($ckan, $result, $resultCkanRepresentation);
                                 }
                             } else {
+                                $error_messages = "An error occured while trying to create " . $resultCkanRepresentation['json'] . " - error: " . json_encode($result);
                                 $e = new mb_exception("classes/class_syncCkan.php: An error occured while trying to create ".$resultCkanRepresentation['json']." error: ".json_encode($result));
                             }
                         } else {
+                            $error_messages = "A problem occured while trying to create the json object from " . $dataSourceType . " metadata!";
                             $e = new mb_exception("classes/class_syncCkan.php: A problem occured while trying to create the json object from ".$dataSourceType." metadata!");
                         }
                     }
@@ -1207,6 +1242,7 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
             $resultObject->result->numberOfDeletedPackages = $numberOfDeletedPackages;
             $resultObject->result->numberOfUpdatedPackages = $numberOfUpdatedPackages;
             $resultObject->result->numberOfCreatedPackages = $numberOfCreatedPackages;
+            $this->logSyncResultToDb($startTime, $dataSourceType, $this->syncOrgaId, $numberOfCreatedPackages, $numberOfUpdatedPackages, $numberOfDeletedPackages, json_encode($error_messages), json_encode($resultObject));
             return json_encode($resultObject);
         }
     }
@@ -1594,8 +1630,10 @@ $ckanPackage->registerobject_type = "Par_7_1_9";
 			    while($row = db_fetch_array($res)){
         			$featureTypeName = $row['featuretype_name'];
 			    }
-		            //$resourcesArray[$indexResourceArray]->url = $this->mapbenderUrl."/php/mod_linkedDataProxy.php?wfsid=".$option->serviceId."&collection=".$featureTypeName."&items=all";
+		        //$resourcesArray[$indexResourceArray]->url = $this->mapbenderUrl."/php/mod_linkedDataProxy.php?wfsid=".$option->serviceId."&collection=".$featureTypeName."&items=all";
+			    //TODO: check linkedDataProxy.conf if apache rewrite is activated !
 			    $resourcesArray[$indexResourceArray]->url = "https://www.geoportal.rlp.de/spatial-objects/".$option->serviceId."/collections/".$featureTypeName;
+    
 			    //example: https://www.geoportal.rlp.de/mapbender/php/mod_linkedDataProxy.php?wfsid=480&collection=ms%3Aakademie&items=all
 		            $resourcesArray[$indexResourceArray]->format = "REST";
 		            //$resourcesArray[$indexResourceArray]->res_transparency_document_change_classification = "unaltered";
