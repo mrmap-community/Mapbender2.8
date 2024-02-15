@@ -1189,3 +1189,33 @@ CREATE TRIGGER update_si_log_lastchanged
 GRANT ALL ON TABLE si_log TO mapbenderdbuser;
 GRANT ALL ON SEQUENCE si_log_log_id_seq TO mapbenderdbuser;
 
+-- Table: ckan_sync_log
+
+-- DROP TABLE ckan_sync_log;
+
+--new option to store ckan sync results to db
+
+CREATE TABLE ckan_sync_log
+(
+  log_id serial NOT NULL,
+  begin_time timestamp with time zone,
+  end_time timestamp with time zone,
+  datasource_type varchar(255),
+  fkey_mb_group_id integer,
+  created integer,
+  deleted integer,
+  updated integer,
+  error_messages text,
+  result text,
+  CONSTRAINT ckan_sync_logc_fkey_mb_group_id_fkey FOREIGN KEY (fkey_mb_group_id)
+      REFERENCES mb_group (mb_group_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE CASCADE
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ckan_sync_log
+  OWNER TO mapbenderdbuser;
+GRANT ALL ON TABLE ckan_sync_log TO postgres;
+GRANT ALL ON TABLE ckan_sync_log TO mapbenderdbuser;
+
