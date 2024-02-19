@@ -456,7 +456,7 @@ define("INSPIRE_METADATA_SPEC", "2.0.1");
 # are logged to oaf_proxy_log table. They are only counted!
 # 
 define("OAF_LOG", false);
-
+define("SEARCH_LOG", true);
 # --------------------------------------------
 # Absolute path for downloading and processing gpkg files via python lib
 # --------------------------------------------
