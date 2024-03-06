@@ -2924,9 +2924,9 @@ SQL;
 			$randomid = new Uuid();
 			$mdOwner = Mapbender::session()->get("mb_user_id");
 			//The next loop is needed for automatic wms update - no session exists!
-			if ($mdOwner == false) {
+			//if ($mdOwner == false) {
 				$mdOwner = $this->owner;
-			}
+			//}
 			$mbMetadata->randomId = $randomid;
 			$mbMetadata->href = $this->objLayer[$i]->layer_metadataurl[$j]->href;
 			$mbMetadata->format = $this->objLayer[$i]->layer_metadataurl[$j]->format;
