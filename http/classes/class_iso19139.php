@@ -328,14 +328,19 @@ XML;
 			$this->hierarchyLevel = $this->hierarchyLevel[0];
 			if ($this->hierarchyLevel == 'service') {				
 				$identifikationXPath = "srv:SV_ServiceIdentification";	
+				//$identifikationXPath = "*";
 			} else {
 				$identifikationXPath = "gmd:MD_DataIdentification";
 			}
 			//TODO: check if this is set, maybe DateTime must be searched instead?
 			$this->title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString');
+			//$this->title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString');
+			
 			$this->title = $this->title[0];
 			//alternate title
 			$this->alternate_title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString');
+			//$this->alternate_title = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/*/gmd:citation/gmd:CI_Citation/gmd:alternateTitle/gco:CharacterString');
+			
 			$this->alternate_title = $this->alternate_title[0];
 			if (is_null($this->alternate_title) || !isset($this->alternate_title) || $this->alternate_title == false) {
 			    $this->alternate_title = '';
@@ -385,6 +390,7 @@ XML;
 			
 			//abstract
 			$this->abstract = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:abstract/gco:CharacterString');
+			
 			$this->abstract = $this->abstract[0];
 			$this->keywords = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
 			//get thesaurus name only for found keywords!
@@ -674,13 +680,18 @@ XML;
 				$e = new mb_notice("classes/class_iso19139.php: check conformance declaration: name: ".$declaredSpec['name']. " - date: ".$declaredSpec['date']." - pass: ".$declaredSpec['pass']);
 			}
 			$e = new mb_notice("classes/class_iso19139.php: sufficient declared inspire conformity: ".$this->inspireInteroperability);
+			/*$test['fileIdentifier'] = $this->fileIdentifier;
+			$test['title'] = $this->title;
+			$test['abstract'] = $this->abstract;
+			$e = new mb_exception("classes/class_iso19139.php: " . json_encode($test));*/
+			
             if (isset($this->fileIdentifier) && $this->fileIdentifier != "" && isset($this->title) && $this->title != "" && isset($this->abstract) && $this->abstract != "") {
             	$this->metadata = $xml;
             } else {
             	$this->metadata = <<<XML
 				<mb:ExceptionReport xmlns:mb="http://www.mapbender.org/metadata/exceptionreport">
 					<mb:Exception exceptionCode="NoApplicableCode">
-						<mb:ExceptionText>ISO Metadata XML has neither a fileIdentifier nor title or abstract</mb:ExceptionText>
+						<mb:ExceptionText>ISO Metadata XML for a minimum must have a fileIdentifier, title and abstract. Please check, if the right identification path is used. Services should use *srv:SV_ServiceIdentification*!</mb:ExceptionText>
 				    </mb:Exception>
 				</mb:ExceptionReport>
 XML;
@@ -823,11 +834,37 @@ XML;
    		return $proc->transformToXML($xmlDoc);	
 	}
 
-	public function transformToHtml3($layout,$languageCode){
-		
+	public function transformToHtml3($layout, $languageCode){
+		return $this->fileIdentifier;
 	}
 
 	public function transformToHtml($layout, $languageCode, $serviceInformation=false){
+	    if (strpos($this->metadata, 'mb:ExceptionReport') !== false) {
+	        $e = new mb_exception("php/class_iso19139.php: the iso record could not be transformed to html!");
+	        //generate html
+	        $html = '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dctype="http://purl.org/dc/dcmitype/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:vcard="http://www.w3.org/2006/vcard/ns#" xml:lang="'.$languageCode.'">';
+	        $metadataStr .= '<head>' .
+	   	        '<title>'._mb("Metadata").'</title>' .
+	   	        '<meta name="description" content="'._mb("Metadata").'" xml:lang="'.$languageCode.'" />'.
+	   	        '<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0;">' .
+	   	        '<meta name="keywords" content="'._mb("Metadata").'" xml:lang="'.$languageCode.'" />'	.
+	   	        '<meta http-equiv="cache-control" content="no-cache">'.
+	   	        '<meta http-equiv="pragma" content="no-cache">'.
+	   	        '<meta http-equiv="expires" content="0">'.
+	   	        '<meta http-equiv="content-language" content="'.$languageCode.'" />'.
+	   	        '<meta http-equiv="content-style-type" content="text/css" />'.
+	   	        '<meta http-equiv="Content-Type" content="text/html; charset='.CHARSET.'">' .
+	   	        '<meta http-equiv="X-UA-Compatible" content="IE=edge" />' .
+	   	        '</head>';
+	        $html .= $metadataStr;
+	        $html .= '<body>';
+	        $html .= '<link type="text/css" href="../css/metadata_responsiv.css" rel="Stylesheet" />';
+	        $html .= "An exception occured - some mandatory elements could not be found, or the metadata is not valid!<br>";
+	        $html .= "<b>Report:</b> <a href='" . $_SERVER['PHP_SELF'] . "/../../php/mod_exportIso19139.php?" . $_SERVER['QUERY_STRING']."&outputFormat=iso19139". "' target='_blank'>".$this->fileIdentifier."</a>";
+	        $html .= '</body></html>';
+	        //define the javascripts to include
+	        return $html;
+	    }
 		libxml_use_internal_errors(true);
 		//TODO don't parse it again, but change the internal parser function!
 		try {
@@ -847,6 +884,7 @@ XML;
 		$err = new mb_notice("class_Iso19139: result of iso19139Xml: ". gettype($iso19139Xml));
 		//if parsing was successful
 		if ($iso19139Xml !== false) {
+		    //check for ows exception
 			$e = new mb_notice("Parsing of xml metadata file was successfull");
 			//register namespaces for parsing content
 			$iso19139Xml->registerXPathNamespace("csw", "http://www.opengis.net/cat/csw/2.0.2");
