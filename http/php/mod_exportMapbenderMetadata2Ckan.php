@@ -361,7 +361,7 @@ $forceCache = true;
 $baseUrlPortal = "https://www.geoportal.rlp.de";
 $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
 $mapbenderWebserviceUrl = $mapbenderBaseUrl;
-//$mapbenderWebserviceUrl = "http://localhost/mapbender/";
+$mapbenderWebserviceUrl = "http://localhost/mapbender/";
 
 $cache = new Cache();
 
