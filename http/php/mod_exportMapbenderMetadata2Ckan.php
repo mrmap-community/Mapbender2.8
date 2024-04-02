@@ -32,7 +32,17 @@ $topicCkanCategoryMap = array(
     "18" => "transportation",
     "19" => "utilitiesCommunication"
 );
-
+/*
+ * Pull inspire categories from database
+ */
+//inspire
+$inspireCatHash = array();
+$sql = "SELECT inspire_category_uri, inspire_category_code_en FROM inspire_category";
+$res = db_query($sql);
+while ($row = db_fetch_array($res)){
+    $inspireCatHash[$row['inspire_category_code_en']] = $row['inspire_category_uri'];
+    //$e = new mb_exception("inspireCatHash: ".$row['inspire_category_code_en'] ." : ". $row['inspire_category_id'] );
+}
 /*categories from https://tpp.rlp.de - ckan 2.9
  * [
   {
@@ -191,6 +201,124 @@ $topicCkanCategoryMap = array(
 "nature_environment","public_administration_budget_taxes","politics_elections","social_affairs_family_children_youth_women",
 "transport_traffic","consumer_proctection","economy_work"]
  */
+//http://publications.europa.eu/resource/authority/data-theme/
+$inspire_hvd_themes_map = <<<JSON
+{"key_namespace": "http://inspire.ec.europa.eu/theme",
+  "array_namespace":"",
+  "mapping": {
+      "http://inspire.ec.europa.eu/theme/rs": [],
+      "http://inspire.ec.europa.eu/theme/gg": [],
+      "http://inspire.ec.europa.eu/theme/gn": ["GEOSPATIAL"],
+      "http://inspire.ec.europa.eu/theme/au": ["GEOSPATIAL"],
+      "http://inspire.ec.europa.eu/theme/ad": ["GEOSPATIAL"],
+      "http://inspire.ec.europa.eu/theme/cp": ["GEOSPATIAL"],
+      "http://inspire.ec.europa.eu/theme/tn": ["MOBILITY"],
+      "http://inspire.ec.europa.eu/theme/hy": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/ps": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/el": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/lc": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/oi": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/ge": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/su": [],
+      "http://inspire.ec.europa.eu/theme/bu": ["GEOSPATIAL"],
+      "http://inspire.ec.europa.eu/theme/so": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/lu": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/hh": [],
+      "http://inspire.ec.europa.eu/theme/us": [],
+      "http://inspire.ec.europa.eu/theme/ef": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/pf": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/af": [],
+      "http://inspire.ec.europa.eu/theme/pd": [],
+      "http://inspire.ec.europa.eu/theme/am": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/nz": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/ac": [],
+      "http://inspire.ec.europa.eu/theme/mf": [],
+      "http://inspire.ec.europa.eu/theme/of": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/sr": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/br": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/hb": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/sd": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/er": ["EARTH OBSERVATION AND ENVIRONMENT"],
+      "http://inspire.ec.europa.eu/theme/mr": ["EARTH OBSERVATION AND ENVIRONMENT"]
+  }
+}
+JSON;
+
+/*
+ * https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/file-type
+ */
+$format_mapping = <<<JSON
+{
+    "WMS": "http://publications.europa.eu/resource/authority/file-type/WMS_SRVC",
+    "WFS": "http://publications.europa.eu/resource/authority/file-type/WFS_SRVC",
+    "HTML": "http://publications.europa.eu/resource/authority/file-type/HTML",
+    "REST": "http://publications.europa.eu/resource/authority/file-type/REST"
+}
+JSON;
+
+/*
+ * https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/high-value-dataset-category
+ * http://publications.europa.eu/resource/authority/bna/asd487ae75
+ * http://data.europa.eu/bna/c_ac64a52d ?
+ */
+
+
+$hvd_mapping = <<<JSON
+{ 
+   "GEOSPATIAL": "http://publications.europa.eu/resource/authority/bna/c_ac64a52d",
+   "EARTH OBSERVATION AND ENVIRONMENT": "http://publications.europa.eu/resource/authority/bna/c_dd313021",
+   "METEOROLOGICAL": "http://publications.europa.eu/resource/authority/bna/c_164e0bf5",
+   "STATISTICS": "http://publications.europa.eu/resource/authority/bna/c_e1da4e07",
+   "COMPANIES AND COMPANY OWNERSHIP": "http://publications.europa.eu/resource/authority/bna/c_a9135398",
+   "MOBILITY": "http://publications.europa.eu/resource/authority/bna/c_b79e35eb"
+}
+JSON;
+
+/*
+ * http://publications.europa.eu/resource/authority/data-theme
+ * https://github.com/SEMICeu/iso-19139-to-dcat-ap/blob/master/alignments/inspire-themes-to-mdr-data-themes.rdf
+ */
+$dcat_category_map = <<<JSON
+{ "key_namespace": "http://inspire.ec.europa.eu/theme",
+  "array_namespace":"http://publications.europa.eu/resource/authority/data-theme",
+  "mapping": {
+      "rs": ["REGI"],
+      "gg": ["REGI"],
+      "gn": ["REGI"],
+      "au": ["GOVE"],
+      "ad": ["REGI"],
+      "cp": ["REGI", "ECON"],
+      "tn": ["TRAN"],
+      "hy": ["ENVI", "TECH"],
+      "ps": ["ENVI"],
+      "el": ["REGI"],
+      "lc": ["ENVI"],
+      "oi": ["REGI", "TECH"],
+      "ge": ["REGI", "TECH"],
+      "su": ["SOCI"],
+      "bu": ["REGI"],
+      "so": ["ENVI"],
+      "lu": ["ECON", "ENVI"],
+      "hh": ["HEAL"],
+      "us": ["GOVE"],
+      "ef": ["ENVI"],
+      "pf": ["ECON"],
+      "af": ["AGRI"],
+      "pd": ["SOCI"],
+      "am": ["ENVI"],
+      "nz": ["ENVI"],
+      "ac": ["ENVI"],
+      "mf": ["ENVI", "TECH"],
+      "of": ["ENVI"],
+      "sr": ["ENVI"],
+      "br": ["ENVI"],
+      "hb": ["ENVI"],
+      "sd": ["ENVI"],
+      "er": ["ENER"],
+      "mr": ["ECON", "ENVI", "ENER"]
+  }
+}
+JSON;
 
 $topicCkanCategoryMap = array(
     "1" => "nature_environment,geography_geology_spatialdata,agriculture_viniculture_forest",//"1" => "farming",
@@ -243,7 +371,6 @@ $actualDate = date("Y-m-d H:i:s");
 $maxAgeInSeconds = 3600; //1hour
 $forceCache = true;
 
-
 if (isset($_REQUEST["cache"]) & $_REQUEST["cache"] != "") {
     //validate
     $testMatch = $_REQUEST["cache"];
@@ -275,6 +402,61 @@ if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
     $testMatch = NULL;
 }
 
+function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $license_id, $format_mapping, $is_hvd) {
+    $license_map = array(
+        "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+        "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0"
+    );
+    $Distribution = $rdfXmlDoc->createElement ( "dcat:Distribution" );
+    $Distribution->setAttribute ( "rdf:about", $uri);
+    
+    $distributionTitle = $rdfXmlDoc->createElement ( "dct:title" );
+    $distributionTitleText = $rdfXmlDoc->createTextNode( $title );
+    $distributionTitle->appendChild($distributionTitleText);
+    $Distribution->appendChild($distributionTitle);
+    
+    if ($description) {
+        $distributionDescription = $rdfXmlDoc->createElement ( "dct:description" );
+        $distributionDescriptionText = $rdfXmlDoc->createTextNode( $description);
+        $distributionDescription->appendChild($distributionDescriptionText);
+        $Distribution->appendChild($distributionDescription);
+    }
+    /*
+     * <dct:rights rdf:resource="http://dcat-ap.de/def/licenses/cc-by/4.0"/>
+     * <dct:license rdf:resource="http://dcat-ap.de/def/licenses/cc-by/4.0"/>
+     * <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-03-15T07:06:27.089037</dct:issued>
+     * <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-03-14T00:00:00</dct:modified>
+     * <dcatde:licenseAttributionByText>© GeoBasis-DE/LVermGeo SH/CC BY 4.0</dcatde:licenseAttributionByText>
+     */
+    
+    if ($license_id && key_exists($license_id, $license_map)) {
+        $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+        $dctLicense->setAttribute('rdf:resource', $license_map[$license_id]);
+        $Distribution->appendChild($dctLicense);
+    }
+    
+    $distributionFormat = $rdfXmlDoc->createElement ( "dct:format" );
+    //$distributionFormatText = $rdfXmlDoc->createTextNode( $format );
+    //$distributionFormat->appendChild($distributionFormatText);
+    $format_array = json_decode($format_mapping);
+    $e = new mb_exception("format uri: " . $format_array->{$format});
+    if ($format_array->{$format} && $format_array->{$format} != "") {
+        $distributionFormat->setAttribute ( "rdf:resource", $format_array->{$format});
+    }
+    $Distribution->appendChild($distributionFormat);
+    
+    $distributionAccessUrl = $rdfXmlDoc->createElement ( "dcat:accessURL" );
+    $distributionAccessUrl->setAttribute ( "rdf:resource", $accessUrl);
+    $Distribution->appendChild($distributionAccessUrl);
+    if ($is_hvd == true) {
+        //<dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
+        $dcatapApplicableLegislation = $rdfXmlDoc->createElement ( "dcatap:applicableLegislation" );
+        $dcatapApplicableLegislation->setAttribute ( "rdf:resource", "http://data.europa.eu/eli/reg_impl/2023/138/oj");
+        $Distribution->appendChild($dcatapApplicableLegislation);
+    }
+    return $Distribution;
+}
+
 if ($outputFormat == 'rdfxml') {
     $forceCache = false;
     header("Content-Type: application/rdf+xml");
@@ -293,7 +475,7 @@ if ($outputFormat == 'rdfxml') {
     $RDF->setAttribute ( "xmlns:dcat", "http://www.w3.org/ns/dcat#" );
     $RDF->setAttribute ( "xmlns:foaf", "http://xmlns.com/foaf/0.1/" );
     $RDF->setAttribute ( "xmlns:locn", "http://www.w3.org/ns/locn#" );
-    
+    $RDF->setAttribute ( "xmlns:dcatap", "http://data.europa.eu/r5r/" );
     //build catalog part
     $catalog = $rdfXmlDoc->createElement ( "dcat:Catalog" );
     $catalog->setAttribute ( "rdf:about", $baseUrlPortal );
@@ -301,16 +483,15 @@ if ($outputFormat == 'rdfxml') {
     $catalogTitleText = $rdfXmlDoc->createTextNode ( "GeoPortal.rlp" );
     $catalogTitle->appendChild($catalogTitleText);
     $catalogLanguage = $rdfXmlDoc->createElement ( "dct:language" );
-    $catalogLanguageText = $rdfXmlDoc->createTextNode ( "de" );
-    $catalogLanguage->appendChild($catalogLanguageText);
+    $catalogLanguage->setAttribute('rdf:resource', 'http://publications.europa.eu/resource/authority/language/DEU');
+    //$catalogLanguageText = $rdfXmlDoc->createTextNode ( "de" );
+    //$catalogLanguage->appendChild($catalogLanguageText);
     $catalogModified = $rdfXmlDoc->createElement ( "dct:modified" );
+    $catalogModified->setAttribute('rdf:datatype', 'http://www.w3.org/2001/XMLSchema#dateTime');
     $dt = new DateTime();
     $catalogModifiedText = $rdfXmlDoc->createTextNode ( $dt->format('Y-m-d\TH:i:s.').substr($dt->format('u'),0,3) . 'Z' );
     $catalogModified->appendChild($catalogModifiedText);
-    //append information
-    $catalog->appendChild($catalogTitle);
-    $catalog->appendChild($catalogLanguage);
-    $catalog->appendChild($catalogModified);
+    
     //build organization part
     //get organisation list from webservice
     $connector = new connector();   
@@ -329,6 +510,22 @@ if ($outputFormat == 'rdfxml') {
     $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: organization: " . $orgaResult);
     $orgaObject = json_decode($orgaResult);
+    
+    $catalogDescription = $rdfXmlDoc->createElement ( "dct:description" );
+    $catalogDescriptionText = $rdfXmlDoc->createTextNode ( "Geo-Metadaten der Organisation " . $orgaObject->title);
+    $catalogDescription->appendChild($catalogDescriptionText);
+    
+    //<dct:publisher rdf:resource="https://daten.rlp.de/organization/7d21ed9f-8013-49a5-9b03-25831f4f9826"/>
+    $catalogPublisher = $rdfXmlDoc->createElement ( "dct:publisher" );
+    $catalogPublisher->setAttribute('rdf:resource', $baseUrlPortal . "/organization/" . $orgaObject->id);
+    
+    //append information
+    $catalog->appendChild($catalogTitle);
+    $catalog->appendChild($catalogDescription);
+    $catalog->appendChild($catalogLanguage);
+    $catalog->appendChild($catalogModified);
+    $catalog->appendChild($catalogPublisher);
+    
     /*
     <foaf:Organization rdf:about="https://daten.rlp.de/organization/a7ad2b18-e02c-4492-b244-c2515f697211">
     <foaf:name>
@@ -362,6 +559,7 @@ if ($outputFormat == 'rdfxml') {
     $countResult = $connector->load($baseUrlCount);
     //parse maxResults
     $resultObject = json_decode($countResult);
+    $e = new mb_exception("number of results: " . $resultObject->dataset->md->nresults);
     $maxPages = ceil($resultObject->dataset->md->nresults / $resultsPerPage);
     /*header('Content-Type: application/json');
     $returnObject = new stdClass();
@@ -370,133 +568,391 @@ if ($outputFormat == 'rdfxml') {
     $returnObject->result = array();*/
     $j = 0;
     $package = array();
-    $e = new mb_exception("Try to load ".$resultObject->dataset->md->nresults." datasets for ".$orgaResult);
+    //$e = new mb_exception("Try to load ".$resultObject->dataset->md->nresults." datasets for ".$orgaResult);
     $distributionArray = array();
+    $datasetCount = 0;
     for ($i=1; $i <= $maxPages; $i++) {
         //$e = new mb_exception("Use SearchInterface for dataset: Page " . $i . " of ".$maxPages);
-        $pageUrl = $baseUrl. "&searchPages=" . $i . "&maxPages=" . $resultsPerPage;
+        $pageUrl = $baseUrl. "&searchPages=" . $i . "&maxResults=" . $resultsPerPage;
         //echo $pageUrl . "<br>";
+        //$e = new mb_exception("search invoked: " . $pageUrl);
         $result = $connector->load($pageUrl);
         $resultObject = json_decode($result);
         foreach($resultObject->dataset->srv as $gpDataset) {
-            $e = new mb_exception("Dataset uuid: ".$gpDataset->uuid);
-            
-            /*$layerArray = array();
-            $featuretypeArray = array();
-            $downloadArray = array();*/
-            
-            /*$package[$j] = new stdClass();
-            $package[$j]->maintainer = $orgaObject->title;
-            $package[$j]->point_of_contact = $orgaObject->title;
-            $package[$j]->point_of_contact_email = str_replace(" (at) ", "@", $orgaObject->department_email);
-            $package[$j]->maintainer_email = str_replace(" (at) ", "@", $orgaObject->department_email);
-            $package[$j]->metadata_modified = $dataset->date;
-            $package[$j]->id = $dataset->uuid;
-            $package[$j]->title = $dataset->title;
-            $package[$j]->description = $dataset->abstract;
-            $package[$j]->license_id = $dataset->license_id;*/
-            
-            $firstDataset = $rdfXmlDoc->createElement ( "dcat:dataset" );
-            
-            $dataset = $rdfXmlDoc->createElement ( "dcat:Dataset" );
-            $dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
-            //title
-            $title = $rdfXmlDoc->createElement ( "dct:title" );
-            $titleText = $rdfXmlDoc->createTextNode( $gpDataset->title );
-            $title->appendChild($titleText);
-            $dataset->appendChild($title);
-            //description
-            $description = $rdfXmlDoc->createElement ( "dct:description" );
-            $descriptionText = $rdfXmlDoc->createTextNode( $gpDataset->abstract );
-            $description->appendChild($descriptionText);
-            $dataset->appendChild($description);
-            //identifier
-            $identifier = $rdfXmlDoc->createElement ( "dct:identifier" );
-            $identifierText = $rdfXmlDoc->createTextNode( $gpDataset->uuid );
-            $identifier->appendChild($identifierText);
-            $dataset->appendChild($identifier);
-            //publisher
-            $publisher = $rdfXmlDoc->createElement ( "dct:publisher" );
-            $publisher->setAttribute ( "rdf:resource", $baseUrlPortal . "/organization/" . $orgaObject->id );
-            $dataset->appendChild( $publisher );
-            //distribution 1
-            $distribution = $rdfXmlDoc->createElement ( "dcat:distribution" );
-            $distribution->setAttribute ( "rdf:resource", $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/html_metadata_" .  $gpDataset->uuid);
-            $dataset->appendChild( $distribution );
-            //<dcat:distribution rdf:resource="https://ckan-demo.webhosting-franken.com/dataset/ce00b0a8-2c1d-44b1-a1ef-ee9e2e0f3263/resource/17b735da-132f-4442-9952-c77f44a521ff"/>
-            
-            $firstDataset->appendChild ( $dataset );
-            $catalog->appendChild ( $firstDataset );
-            
-            //add distribution 
-            /*<dcat:Distribution rdf:about="https://ckan-demo.webhosting-franken.com/dataset/b2810833-7212-42d5-82b5-cc80e27e96fe/resource/28f256f0-3748-407b-abbc-611524cd93c9">
-            <dct:title>
-            GetCapabilities request for the Location of former Elbe Urstrom Valley - WFS service
-            </dct:title>
-            <dct:format>WFS</dct:format>
-            <dcat:accessURL rdf:resource="https://www.geoseaportal.de/wss/service/SGE_AdditionalInformation/guest?SERVICE=WFS&REQUEST=GetCapabilities&VERSION=2.0.0"/>
-            <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-02-07T21:36:03.630976</dct:issued>
-            <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-02-07T21:36:03.594170</dct:modified>
-            </dcat:Distribution>*/
-            
-            
-            $Distribution = $rdfXmlDoc->createElement ( "dcat:Distribution" );
-            $Distribution->setAttribute ( "rdf:about", $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/html_metadata_" .  $gpDataset->uuid);
-            
-            $distributionTitle = $rdfXmlDoc->createElement ( "dct:title" );
-            $distributionTitleText = $rdfXmlDoc->createTextNode( "Original Metadaten HTML");
-            $distributionTitle->appendChild($distributionTitleText);
-            $Distribution->appendChild($distributionTitle);
-            
-            $distributionFormat = $rdfXmlDoc->createElement ( "dct:format" );
-            $distributionFormatText = $rdfXmlDoc->createTextNode( "HTML" );
-            $distributionFormat->appendChild($distributionFormatText);
-            $Distribution->appendChild($distributionFormat);
-            
-            $distributionAccessUrl = $rdfXmlDoc->createElement ( "dcat:accessURL" );
-            $distributionAccessUrl->setAttribute ( "rdf:resource", $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid );
-            $Distribution->appendChild($distributionAccessUrl);
-            
-            $distributionArray[] = $Distribution;
-            
-            
-            //get resources / distributions
-            /*
-             * 
-             */
-            $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
-            $metadataUrl = $metadataResolverUrl . $gpDataset->uuid;
-            //$metadataResult = $connector->load($metadataUrl);
-            $iso19139Md = new Iso19139();
-            //$e = new mb_exception("Parse ISO Metadata");
-            $iso19139Md->createFromUrl($metadataUrl);
-            //echo "Keywords: " . json_encode($iso19139Md->keywords)."<br>";
-            //echo "ISO Categories: " . json_encode($iso19139Md->isoCategoryKeys)."<br>";
-            //"groups":[{"name":"gdi-rp"},{"name":"geo"},{"name":"infrastruktur_bauen_wohnen"},{"name":"transport_verkehr"},{"name":"gesetze_justiz"}],"tags":[{"name":"Bauleitplan"},{"name":"Bebauungsplan"},{"name":"Bplan"},{"name":"Simmern (Hunsr\u00fcck)"}]
-            //TODO - do this before - see above
-            /*if (is_array($iso19139Md->keywords) && count($iso19139Md->keywords) > 0) {
-                foreach ($iso19139Md->keywords as $key => $value) {
-                    $package[$j]->tags[] = array("name" => (string)$value);
+            $e = new mb_exception("Dataset number: ".$datasetCount);
+            //$e = new mb_exception("Dataset uuid: ".$gpDataset->uuid);
+            $e = new mb_exception("Dataset title: ".$gpDataset->title);
+            $notEmptyArray = array('uuid', 'title', 'abstract');
+            $exportMetadata = true;
+            foreach ($notEmptyArray as $mandatoryElement) {
+                if ($gpDataset->{$mandatoryElement} == '' || empty($gpDataset->{$mandatoryElement})) {
+                    $exportMetadata = false;
+                    $e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php - mandatory element " . $mandatoryElement . " is empty - dataset will not be exported!");
+                    break;
                 }
-            }*/
-            
-            //add first resource - the original metadata for this package
-            /*$resource = array();
-            $metadataResource = array("name" => "Originäre Metadaten",
-                "description" => $dataset->title . " - Anzeige der originären Metadaten",
-                "format" => "HTML",
-                "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
-            );
-            $resource[] = $metadataResource;*/
-            //$distribution = $rdfXmlDoc->createElement ( "dcat:Dataset" );
-            
-            
-            /*
-             * 
-             */
-            
-            
-            
+            }
+            if ($exportMetadata) {
+                $dataset = $rdfXmlDoc->createElement ( "dcat:dataset" );
+                $Dataset = $rdfXmlDoc->createElement ( "dcat:Dataset" );
+                $Dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
+                //title
+                $title = $rdfXmlDoc->createElement ( "dct:title" );
+                $titleText = $rdfXmlDoc->createTextNode( $gpDataset->title );
+                $title->appendChild($titleText);
+                $Dataset->appendChild($title);
+                //description
+                $description = $rdfXmlDoc->createElement ( "dct:description" );
+                $descriptionText = $rdfXmlDoc->createTextNode( $gpDataset->abstract );
+                $description->appendChild($descriptionText);
+                $Dataset->appendChild($description);
+                //identifier
+                $identifier = $rdfXmlDoc->createElement ( "dct:identifier" );
+                $identifierText = $rdfXmlDoc->createTextNode( $gpDataset->uuid );
+                $identifier->appendChild($identifierText);
+                $Dataset->appendChild($identifier);
+                //keywords
+                /*
+                 * invoke dataset metadata from proxy and get tags/categories/...
+                 */
+                $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
+                $metadataUrl = $metadataResolverUrl . $gpDataset->uuid;
+                //$metadataResult = $connector->load($metadataUrl);
+                $iso19139Md = new Iso19139();
+                //$e = new mb_exception("Parse ISO Metadata");
+                $iso19139Md->createFromUrl($metadataUrl);
+                //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php keywords: " . json_encode($iso19139Md->keywords));
+                //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php keywordsThesaurusName: " . json_encode($iso19139Md->keywordsThesaurusName));
+                //generate tags
+                $keyword_idx = 0;
+                $is_hvd = false;
+                $dcat_themes_array_unique = array();
+                $hvd_themes_array_unique = array();
+                foreach ($iso19139Md->keywords as $keyword) {
+                    //check for keyword without thesaurus
+                    $keyword = trim($keyword);
+                    if ($iso19139Md->keywordsThesaurusName[$keyword_idx] == null) {
+                        $keywordE = $rdfXmlDoc->createElement ( "dcat:keyword" );
+                        $keywordText = $rdfXmlDoc->createTextNode( $keyword );
+                        $keywordE->appendChild($keywordText);
+                        $Dataset->appendChild($keywordE);
+                    }
+                    if ($iso19139Md->keywordsThesaurusName[$keyword_idx] == 'GEMET - INSPIRE themes, version 1.0') {                        
+                        $inspire_theme_uri = $inspireCatHash[ $keyword ];  
+                        $inspire_dcat_themes_map = json_decode($dcat_category_map);
+                        $dcat_themes_array = $inspire_dcat_themes_map->mapping->{end(explode('/', $inspire_theme_uri))};
+                        //add dcat theme if exists
+                        foreach ($dcat_themes_array as $dcat_theme) {
+                            if (!in_array($dcat_theme, $dcat_themes_array_unique)) {
+                                //<dcat:theme rdf:resource="http://publications.europa.eu/resource/authority/data-theme/REGI"/>
+                                $dcatTheme = $rdfXmlDoc->createElement ( "dcat:theme" );
+                                $dcatTheme->setAttribute ( "rdf:resource", "http://publications.europa.eu/resource/authority/data-theme/" . $dcat_theme);
+                                $Dataset->appendChild($dcatTheme);
+                                $dcat_themes_array_unique[] = $dcat_theme;
+                            }
+                        }
+                        //add hvd theme if exists
+                        //$inspire_hvd_cat_map
+                        $hvd_themes_map = json_decode($inspire_hvd_themes_map);
+                        $hvd_themes_array = $hvd_themes_map->mapping->{$inspire_theme_uri};
+                        $hvd_mapping_obj = json_decode($hvd_mapping);
+                        foreach ($hvd_themes_array as $hvd_theme) {
+                            if (!in_array($hvd_theme, $hvd_themes_array_unique)) {
+                                //<dcat:theme rdf:resource="http://publications.europa.eu/resource/authority/data-theme/REGI"/>
+                                $dcatTheme = $rdfXmlDoc->createElement ( "dcatap:hvdCategory" );
+                                //lookup hvd_mapping
+                                $dcatTheme->setAttribute ( "rdf:resource", $hvd_mapping_obj->{$hvd_theme});
+                                $Dataset->appendChild($dcatTheme);
+                                $hvd_themes_array_unique[] = $hvd_theme;
+                            }
+                            $is_hvd = true;
+                        }
+                    }
+                    $keyword_idx++;
+                }
+                /*<dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2017-08-01T10:46:45.590516</dct:issued>
+                <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-04-02T04:29:37.212449</dct:modified>
+                */
+                //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php createDate: " . json_encode($iso19139Md->createDate));
+                //createDate / changeDate
+                $dctCreateDate = $rdfXmlDoc->createElement ( "dct:issued" );
+                $dctCreateDate->setAttribute ( "rdf:datatype", "http://www.w3.org/2001/XMLSchema#date");
+                $dctCreateDateText = $rdfXmlDoc->createTextNode( $iso19139Md->createDate );
+                $dctCreateDate->appendChild($dctCreateDateText);
+                $Dataset->appendChild($dctCreateDate);
+                
+                $dctChangeDate = $rdfXmlDoc->createElement ( "dct:modified" );
+                $dctChangeDate->setAttribute ( "rdf:datatype", "http://www.w3.org/2001/XMLSchema#date");
+                $dctChangeDateText = $rdfXmlDoc->createTextNode( $iso19139Md->changeDate );
+                $dctChangeDate->appendChild($dctChangeDateText);
+                $Dataset->appendChild($dctChangeDate);
+                
+                
+                if ($is_hvd == true) {
+                    //<dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
+                    $dcatapApplicableLegislation = $rdfXmlDoc->createElement ( "dcatap:applicableLegislation" );
+                    $dcatapApplicableLegislation->setAttribute ( "rdf:resource", "http://data.europa.eu/eli/reg_impl/2023/138/oj");
+                    $Dataset->appendChild($dcatapApplicableLegislation);
+                }
+                //$inspireCatHash
+                /*
+                 *
+                 */
+                //publisher
+                $publisher = $rdfXmlDoc->createElement ( "dct:publisher" );
+                $publisher->setAttribute ( "rdf:resource", $baseUrlPortal . "/organization/" . $orgaObject->id );
+                $Dataset->appendChild( $publisher );
+                /*
+                 * temporal
+                 */
+                
+                /*
+                 * <dct:temporal>
+<dct:PeriodOfTime rdf:nodeID="N1596db4a49c342d4a2cd7ec2bdf046f8">
+<schema1:startDate rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2022-12-05T00:00:00</schema1:startDate>
+</dct:PeriodOfTime>
+</dct:temporal>
+<dct:temporal>
+<dct:PeriodOfTime rdf:nodeID="N0e3395d34d8848cb919392ae23fec76a">
+<dcat:startDate rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2022-12-05T00:00:00</dcat:startDate>
+</dct:PeriodOfTime>
+</dct:temporal>
+                 */
+                
+                //spatial
+                /*
+                 * <dct:spatial>
+<dct:Location rdf:nodeID="N1aaeecd667f2480785404f9eaa1862e0">
+<locn:geometry rdf:datatype="https://www.iana.org/assignments/media-types/application/vnd.geo+json">
+{"type": "Polygon", "coordinates": [[[6.27660990100003, 53.221620321], [9.22712240800007, 53.221620321], [9.22712240800007, 55.3427628060001], [6.27660990100003, 55.3427628060001], [6.27660990100003, 53.221620321]]]}
+</locn:geometry>
+<locn:geometry rdf:datatype="http://www.opengis.net/ont/geosparql#wktLiteral">
+POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766 53.2216))
+</locn:geometry>
+</dct:Location>
+</dct:spatial>
+                 */
+                $geojsonBbox = '{"type": "Polygon", "coordinates": [[[' . $iso19139Md->wgs84Bbox[0] . ', ' . $iso19139Md->wgs84Bbox[1] . '], ';
+                $geojsonBbox .= '[' . $iso19139Md->wgs84Bbox[2] . ', ' . $iso19139Md->wgs84Bbox[1] . '], [' . $iso19139Md->wgs84Bbox[2] . ', ' . $iso19139Md->wgs84Bbox[3] . '], ';
+                $geojsonBbox .= '[' . $iso19139Md->wgs84Bbox[0] . ', ' . $iso19139Md->wgs84Bbox[3] . '], [' . $iso19139Md->wgs84Bbox[0] . ', ' . $iso19139Md->wgs84Bbox[1] . ']]]}';
+                $dctSpatial = $rdfXmlDoc->createElement ( "dct:spatial" );
+                $dctLocation = $rdfXmlDoc->createElement ( "dct:Location" );
+                //add unique identifier - ?
+                $dctLocation->setAttribute("rdf:nodeID", "a" . md5($geojsonBbox . $gpDataset->uuid)); //https://phabricator.wikimedia.org/T252731
+                $locnGeometry = $rdfXmlDoc->createElement ( "locn:geometry" );
+                $locnGeometry->setAttribute("rdf:datatype", "https://www.iana.org/assignments/media-types/application/vnd.geo+json");
+                $locnGeometryText = $rdfXmlDoc->createTextNode( $geojsonBbox );
+                $locnGeometry->appendChild( $locnGeometryText );
+                $dctLocation->appendChild( $locnGeometry );
+                $dctSpatial->appendChild( $dctLocation );
+                $Dataset->appendChild( $dctSpatial );
+                //distribution 1 - original metadata about dataset
+                $distribution = $rdfXmlDoc->createElement ( "dcat:distribution" );
+                $distribution->setAttribute ( "rdf:resource", $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/html_metadata_" .  $gpDataset->uuid);
+                $Dataset->appendChild( $distribution );
+                /*
+                 * Get coupled resources and create distributions for them
+                 */
+                $resourceArray = array();
+                $resourceIdArray = array();
+                //TODO: add license_source_note ...!
+                foreach ($gpDataset->coupledResources as $key => $value) {
+                    switch($key) {
+                        case "layer":
+                            //TODO add layer title to coupled resource information!!!!
+                            foreach ($value as $key1 => $value1) {
+                                $layerArray[] = $value1->id;
+                                $coupledLayerArray[] = $value1->id;
+                                //extract layer title from hierarchy
+                                $layerTitle = $value1->srv->layer[0]->title;
+                                $layerLicenseId = $value1->srv->license_id;
+                                //build ckan resource records for the layer. For each layer we have metadata, full viewer, geoportal viewer, wms interface
+                                $layerViewResource_1 = array("name" => "Online Karte",
+                                    "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
+                                    "format" => "HTML",
+                                    "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
+                                    "id" => $gpDataset->uuid . "_mapviewer_layer_" . $value1->id,
+                                    "license_id" => $layerLicenseId
+                                );
+                                $resourceArray[] = $layerViewResource_1;
+                                $layerViewResource_2 = array("name" => "GeoPortal.rlp",
+                                    "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
+                                    "format" => "HTML",
+                                    "url" => $mapbenderBaseUrl . "../portal/karten.html?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
+                                    "id" => $gpDataset->uuid . "_geoportal_layer_" . $value1->id,
+                                    "license_id" => $layerLicenseId
+                                );
+                                $resourceArray[] = $layerViewResource_2;
+                                $layerMetadataResource = array("name" => "Originäre Metadaten für Kartenebene",
+                                    "description" => "Kartenebene: " . $layerTitle . " - Anzeige der originären Metadaten",
+                                    "format" => "HTML",
+                                    "url" => $mapbenderBaseUrl . "php/mod_showMetadata.php?languageCode=de&resource=layer&layout=tabs&id=" . $value1->id,
+                                    "id" => $gpDataset->uuid . "_layer_metadata_" . $value1->id
+                                );
+                                $resourceArray[] = $layerMetadataResource;
+                                $layerWMSResource = array("name" => "WMS Schnittstelle",
+                                    "description" => "Ebene: " . $layerTitle,
+                                    "format" => "WMS",
+                                    "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
+                                    "id" => $gpDataset->uuid . "_wms_interface_" . $value1->id,
+                                    "license_id" => $layerLicenseId
+                                );
+                                $resourceArray[] = $layerWMSResource;
+                            }
+                            break;
+                        case "featuretype":
+                            foreach ($value as $key1 => $value1) {
+                                $featuretypeArray[] = $value1->id;
+                                //build ckan resource records for the featuretype. For each featuretype we have metadata, wfs interface, maybe ogc api features interface
+                                /*$featuretypeMetadataResource = array("name" => "Originäre Metadaten für Objektart",
+                                 "description" => "Kartenebene: " . $value1->title . " - Anzeige der originären Metadaten",
+                                 "format" => "HTML",
+                                 "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
+                                 );*/
+                            }
+                            break;
+                        case "inspireAtomFeeds":
+                            foreach ($value as $key1 => $value1) {
+                                switch ($value1->type) {
+                                    case "ogcapifeatures":
+                                        $featuretypeAccessResource_1 = array("name" => "OGC API Features (REST)",
+                                        "description" =>   "Objektart: " . $value1->resourceName. " - ISO19168-1:20202 API",
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_ogc_api_interface_" . $value1->resourceName . "_" . $value1->serviceId,
+                                        "license_id" => $value1->licenseId
+                                        );
+                                        $resourceArray[] = $featuretypeAccessResource_1;
+                                        break;
+                                    case "wfsrequest":
+                                        $atomFeedAccessResource_1 = array("name" => "Vektordownload nach EU-Standard",
+                                        "description" => $value1->serviceTitle,
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_atom_feed_wfs_" . $value1->serviceId,
+                                        "license_id" => $value1->licenseId
+                                        );
+                                        $resourceArray[] = $atomFeedAccessResource_1;
+                                        break;
+                                    case "wmslayergetmap":
+                                        $atomFeedAccessResource_2 = array("name" => "Rasterdownload nach EU-Standard",
+                                        "description" => $value1->serviceTitle,
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_atom_feed_wms_" . $value1->resourceId,
+                                        "license_id" => $value1->licenseId
+                                        );
+                                        $resourceArray[] = $atomFeedAccessResource_2;
+                                        break;
+                                }
+                                //build ckan resource records for the atomfeed entries -> atomfeed xml, atomfeed html, maybe ogc api features interface
+                            }
+                            break;//for atom feeds
+                    }//end for switch
+                    //generate distribution entries
+                }
+                //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php - number of resources: for dataset " . $gpDataset->title. ": " . count($resourceArray));
+                //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php - resources json :" . json_encode($resourceArray));
+                //make them unique - if needed                
+                $resourceArrayNew = array();
+                $resourceIdArrayNew = array();                
+                foreach ($resourceArray as $resource) {
+                    /*$e = new mb_exception("php/ - resource id to check: " . md5($resource['id']));
+                     $e = new mb_exception("php/ - resource id array: " . json_encode($resourceIdArrayNew));
+                     $e = new mb_exception("php/ - type of resourceIdArray: " . gettype($resourceIdArrayNew));*/
+                    if (in_array(md5($resource['id']), $resourceIdArrayNew, true)) {
+                        //$e = new mb_exception("php/ - resource id is already in array - will not be added again: " . md5($resource['id']));
+                    } else {
+                        //$e = new mb_exception("php/ - resource id not found in array " . json_encode($resourceIdArrayNew) . " - will be added: " . md5($resource['id']));
+                        $resourceArrayNew[] = $resource;
+                        $resourceIdArrayNew[] = md5($resource['id']);
+                        //$e = new mb_exception("php/ - resource id is already in array - will not be added again: " . $resource['id']);
+                    }
+                }
+                //$resourceArray =  $resourceArrayNew;
+                // $e = new mb_exception("php/ - number of resources new: " . count($resourceArrayNew));
+                foreach ($resourceArrayNew as $resource) {
+                    //$e = new mb_exception("php/ - resource json: " . json_encode($resource));
+                    $distribution = $rdfXmlDoc->createElement ( "dcat:distribution" );
+                    //$e = new mb_exception("php/ - resource_id_string: " . $resource->id);
+                    //$e = new mb_exception("php/ - resource_id_string 2 : " . $resource['id']);
+                    $distribution->setAttribute ( "rdf:resource", $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'] );
+                    $Dataset->appendChild( $distribution );                   
+                }
+                /*
+                 * 
+                 */
+                $dataset->appendChild ( $Dataset );
+                $catalog->appendChild ( $dataset );
+                //iterate over distributions
+                
+                //add distribution 
+                /*<dcat:Distribution rdf:about="https://ckan-demo.webhosting-franken.com/dataset/b2810833-7212-42d5-82b5-cc80e27e96fe/resource/28f256f0-3748-407b-abbc-611524cd93c9">
+                <dct:title>
+                GetCapabilities request for the Location of former Elbe Urstrom Valley - WFS service
+                </dct:title>
+                <dct:format>WFS</dct:format>
+                <dcat:accessURL rdf:resource="https://www.geoseaportal.de/wss/service/SGE_AdditionalInformation/guest?SERVICE=WFS&REQUEST=GetCapabilities&VERSION=2.0.0"/>
+                <dct:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-02-07T21:36:03.630976</dct:issued>
+                <dct:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-02-07T21:36:03.594170</dct:modified>
+                </dcat:Distribution>*/
+                                
+                $uri = $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/html_metadata_" .  $gpDataset->uuid;
+                $title = "Original Metadaten HTML";
+                $description = false;
+                $format = "HTML";
+                $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
+                
+                $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, false, $format_mapping, $is_hvd);
+                $distributionArray[] = $Distribution;
+                
+                foreach ($resourceArrayNew as $resource) {
+                    if (!key_exists('license_id', $resource)) {
+                        $resource['license_id'] = false;
+                    }
+                    $Distribution = createDistributionElement($rdfXmlDoc, $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'], $resource['name'], $resource['description'], $resource['format'], $resource['url'], $resource['license_id'], $format_mapping, $is_hvd);
+                    $distributionArray[] = $Distribution;
+                    //$e = new mb_exception("php/ - resource json: " . json_encode($resource));
+                    //$distribution = $rdfXmlDoc->createElement ( "dcat:distribution" );
+                    //$e = new mb_exception("php/ - resource_id_string: " . $resource->id);
+                    //$e = new mb_exception("php/ - resource_id_string 2 : " . $resource['id']);
+                    //$resourceUri = $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'];
+                    //$distribution->setAttribute ( "rdf:resource", $resourceUri );
+                    $Dataset->appendChild( $distribution );
+                }
+                //get resources / distributions
+                /*
+                 * 
+                 */
+                //$metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
+                //$metadataUrl = $metadataResolverUrl . $gpDataset->uuid;
+                //$metadataResult = $connector->load($metadataUrl);
+                //$iso19139Md = new Iso19139();
+                //$e = new mb_exception("Parse ISO Metadata");
+                //$iso19139Md->createFromUrl($metadataUrl);
+                //echo "Keywords: " . json_encode($iso19139Md->keywords)."<br>";
+                //echo "ISO Categories: " . json_encode($iso19139Md->isoCategoryKeys)."<br>";
+                //"groups":[{"name":"gdi-rp"},{"name":"geo"},{"name":"infrastruktur_bauen_wohnen"},{"name":"transport_verkehr"},{"name":"gesetze_justiz"}],"tags":[{"name":"Bauleitplan"},{"name":"Bebauungsplan"},{"name":"Bplan"},{"name":"Simmern (Hunsr\u00fcck)"}]
+                //TODO - do this before - see above
+                /*if (is_array($iso19139Md->keywords) && count($iso19139Md->keywords) > 0) {
+                    foreach ($iso19139Md->keywords as $key => $value) {
+                        $package[$j]->tags[] = array("name" => (string)$value);
+                    }
+                }*/
+                
+                //add first resource - the original metadata for this package
+                /*$resource = array();
+                $metadataResource = array("name" => "Originäre Metadaten",
+                    "description" => $dataset->title . " - Anzeige der originären Metadaten",
+                    "format" => "HTML",
+                    "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
+                );
+                $resource[] = $metadataResource;*/
+                //$distribution = $rdfXmlDoc->createElement ( "dcat:Dataset" );
+                /*
+                 * 
+                 */
+                $datasetCount++;
+            }
         }
     }
     /*
