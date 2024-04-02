@@ -361,7 +361,7 @@ $forceCache = true;
 $baseUrlPortal = "https://www.geoportal.rlp.de";
 $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
 $mapbenderWebserviceUrl = $mapbenderBaseUrl;
-$mapbenderWebserviceUrl = "http://localhost/mapbender/";
+//$mapbenderWebserviceUrl = "http://localhost/mapbender/";
 
 $cache = new Cache();
 
@@ -402,7 +402,7 @@ if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
     $testMatch = NULL;
 }
 
-function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $license_id, $format_mapping, $is_hvd) {
+function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $license_id, $license_source_note, $format_mapping, $is_hvd) {
     $license_map = array(
         "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
         "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0"
@@ -433,13 +433,19 @@ function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false,
         $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
         $dctLicense->setAttribute('rdf:resource', $license_map[$license_id]);
         $Distribution->appendChild($dctLicense);
+        if ($license_source_note && $license_source_note != '') {
+            //<dcatde:licenseAttributionByText>© Hanse- und Universitätsstadt Rostock (CC BY 4.0)</dcatde:licenseAttributionByText>
+            $dcatdeLicenseAttributionByText = $rdfXmlDoc->createElement ( "dcatde:licenseAttributionByText" );
+            $dcatdeLicenseAttributionByTextText = $rdfXmlDoc->createTextNode( $license_source_note);
+            $dcatdeLicenseAttributionByText->appendChild($dcatdeLicenseAttributionByTextText);
+            $Distribution->appendChild($dcatdeLicenseAttributionByText);
+        }
     }
-    
     $distributionFormat = $rdfXmlDoc->createElement ( "dct:format" );
     //$distributionFormatText = $rdfXmlDoc->createTextNode( $format );
     //$distributionFormat->appendChild($distributionFormatText);
     $format_array = json_decode($format_mapping);
-    $e = new mb_exception("format uri: " . $format_array->{$format});
+    //$e = new mb_exception("format uri: " . $format_array->{$format});
     if ($format_array->{$format} && $format_array->{$format} != "") {
         $distributionFormat->setAttribute ( "rdf:resource", $format_array->{$format});
     }
@@ -476,6 +482,7 @@ if ($outputFormat == 'rdfxml') {
     $RDF->setAttribute ( "xmlns:foaf", "http://xmlns.com/foaf/0.1/" );
     $RDF->setAttribute ( "xmlns:locn", "http://www.w3.org/ns/locn#" );
     $RDF->setAttribute ( "xmlns:dcatap", "http://data.europa.eu/r5r/" );
+    $RDF->setAttribute ( "xmlns:dcatde", "http://dcat-ap.de/def/dcatde/" );
     //build catalog part
     $catalog = $rdfXmlDoc->createElement ( "dcat:Catalog" );
     $catalog->setAttribute ( "rdf:about", $baseUrlPortal );
@@ -819,7 +826,8 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_ogc_api_interface_" . $value1->resourceName . "_" . $value1->serviceId,
-                                        "license_id" => $value1->licenseId
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $featuretypeAccessResource_1;
                                         break;
@@ -829,7 +837,8 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_wfs_" . $value1->serviceId,
-                                        "license_id" => $value1->licenseId
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_1;
                                         break;
@@ -839,7 +848,8 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_wms_" . $value1->resourceId,
-                                        "license_id" => $value1->licenseId
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_2;
                                         break;
@@ -902,14 +912,17 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                 $format = "HTML";
                 $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
                 
-                $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, false, $format_mapping, $is_hvd);
+                $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, false, false, $format_mapping, $is_hvd);
                 $distributionArray[] = $Distribution;
                 
                 foreach ($resourceArrayNew as $resource) {
                     if (!key_exists('license_id', $resource)) {
                         $resource['license_id'] = false;
                     }
-                    $Distribution = createDistributionElement($rdfXmlDoc, $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'], $resource['name'], $resource['description'], $resource['format'], $resource['url'], $resource['license_id'], $format_mapping, $is_hvd);
+                    if (!key_exists('license_source_note', $resource)) {
+                        $resource['license_source_note'] = false;
+                    }
+                    $Distribution = createDistributionElement($rdfXmlDoc, $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'], $resource['name'], $resource['description'], $resource['format'], $resource['url'], $resource['license_id'], $resource['license_source_note'], $format_mapping, $is_hvd);
                     $distributionArray[] = $Distribution;
                     //$e = new mb_exception("php/ - resource json: " . json_encode($resource));
                     //$distribution = $rdfXmlDoc->createElement ( "dcat:distribution" );
