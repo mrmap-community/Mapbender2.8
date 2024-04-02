@@ -255,6 +255,7 @@ $downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name 
 						$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
 						$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
 						$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+						$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 						//$downloadOptions->{$idList[$i]}->option[$j]->touId = $row['tou_id'];
 					}
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
@@ -287,6 +288,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
 					$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 				break;
@@ -323,6 +325,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
 					$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 					//$downloadOptions->{$idList[$i]}->option[$j]->accessClient = "https://www....";
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
@@ -348,6 +351,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 							$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
 							$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
 							$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+							$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 						}
 					}
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
@@ -377,6 +381,8 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    $downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
 				    $downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
 				    $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
+				    
 				    $downloadOptions->{$idList[$i]}->title = $row['title'];
 				    $downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 				    break;	
