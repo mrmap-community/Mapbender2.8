@@ -342,6 +342,15 @@ $topicCkanCategoryMap = array(
     "19" => "geography_geology_spatialdata,infrastructure,transport_traffic,economy_work"//"19" => "utilitiesCommunication"
 );
 
+$license_map = array(
+    "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+    "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
+    "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero"
+);
+
+//TODO add crontributor id? - test for ogdp 
+//Siehe: https://www.dcat-ap.de/def/dcatde/2.0/implRules/#konvention-12 
+
 //require_once(dirname(__FILE__)."/../classes/class_syncCkan.php");
 $start = microtime(true);
 
@@ -405,7 +414,8 @@ if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
 function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $license_id, $license_source_note, $format_mapping, $is_hvd) {
     $license_map = array(
         "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
-        "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0"
+        "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
+        "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero"
     );
     $Distribution = $rdfXmlDoc->createElement ( "dcat:Distribution" );
     $Distribution->setAttribute ( "rdf:about", $uri);
@@ -555,7 +565,10 @@ if ($outputFormat == 'rdfxml') {
     $resultsPerPage = 10;
     $mapbenderBaseSearchInterface = $mapbenderWebserviceUrl . "php/mod_callMetadata.php?";
     $orgaId = $id;
-    $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&resolveCoupledResources=true&registratingDepartments=".$orgaId;
+    //without open data filter on datasets
+    //$baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&resolveCoupledResources=true&registratingDepartments=".$orgaId;
+    //with open data filter on datasets
+    $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     $baseUrlCount = $baseUrl. "&maxResults=1";
     $mapbenderMetadataUrl = "";
     //count all resources
@@ -692,8 +705,18 @@ if ($outputFormat == 'rdfxml') {
                 $dctChangeDateText = $rdfXmlDoc->createTextNode( $iso19139Md->changeDate );
                 $dctChangeDate->appendChild($dctChangeDateText);
                 $Dataset->appendChild($dctChangeDate);
-                
-                
+                /*
+                 * License information at dataset level
+                 */
+                if (isset($gpDataset->license_id) && key_exists($gpDataset->license_id, $license_map)) {
+                    $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+                    $dctLicense->setAttribute('rdf:resource', $license_map[$gpDataset->license_id]);
+                    $Dataset->appendChild($dctLicense);
+                    //TODO add source_note to search_views!!!!
+                }
+                /*
+                 * 
+                 */
                 if ($is_hvd == true) {
                     //<dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
                     $dcatapApplicableLegislation = $rdfXmlDoc->createElement ( "dcatap:applicableLegislation" );
@@ -793,7 +816,8 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                     "description" => "Kartenebene: " . $layerTitle . " - Anzeige der originären Metadaten",
                                     "format" => "HTML",
                                     "url" => $mapbenderBaseUrl . "php/mod_showMetadata.php?languageCode=de&resource=layer&layout=tabs&id=" . $value1->id,
-                                    "id" => $gpDataset->uuid . "_layer_metadata_" . $value1->id
+                                    "id" => $gpDataset->uuid . "_layer_metadata_" . $value1->id,
+                                    "license_id" => "cc-zero"
                                 );
                                 $resourceArray[] = $layerMetadataResource;
                                 $layerWMSResource = array("name" => "WMS Schnittstelle",
@@ -912,7 +936,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                 $format = "HTML";
                 $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
                 
-                $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, false, false, $format_mapping, $is_hvd);
+                $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, 'cc-zero', false, $format_mapping, $is_hvd);
                 $distributionArray[] = $Distribution;
                 
                 foreach ($resourceArrayNew as $resource) {
