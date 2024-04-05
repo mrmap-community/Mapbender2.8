@@ -343,9 +343,15 @@ $topicCkanCategoryMap = array(
 );
 
 $license_map = array(
+    "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero",
     "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+    "dl-de-by-nc-1.0" => "http://dcat-ap.de/def/licenses/dl-by-nc-de/1.0",
+    "odc-odbl-1.0" => "http://dcat-ap.de/def/licenses/odbl",
+    "dl-de-zero-2.0" => "http://dcat-ap.de/def/licenses/dl-zero-de/2.0",
+    "cc-by-sa-4.0" => "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
     "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
-    "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero"
+    "dl-de-by-1.0" => "http://dcat-ap.de/def/licenses/dl-by-de/1.0",
+    "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0"
 );
 
 //TODO add crontributor id? - test for ogdp 
@@ -413,9 +419,15 @@ if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
 
 function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $license_id, $license_source_note, $format_mapping, $is_hvd) {
     $license_map = array(
+        "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero",
         "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
+        "dl-de-by-nc-1.0" => "http://dcat-ap.de/def/licenses/dl-by-nc-de/1.0",
+        "odc-odbl-1.0" => "http://dcat-ap.de/def/licenses/odbl",
+        "dl-de-zero-2.0" => "http://dcat-ap.de/def/licenses/dl-zero-de/2.0",
+        "cc-by-sa-4.0" => "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
         "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
-        "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero"
+        "dl-de-by-1.0" => "http://dcat-ap.de/def/licenses/dl-by-de/1.0",
+        "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0"
     );
     $Distribution = $rdfXmlDoc->createElement ( "dcat:Distribution" );
     $Distribution->setAttribute ( "rdf:about", $uri);
@@ -734,7 +746,26 @@ if ($outputFormat == 'rdfxml') {
                 /*
                  * temporal
                  */
+                $dctTemporal = $rdfXmlDoc->createElement ( "dct:temporal" );
                 
+                $dctPeriodOfTime = $rdfXmlDoc->createElement ( "dct:PeriodOfTime" );
+                $dctPeriodOfTime->setAttribute('rdf:nodeID', "N" .md5($iso19139Md->tmpExtentBegin . $iso19139Md->tmpExtentEnd));
+                
+                $dcatStartDate = $rdfXmlDoc->createElement ( "dcat:startDate" );
+                $dcatStartDate->setAttribute('rdf:datatype', 'http://www.w3.org/2001/XMLSchema#date');
+                $dcatStartDateText = $rdfXmlDoc->createTextNode($iso19139Md->tmpExtentBegin);
+                $dcatStartDate->appendChild( $dcatStartDateText );
+                $dctPeriodOfTime->appendChild( $dcatStartDate );
+                
+                $dcatEndDate = $rdfXmlDoc->createElement ( "dcat:endDate" );
+                $dcatEndDate->setAttribute('rdf:datatype', 'http://www.w3.org/2001/XMLSchema#date');
+                $dcatEndDateText = $rdfXmlDoc->createTextNode($iso19139Md->tmpExtentEnd);
+                $dcatEndDate->appendChild( $dcatEndDateText );
+                $dctPeriodOfTime->appendChild( $dcatEndDate );
+                
+                $dctTemporal->appendChild( $dctPeriodOfTime );
+                
+                $Dataset->appendChild( $dctTemporal );
                 /*
                  * <dct:temporal>
 <dct:PeriodOfTime rdf:nodeID="N1596db4a49c342d4a2cd7ec2bdf046f8">
