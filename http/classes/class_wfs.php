@@ -579,7 +579,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 	    if ($version == false) {
 	        $version = $this->getVersion();
 	    } else {
-	        $e = new mb_notice("classes/class_wfs.php: wfs version forced to ".$version."!");
+	        $e = new mb_exception("classes/class_wfs.php: wfs version forced to " . $version . "!");
 	    }
 	    if ($destSrs != false) {
 	        //check crs representation
@@ -627,10 +627,10 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 	            $resultList = $this->get($url); //from class_ows!
 	            break;
 	    }
-	    //$e = new mb_exception($resultList);
 	    //parse resultList and give back array of entries
 	    //path for elements: "/wfs:FeatureCollection/gml:featureMember/{ft_ns}:{ft_name}/{property_ns}:{property_name}"
 	    $e = new mb_notice("classes/class_wfs.php: getFeatureElementList invoked - parse elements");
+	    //$e = new mb_exception("classes/class_wfs.php: getelementlist: gml: " . $resultList);
 	    if ($resultList != False) {
     	    libxml_use_internal_errors(true);
     	    try {
@@ -648,7 +648,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     	    }
     	    if ($featureCollectionXml !== false) {
     	        $featureCollectionXml->registerXPathNamespace("ogc", "http://www.opengis.net/ogc");
-    	        if ($reqParams["version"] == '2.0.0' || $reqParams["version"] == '2.0.2') {
+    	        if ($version == '2.0.0' || $version == '2.0.2') {
     	            $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs/2.0");
     	        } else {
     	            $featureCollectionXml->registerXPathNamespace("wfs", "http://www.opengis.net/wfs");
@@ -662,8 +662,9 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     	        if ($namespaceLocation != false && $namespace != false) {
     	           $featureCollectionXml->registerXPathNamespace($namespace, $namespaceLocation);
     	        }
-    	        preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
-    	        if (!$reqParams['version']) {
+    	        //use version from service !
+    	        //preg_match('@version=(?P<version>\d\.\d\.\d)&@i', strtolower($url), $version);
+    	        if (!$version) {
     	            $e = new mb_notice("classes/class_wfs.php: No version for wfs request given in reqParams!");
     	        }
     	        /*switch ($reqParams['version']) {
@@ -684,18 +685,27 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     	                $numberOfFeatures = $numberOfFeatures[0];
     	                break;
     	        }*/
+    	        //example older wfs versions: /wfs:FeatureCollection/gml:featureMember/vermkv:gemarkungen_rlp/vermkv:gmkgnr
+    	        //$e = new mb_exception("classes/class_wfs.php: version neu: " . json_encode($version));
     	        $result = array();
     	        if (is_array($featureTypeElementName)) {
     	            foreach ($featureTypeElementName as $elementName) {
-    	                $xpathString = '//wfs:FeatureCollection/wfs:member/' . $featureTypeName . '/' . $namespace . ':' . $elementName;
+    	                if ($version == '2.0.0' || $version == '2.0.2') {
+    	                    $xpathString = '//wfs:FeatureCollection/wfs:member/' . $featureTypeName . '/' . $namespace . ':' . $elementName;
+    	                } else {
+    	                    $xpathString = '//wfs:FeatureCollection/gml:featureMember/' . $featureTypeName . '/' . $namespace . ':' . $elementName; 
+    	                }   	                
     	                $values = $featureCollectionXml->xpath($xpathString);
     	                foreach ($values as $value) {
     	                   $result[$elementName][] = (string)$value[0];
     	                }
     	            }   
     	        } else {
-        	        $xpathString = '//wfs:FeatureCollection/wfs:member/' . $featureTypeName . '/' . $namespace . ':' . $featureTypeElementName;
-        	        $e = new mb_notice("classes/class_wfs.php: xpathString: " . $xpathString);
+    	            if ($version == '2.0.0' || $version == '2.0.2') {
+        	           $xpathString = '//wfs:FeatureCollection/wfs:member/' . $featureTypeName . '/' . $namespace . ':' . $featureTypeElementName;
+    	            } else {
+    	                $xpathString = '//wfs:FeatureCollection/gml:featureMember/' . $featureTypeName . '/' . $namespace . ':' . $featureTypeElementName;  
+    	            }
         	        $values = $featureCollectionXml->xpath($xpathString);
         	        foreach ($values as $value) {
         	            $result[$featureTypeElementName][] = (string)$value[0];
@@ -708,7 +718,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 	}
 	
 	public function countFeatures($featureTypeName, $filter=null, $destSrs=false, $version=false, $outputFormat=false, $method="POST") {
-#$e = new mb_exception("testwfs");
+        //$e = new mb_exception("testwfs");
 		if ($version == false) {
 			$version = $this->getVersion();
 		} else {
