@@ -577,7 +577,29 @@ function appendWfsForm() {
 				spanNode.innerHTML = wfsConfElementArray[i].f_label;
 				if (wfsConfElementArray[i].f_form_element_html && wfsConfElementArray[i].f_form_element_html.length > 0) {
 					var inputNode = document.createElement("span");
-					inputNode.innerHTML = wfsConfElementArray[i].f_form_element_html;
+					//test if information is json encoded
+					if (testJSON(wfsConfElementArray[i].f_form_element_html)) {
+						//invoke select html						
+						var req = new parent.Mapbender.Ajax.Request({
+                    		url: 	"../php/mod_wfsElementSelect.php",
+                    		method:	"getSelectField",
+                    		async: false,
+                    		parameters: {
+                    			data: wfsConfElementArray[i].f_form_element_html
+                    		},
+                    		callback: (function(result, success, message){
+                    			if (success) {
+                    				inputNode.innerHTML = result.select;
+                    			} else {
+                        			console.log(message);
+                        			alert("A problem occured while trying to load a remote wfs source!");
+                    			}
+                    		})
+                    	});
+						req.send();
+					} else {
+						inputNode.innerHTML = wfsConfElementArray[i].f_form_element_html;
+					}
 				} else {
 					var inputNode = document.createElement("input");
 					inputNode.type = "text";
