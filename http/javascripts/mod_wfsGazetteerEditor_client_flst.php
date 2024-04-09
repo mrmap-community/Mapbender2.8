@@ -34,6 +34,7 @@ db_select_db($DB,$con);
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset='<?php echo CHARSET;?>'">
 <title>mod_wfsGazetteerEditor</title>
+<link rel="stylesheet" href="../extensions/selectize-dist/css/selectize.default.css" type="text/css">
 <STYLE TYPE="text/css">
 <!--
 div.mainDiv {
@@ -201,7 +202,8 @@ var frameIsReady = function () {
 		appendStyles();
 	
 		setWfsInfo();
-		
+		//add selectize to any select field - maybe altered later on
+	    $("select").selectize();
 		// creates a Highlight object for the request geometry
 		var styleProperties = {"position":"absolute", "top":"0px", "left":"0px", "z-index":100};
 		requestGeometryHighlight = new parent.Highlight(targetArray, "requestGeometryHighlight", styleProperties, 2);
@@ -1449,6 +1451,8 @@ function setResult(event, index){
 	return true;
 } 
 </script>
+<script src="../extensions/jQuery-1.12.4/jquery-1.12.4.min.js" type="text/javascript"></script>
+<script src="../extensions/selectize-dist/js/selectize.js" type="text/javascript"></script>
 </head>
 <body leftmargin='0' topmargin='10' bgcolor='#ffffff' onload='frameIsReady()'> <!-- onload='initModWfsGazetteer();init_wfsSpatialRequest();'  -->
 	<!-- WFS conf info -->
