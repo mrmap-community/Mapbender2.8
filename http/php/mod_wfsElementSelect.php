@@ -4,12 +4,48 @@ require_once(dirname(__FILE__)."/../classes/class_universal_wfs_factory.php");
 require_once(dirname(__FILE__)."/../classes/class_administration.php");
 $admin = new Administration();
 
+/*
+ * https://stackoverflow.com/questions/797251/transposing-multidimensional-arrays-in-php
+ * Apr 28, 2009 at 12:17
+ */
+function transpose($array, &$out, $indices = array())
+{
+    if (is_array($array))
+    {
+        foreach ($array as $key => $val)
+        {
+            //push onto the stack of indices
+            $temp = $indices;
+            $temp[] = $key;
+            transpose($val, $out, $temp);
+        }
+    }
+    else
+    {
+        //go through the stack in reverse - make the new array
+        $ref = &$out;
+        foreach (array_reverse($indices) as $idx)
+            $ref = &$ref[$idx];
+            $ref = $array;
+    }
+}
+
+/*
+ * https://www.php.net/manual/en/function.usort.php - Example #4
+ */
+function build_sorter($key) {
+    return function ($a, $b) use ($key) {
+        return strnatcmp($a[$key], $b[$key]);
+    };
+}
+
 $json_conf = 
 <<<JSON
 {
   "wfs_id": 24,
   "featuretype_id": 64,
   "element_ids": [766, 767],
+  "element_id_order" : 1,
   "select_id": "test123",
   "option_empty": false,
   "option_value_template": "%%element[0]%%",
@@ -30,6 +66,17 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
     if ($is_secured == false) {
         $elementInfo = $wfs->getElementInfoByIds ( $wfs_select_conf->featuretype_id, $wfs_select_conf->element_ids );
         $result = $wfs->getFeatureElementList($elementInfo->featuretype_name, $elementInfo->element_names, $elementInfo->namespace, $elementInfo->namespace_location, $filter=null, $version=false, $method="GET");
+        //order by name if defined
+        if (isset($wfs_select_conf->element_id_order) && is_int($wfs_select_conf->element_id_order)) {
+            //transpose
+            //https://stackoverflow.com/questions/797251/transposing-multidimensional-arrays-in-php
+            $resultT = array();
+            transpose($result, $resultT);
+            //https://www.php.net/manual/en/function.usort.php Example #4
+            usort($resultT, build_sorter($elementInfo->element_names[$wfs_select_conf->element_id_order]));
+            transpose($resultT, $result);
+            unset($resultT);
+        }
         //build select html
         $html_snippet = "<select id='" . $wfs_select_conf->select_id . "'>\n";
         if ($wfs_select_conf->option_empty) {
