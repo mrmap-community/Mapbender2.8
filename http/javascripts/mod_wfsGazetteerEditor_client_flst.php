@@ -545,6 +545,19 @@ function isSearchPreconfigured () {
 	return false;
 }
 
+function testJSON(text){
+    if (typeof text!=="string"){
+        return false;
+    }
+    try{
+        var json = JSON.parse(text);
+        return (typeof json === 'object');
+    }
+    catch (error){
+        return false;
+    }
+}
+
 function appendWfsForm() {
 	var form = document.getElementById("wfsForm");
 	removeChildNodes(form);
