@@ -65,6 +65,8 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
     //only allow unsecured wfs or wfs where user is allowed to use
     if ($is_secured == false) {
         $elementInfo = $wfs->getElementInfoByIds ( $wfs_select_conf->featuretype_id, $wfs_select_conf->element_ids );
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: elementInfo: " . json_encode($elementInfo));
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: elementInfo: " . json_encode($wfs->version));
         $result = $wfs->getFeatureElementList($elementInfo->featuretype_name, $elementInfo->element_names, $elementInfo->namespace, $elementInfo->namespace_location, $filter=null, $version=false, $method="GET");
         //order by name if defined
         if (isset($wfs_select_conf->element_id_order) && is_int($wfs_select_conf->element_id_order)) {
@@ -80,7 +82,9 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
         //build select html
         $html_snippet = "<select id='" . $wfs_select_conf->select_id . "'>\n";
         if ($wfs_select_conf->option_empty) {
-            $html_snippet .= "    <option>" . $wfs_select_conf->option_empty . "</option>";
+            $html_snippet .= "    <option>" . $wfs_select_conf->option_empty . "</option>\n";
+        } else {
+            $html_snippet .= "    <option></option>\n";
         }
         $list_index = 0;
         foreach ($result[$elementInfo->element_names[0]] as $element_0) {
