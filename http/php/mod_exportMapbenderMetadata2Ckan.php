@@ -262,15 +262,17 @@ JSON;
  * http://data.europa.eu/bna/c_ac64a52d ?
  */
 
+$base_path = "http://publications.europa.eu/resource/authority/";
+$base_path = "http://data.europa.eu/";
 
 $hvd_mapping = <<<JSON
 { 
-   "GEOSPATIAL": "http://publications.europa.eu/resource/authority/bna/c_ac64a52d",
-   "EARTH OBSERVATION AND ENVIRONMENT": "http://publications.europa.eu/resource/authority/bna/c_dd313021",
-   "METEOROLOGICAL": "http://publications.europa.eu/resource/authority/bna/c_164e0bf5",
-   "STATISTICS": "http://publications.europa.eu/resource/authority/bna/c_e1da4e07",
-   "COMPANIES AND COMPANY OWNERSHIP": "http://publications.europa.eu/resource/authority/bna/c_a9135398",
-   "MOBILITY": "http://publications.europa.eu/resource/authority/bna/c_b79e35eb"
+   "GEOSPATIAL": "http://data.europa.eu/bna/c_ac64a52d",
+   "EARTH OBSERVATION AND ENVIRONMENT": "http://data.europa.eu/bna/c_dd313021",
+   "METEOROLOGICAL": "http://data.europa.eu/bna/c_164e0bf5",
+   "STATISTICS": "http://data.europa.eu/bna/c_e1da4e07",
+   "COMPANIES AND COMPANY OWNERSHIP": "http://data.europa.eu/bna/c_a9135398",
+   "MOBILITY": "http://data.europa.eu/bna/c_b79e35eb"
 }
 JSON;
 
