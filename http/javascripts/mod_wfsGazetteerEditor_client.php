@@ -199,7 +199,7 @@ var frameIsReady = function () {
 		appendStyles();
 		setWfsInfo();
 		//add selectize to any select field - maybe altered later on
-	    $("select").selectize({placeholder: 'Click here to select ...'});
+	    $("select").selectize({placeholder: 'Suchfilter eingeben oder Selektieren...', maxOptions: 3500});
 		// creates a Highlight object for the request geometry
 		var styleProperties = {"position":"absolute", "top":"0px", "left":"0px", "z-index":100};
 		requestGeometryHighlight = new parent.Highlight(targetArray, "requestGeometryHighlight", styleProperties, 2);
