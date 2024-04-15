@@ -199,7 +199,7 @@ var frameIsReady = function () {
 		global_wfsConfObj = json;
 		init_wfsSpatialRequest();
 		appendWfsForm();
-		$("#FS_GKNR").selectize();
+		$("#FS_GKNR").selectize({placeholder: 'Eingeben oder Selektieren...',maxOptions: 4500});
 		appendStyles();
 	
 		setWfsInfo();
