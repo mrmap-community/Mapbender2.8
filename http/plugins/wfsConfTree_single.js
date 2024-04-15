@@ -50,7 +50,7 @@ var ConfTree = function(o){
 		});
 	}
 	var $wfsConfDialog = $("<div></div>").dialog({
-		title: "Flurstückssuche",
+		title: "WFS-Suchmodul",
 		dialogClass: "dialog_flst",
 		width: 260,
 		height: 390,
