@@ -48,6 +48,8 @@ $json_conf =
   "element_id_order" : 1,
   "select_id": "test123",
   "option_empty": false,
+  "option_value_ltrim": "07",
+  "option_value_cast_type": "int",
   "option_value_template": "%%element[0]%%",
   "option_text_template": "%%element[0]%% (%%element[1]%%)" 
 }
@@ -95,6 +97,13 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
                 $value = str_replace("%%element[" . $element_index . "]%%", $result[$elementInfo->element_names[$element_index]][$list_index], $value);
                 if ($wfs_select_conf->option_value_ltrim) {
                     $value = ltrim($value, $wfs_select_conf->option_value_ltrim);
+                }
+                if ($wfs_select_conf->option_value_cast_type) {
+                    switch($wfs_select_conf->option_value_cast_type) {
+                        case "int":
+                            $value = intval($value);
+                            break;
+                    }
                 }
                 $text = str_replace("%%element[" . $element_index . "]%%", $result[$elementInfo->element_names[$element_index]][$list_index], $text);
                 $element_index++;
