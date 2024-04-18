@@ -1219,3 +1219,9 @@ ALTER TABLE ckan_sync_log
 GRANT ALL ON TABLE ckan_sync_log TO postgres;
 GRANT ALL ON TABLE ckan_sync_log TO mapbenderdbuser;
 
+-- Column: further_links_json
+
+-- ALTER TABLE mb_metadata DROP COLUMN further_links_json;
+
+ALTER TABLE mb_metadata ADD COLUMN further_links_json text;
+
