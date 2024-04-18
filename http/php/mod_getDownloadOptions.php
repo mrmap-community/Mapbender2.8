@@ -148,10 +148,19 @@ SQL;
 	$sqlAtomMetadataLink = <<<SQL
 SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
     SELECT foo.*, md_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
-        SELECT NULL::integer AS service_id, NULL::uuid AS service_uuid, metadata_id AS resource_id, NULL AS resource_name, 'metadata' AS resource_type, md_license_source_note AS license_source_note, NULL AS datalink, datalinks AS datalink_text, title, format FROM mb_metadata 
+        SELECT NULL::integer AS service_id, NULL::uuid AS service_uuid, metadata_id AS resource_id, NULL AS resource_name, 'metadata' AS resource_type, NULL AS datalink, datalinks AS datalink_text, title, format, md_license_source_note AS license_source_note FROM mb_metadata 
             WHERE mb_metadata.uuid = $1 AND inspire_download = 1 ) as foo 
                 LEFT JOIN md_termsofuse ON foo.resource_id = md_termsofuse.fkey_metadata_id) AS foo2 
                     LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id 
+SQL;
+	
+	$sqlAtomFurtherLink = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, md_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+        SELECT NULL::integer AS service_id, NULL::uuid AS service_uuid, metadata_id AS resource_id, NULL AS resource_name, 'metadata_further_links' AS resource_type, '' AS datalink, further_links_json AS "datalink_text" , title, format, md_license_source_note AS license_source_note FROM mb_metadata
+            WHERE mb_metadata.uuid = $1 AND further_links_json IS NOT NULL AND further_links_json != '') as foo
+                LEFT JOIN md_termsofuse ON foo.resource_id = md_termsofuse.fkey_metadata_id) AS foo2
+                    LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id
 SQL;
 		
 	$sqlOAF = <<<SQL
@@ -180,7 +189,7 @@ SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM
                                     LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id::integer 
 SQL;
 	
-    $sql = $sqlAtomWms . " union " . $sqlAtomWfs. " union " . $sqlAtomMetadataLink. " union " .$sqlOAF . " union " . $sqlDirectWfs;
+	$sql = $sqlAtomWms . " union " . $sqlAtomWfs. " union " . $sqlAtomMetadataLink. " union " .$sqlOAF . " union " . $sqlDirectWfs . " union " .  $sqlAtomFurtherLink;
 
 	/*
 	$sql = "select service_id, resource_id, resource_type, fkey_datalink_id as datalink from (select fkey_wms_id as service_id, layer_id as resource_id, 'layer' as resource_type from layer inner join (select metadata_id, uuid, fkey_layer_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) ";
@@ -192,7 +201,7 @@ SQL;
 	$sql .= "ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_inspire.featuretype_id and metadata_relation.uuid = $1;";*/
 
 	//initialize array for result
-	//$e = new mb_exception($idList);
+	
 	//$downloadOptions = new stdClass();
 	for ($i = 0; $i < count($idList); $i++) {
 		$v = array($idList[$i]);
@@ -357,6 +366,92 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 					break;
+				case "metadata_further_links":
+				    /*$e = new mb_exception("check download options further");
+				    $e = new mb_exception("json row: " . json_encode($row));
+				    $e = new mb_exception("further_links_json: " . $row['datalink_text']);
+				    $e = new mb_exception("resource_id: " . $row['resource_id']);*/
+				    if (isset($row['datalink_text'] ) || $row['datalink_text'] != '') {
+				        //parse information from
+				        /* Example
+				         {
+				         "dcat:Distribution": [
+				         {
+				         "dcat:accessUrl": "https://example.com",
+				         "dcterms:title": "Link zum Webshop",
+				         "dcterms:description": "Beschreibung der Distribution",
+				         "dcterms:format": "ZIPFILE",
+				         "dcat:mediaType": "application/zip"
+				         },
+				         {
+				         "dcat:accessService": {
+				         "dct:hasPart": "https://lintopartofatomfeed.html"
+				         },
+				         "dcterms:title": "Link zum Webshop",
+				         "dcterms:description": "Beschreibung der Distribution",
+				         "dcterms:format": "ZIPFILE",
+				         "dcat:mediaType": "application/zip",
+				         "gdirp:epsgCode": "25832"
+				         }
+				         ]
+				         }
+				         */
+				        if (json_decode($row['datalink_text'])) {
+				            $distributions = json_decode($row['datalink_text']);
+				            //$e = new mb_exception("php/mod_getDownloadOptions.php: distributions: " .  json_encode($distributions));
+				            foreach ($distributions->{'dcat:Distribution'} as $dcatDistribution) {
+				                if ($dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'}) {
+				                    //$e = new mb_exception("some remotelist link is available");
+				                    $mandatoryFieldsAvailable = true;
+				                    $mandatoryFields = array('dcterms:format', 'gdirp:epsgCode', 'dcterms:title', 'dcterms:description');
+				                    foreach ($mandatoryFields as $serviceAttribute) {
+				                        //$e = new mb_exception("php/mod_inspireDownloadFeed.php: check: " . $serviceAttribute . " - value found: " . $dcatDistribution->{$serviceAttribute});
+				                        if (!$dcatDistribution->{$serviceAttribute}) {
+				                            $mandatoryFieldsAvailable = false;
+				                            continue;
+				                        }
+				                    }
+				                    if ($mandatoryFieldsAvailable == false) {
+				                        $e = new mb_exception("php/mod_getDownloadOptions.php: some mandatory attribute is not given for distribution in further_links_json");
+				                    }
+				                    $linkListFound = true;
+				                    $atomFeedLinkList = $dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'};
+				                    $atomFeedTitle = $dcatDistribution->{'dcterms:title'};
+				                    $atomFeedDescription = $dcatDistribution->{'dcterms:Description'};
+				                    $atomFeedFormat = $dcatDistribution->{'dcterms:format'};
+				                    $atomFeedCrs = "EPSG:" . $dcatDistribution->{'gdirp:epsgCode'};
+				                    continue;
+				                } 
+				            }
+				        } else {
+				            $e = new mb_exception("php/mod_getDownloadOptions.php: could not parse further_links_json from mb_metadata!");
+				        }
+				        //TODO: check if title should be used from further_links_json object instead!
+				        if ($linkListFound && $mandatoryFieldsAvailable) {
+    				        $downloadOptions->{$idList[$i]}->option[$j]->type = "remotelist";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->link = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=remotelist";;
+    
+    				        $downloadOptions->{$idList[$i]}->option[$j]->format = $atomFeedFormat;
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "ATOM";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('INSPIRE Download Service (predefined ATOM) for dataset').": ".$row['title']." - "._mb("based on remote links");
+    				        $downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_inspireAtomFeedISOMetadata.php?outputFormat=iso19139&generateFrom=remotelist&id=".$idList[$i];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
+    				        $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=remotelist";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."plugins/mb_downloadFeedClient.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->accessUrl);
+    				        //new in 2024
+    				        $downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
+				        }
+				        
+				    }
+				    if ($linkListFound && $mandatoryFieldsAvailable) {
+    				    $downloadOptions->{$idList[$i]}->title = $row['title'];
+    				    $downloadOptions->{$idList[$i]}->uuid = $idList[$i];
+				    }
+				    break;
 				case "directwfs":
 				    $downloadOptions->{$idList[$i]}->option[$j]->type = "directwfs";
 				    
@@ -478,6 +573,9 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 					case "downloadlink":
 						$metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=metadata")."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
 						break;
+					case "remotelist":
+					    $metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=remotelist")."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
+					    break;
 					case "ogcapifeatures":
 						$metadataList .=  $iOptions.". "._mb('OGC API Features')." (".$option->resourceName."):   <a href='".$option->accessClient."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Linked Open Data via OGC REST API')."'/></a>";
 						break;

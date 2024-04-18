@@ -21,7 +21,15 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 //Script to generate a feed for a predefined dataset download as it is demanded in the INSPIRE Download Service guidance 3.0 from 04.05.2012. It will be generated from given wms layers dataurl attributs which are registrated in the mapbender database. The other possibility is, that the wms are used to built the download links. Therefore the wms must support the generation of image/tiff output format with geotiff tags. Many wms do this. These wms must also support a minimum of 1000x1000 pixel for a single getmap request. It works as a webservice. The requested id is the mapbender layers serial id. 
-
+/*
+ * There are 5 options for synthesizing ATOM-Feeds:
+ *  * WMS Layer
+ *  * WFS Featuretype
+ *  * Link in WMS Capabilities (dataURL)
+ *  * Downloadlink in ISO-Metadata
+ *  * DCAT Distribution object in Iso19139->furtherLinksJson with dcat:accessService.dct:hasPart
+ *    attribute to remote html <item> list (since 04/2024)
+ */
 require_once(dirname(__FILE__) . "/../../core/globalSettings.php");
 require_once(dirname(__FILE__) . "/../classes/class_connector.php");
 require_once(dirname(__FILE__) . "/../classes/class_administration.php");
@@ -148,7 +156,7 @@ if (isset($_REQUEST['TYPE']) & $_REQUEST['TYPE'] != "") {
 }
 
 if (!isset($_REQUEST['GENERATEFROM']) || $_REQUEST['GENERATEFROM'] == "") {
-	echo '<b>Mandatory parameter GENERATEFROM is not set!</b><br>Please set GENERATEFROM to <b>wmslayer</b>, <b>dataurl</b>, <b>metadata</b> or <b>wfs</b> '; 
+	echo '<b>Mandatory parameter GENERATEFROM is not set!</b><br>Please set GENERATEFROM to <b>wmslayer</b>, <b>dataurl</b>, <b>metadata</b> or <b>wfs</b> or <b>remotelist</b>'; 
 	die(); 	
 }
 
@@ -156,9 +164,9 @@ if (!isset($_REQUEST['GENERATEFROM']) || $_REQUEST['GENERATEFROM'] == "") {
 if (isset($_REQUEST['GENERATEFROM']) & $_REQUEST['GENERATEFROM'] != "") {
 	//validate type
 	$testMatch = $_REQUEST["GENERATEFROM"];	
- 	if ($testMatch != 'wmslayer' && $testMatch != 'dataurl'  && $testMatch != 'wfs' && $testMatch != 'all' && $testMatch != 'metadata'){ 
+	if ($testMatch != 'wmslayer' && $testMatch != 'dataurl'  && $testMatch != 'wfs' && $testMatch != 'all' && $testMatch != 'metadata'  && $testMatch != 'remotelist'){ 
 		//echo 'GENERATEFROM: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>GENERATEFROM</b> is not valid (wmslayer,dataurl,wfs,metadata,all).<br/>'; 
+		echo 'Parameter <b>GENERATEFROM</b> is not valid (wmslayer,dataurl,wfs,metadata,all,remotelist).<br/>'; 
 		die(); 		
  	}
 	$generateFrom = $testMatch;
@@ -170,11 +178,6 @@ if (isset($_REQUEST['GENERATEFROM']) & $_REQUEST['GENERATEFROM'] != "") {
 if (isset($_REQUEST['q']) & $_REQUEST['q'] != "") {
 	//validate type
 	$testMatch = $_REQUEST["q"];	
- 	/*if ($testMatch != 'wmslayer' && $testMatch != 'dataurl'  && $testMatch != 'wfs' && $testMatch != 'all'){ 
-		//echo 'GENERATEFROM: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>GENERATEFROM</b> is not valid (wmslayer,dataurl,wfs,all).<br/>'; 
-		die(); 		
- 	}*/
 	$osQuery = $testMatch;
 	$testMatch = NULL;
 }
@@ -182,11 +185,6 @@ if (isset($_REQUEST['q']) & $_REQUEST['q'] != "") {
 if (isset($_REQUEST['spatial_dataset_identifier_namespace']) & $_REQUEST['spatial_dataset_identifier_namespace'] != "") {
 	//validate type
 	$testMatch = $_REQUEST["spatial_dataset_identifier_namespace"];	
- 	/*if ($testMatch != 'wmslayer' && $testMatch != 'dataurl'  && $testMatch != 'wfs' && $testMatch != 'all'){ 
-		//echo 'GENERATEFROM: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>GENERATEFROM</b> is not valid (wmslayer,dataurl,wfs,all).<br/>'; 
-		die(); 		
- 	}*/
 	$osDatasetNamespace = $testMatch;
 	$testMatch = NULL;
 }
@@ -194,11 +192,6 @@ if (isset($_REQUEST['spatial_dataset_identifier_namespace']) & $_REQUEST['spatia
 if (isset($_REQUEST['spatial_dataset_identifier_code']) & $_REQUEST['spatial_dataset_identifier_code'] != "") {
 	//validate type
 	$testMatch = $_REQUEST["spatial_dataset_identifier_code"];	
- 	/*if ($testMatch != 'wmslayer' && $testMatch != 'dataurl'  && $testMatch != 'wfs' && $testMatch != 'all'){ 
-		//echo 'GENERATEFROM: <b>'.$testMatch.'</b> is not valid.<br/>'; 
-		echo 'Parameter <b>GENERATEFROM</b> is not valid (wmslayer,dataurl,wfs,all).<br/>'; 
-		die(); 		
- 	}*/
 	$osDatasetIdentifier = $testMatch;
 	$testMatch = NULL;
 }
@@ -321,7 +314,6 @@ function delTotalFromQuery($paramName,$queryString) {
 	$queryStringNew = rtrim($queryStringNew,'&');
 	return $queryStringNew;
 }
-
 
 function answerOpenSearchRequest () {
 	global $admin, $type, $mapbenderMetadata, $indexMapbenderMetadata, $layerId, $wfsId, $mapbenderPath, $mapbenderServerUrl, $epsgId, $alterAxisOrder, $departmentMetadata, $userMetadata, $hasPermission, $m, $crs, $crsUpper, $countRessource, $furtherLink, $osDatasetIdentifier, $osQuery, $osDatasetNamespace, $osCrs, $osLanguage, $osRequest;
@@ -453,7 +445,6 @@ function getDatasetFeedLinks($datasetFeedUrl) {
 	}
 	return $links;
 }
-
 
 function generateOpenSearchDescription($feedDoc, $recordId, $generateFrom) {
 	global $admin, $type, $mapbenderMetadata, $indexMapbenderMetadata, $layerId, $wfsId, $mapbenderPath, $mapbenderServerUrl, $epsgId, $alterAxisOrder, $departmentMetadata, $userMetadata, $hasPermission, $m, $crs, $crsUpper, $countRessource, $numberOfTiles;
@@ -721,7 +712,6 @@ function getBboxFilter($bbox, $crs, $wfs_version, $geometryFieldName, $switchAxi
     return $bboxFilter;
 }
 
-
 function readInfoFromDatabase($recordId, $generateFrom){
 	global $admin, $type, $mapbenderMetadata, $indexMapbenderMetadata, $layerId, $wfsId, $mapbenderPath, $mapbenderServerUrl, $epsgId, $alterAxisOrder, $departmentMetadata, $userMetadata, $hasPermission, $m, $crs, $crsUpper, $countRessource;
 	
@@ -746,9 +736,14 @@ SQL;
 		break;
 		case "metadata":
 			$sql = <<<SQL
-select 'metadata' as origin,mb_metadata.metadata_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon,  mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.fkey_mb_user_id,  mb_metadata.lastchanged as md_timestamp, st_xmin(the_geom) || ',' || st_ymin(the_geom) || ',' || st_xmax(the_geom) || ',' || st_ymax(the_geom)  as bbox2d, datalinks, transfer_size FROM mb_metadata where uuid = $1 and inspire_download = 1;
+select 'metadata' as origin, mb_metadata.metadata_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon,  mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.fkey_mb_user_id,  mb_metadata.lastchanged as md_timestamp, st_xmin(the_geom) || ',' || st_ymin(the_geom) || ',' || st_xmax(the_geom) || ',' || st_ymax(the_geom)  as bbox2d, datalinks, transfer_size FROM mb_metadata where uuid = $1 and inspire_download = 1;
 SQL;
 		break;
+		case "remotelist":
+		    $sql = <<<SQL
+select 'remotelist' as origin, mb_metadata.metadata_id, mb_metadata.uuid as metadata_uuid, mb_metadata.format,mb_metadata.title as metadata_title, mb_metadata.abstract as metadata_abstract, st_xmin(mb_metadata.the_geom) || ',' || st_ymin(mb_metadata.the_geom) || ',' || st_xmax(mb_metadata.the_geom) || ',' || st_ymax(mb_metadata.the_geom)  as metadata_bbox, mb_metadata.bounding_geom as polygon,  mb_metadata.ref_system as metadata_ref_system, mb_metadata.datasetid, mb_metadata.spatial_res_type, mb_metadata.spatial_res_value, mb_metadata.datasetid_codespace, mb_metadata.fkey_mb_user_id,  mb_metadata.lastchanged as md_timestamp, st_xmin(the_geom) || ',' || st_ymin(the_geom) || ',' || st_xmax(the_geom) || ',' || st_ymax(the_geom)  as bbox2d, further_links_json as datalinks, transfer_size FROM mb_metadata where uuid = $1;
+SQL;
+		    break;
 		case "all":
 			$sql = array();
 			$sql[0] = <<<SQL
@@ -801,6 +796,16 @@ SQL;
 			//$e = new mb_exception("num rows: ".db_numrows($res));
 			fillMapbenderMetadata($res, $generateFrom);
 		break;
+		case "remotelist":
+		    //only one sql should be done
+		    //$e = new mb_exception("sql metadata: ".$sql);
+		    //$e = new mb_exception($recordId);
+		    $v = array($recordId);
+		    $t = array('s');
+		    $res = db_prep_query($sql,$v,$t);
+		    //$e = new mb_exception("num rows: ".db_numrows($res));
+		    fillMapbenderMetadata($res, $generateFrom);
+		    break;
 		case "all"://TODO: Maybe a union is a better way, but the sql must be harmonized before
 			for ($i = 0; $i < 3; $i++) {
 				$v = array($recordId);
@@ -812,6 +817,8 @@ SQL;
 		break;
 
 	}
+	$e = new mb_exception("mapbenderMetadata id: " . $mapbenderMetadata[0]->id);
+	
 	$countRessource = count($mapbenderMetadata); //count of coupled featuretypes, layers or dataurls or both!
 	//echo "<error>".count($mapbenderMetadata)."</error>";
 	//die();
@@ -880,6 +887,11 @@ SQL;
 			$serviceId = $mapbenderMetadata[$m]->metadata_id;
 			$ownerId = $mapbenderMetadata[$m]->md_owner;
 			break;
+		case "remotelist":
+		    $serviceType = "metadata";
+		    $serviceId = $mapbenderMetadata[$m]->metadata_id;
+		    $ownerId = $mapbenderMetadata[$m]->md_owner;
+		    break;
 		default:
 			break;
 	}
@@ -905,6 +917,10 @@ SQL;
 			$v = array($mapbenderMetadata[$m]->md_owner);
 			$hasPermission = true;
 		break;
+		case "remotelist":
+		    $v = array($mapbenderMetadata[$m]->md_owner);
+		    $hasPermission = true;
+		    break;
 	}
 	//check if resource is freely available to anonymous user - which are all users who search thru metadata catalogues:
 	/*if ($generateFrom != "wfs") {
@@ -936,6 +952,8 @@ SQL;
 
 function generateFeed($feedDoc, $recordId, $generateFrom) {
 	global $admin, $type, $imageResolution, $maxImageSize, $maxFeatureCount, $mapbenderMetadata, $indexMapbenderMetadata, $layerId, $wfsId, $featuretypeId, $mapbenderPath, $mapbenderServerUrl, $epsgId, $alterAxisOrder, $departmentMetadata, $userMetadata, $hasPermission, $m, $crs, $crsUpper,$countRessource, $numberOfTiles, $furtherLink;
+	$e = new mb_exception("generateFeed: gernerateFrom: " . $generateFrom); 
+	
 	//caching feeds in apc cache
 	//check age of information to allow caching of atom feeds
 	/*$e = new mb_exception("mod_inspireDownloadFeed.php: wms_timestamp: ".date("Y-m-d H:i:s",$mapbenderMetadata[$m]->wms_timestamp));
@@ -960,6 +978,77 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 	$maxDate = max($timestamps);
 	//$e = new mb_exception("mod_inspireDownloadFeed.php: maxDate: ".$maxDate);
 	//instantiate cache if available
+	//extract link, format, ... from further_links_json (loaded as datasetlinks)
+	if ($generateFrom == "remotelist") {
+	    //try to parse all relevant information from json_object
+	    /* Example
+	     {
+	     "dcat:Distribution": [
+	     {
+	     "dcat:accessUrl": "https://example.com",
+	     "dcterms:title": "Link zum Webshop",
+	     "dcterms:description": "Beschreibung der Distribution",
+	     "dcterms:format": "ZIPFILE",
+	     "dcat:mediaType": "application/zip"
+	     },
+	     {
+	     "dcat:accessService": {
+	     "dct:hasPart": "https://lintopartofatomfeed.html"
+	     },
+	     "dcterms:title": "Link zum Webshop",
+	     "dcterms:description": "Beschreibung der Distribution",
+	     "dcterms:format": "ZIPFILE",
+	     "dcat:mediaType": "application/zip",
+	     "gdirp:epsgCode": "25832"
+	     }
+	     ]
+	     }
+	     */
+	    if (json_decode($mapbenderMetadata[$m]->datalinks)) {
+	        $distributions = json_decode($mapbenderMetadata[$m]->datalinks);
+	        $linkListFound = false;
+	        foreach ($distributions->{'dcat:Distribution'} as $dcatDistribution) {
+	            if ($dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'}) {
+	                $mandatoryFieldsAvailable = true;
+	                $mandatoryFields = array('dcterms:format', 'gdirp:epsgCode', 'dcterms:title', 'dcterms:description');
+	                foreach ($mandatoryFields as $serviceAttribute) {
+	                    //$e = new mb_exception("php/mod_inspireDownloadFeed.php: check: " . $serviceAttribute . " - value found: " . $dcatDistribution->{$serviceAttribute});
+	                    if (!$dcatDistribution->{$serviceAttribute}) {
+	                        $mandatoryFieldsAvailable = false;
+	                        header("Content-Type: text/html");
+	                        echo "ATOM-Feed based on remote link list could not be generated, cause mandatory field " . $serviceAttribute . " is missing!";
+	                        die();
+	                        break;
+	                    }
+	                }
+	                if ($mandatoryFieldsAvailable == false) {
+	                    header("Content-Type: text/html");
+	                    echo "ATOM-Feed based on remote link list could not be generated, cause some mandatory field (" . implode(",", $mandatoryFields) . ") are missing!";
+	                    die();
+	                }
+	                $linkListFound = true;
+	                $atomFeedLinkList = $dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'};
+	                $atomFeedTitle = $dcatDistribution->{'dcterms:title'};
+	                $atomFeedDescription = $dcatDistribution->{'dcterms:Description'};
+	                $atomFeedFormat = $dcatDistribution->{'dcterms:format'};
+	                $atomFeedCrs = "EPSG:" . $dcatDistribution->{'gdirp:epsgCode'};
+	                break;
+	            }
+	        }
+	        if ($linkListFound) {
+	            $furtherLink = urldecode($linkList);
+	            
+	        } else {
+	            header("Content-Type: text/html");
+	            echo "ATOM-Feed based on remote link list could not be generated, cause there is no available information about the remote list!";
+	            die();
+	        }
+	    } else {
+	        echo "ATOM-Feed based on remote link list could not be generated, cause there is no available information about the remote list!";
+	        header("Content-Type: text/html");
+	        die();
+	    }
+	}
 	$cache = new Cache();
 	//define key name cache
 	$atomFeedKey = 'mapbender:atomFeed_'.$type."_".$recordId."_".$generateFrom.'_';
@@ -985,12 +1074,13 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 			}
 		break;
 	}
+	$cache->isActive = false; //TODO delete productive
 	//$e = new mb_exception("mod_inspireDownloadFeed.php: cachedVariableTimestamp: ".date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)));
 	if ($cache->isActive && $cache->cachedVariableExists($atomFeedKey) && (date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)) > $maxDate)) {
 		#$e = new mb_exception("class_map.php: read ".$atomFeedKey." from ".$cache->cacheType." cache!");
 		return $cache->cachedVariableFetch($atomFeedKey);
 	} else {
-//*****************************************************************
+    //*****************************************************************
 	//compare highestDate with timestamp of cache
 
 	//part which generates the feed 
@@ -1024,7 +1114,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 		//TODO check wfs title....
 		
 		if (isset($mapbenderMetadata[$m]->layer_title) && $mapbenderMetadata[$m]->layer_title != '' ) {
-		$ressourceTitle = $mapbenderMetadata[$m]->layer_title;
+		    $ressourceTitle = $mapbenderMetadata[$m]->layer_title;
 		} else {
 			$ressourceTitle = "Title of dataset cannot be found!";
 		}
@@ -1059,10 +1149,16 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 	//<subtitle>INSPIRE Download Service, of organisation XYZ providing dataset ABC for the Hydrography theme</subtitle>
 	$feedSubTitle = $feedDoc->createElement("subtitle");
 	//$feedSubTitle->setAttribute("xml:lang", "de");
+	$e = new mb_exception("feed: orga: " . $departmentMetadata['mb_group_title']);
+	if (isset($departmentMetadata['mb_group_title']) && $departmentMetadata['mb_group_title'] != "") {
+	    $organizationTitle = $departmentMetadata['mb_group_title'];
+	} else {
+	    $organizationTitle = "UNKNOWN ORGANIZATION";
+	}
 	if ($type == 'SERVICE') {
-		$feedSubTitleText = $feedDoc->createTextNode("INSPIRE Download Service von ".$departmentMetadata['mb_group_title']."");
+	    $feedSubTitleText = $feedDoc->createTextNode("INSPIRE Download Service von ".$organizationTitle."");
 	} else { //DATASET
-		$feedSubTitleText = $feedDoc->createTextNode("INSPIRE Download Service von: ".$departmentMetadata['mb_group_title']." zur Bereitstellung des Datensatzes: ".$ressourceTitle);
+	    $feedSubTitleText = $feedDoc->createTextNode("INSPIRE Download Service von: ".$organizationTitle." zur Bereitstellung des Datensatzes: ".$ressourceTitle);
 	}
 	//TODO maybe add topic
 	$feedSubTitle->appendChild($feedSubTitleText);
@@ -1114,6 +1210,12 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				$feedLink->setAttribute("type", "text/html");
 				$feed->appendChild($feedLink);
 				break;
+			case "remotelist":
+			    $feedLink->setAttribute("href", "https://www.google.com/search?q=".$mapbenderMetadata[$m]->format."+spatial");
+			    $feedLink->setAttribute("rel", "describedby");
+			    $feedLink->setAttribute("type", "text/html");
+			    $feed->appendChild($feedLink);
+			    break;
 		}
 	}
 	//self reference - 5.1.4 / 5.2
@@ -1270,7 +1372,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 		$e = new mb_notice("php/mod_inspireDownloadFeed.php polygonalFilter was found and will be applied!");
 		$polygonalFilter = true;
 	}
-	$e = new mb_notice("php/mod_inspireDownloadFeed.php metadata_uuid: ".$mapbenderMetadata[$m]->metadata_uuid);
+	$e = new mb_exception("php/mod_inspireDownloadFeed.php metadata_uuid: ".$mapbenderMetadata[$m]->metadata_uuid);
 	//<!-- pre-defined dataset - a entry for each pre-defined dataset - in the case of dataURL only one entry is used! -->
 	//if dataurl not given and a raster wms is defined - calculate the number of entries
 	if ($type == 'DATASET' && $generateFrom == "wmslayer") {
@@ -1617,7 +1719,12 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 				case "metadata":
 					$ressourceServiceFeedEntryTitle = $ressourceTitle." - generiert über Downloadlinks aus Metadatensatz";
 				break;
-				
+				case "metadata":
+				    $ressourceServiceFeedEntryTitle = $ressourceTitle." - generiert über externe Datenlinks";
+				break;
+				case "remotelist":
+				    $ressourceServiceFeedEntryTitle = $ressourceTitle." - generiert über remote Dateiliste";
+				    break;
 			}
 			$feedEntryTitle->appendChild($feedDoc->createTextNode("Feed Entry fuer: ".$ressourceServiceFeedEntryTitle)); //TODO: maybe add some category?
 		} else {
@@ -1644,9 +1751,19 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					$ressourceDataFeedEntryTitle = $ressourceTitle." - generiert über Downloadlinks aus Metadatensatz";
 					$resourceFormat = $mapbenderMetadata[$i]->format;
 				break;
+				case "remotelist":
+				    $ressourceDataFeedEntryTitle = $ressourceTitle." - generiert über über externe Datenlinks";
+				    //TODO extract format mimetype from json 
+				    
+				    $resourceFormat = $mapbenderMetadata[$i]->format;
+				break;
 			}
-			
-			$feedEntryTitle->appendChild($feedDoc->createTextNode($ressourceDataFeedEntryTitle. " im CRS ".$mapbenderMetadata[$i]->metadata_ref_system." und Format ".$resourceFormat)); //TODO: maybe add some category?	
+			if ($mapbenderMetadata[$i]->origin == "remotelist") {
+			    $feedEntryTitle->appendChild($feedDoc->createTextNode($ressourceDataFeedEntryTitle . " im CRS " . $atomFeedCrs . " und Format " . $atomFeedFormat)); //TODO: maybe add some category?
+			    
+			} else {
+			    $feedEntryTitle->appendChild($feedDoc->createTextNode($ressourceDataFeedEntryTitle. " im CRS " . $mapbenderMetadata[$i]->metadata_ref_system . " und Format " . $resourceFormat)); //TODO: maybe add some category?	
+			}
 		}
 		$feedEntry->appendChild($feedEntryTitle);
 
@@ -1741,6 +1858,44 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 					//$feedEntryLink->setAttribute("bbox", $newBox);
 					$feedEntry->appendChild($feedEntryLink);	
 				break;
+				case "remotelist":				    
+				    $atomFeedLinkList = $dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'};
+				    $atomFeedTitle = $dcatDistribution->{'dcterms:title'};
+				    $atomFeedDescription = $dcatDistribution->{'dcterms:Description'};
+				    $atomFeedFormat = $dcatDistribution->{'dcterms:format'};
+				    $atomFeedCrs = "EPSG:" . $dcatDistribution->{'gdirp:epsgCode'};
+				    
+				    $furtherLink = urldecode($atomFeedLinkList);
+				    /*$furtherLinkType = $atomFeedFormat;
+				    $furtherLinkTitle = $atomFeedTitle." im CRS " . $atomFeedCrs . " (" . $atomFeedFormat . ")";
+
+				    //generate content link
+                    $feedEntryLink = $feedDoc->createElement("link");
+				    $feedEntryLink->setAttribute("rel", "alternate");
+				    $feedEntryLink->setAttribute("href", $furtherLink);
+				    $feedEntryLink->setAttribute("type", $furtherLinkType);
+				    $feedEntryLink->setAttribute("hreflang", "de");
+				    $feedEntryLink->setAttribute("title", $furtherLinkTitle);*/
+				    //resolve remote link list
+				    $listConnector = new Connector();
+				    //check if further list came from allowed server
+				    $e = new mb_exception("further link: " . $furtherLink);
+				    if (strpos($furtherLink, "https://geobasis-rlp.de") !== 0) {
+				        header("Content-type: text/html");
+				        echo "The url for the link list is not allowed!";
+				        die();
+				    } 
+				    $listConnector->set('timeout', 5);
+				    $result = $listConnector->load($furtherLink);
+				    $insertXml = "<?xml version='1.0'?><list>" . $result . "</list>";
+				    $xmlNodes = simplexml_load_string($insertXml);
+				    //insert single nodes as new childs
+				    foreach ($xmlNodes as $node) {
+				        $dom_sxe = dom_import_simplexml($node);
+				        $dom_sxe = $feedDoc->importNode($dom_sxe, true);
+				        $feedEntry->appendChild($dom_sxe);
+				    }
+				    break;
 				case "wmslayer":
 					//example:
 					//http://localhost/cgi-bin/mapserv?map=/data/umn/geoportal/karte_rp/testinspiredownload.map&VERSION=1.1.1&REQUEST=GetMap&SERVICE=WMS&LAYERS=inspirewms&STYLES=&SRS=EPSG:4326&BBOX=6.92134,50.130465,6.93241,50.141535000000005&WIDTH=200&HEIGHT=200&FORMAT=image/png&BGCOLOR=0xffffff&TRANSPARENT=TRUE&EXCEPTIONS=application/vnd.ogc.se_inimage
@@ -2079,7 +2234,7 @@ function fillMapbenderMetadata($dbResult, $generateFrom) {
 	//function increments $indexMapbenderMetadata !!!
 	global $mapbenderMetadata, $indexMapbenderMetadata, $admin, $mapbenderPath;
 	//echo "<error>fill begins</error>";
-	if ($generateFrom == 'metadata') {
+	if ($generateFrom == 'metadata' || $generateFrom == 'remotelist') {
 		$row = db_fetch_assoc($dbResult);
 		//to generate an atom feed from mb_metadata there must be some information avaiable, that is normally used from service metadata
 		//owner, group, bbox, ... - the mb_metadata table have to be filled with the geometry from the layer/featuretype - of which it has been coupled with
@@ -2124,7 +2279,7 @@ function fillMapbenderMetadata($dbResult, $generateFrom) {
 		}
 		//$e = new mb_exception("test");
 		//overwrite some elements if the feed should be generated from metadata itself: access constraints, use limitations, ...
-		if ($generateFrom == "metadata") {
+		if ($generateFrom == "metadata" || $generateFrom == "remotelist") {
 			//get metadata from metadata proxy by uuid
 			//http://www.geoportal.rlp.de/mapbender/php/mod_iso19139ToHtml.php?url=http%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D2b009ae4-aa3e-ff21-870b-49846d9561b2
 			$iso19139 = new iso19139();
