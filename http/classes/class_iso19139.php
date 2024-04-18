@@ -43,6 +43,12 @@ class Iso19139 {
 	var $inspireCategories = array();
 	var $customCategories = array();
 	var $downloadLinks = array();  //store in db as json object!!!!
+	//new 2024 - json object for storing further links 
+	var $furtherLinksJson;
+	//https://icsm-au.github.io/metadata-working-group/defs/class-CI_OnlineResource.html
+	/*
+	 * [{"linkage": "http://...", "function":"", "name":"", "description": "", "protocolRequest" : "", "applicationProfile": "GDI-RP"}]
+	 */
 	var $transferSize;
 	var $hierarchyLevel;
 	var $tmpExtentBegin;
@@ -164,6 +170,7 @@ class Iso19139 {
 		$this->fkeyWmcSerialId = null;
 		$this->fkeyMapviewerId = null;
 		$this->xmlHasMinimalAttributes = false;
+		$this->furtherLinksJson = "";
 	}
 	
    //TODO: Following function is only needed til php 5.5 - after upgrade to debian 8 it is obsolet - see also class_syncCkan.php!
@@ -469,6 +476,9 @@ XML;
 				$e = new mb_exception("class_iso19139.php: customcat: ".$category);
 			}*/
 			$this->downloadLinks = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[gmd:function/gmd:CI_OnLineFunctionCode/@codeListValue="download"]/gmd:linkage/gmd:URL');
+			
+			//$this->furtherDownloadLinksJson = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource[gmd:applicationProfile="gdi-rp"]/gmd:linkage/gmd:URL');
+			$this->furtherDownloadLinksJson = "";
 			//volume of dataset when transfered via online access - in megabyte (real) - see iso19139
 			/*
 			<gmd:transferSize>
@@ -1545,7 +1555,7 @@ XML;
 			$this->alternate_title = $row['alternate_title'];
 			$this->abstract = $row['abstract'];
 			$this->createDate =  $row['createdate'];//"1900-01-01";
-			$this->changeDate = $row['changedate'];//"1900-01-01";
+			$this->changeDate = $row['lastchanged'];//"1900-01-01";
 			$this->metadata = $row['data'];
 			//some possibilities:
 			$this->datasetId = $row['datasetid'];
@@ -1654,6 +1664,7 @@ XML;
 			$this->fkeyGuiId = $row['fkey_gui_id'];
 			$this->fkeyWmcSerialId = $row['fkey_wmc_serial_id'];
 			$this->fkeyMapviewerId = $row['fkey_mapviewer_id'];
+			$this->furtherLinksJson = $row['further_links_json'];
 			//get relations from other tables:
 			//get categories and keywords
 			//get isoCategories
@@ -2443,7 +2454,7 @@ SQL;
 		//insert an instance for iso19139 into mapbenders database
 		$e = new mb_notice("class_iso19139.php: insert metadata with title: ".$this->title);
 		$sql = <<<SQL
-INSERT INTO mb_metadata (lastchanged, link, origin, md_format, data, linktype, uuid, title, createdate, changedate, abstract, searchtext, type, tmp_reference_1, tmp_reference_2, export2csw, datasetid, datasetid_codespace, randomid, fkey_mb_user_id, harvestresult, harvestexception, lineage, inspire_top_consistence, spatial_res_type, spatial_res_value, update_frequency, format, inspire_charset, ref_system, the_geom, datalinks, inspire_whole_area, inspire_actual_coverage, inspire_download, bounding_geom, transfer_size, fees, md_license_source_note, constraints, responsible_party_name, responsible_party_email, preview_image, fkey_mb_group_id, md_proxy, inspire_interoperability, searchable, fkey_gui_id, fkey_wmc_serial_id, fkey_mapviewer_id, alternate_title)  VALUES(now(), $1, $18, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50)
+INSERT INTO mb_metadata (lastchanged, link, origin, md_format, data, linktype, uuid, title, createdate, changedate, abstract, searchtext, type, tmp_reference_1, tmp_reference_2, export2csw, datasetid, datasetid_codespace, randomid, fkey_mb_user_id, harvestresult, harvestexception, lineage, inspire_top_consistence, spatial_res_type, spatial_res_value, update_frequency, format, inspire_charset, ref_system, the_geom, datalinks, inspire_whole_area, inspire_actual_coverage, inspire_download, bounding_geom, transfer_size, fees, md_license_source_note, constraints, responsible_party_name, responsible_party_email, preview_image, fkey_mb_group_id, md_proxy, inspire_interoperability, searchable, fkey_gui_id, fkey_wmc_serial_id, fkey_mapviewer_id, alternate_title, further_links_json)  VALUES(now(), $1, $18, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51)
 SQL;
 		$v = array(
 			$this->href,
@@ -2495,13 +2506,14 @@ SQL;
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId,
-		    $this->alternate_title
+		    $this->alternate_title,
+		    $this->furtherLinksJson
 		);
 			//$e = new mb_exception($this->tmpExtentBegin);
 			//$e = new mb_exception($this->tmpExtentEnd);
 			//$e = new mb_exception($this->createDate);
 			//$e = new mb_exception($this->changeDate);
-			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i','s');
+			$t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i','s','s');
 			$res = db_prep_query($sql,$v,$t);
 			return $res;
 	}
@@ -2562,7 +2574,7 @@ SQL;
 		    $sql .= "linktype = $4, uuid = $5, title = $6, createdate = $7, changedate = $8, lastchanged = now(), ";
 		    $sql .= "abstract = $9, searchtext = $10, type = $11, tmp_reference_1 = $12, tmp_reference_2 = $13, export2csw = $14, datasetid = $15, ";
 		    $sql .= "datasetid_codespace = $16, randomid = $17, harvestresult = $20, harvestexception = $21, lineage = $22, inspire_top_consistence = $23, ";
-		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, fkey_mb_group_id = $43, md_proxy = $44, inspire_interoperability = $45, searchable = $46, fkey_gui_id = $47, fkey_wmc_serial_id = $48, fkey_mapviewer_id = $49, alternate_title = $50 WHERE metadata_id = $19";
+		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, fkey_mb_group_id = $43, md_proxy = $44, inspire_interoperability = $45, searchable = $46, fkey_gui_id = $47, fkey_wmc_serial_id = $48, fkey_mapviewer_id = $49, alternate_title = $50, further_links_json = $51 WHERE metadata_id = $19";
 		    //$e= new mb_exception("class_iso19139.php: downloadLinks json".$this->jsonEncodeDownloadLinks($this->downloadLinks));
 		    //$e= new mb_exception("class_iso19139.php: downloadLinks[0]".$this->downloadLinks[0]);
 		    $v = array(
@@ -2616,17 +2628,18 @@ SQL;
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId,
-		    $this->alternate_title
+		    $this->alternate_title,
+		    $this->furtherLinksJson
 		    );
 		    //$e = new mb_exception("class_iso19139: ".$this->createWktBboxFromArray($this->wgs84Bbox));
-		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i','s');
+		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','i','b','b','b','i','i','i','s','s');
 		    $res = db_prep_query($sql,$v,$t);
 		} else { //do the update without changing owner and fkey_mb_group_id!
 		    $sql = "UPDATE mb_metadata SET link = $1, origin = $18, md_format = $2, data = $3, ";
 		    $sql .= "linktype = $4, uuid = $5, title = $6, createdate = $7, changedate = $8, lastchanged = now(), ";
 		    $sql .= "abstract = $9, searchtext = $10, type = $11, tmp_reference_1 = $12, tmp_reference_2 = $13, export2csw = $14, datasetid = $15, ";
 		    $sql .= "datasetid_codespace = $16, randomid = $17, harvestresult = $20, harvestexception = $21, lineage = $22, inspire_top_consistence = $23, ";
-		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, md_proxy = $43, inspire_interoperability = $44, searchable = $45, fkey_gui_id = $46, fkey_wmc_serial_id = $47, fkey_mapviewer_id = $48, alternate_title = $49 WHERE metadata_id = $19";
+		    $sql .= "spatial_res_type = $24, spatial_res_value = $25, update_frequency = $26, format = $27, inspire_charset = $28, ref_system = $29, the_geom = $30, datalinks = $31, inspire_whole_area = $32, inspire_actual_coverage = $33, inspire_download = $34, bounding_geom = $35, transfer_size = $36, fees = $37, md_license_source_note = $38, constraints = $39, responsible_party_name = $40, responsible_party_email = $41, preview_image = $42, md_proxy = $43, inspire_interoperability = $44, searchable = $45, fkey_gui_id = $46, fkey_wmc_serial_id = $47, fkey_mapviewer_id = $48, alternate_title = $49, further_links_json = $50 WHERE metadata_id = $19";
 		    //$e= new mb_exception("class_iso19139.php: downloadLinks json".$this->jsonEncodeDownloadLinks($this->downloadLinks));
 		    //$e= new mb_exception("class_iso19139.php: downloadLinks[0]".$this->downloadLinks[0]);
 		    $v = array(
@@ -2679,10 +2692,11 @@ SQL;
 			$this->fkeyGuiId,
 			$this->fkeyWmcSerialId,
 			$this->fkeyMapviewerId,
-		    $this->alternate_title
+		    $this->alternate_title,
+		    $this->furtherLinksJson
 		    );
 		    //$e = new mb_exception("class_iso19139: ".$this->createWktBboxFromArray($this->wgs84Bbox));
-		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','b','b','b','i','i','i','s');
+		    $t = array('s','s','s','s','s','s','s','s','s','s','s','s','s','b','s','s','s','s','i','i','s','s','b','s','s','s','s','s','s','POLYGON','s','s','s','i','POLYGON','d','s','s','s','s','s','s','b','b','b','i','i','i','s','s');
 		    $res = db_prep_query($sql,$v,$t);
 		}
 		return $res;
@@ -2837,6 +2851,7 @@ SQL;
 					$e = new mb_notice("class_Iso19139:"."try to parse: ".$this->href);
 					if ($resolveRemote == true) {
 						$metadata = $this->createFromUrl($this->href); //will alter object itself
+						$e = new mb_exception("classes/class_Iso19139.php: store owner: ".$metadata->owner);
 					} else {
 						$metadata == false;
 						$e = new mb_exception("MetadataURL harvesting is excluded by conf!");
