@@ -409,7 +409,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				                        //$e = new mb_exception("php/mod_inspireDownloadFeed.php: check: " . $serviceAttribute . " - value found: " . $dcatDistribution->{$serviceAttribute});
 				                        if (!$dcatDistribution->{$serviceAttribute}) {
 				                            $mandatoryFieldsAvailable = false;
-				                            continue;
+				                            break;
 				                        }
 				                    }
 				                    if ($mandatoryFieldsAvailable == false) {
@@ -421,7 +421,6 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				                    $atomFeedDescription = $dcatDistribution->{'dcterms:Description'};
 				                    $atomFeedFormat = $dcatDistribution->{'dcterms:format'};
 				                    $atomFeedCrs = "EPSG:" . $dcatDistribution->{'gdirp:epsgCode'};
-				                    continue;
 				                // generate an array of simple other distributions 
 				                } else {
 				                    $mandatoryFieldsAvailable = true;
