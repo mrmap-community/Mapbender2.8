@@ -465,6 +465,17 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
     				        $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
     				        $downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 				        }
+				        //append distributions
+				        foreach ($simpleDistributions as $distribution) {
+				            $j++;
+				            $downloadOptions->{$idList[$i]}->option[$j]->type = "distribution";
+				            $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
+				            $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $distribution['dcat:accessUrl'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($webPath."php/mod_dataISOMetadata.php?id=".$idList[$i]."&outputFormat=iso19139");
+				            $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $distribution['dcat:accessUrl'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($distribution['dcat:accessUrl']);
+				            $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = $distribution['dcterms:title'];
+				        }
 				        
 				    }
 				    if ($linkListFound && $mandatoryFieldsAvailable) {
@@ -503,16 +514,6 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    break;	
 			}
 			$j++;
-			foreach ($simpleDistributions as $distribution) {
-			    $downloadOptions->{$idList[$i]}->option[$j]->type = "distribution";
-			    $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
-			    $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $distribution['dcat:accessUrl'];
-			    $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($webPath."php/mod_dataISOMetadata.php?id=".$idList[$i]."&outputFormat=iso19139");
-			    $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $distribution['dcat:accessUrl'];
-			    $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($distribution['dcat:accessUrl']);
-			    $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = $distribution['dcterms:title'];
-			    $j++;
-			}
 			array_splice($downloadOptions->{$idList[$i]}->option, 0, 0);
 		}
 		//delete double entries - maybe url is given from dataurl - use this 
