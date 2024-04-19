@@ -247,7 +247,7 @@ $downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name 
 					}
 					if (!$wfsRequestObjectExists){
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
-						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
+						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id']; //wfs_id
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
 						$downloadOptions->{$idList[$i]}->option[$j]->featureType[0] = $row['resource_id'];
                         $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
@@ -279,7 +279,7 @@ $downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name 
 						//add to array with datalink (ids)
 						//$arrayDataLinks[] = $row['datalink'];
 					}
-					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id']; //wms_id
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];//This is a layer uuid - not a service uuid!!!!
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
 $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
@@ -305,9 +305,9 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->option[$j]->type = "ogcapifeatures";
 				
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
-					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
+					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid']; //wfs_uuid
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
+                    $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 					//$downloadOptions->{$idList[$i]}->option[$j]->dataLink = $row['datalink'];
 					//new 2019/07
@@ -398,6 +398,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				         */
 				        if (json_decode($row['datalink_text'])) {
 				            $distributions = json_decode($row['datalink_text']);
+				            $simpleDistributions = array();
 				            //$e = new mb_exception("php/mod_getDownloadOptions.php: distributions: " .  json_encode($distributions));
 				            foreach ($distributions->{'dcat:Distribution'} as $dcatDistribution) {
 				                if ($dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'}) {
@@ -421,7 +422,25 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				                    $atomFeedFormat = $dcatDistribution->{'dcterms:format'};
 				                    $atomFeedCrs = "EPSG:" . $dcatDistribution->{'gdirp:epsgCode'};
 				                    continue;
-				                } 
+				                // generate an array of simple other distributions 
+				                } else {
+				                    $mandatoryFieldsAvailable = true;
+				                    $mandatoryFields = array('dcat:accessUrl', 'dcterms:title');
+				                    foreach ($mandatoryFields as $serviceAttribute) {
+				                        //$e = new mb_exception("php/mod_inspireDownloadFeed.php: check: " . $serviceAttribute . " - value found: " . $dcatDistribution->{$serviceAttribute});
+				                        if (!$dcatDistribution->{$serviceAttribute}) {
+				                            $mandatoryFieldsAvailable = false;
+				                            continue;
+				                        }
+				                    }
+				                    if ($mandatoryFieldsAvailable == false) {
+				                        $e = new mb_exception("php/mod_getDownloadOptions.php: some mandatory attribute is not given for distribution in further_links_json");
+				                    }
+				                    $distribution = array();
+				                    $distribution['dcterms:title'] = $dcatDistribution->{'dcterms:title'};
+				                    $distribution['dcat:accessUrl'] = $dcatDistribution->{'dcat:accessUrl'};
+				                    $simpleDistributions[] = $distribution;
+				                }
 				            }
 				        } else {
 				            $e = new mb_exception("php/mod_getDownloadOptions.php: could not parse further_links_json from mb_metadata!");
@@ -430,7 +449,9 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				        if ($linkListFound && $mandatoryFieldsAvailable) {
     				        $downloadOptions->{$idList[$i]}->option[$j]->type = "remotelist";
     				        $downloadOptions->{$idList[$i]}->option[$j]->link = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=remotelist";;
-    
+    				        
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($downloadOptions->{$idList[$i]}->option[$j]->link);
+    				        
     				        $downloadOptions->{$idList[$i]}->option[$j]->format = $atomFeedFormat;
     				        $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
     				        $downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "ATOM";
@@ -483,6 +504,16 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    break;	
 			}
 			$j++;
+			foreach ($simpleDistributions as $distribution) {
+			    $downloadOptions->{$idList[$i]}->option[$j]->type = "distribution";
+			    $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
+			    $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $distribution['dcat:accessUrl'];
+			    $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($webPath."php/mod_dataISOMetadata.php?id=".$idList[$i]."&outputFormat=iso19139");
+			    $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $distribution['dcat:accessUrl'];
+			    $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($distribution['dcat:accessUrl']);
+			    $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = $distribution['dcterms:title'];
+			    $j++;
+			}
 			array_splice($downloadOptions->{$idList[$i]}->option, 0, 0);
 		}
 		//delete double entries - maybe url is given from dataurl - use this 
@@ -490,9 +521,10 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 		//foreach($downloadOptions->{$idList[$i]}->option as $option) {
 			//$option->dataLink;
 		//}
+		//$e = new mb_exception(json_encode($downloadOptions));
+		//add further option from metadata itself
+		
 	}
-	//$e = new mb_exception(json_encode($downloadOptions));
-	//add further option from metadata itself - if 
 	$result = json_encode($downloadOptions);
 	return $result;
 }
@@ -575,6 +607,9 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 						break;
 					case "remotelist":
 					    $metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=remotelist")."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
+					    break;
+					case "distribution":
+					    $metadataList .=  $iOptions.". ". $option->serviceTitle .":   <a href='" .  $option->accessUrl . "' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='".$option->serviceTitle."'/></a>";
 					    break;
 					case "ogcapifeatures":
 						$metadataList .=  $iOptions.". "._mb('OGC API Features')." (".$option->resourceName."):   <a href='".$option->accessClient."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Linked Open Data via OGC REST API')."'/></a>";
