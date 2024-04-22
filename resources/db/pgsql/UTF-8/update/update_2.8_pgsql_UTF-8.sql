@@ -948,7 +948,7 @@ CREATE OR REPLACE VIEW search_dataset_view AS
                                     groups_for_publishing.mb_group_logo_path,
                                     0 AS fkey_mb_user_id_from_users
                                    FROM groups_for_publishing) user_dep
-                          WHERE mb_metadata_1.fkey_mb_group_id = user_dep.mb_group_id AND mb_metadata_1.the_geom IS NOT NULL AND mb_metadata_1.searchable IS TRUE
+                          WHERE mb_metadata_1.fkey_mb_group_id = user_dep.mb_group_id AND mb_metadata_1.the_geom IS NOT NULL AND mb_metadata_1.searchable IS TRUE AND mb_metadata_1.type!='application'
                         UNION ALL
                          SELECT mb_metadata_1.metadata_id,
                             mb_metadata_1.uuid,
@@ -1085,7 +1085,7 @@ CREATE OR REPLACE VIEW search_dataset_view AS
                                    FROM groups_for_publishing publishing_registrating_authorities,
                                     users_for_publishing
                                   WHERE users_for_publishing.primary_group_id = publishing_registrating_authorities.fkey_mb_group_id) user_dep
-                          WHERE (mb_metadata_1.fkey_mb_group_id IS NULL OR mb_metadata_1.fkey_mb_group_id = 0) AND mb_metadata_1.fkey_mb_user_id = user_dep.fkey_mb_user_id_from_users AND mb_metadata_1.the_geom IS NOT NULL AND mb_metadata_1.searchable IS TRUE AND mb_metadata_1.type='dataset') mb_metadata (metadata_id, uuid, origin, includeincaps, fkey_mb_group_id, schema, createdate, changedate, lastchanged, link, linktype, md_format, title, abstract, searchtext, status, type, harvestresult, harvestexception, export2csw, tmp_reference_1, tmp_reference_2, spatial_res_type, spatial_res_value, ref_system, format, inspire_charset, inspire_top_consistence, fkey_mb_user_id, responsible_party, individual_name, visibility, locked, copyof, constraints, fees, classification, browse_graphic, inspire_conformance, preview_image, the_geom, lineage, datasetid, randomid, update_frequency, datasetid_codespace, bounding_geom, inspire_whole_area, inspire_actual_coverage, datalinks, inspire_download, transfer_size, md_license_source_note, responsible_party_name, responsible_party_email, searchable, load_count, fkey_mb_group_id_1, mb_group_id, mb_group_name, mb_group_title, mb_group_country, mb_group_stateorprovince, mb_group_logo_path, fkey_mb_user_id_from_users)) dataset_dep
+                          WHERE (mb_metadata_1.fkey_mb_group_id IS NULL OR mb_metadata_1.fkey_mb_group_id = 0) AND mb_metadata_1.fkey_mb_user_id = user_dep.fkey_mb_user_id_from_users AND mb_metadata_1.the_geom IS NOT NULL AND mb_metadata_1.searchable IS TRUE AND mb_metadata_1.type!='application') mb_metadata (metadata_id, uuid, origin, includeincaps, fkey_mb_group_id, schema, createdate, changedate, lastchanged, link, linktype, md_format, title, abstract, searchtext, status, type, harvestresult, harvestexception, export2csw, tmp_reference_1, tmp_reference_2, spatial_res_type, spatial_res_value, ref_system, format, inspire_charset, inspire_top_consistence, fkey_mb_user_id, responsible_party, individual_name, visibility, locked, copyof, constraints, fees, classification, browse_graphic, inspire_conformance, preview_image, the_geom, lineage, datasetid, randomid, update_frequency, datasetid_codespace, bounding_geom, inspire_whole_area, inspire_actual_coverage, datalinks, inspire_download, transfer_size, md_license_source_note, responsible_party_name, responsible_party_email, searchable, load_count, fkey_mb_group_id_1, mb_group_id, mb_group_name, mb_group_title, mb_group_country, mb_group_stateorprovince, mb_group_logo_path, fkey_mb_user_id_from_users)) dataset_dep
           ORDER BY dataset_dep.dataset_id) datasets;
 
 -- add new field for alternateTitle
@@ -1188,4 +1188,40 @@ CREATE TRIGGER update_si_log_lastchanged
 
 GRANT ALL ON TABLE si_log TO mapbenderdbuser;
 GRANT ALL ON SEQUENCE si_log_log_id_seq TO mapbenderdbuser;
+
+-- Table: ckan_sync_log
+
+-- DROP TABLE ckan_sync_log;
+
+--new option to store ckan sync results to db
+
+CREATE TABLE ckan_sync_log
+(
+  log_id serial NOT NULL,
+  begin_time timestamp with time zone,
+  end_time timestamp with time zone,
+  datasource_type varchar(255),
+  fkey_mb_group_id integer,
+  created integer,
+  deleted integer,
+  updated integer,
+  error_messages text,
+  result text,
+  CONSTRAINT ckan_sync_logc_fkey_mb_group_id_fkey FOREIGN KEY (fkey_mb_group_id)
+      REFERENCES mb_group (mb_group_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE CASCADE
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ckan_sync_log
+  OWNER TO mapbenderdbuser;
+GRANT ALL ON TABLE ckan_sync_log TO postgres;
+GRANT ALL ON TABLE ckan_sync_log TO mapbenderdbuser;
+
+-- Column: further_links_json
+
+-- ALTER TABLE mb_metadata DROP COLUMN further_links_json;
+
+ALTER TABLE mb_metadata ADD COLUMN further_links_json text;
 

@@ -127,8 +127,8 @@ $.widget("mapbender.mb_measure", {
             p1 = this._measurePoints[i].pos;
             p2 = this._measurePoints[i+1].pos;
 			var c = this._toRad(p2.x - p1.x) *
-                    (2 + Math.sin(toRad(p1.y)) +
-                    Math.sin(toRad(p2.y)));
+                    (2 + Math.sin(this._toRad(p1.y)) +
+                    Math.sin(this._toRad(p2.y)));
             area += c;
         }
         area = area * 6378137.0 * 6378137.0 / 2.0;

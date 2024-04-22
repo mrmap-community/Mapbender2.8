@@ -106,6 +106,10 @@ var WfsConfInterface = function (options) {
 			"title" : "Datepicker",
 			"code" : "<input type='text' id='' class='hasdatepicker' />"
 		},
+		"selectboxWfs" : {
+			"title" : "SelectboxWfs",
+			"code" : "json object: ..."
+		},	
 		"selectbox" : {
 			"title" : "Selectbox",
 			"code" : "<select id=''>\n" + 

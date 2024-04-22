@@ -533,7 +533,7 @@ wms_const.prototype.getQuerylayers = function(map){
 		this.objLayer[i].gui_layer_minscale <= currentScale &&
 		(this.objLayer[i].gui_layer_maxscale >= currentScale ||
 			this.objLayer[i].gui_layer_maxscale === 0);
-		if(this.objLayer[i].gui_layer_querylayer === 1 && !this.objLayer[i].has_childs && isVisible){
+		if(this.objLayer[i].gui_layer_querylayer === 1 && !this.objLayer[i].has_childs && isVisible && !this.objLayer[i].layer_name.startsWith('unnamed_layer') ){
 			queryLayers.push(this.objLayer[i].layer_name);
 		}
 	}

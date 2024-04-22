@@ -102,7 +102,6 @@ if (isset($_REQUEST['ID']) & $_REQUEST['ID'] != "") {
 	}
 	$testMatch = NULL;
 }
-
 if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
 	$mapbenderPath = MAPBENDER_PATH."/";
 } else {
@@ -113,52 +112,84 @@ $mapbenderServerUrl = $mapbenderPathArray['scheme']."://".$mapbenderPathArray['h
 
 function getDownloadOptions($idList, $webPath=false) {
 	global $configObject;
-	//define query to pull all download options - actually only the inspire download services based on atom feeds
-	$sql = "select service_id, service_uuid, resource_id, resource_name, resource_type, datalink, NULL as datalink_text, title,format from (
-select service_id, resource_id, resource_name, service_uuid, resource_type, fkey_datalink_id as datalink, title, format from (select fkey_wms_id as service_id, layer_id as resource_id, layer_name as resource_name, 'layer' as resource_type, layer.uuid as service_uuid, metadata_relation.title, format from layer inner join (select metadata_id, title, format, uuid, fkey_layer_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) ";
-
-	$sql .= "as metadata_relation on metadata_relation.fkey_layer_id = layer.layer_id where layer.inspire_download = 1 and metadata_relation.uuid = $1) as layer_metadata LEFT OUTER JOIN ows_relation_data ON layer_metadata.resource_id = ows_relation_data.fkey_layer_id
-) as inspire_layer inner join wms on inspire_layer.service_id = wms.wms_id ";
-
-	//for inspire atom feeds based on wfs ***************************************************************************
-	$sql .= "union select fkey_wfs_id as service_id, service_uuid, featuretype_id as resource_id, featuretype_name as resource_name, 'wfs' as resource_type, NULL ";
-
-	$sql .= "as datalink, NULL as datalink_text, title, 'GML' as format from (select wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, wfs.uuid as service_uuid, wfs_featuretype.inspire_download from wfs_featuretype inner join wfs on wfs_featuretype.fkey_wfs_id = wfs.wfs_id WHERE inspire_download = 1 ORDER BY featuretype_id) as featuretype_inspire inner join (select metadata_id, title, format, uuid, fkey_featuretype_id from mb_metadata inner join ows_relation_metadata on ";
-
-	$sql .= "ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_inspire.featuretype_id and metadata_relation.uuid = $1 ";
-	//end for inspire atom feeds based on wfs ***************************************************************************
-
-	//for inspire atom feeds based on links in metadata ***************************************************************************
-	$sql .= "union select NULL as service_id, NULL as service_uuid, NULL as resource_id, NULL as resource_name, 'metadata' as resource_type, NULL ";
-
-	$sql .= "as datalink, datalinks as datalink_text, title, format FROM mb_metadata WHERE mb_metadata.uuid = $1 and inspire_download = 1 ";
-	//end for inspire atom feeds based on links in metadata ***************************************************************************
-
-	//for wfs 2.0 linked data proxy **********************************************************************************
-	$sql .= " union select fkey_wfs_id as service_id, service_uuid, featuretype_id as resource_id, featuretype_name as resource_name, 'rest' as resource_type, NULL as datalink, NULL as datalink_text, title, 'GeoJSON,GML,HTML' as format from ";
-
-	$sql .= " (select wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, open_wfs.uuid as service_uuid, wfs_featuretype.inspire_download from wfs_featuretype inner join ";
-
-	$sql .= " (SELECT * FROM (SELECT wfs_id, wfs_version, uuid, wfs_termsofuse.fkey_termsofuse_id FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1) as open_wfs ";
-
-	$sql .= " on wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id WHERE (open_wfs.wfs_version = '1.1.0' or open_wfs.wfs_version = '2.0.0' OR open_wfs.wfs_version = '2.0.2') AND wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) as featuretype_wfs2 inner join ";
-
-	$sql .= " (select metadata_id, title, format, uuid, fkey_featuretype_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id and metadata_relation.uuid = $1";
-	//end for wfs 2.0 linked data proxy **********************************************************************************
+	//define query to pull all download options - actually only the inspire download services (atom feeds, ogc api features, directwfs)
 	
-	//for direct wfs interfaces
-	$sqlWfs = " union select fkey_wfs_id as service_id, service_uuid, featuretype_id as resource_id, featuretype_name as resource_name, 'directwfs' as resource_type, NULL as datalink, NULL as datalink_text, title, 'GeoJSON,GML,HTML' as format from ";
+	//pull also termsofuse to allow license info at distribution level for dcat-ap 3.0
+	/*
+	 * SQL for pulling ATOM feeds based on WMS datasources
+	 */
+	$sqlAtomWms = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, wms_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+       SELECT service_id, service_uuid, resource_id, resource_name, resource_type, datalink, NULL as datalink_text, title, format, wms_license_source_note AS license_source_note FROM (
+           SELECT service_id, resource_id, resource_name, service_uuid, resource_type, fkey_datalink_id::text AS datalink, title, format FROM (
+               SELECT fkey_wms_id as service_id, layer_id as resource_id, layer_name as resource_name, 'layer' as resource_type, layer.uuid AS service_uuid, metadata_relation.title, format FROM layer INNER JOIN (
+                   SELECT metadata_id, title, format, uuid, fkey_layer_id FROM mb_metadata INNER JOIN
+                       ows_relation_metadata ON ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) AS metadata_relation ON 
+                           metadata_relation.fkey_layer_id = layer.layer_id WHERE layer.inspire_download = 1 AND metadata_relation.uuid = $1) AS layer_metadata 
+                               LEFT OUTER JOIN ows_relation_data ON layer_metadata.resource_id = ows_relation_data.fkey_layer_id) AS inspire_layer
+                                   INNER JOIN wms ON inspire_layer.service_id = wms.wms_id) AS foo
+                                       LEFT JOIN wms_termsofuse ON foo.service_id = wms_termsofuse.fkey_wms_id) AS foo2
+                                           LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id::integer 
+SQL;
+	$sqlAtomWfs = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, wfs_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+        SELECT fkey_wfs_id as service_id, service_uuid, featuretype_id AS resource_id, featuretype_name AS resource_name, 'wfs' AS resource_type, NULL AS datalink, NULL AS datalink_text, title, 'GML' AS format, license_source_note FROM (
+            SELECT wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, wfs.uuid AS service_uuid, wfs_featuretype.inspire_download, wfs.wfs_license_source_note AS license_source_note FROM wfs_featuretype INNER JOIN 
+                wfs ON wfs_featuretype.fkey_wfs_id = wfs.wfs_id WHERE inspire_download = 1 ORDER BY featuretype_id) AS featuretype_inspire INNER JOIN (
+                    SELECT metadata_id, title, format, uuid, fkey_featuretype_id FROM mb_metadata INNER JOIN ows_relation_metadata ON  
+                        ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) AS metadata_relation ON 
+                            metadata_relation.fkey_featuretype_id = featuretype_inspire.featuretype_id AND metadata_relation.uuid = $1) AS foo
+                                LEFT JOIN wfs_termsofuse ON foo.service_id = wfs_termsofuse.fkey_wfs_id) AS foo2 
+                                    LEFT JOIN termsofuse on foo2.tou_id::integer = termsofuse.termsofuse_id 
+SQL;
 	
-	$sqlWfs .= " (select wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, open_wfs.uuid as service_uuid, wfs_featuretype.inspire_download from wfs_featuretype inner join ";
+	$sqlAtomMetadataLink = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, md_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+        SELECT NULL::integer AS service_id, NULL::uuid AS service_uuid, metadata_id AS resource_id, NULL AS resource_name, 'metadata' AS resource_type, NULL AS datalink, datalinks AS datalink_text, title, format, md_license_source_note AS license_source_note FROM mb_metadata 
+            WHERE mb_metadata.uuid = $1 AND inspire_download = 1 ) as foo 
+                LEFT JOIN md_termsofuse ON foo.resource_id = md_termsofuse.fkey_metadata_id) AS foo2 
+                    LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id 
+SQL;
 	
-	$sqlWfs .= " (SELECT wfs_id, wfs_version, uuid FROM wfs) as open_wfs ";
+	$sqlAtomFurtherLink = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, md_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+        SELECT NULL::integer AS service_id, NULL::uuid AS service_uuid, metadata_id AS resource_id, NULL AS resource_name, 'metadata_further_links' AS resource_type, '' AS datalink, further_links_json AS "datalink_text" , title, format, md_license_source_note AS license_source_note FROM mb_metadata
+            WHERE mb_metadata.uuid = $1 AND further_links_json IS NOT NULL AND further_links_json != '') as foo
+                LEFT JOIN md_termsofuse ON foo.resource_id = md_termsofuse.fkey_metadata_id) AS foo2
+                    LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id
+SQL;
+		
+	$sqlOAF = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, wfs_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+        SELECT fkey_wfs_id AS service_id, service_uuid, featuretype_id AS resource_id, featuretype_name AS resource_name, 'rest' AS resource_type, NULL::text AS datalink, NULL::text AS datalink_text, title, 'GeoJSON,GML,HTML' AS format, license_source_note FROM (
+            SELECT wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, open_wfs.uuid AS service_uuid, wfs_featuretype.inspire_download, open_wfs.wfs_license_source_note AS license_source_note FROM wfs_featuretype 
+                INNER JOIN (SELECT * FROM (SELECT wfs_id, wfs_version, uuid, wfs_termsofuse.fkey_termsofuse_id , wfs_license_source_note FROM wfs INNER JOIN wfs_termsofuse ON wfs_id = fkey_wfs_id) AS wfs_tou INNER JOIN termsofuse ON fkey_termsofuse_id = termsofuse_id WHERE isopen = 1) AS open_wfs
+                    ON wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id WHERE (open_wfs.wfs_version = '1.1.0' OR open_wfs.wfs_version = '2.0.0' OR open_wfs.wfs_version = '2.0.2') AND wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) AS featuretype_wfs2 
+                        INNER JOIN (select metadata_id, title, format, uuid, fkey_featuretype_id FROM mb_metadata INNER JOIN ows_relation_metadata ON ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) AS metadata_relation 
+                            ON metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id AND metadata_relation.uuid = $1) AS foo
+                                LEFT JOIN wfs_termsofuse ON foo.service_id = wfs_termsofuse.fkey_wfs_id ) as foo2
+                                    LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id::integer 
+SQL;
 	
-	$sqlWfs .= " on wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id where wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) as featuretype_wfs2 inner join ";
+	$sqlDirectWfs = <<<SQL
+SELECT foo2.*, termsofuse.name AS tou_name, termsofuse.isopen AS tou_isopen FROM (
+    SELECT foo.*, wfs_termsofuse.fkey_termsofuse_id::integer AS tou_id FROM (
+        SELECT fkey_wfs_id AS service_id, service_uuid, featuretype_id AS resource_id, featuretype_name AS resource_name, 'directwfs' AS resource_type, NULL::text AS datalink, NULL::text AS datalink_text, title, 'GeoJSON,GML,HTML' AS format, license_source_note FROM (
+            SELECT wfs_featuretype.featuretype_id, wfs_featuretype.featuretype_name, wfs_featuretype.fkey_wfs_id, open_wfs.uuid as service_uuid, wfs_featuretype.inspire_download, open_wfs.wfs_license_source_note AS license_source_note FROM wfs_featuretype
+                INNER JOIN (SELECT wfs_id, wfs_version, uuid, wfs_license_source_note FROM wfs) AS open_wfs
+                    ON wfs_featuretype.fkey_wfs_id = open_wfs.wfs_id WHERE wfs_featuretype.featuretype_searchable = 1 ORDER BY featuretype_id) AS featuretype_wfs2
+                        INNER JOIN (SELECT metadata_id, title, format, uuid, fkey_featuretype_id FROM mb_metadata 
+                            INNER JOIN ows_relation_metadata ON ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) AS metadata_relation ON metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id AND metadata_relation.uuid = $1) AS foo 
+                                LEFT JOIN wfs_termsofuse ON foo.service_id = wfs_termsofuse.fkey_wfs_id ) AS foo2 
+                                    LEFT JOIN termsofuse ON foo2.tou_id::integer = termsofuse.termsofuse_id::integer 
+SQL;
 	
-	$sqlWfs .= " (select metadata_id, title, format, uuid, fkey_featuretype_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_wfs2.featuretype_id and metadata_relation.uuid = $1";
-	//$e = new mb_exception($sqlWfs);
-	//end for wfs interfaces
-	$sql .= $sqlWfs;
+	$sql = $sqlAtomWms . " union " . $sqlAtomWfs. " union " . $sqlAtomMetadataLink. " union " .$sqlOAF . " union " . $sqlDirectWfs . " union " .  $sqlAtomFurtherLink;
 
 	/*
 	$sql = "select service_id, resource_id, resource_type, fkey_datalink_id as datalink from (select fkey_wms_id as service_id, layer_id as resource_id, 'layer' as resource_type from layer inner join (select metadata_id, uuid, fkey_layer_id from mb_metadata inner join ows_relation_metadata on ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) ";
@@ -170,7 +201,7 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 	$sql .= "ows_relation_metadata.fkey_metadata_id = mb_metadata.metadata_id) as metadata_relation on metadata_relation.fkey_featuretype_id = featuretype_inspire.featuretype_id and metadata_relation.uuid = $1;";*/
 
 	//initialize array for result
-	//$e = new mb_exception($idList);
+	
 	//$downloadOptions = new stdClass();
 	for ($i = 0; $i < count($idList); $i++) {
 		$v = array($idList[$i]);
@@ -179,14 +210,12 @@ select service_id, resource_id, resource_name, service_uuid, resource_type, fkey
 		//problem, $res don't give back false if it was not successful!
 		//push rows into associative array
 		$j = 0;
-
 /*while ($row = db_fetch_assoc($res)) {
 echo "j: ".$j."<br>";
 echo $row['service_id']." - ".$row['resource_type']."<br>";
 $j++;
 }
 die();*/
-
 		while ($row = db_fetch_assoc($res)) {
 			//echo "j: ".$j."<br>";
 			switch ($row['resource_type']) {		
@@ -216,14 +245,12 @@ die();*/
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m] = $row['resource_id'];
 $downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
 					}
-					if (!$wfsRequestObjectExists)
-					{
+					if (!$wfsRequestObjectExists){
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
-						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
+						$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id']; //wfs_id
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
 						$downloadOptions->{$idList[$i]}->option[$j]->featureType[0] = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
-
+                        $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resource_name'];
 						$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 						//new 2019/07
 						$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
@@ -233,6 +260,12 @@ $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resour
 						$downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
 						$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=wfs&wfsid=".$row['service_id'];
 						$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."plugins/mb_downloadFeedClient.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->accessUrl);
+					    //new in 2024
+						$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+						$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+						$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+						$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
+						//$downloadOptions->{$idList[$i]}->option[$j]->touId = $row['tou_id'];
 					}
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
@@ -246,7 +279,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->featureType[0]->name = $row['resour
 						//add to array with datalink (ids)
 						//$arrayDataLinks[] = $row['datalink'];
 					}
-					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id']; //wms_id
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];//This is a layer uuid - not a service uuid!!!!
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
 $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
@@ -260,6 +293,11 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
 					$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=wmslayer&layerid=".$row['resource_id'];
 					$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."plugins/mb_downloadFeedClient.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->accessUrl);
+					//new in 2024
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+					$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 				break;
@@ -267,15 +305,15 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 					$downloadOptions->{$idList[$i]}->option[$j]->type = "ogcapifeatures";
 				
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
-					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];
+					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid']; //wfs_uuid
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
+                    $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 					//$downloadOptions->{$idList[$i]}->option[$j]->dataLink = $row['datalink'];
 					//new 2019/07
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "REST";
-					$downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('OGC API - Features').": ".$row['title'];
+					$downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('OGC API - Features (Draft)').": ".$row['title']." - "._mb("based on WFS 2.0.0+ datasource");
 					//service metadata:
 					$downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_featuretypeISOMetadata.php?SERVICETYPE=ogcapifeatures&SERVICE=WFS&outputFormat=iso19139&Id=".$row['resource_id'];
 					$downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
@@ -288,10 +326,15 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 							$downloadOptions->{$idList[$i]}->option[$j]->accessClient = "http://".$_SERVER['HTTP_HOST']."/".$configObject->rewrite_path."/".$row['service_id']."/collections/".$row['resource_name'];//."/items?&f=html";
 							$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = "http://".$_SERVER['HTTP_HOST']."/".$configObject->rewrite_path."/".$row['service_id']."/api";//."/items?&f=html";
 						}
-                                        } else {
+                    } else {
 						$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."php/mod_linkedDataProxy.php?wfsid=".$row['service_id']."&collection=".$row['resource_name'];
 						$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_linkedDataProxy.php?wfsid=".$row['service_id']."&collections=api";
 					}
+					//new in 2024
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+					$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+					$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 					//$downloadOptions->{$idList[$i]}->option[$j]->accessClient = "https://www....";
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
@@ -313,11 +356,133 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 							$downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
 							$downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=metadata";
 							$downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."plugins/mb_downloadFeedClient.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->accessUrl);
+							//new in 2024
+							$downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+							$downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+							$downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+							$downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
 						}
 					}
 					$downloadOptions->{$idList[$i]}->title = $row['title'];
 					$downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 					break;
+				case "metadata_further_links":
+				    /*$e = new mb_exception("check download options further");
+				    $e = new mb_exception("json row: " . json_encode($row));
+				    $e = new mb_exception("further_links_json: " . $row['datalink_text']);
+				    $e = new mb_exception("resource_id: " . $row['resource_id']);*/
+				    if (isset($row['datalink_text'] ) || $row['datalink_text'] != '') {
+				        //parse information from
+				        /* Example
+				         {
+				         "dcat:Distribution": [
+				         {
+				         "dcat:accessUrl": "https://example.com",
+				         "dcterms:title": "Link zum Webshop",
+				         "dcterms:description": "Beschreibung der Distribution",
+				         "dcterms:format": "ZIPFILE",
+				         "dcat:mediaType": "application/zip"
+				         },
+				         {
+				         "dcat:accessService": {
+				         "dct:hasPart": "https://lintopartofatomfeed.html"
+				         },
+				         "dcterms:title": "Link zum Webshop",
+				         "dcterms:description": "Beschreibung der Distribution",
+				         "dcterms:format": "ZIPFILE",
+				         "dcat:mediaType": "application/zip",
+				         "gdirp:epsgCode": "25832"
+				         }
+				         ]
+				         }
+				         */
+				        if (json_decode($row['datalink_text'])) {
+				            $distributions = json_decode($row['datalink_text']);
+				            $simpleDistributions = array();
+				            //$e = new mb_exception("php/mod_getDownloadOptions.php: distributions: " .  json_encode($distributions));
+				            foreach ($distributions->{'dcat:Distribution'} as $dcatDistribution) {
+				                if ($dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'}) {
+				                    //$e = new mb_exception("some remotelist link is available");
+				                    $mandatoryFieldsAvailable = true;
+				                    $mandatoryFields = array('dcterms:format', 'gdirp:epsgCode', 'dcterms:title', 'dcterms:description');
+				                    foreach ($mandatoryFields as $serviceAttribute) {
+				                        //$e = new mb_exception("php/mod_inspireDownloadFeed.php: check: " . $serviceAttribute . " - value found: " . $dcatDistribution->{$serviceAttribute});
+				                        if (!$dcatDistribution->{$serviceAttribute}) {
+				                            $mandatoryFieldsAvailable = false;
+				                            break;
+				                        }
+				                    }
+				                    if ($mandatoryFieldsAvailable == false) {
+				                        $e = new mb_exception("php/mod_getDownloadOptions.php: some mandatory attribute is not given for distribution in further_links_json");
+				                    }
+				                    $linkListFound = true;
+				                    $atomFeedLinkList = $dcatDistribution->{'dcat:accessService'}->{'dct:hasPart'};
+				                    $atomFeedTitle = $dcatDistribution->{'dcterms:title'};
+				                    $atomFeedDescription = $dcatDistribution->{'dcterms:Description'};
+				                    $atomFeedFormat = $dcatDistribution->{'dcterms:format'};
+				                    $atomFeedCrs = "EPSG:" . $dcatDistribution->{'gdirp:epsgCode'};
+				                // generate an array of simple other distributions 
+				                } else {
+				                    $mandatoryFieldsAvailable = true;
+				                    $mandatoryFields = array('dcat:accessUrl', 'dcterms:title');
+				                    foreach ($mandatoryFields as $serviceAttribute) {
+				                        //$e = new mb_exception("php/mod_inspireDownloadFeed.php: check: " . $serviceAttribute . " - value found: " . $dcatDistribution->{$serviceAttribute});
+				                        if (!$dcatDistribution->{$serviceAttribute}) {
+				                            $mandatoryFieldsAvailable = false;
+				                            continue;
+				                        }
+				                    }
+				                    if ($mandatoryFieldsAvailable == false) {
+				                        $e = new mb_exception("php/mod_getDownloadOptions.php: some mandatory attribute is not given for distribution in further_links_json");
+				                    }
+				                    $distribution = array();
+				                    $distribution['dcterms:title'] = $dcatDistribution->{'dcterms:title'};
+				                    $distribution['dcat:accessUrl'] = $dcatDistribution->{'dcat:accessUrl'};
+				                    $simpleDistributions[] = $distribution;
+				                }
+				            }
+				        } else {
+				            $e = new mb_exception("php/mod_getDownloadOptions.php: could not parse further_links_json from mb_metadata!");
+				        }
+				        //TODO: check if title should be used from further_links_json object instead!
+				        if ($linkListFound && $mandatoryFieldsAvailable) {
+    				        $downloadOptions->{$idList[$i]}->option[$j]->type = "remotelist";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->link = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=remotelist";;
+    				        
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($downloadOptions->{$idList[$i]}->option[$j]->link);
+    				        
+    				        $downloadOptions->{$idList[$i]}->option[$j]->format = $atomFeedFormat;
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceSubType = "ATOM";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = _mb('INSPIRE Download Service (predefined ATOM) for dataset').": ".$row['title']." - "._mb("based on remote links");
+    				        $downloadOptions->{$idList[$i]}->option[$j]->mdLink = $webPath."php/mod_inspireAtomFeedISOMetadata.php?outputFormat=iso19139&generateFrom=remotelist&id=".$idList[$i];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->mdLink);
+    				        $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/mod_inspireDownloadFeed.php?id=".$idList[$i]."&type=SERVICE&generateFrom=remotelist";
+    				        $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."plugins/mb_downloadFeedClient.php?url=".urlencode($downloadOptions->{$idList[$i]}->option[$j]->accessUrl);
+    				        //new in 2024
+    				        $downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+    				        $downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
+				        }
+				        //append distributions
+				        foreach ($simpleDistributions as $distribution) {
+				            $j++;
+				            $downloadOptions->{$idList[$i]}->option[$j]->type = "distribution";
+				            $downloadOptions->{$idList[$i]}->option[$j]->serviceType = "download";
+				            $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $distribution['dcat:accessUrl'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->htmlLink = $webPath."php/mod_exportIso19139.php?url=".urlencode($webPath."php/mod_dataISOMetadata.php?id=".$idList[$i]."&outputFormat=iso19139");
+				            $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $distribution['dcat:accessUrl'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($distribution['dcat:accessUrl']);
+				            $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = $distribution['dcterms:title'];
+				        }
+				        
+				    }
+				    if ($linkListFound && $mandatoryFieldsAvailable) {
+    				    $downloadOptions->{$idList[$i]}->title = $row['title'];
+    				    $downloadOptions->{$idList[$i]}->uuid = $idList[$i];
+				    }
+				    break;
 				case "directwfs":
 				    $downloadOptions->{$idList[$i]}->option[$j]->type = "directwfs";
 				    
@@ -338,6 +503,12 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    //FEATURETYPE_ID=32&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1
 				    $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/wfs.php?FEATURETYPE_ID=".$row['resource_id']."&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1";
 				    $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."php/wfs.php?FEATURETYPE_ID=".$row['resource_id']."&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1";
+				    //new in 2024
+				    $downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+				    $downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
+				    
 				    $downloadOptions->{$idList[$i]}->title = $row['title'];
 				    $downloadOptions->{$idList[$i]}->uuid = $idList[$i];
 				    break;	
@@ -350,9 +521,10 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 		//foreach($downloadOptions->{$idList[$i]}->option as $option) {
 			//$option->dataLink;
 		//}
+		//$e = new mb_exception(json_encode($downloadOptions));
+		//add further option from metadata itself
+		
 	}
-	//$e = new mb_exception(json_encode($downloadOptions));
-	//add further option from metadata itself - if 
 	$result = json_encode($downloadOptions);
 	return $result;
 }
@@ -384,7 +556,7 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 	$header .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-1.4.2.min.js"></script>';
 	$header .= '<script type="text/javascript" src="../extensions/jquery-ui-1.8.1.custom/js/jquery-ui-1.8.1.custom.min.js"></script>';
 	$header .= '<style type="text/css">a{white-space:normal;}</style>';
-//some js for dialog
+    //some js for dialog
 	echo $header;
 	if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') { 
 		$mapbenderUrl = MAPBENDER_PATH;
@@ -433,6 +605,12 @@ if ($downloadOptions != "null" && $outputFormat == "html") {
 					case "downloadlink":
 						$metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=metadata")."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
 						break;
+					case "remotelist":
+					    $metadataList .=  $iOptions.". "._mb('Download linked data from INSPIRE Download Service').":   <a href='../plugins/mb_downloadFeedClient.php?url=".urlencode($mapbenderUrl."/php/mod_inspireDownloadFeed.php?id=".$currentUuid."&type=SERVICE&generateFrom=remotelist")."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Download linked data from INSPIRE Download Service')."'/></a>";
+					    break;
+					case "distribution":
+					    $metadataList .=  $iOptions.". ". $option->serviceTitle .":   <a href='" .  $option->accessUrl . "' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='".$option->serviceTitle."'/></a>";
+					    break;
 					case "ogcapifeatures":
 						$metadataList .=  $iOptions.". "._mb('OGC API Features')." (".$option->resourceName."):   <a href='".$option->accessClient."' target='_blank'><img src='../img/osgeo_graphics/geosilk/link_download.png' title='"._mb('Linked Open Data via OGC REST API')."'/></a>";
 						break;

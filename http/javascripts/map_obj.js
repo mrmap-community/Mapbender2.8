@@ -153,7 +153,6 @@ Mapbender.Map = function (options) {
         $("#" + this.elementName)
 			.width(this.width)
 			.height(this.height);
-
 		this.calculateExtent(this.extent);
 		this.setMapRequest();
 		
@@ -347,6 +346,7 @@ Mapbender.Map = function (options) {
     };
     
     this.setSrs = function(options){
+    	//alert('map_obj setSrs extent: ' + options.extent);
     	if (typeof options.srs !== "string") {
             new Mb_exception("Mapbender.Map.setSrs: SRS is not a string: " + options.srs);
             return null;
@@ -1233,21 +1233,20 @@ Mapbender.Map = function (options) {
             x = this.extent.center.x;
             y = this.extent.center.y;
         }
+        //TODO: check for type geographic2d by ajax call to class_crs 
 		if (this.epsg == "EPSG:4326") {
-	        var minx = parseFloat(x);
-	        var miny = this.extent.min.y;
-	        var maxx = minx + 0.01;
-			var xtenty = scale * this.getHeight() / (mb_resolution * 100);
-	        var maxy = miny + xtenty/6371229;
-		}
-		else {
+			var scaleFactor = 0.7929690; //TODO check calculation other dpi?
+			var distanceInDeegree = this.getHeight() * 0.00028 / scaleFactor * parseFloat(scale) * 360.0 / (2.0 * Math.PI * 6378137.0);
+			var minx = parseFloat(x) - (distanceInDeegree / 2);
+			var miny = parseFloat(y) - (distanceInDeegree / 2);
+			var maxx = parseFloat(x) + (distanceInDeegree / 2);
+			var maxy = parseFloat(y) + (distanceInDeegree / 2);		
+		} else {
 	        var minx = parseFloat(x) - (this.getWidth() / (mb_resolution * 100 * 2) * scale);
 	        var miny = parseFloat(y) - (this.getHeight() / (mb_resolution * 100 * 2) * scale);
 	        var maxx = parseFloat(x) + (this.getWidth() / (mb_resolution * 100 * 2) * scale);
 	        var maxy = parseFloat(y) + (this.getHeight() / (mb_resolution * 100 * 2) * scale);
-			
 		}
-
         this.repaint(new Point(minx, miny), new Point(maxx, maxy));
     };
     

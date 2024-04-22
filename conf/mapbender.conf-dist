@@ -428,6 +428,11 @@ define("EXTERNAL_CLIENT_LOG", false);
 define('MAPBENDER_REGISTRY_UUID','2f23ed6e-0196-4c2b-8380-768389036509');
 
 # --------------------------------------------
+# Configuration for adding further information to contact - reacts on existing keyword
+# --------------------------------------------
+#define('ADMINISTRATIVE_AREA','{"keyword": "AdVMIS", "value": "Hessen"}');
+
+# --------------------------------------------
 # Spatial Security
 # --------------------------------------------
 define("SPATIAL_SECURITY", true);
@@ -452,7 +457,7 @@ define("INSPIRE_METADATA_SPEC", "2.0.1");
 # are logged to oaf_proxy_log table. They are only counted!
 # 
 define("OAF_LOG", false);
-
+define("SEARCH_LOG", true);
 # --------------------------------------------
 # Absolute path for downloading and processing gpkg files via python lib
 # --------------------------------------------

@@ -2917,15 +2917,17 @@ SQL;
 		//TODO: generate temporal uuid for inserting and getting the serial afterwards
 		//delete old relations for this resource - only those which are from 'capabilities'
 		$mbMetadata_1 = new Iso19139();
-		$mbMetadata_1->deleteMetadataRelation("layer", $this->objLayer[$i]->db_id,"capabilities");
+		$mbMetadata_1->deleteMetadataRelation("layer", $this->objLayer[$i]->db_id, "capabilities");
 		//delete object?
 		for($j=0; $j<count($this->objLayer[$i]->layer_metadataurl);$j++){
 			$mbMetadata = new Iso19139();
 			$randomid = new Uuid();
-			$mdOwner = Mapbender::session()->get("mb_user_id");
-			//The next loop is needed for automatic wms update - no session exists!
-			if ($mdOwner == false) {
-				$mdOwner = $this->owner;
+			if (!isset($this->owner)) {
+			    $mdOwner = Mapbender::session()->get("mb_user_id");
+			    $e = new mb_exception("classes/class_wms.php: wms owner from session: " . $mdOwner);
+			} else {
+			    $mdOwner = $this->owner;
+			    $e = new mb_exception("classes/class_wms.php: wms owner from object: " . $mdOwner);
 			}
 			$mbMetadata->randomId = $randomid;
 			$mbMetadata->href = $this->objLayer[$i]->layer_metadataurl[$j]->href;
@@ -2951,6 +2953,7 @@ SQL;
 					break;
 				}
 			}
+			$e = new mb_exception("classes/class_wms.php: harvestCoupledDatasetMetadata: " . json_encode($this->harvestCoupledDatasetMetadata));
             if ($this->harvestCoupledDatasetMetadata == true && $harvestMetadataUrl == true) {
 				try {
 					$result = $mbMetadata->insertToDB("layer",$this->objLayer[$i]->db_id, $bequeathContact, $bequeathLicence);
@@ -2969,7 +2972,8 @@ SQL;
 	}
 
 	function updateObjInDB($myWMS,$updateMetadataOnly=false,$changedLayers=null){ //TODO give return true or false to allow feedback to user!!!
-        if (func_num_args() == 4) { //new for HTTP Authentication 
+        //owner will not change!
+	    if (func_num_args() == 4) { //new for HTTP Authentication 
 			$auth = func_get_arg(3); 
 			$username = $auth['username']; 
 			$password = $auth['password']; 

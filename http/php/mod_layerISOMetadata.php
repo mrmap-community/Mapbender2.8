@@ -465,6 +465,29 @@ function fillISO19139($iso19139, $recordId) {
 	$CI_ResponsibleParty->appendChild ( $organisationName );
 	$email_cs->appendChild ( $resMailText );
 	$electronicMailAddress->appendChild ( $email_cs );
+	//add optional administrativeArea element - before email!
+	$sql = "SELECT keyword.keyword FROM keyword, layer_keyword WHERE layer_keyword.fkey_layer_id=$1 AND layer_keyword.fkey_keyword_id=keyword.keyword_id";
+	$v = array (( integer ) $recordId);
+	$t = array ('i');
+	$res = db_prep_query($sql, $v, $t);
+	$keywordsArray = array();
+	while ($row = db_fetch_array($res)) {
+	    if (isset($row['keyword']) && $row['keyword'] != "") {
+	        $keywordsArray[] = $row['keyword'];
+	    }
+	}
+	if (defined('ADMINISTRATIVE_AREA') && ADMINISTRATIVE_AREA != '') {
+	    $adminAreaObj = json_decode(ADMINISTRATIVE_AREA);
+	    if (in_array($adminAreaObj->keyword, $keywordsArray)) {
+	        $administrativeArea = $iso19139->createElement("gmd:administrativeArea");
+	        $administrativeArea_cs = $iso19139->createElement("gco:CharacterString");
+	        $administrativeAreaText = $iso19139->createTextNode($adminAreaObj->value);
+	        $administrativeArea_cs->appendChild($administrativeAreaText);
+	        $administrativeArea->appendChild($administrativeArea_cs);
+	        $CI_Address->appendChild($administrativeArea);
+	    }
+	}
+	//	
 	$CI_Address->appendChild ( $electronicMailAddress );
 	$address_1->appendChild ( $CI_Address );
 	$CI_Contact->appendChild ( $address_1 );

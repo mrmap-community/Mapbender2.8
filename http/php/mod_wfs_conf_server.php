@@ -31,7 +31,7 @@ switch ($command) {
 		$wfsConfIdString = $ajaxResponse->getParameter("wfsConfIdString");
 
 		if(!$wfsConfIdString){ 
-			$ajaxResponse->setSuccess($false);
+			$ajaxResponse->setSuccess(false);
 			$ajaxResponse->setMessage("missing wfsConfIdString");
 			$ajaxResponse->send();
 			break;
