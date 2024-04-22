@@ -258,6 +258,10 @@ $(function() {
 			<input name="inspire_download" id="inspire_download" type="checkbox"/>
 		</p>
 		</fieldset>
+		<fieldset>
+			<legend><?php echo _mb("Further links (json)");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("JSON field to support special further links.");?>'}" src="../img/questionmark.png" alt="" /></legend>
+			<textarea name="further_links_json" id="further_links_json" rows="4" cols="50"/>
+		</fieldset>
 	</div>
 	<!-- <div id="tabs-7">
 		<fieldset>

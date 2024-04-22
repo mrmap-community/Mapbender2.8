@@ -891,8 +891,13 @@ function fillISO19139($iso19139, $recordId)
 	$CI_Contact = $iso19139->createElement("gmd:CI_Contact");
 	$address_1 = $iso19139->createElement("gmd:address");
 	$CI_Address = $iso19139->createElement("gmd:CI_Address");
+	
+	
+	
 	$electronicMailAddress = $iso19139->createElement("gmd:electronicMailAddress");
 	$email_cs = $iso19139->createElement("gco:CharacterString");
+	
+	
 	$role = $iso19139->createElement("gmd:role");
 	$CI_RoleCode = $iso19139->createElement("gmd:CI_RoleCode");
 	$CI_RoleCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_RoleCode");
@@ -915,13 +920,40 @@ function fillISO19139($iso19139, $recordId)
 			$resMailText = $iso19139->createTextNode("gdi-hessen@hvbg.hessen.de");
 		}
 	}
+	
+	
 	$resRoleText = $iso19139->createTextNode("pointOfContact");
 	$orgaName_cs->appendChild($resOrgaText);
 	$organisationName->appendChild($orgaName_cs);
 	$CI_ResponsibleParty->appendChild($organisationName);
 	$email_cs->appendChild($resMailText);
 	$electronicMailAddress->appendChild($email_cs);
+	
+	//add optional administrativeArea element - before email!
+	$sql = "SELECT DISTINCT keyword.keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id";
+	$v = array((int)$mb_metadata['metadata_id']);
+	$t = array('i');
+	$res = db_prep_query($sql, $v, $t);
+	$keywordsArray = array();
+	while ($row = db_fetch_array($res)) {
+	    if (isset($row['keyword']) && $row['keyword'] != "") {
+	        $keywordsArray[] = $row['keyword'];
+	    }
+	}
+	if (defined('ADMINISTRATIVE_AREA') && ADMINISTRATIVE_AREA != '') {
+	    $adminAreaObj = json_decode(ADMINISTRATIVE_AREA);
+	    if (in_array($adminAreaObj->keyword, $keywordsArray)) {
+        	$administrativeArea = $iso19139->createElement("gmd:administrativeArea");
+        	$administrativeArea_cs = $iso19139->createElement("gco:CharacterString");
+        	$administrativeAreaText = $iso19139->createTextNode($adminAreaObj->value);
+        	$administrativeArea_cs->appendChild($administrativeAreaText);
+        	$administrativeArea->appendChild($administrativeArea_cs);
+        	$CI_Address->appendChild($administrativeArea);
+	    }
+	}
+	//
 	$CI_Address->appendChild($electronicMailAddress);
+	
 	$address_1->appendChild($CI_Address);
 	$CI_Contact->appendChild($address_1);
 	$contactInfo->appendChild($CI_Contact);

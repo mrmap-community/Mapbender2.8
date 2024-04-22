@@ -1307,6 +1307,7 @@ SQL;
 			//$resultObj["linktype"] = $mbMetadata->type; //char
 			$resultObj["title"] = $mbMetadata->title; //char -- prefill from layer/ft
 			$resultObj["alternate_title"] = $mbMetadata->alternate_title; //char -- prefill from layer/ft
+			$resultObj["further_links_json"] = $mbMetadata->furtherLinksJson; //text
 			$resultObj["abstract"] = $mbMetadata->abstract; //char - prefill from layer/ft
 			//$resultObj["format"] = $mbMetadata->dataFormat; //char
 			$resultObj["ref_system"] = $mbMetadata->refSystem; //char
@@ -1443,6 +1444,7 @@ SQL;
 			$resultObj["linktype"] = $mbMetadata->type; //char
 			$resultObj["title"] = $mbMetadata->title; //char -- prefill from layer/ft
 			$resultObj["alternate_title"] = $mbMetadata->alternate_title; //char -- prefill from layer/ft
+			$resultObj["further_links_json"] = $mbMetadata->furtherLinksJson;
 			$resultObj["abstract"] = $mbMetadata->abstract; //char - prefill from layer/ft
 			$resultObj["format"] = $mbMetadata->dataFormat; //char
 			$resultObj["ref_system"] = $mbMetadata->refSystem; //char
@@ -1678,6 +1680,7 @@ SQL;
 			$mbMetadata->href = $data->link;
 			$mbMetadata->title = $data->title;
 			$mbMetadata->alternate_title = $data->alternate_title;
+			$mbMetadata->furtherLinksJson = $data->further_links_json;
 			$mbMetadata->abstract = $data->abstract;
 			$mbMetadata->dataFormat = $data->format;
 			$mbMetadata->refSystem = $data->ref_system;
@@ -1908,6 +1911,9 @@ SQL;
 		}
 		if (isset($data->alternate_title)) {
 		    $mbMetadata->alternate_title = $data->alternate_title;
+		}
+		if (isset($data->further_links_json)) {
+		    $mbMetadata->furtherLinksJson = $data->further_links_json;
 		}
 		if (isset($data->abstract)) {
 			$mbMetadata->abstract = $data->abstract;
@@ -2331,7 +2337,7 @@ SQL;
 		//are initialized from class_iso19139
 		$mbMetadata = new Iso19139();
 		$randomid = new Uuid();
-$mbMetadata->hierarchyLevel = $resourceType;
+        $mbMetadata->hierarchyLevel = $resourceType;
 		//read out json objects
 		if (isset($data->link)) {
 			$mbMetadata->href = $data->link;
