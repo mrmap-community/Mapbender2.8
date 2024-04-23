@@ -606,7 +606,7 @@ class OwsContext {
 			}
 			//add offering
 			$owsContextResourceOffering = new OwsContextResourceOffering();
-			$owsContextResourceOffering->code = "http://www.opengis.net/spec/owc-atom/1.0/req/wms";
+			$owsContextResourceOffering->code = "http://www.opengis.net/spec/owc/1.0/req/wms";
 			//add operation for WMS GetCapabilities operation
 			$owsContextResourceOfferingOperation = new OwsContextResourceOfferingOperation();
 			$owsContextResourceOfferingOperation->code = "GetCapabilities";
