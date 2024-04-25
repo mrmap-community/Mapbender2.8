@@ -2924,6 +2924,18 @@ CREATE TABLE custom_category_origin
 ALTER TABLE custom_category_origin
   OWNER TO postgres;
 
+-- Column: uuid
+
+-- ALTER TABLE custom_category_origin DROP COLUMN uuid;
+
+ALTER TABLE custom_category_origin ADD COLUMN uuid uuid;
+
+-- Column: upload_url
+
+-- ALTER TABLE custom_category_origin DROP COLUMN upload_url;
+
+ALTER TABLE custom_category_origin ADD COLUMN upload_url character varying(4096);
+
 
 ALTER TABLE custom_category ADD COLUMN fkey_custom_category_origin_id integer;
 
