@@ -2920,9 +2920,6 @@ CREATE TABLE custom_category_origin
   uri character varying(500) NOT NULL,
   type character varying(100) NOT NULL,
   CONSTRAINT custom_category_origin_pkey PRIMARY KEY (id)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE custom_category_origin
   OWNER TO postgres;
