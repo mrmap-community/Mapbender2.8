@@ -2961,6 +2961,30 @@ ADD CONSTRAINT custom_category_key_parent_ibfk1 FOREIGN KEY (custom_category_par
       REFERENCES custom_category (custom_category_key) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE CASCADE;
 
+-- Column: deletedate
+
+-- ALTER TABLE custom_category DROP COLUMN deletedate;
+
+ALTER TABLE custom_category ADD COLUMN deletedate timestamp without time zone;
+
+
+-- Column: lastchanged
+
+-- ALTER TABLE custom_category DROP COLUMN lastchanged;
+
+ALTER TABLE custom_category ADD COLUMN lastchanged timestamp without time zone;
+ALTER TABLE custom_category ALTER COLUMN lastchanged SET DEFAULT now();
+
+
+-- Column: createdate
+
+-- ALTER TABLE custom_category DROP COLUMN createdate;
+
+ALTER TABLE custom_category ADD COLUMN createdate timestamp without time zone;
+
+
+
+
 --remove application metadata from searchInterface for datasets
 -- View: search_dataset_view
 
