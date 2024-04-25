@@ -2916,7 +2916,7 @@ UPDATE gui_element SET e_target = 'editMaintenance_collection, reindexWMS_collec
 CREATE TABLE custom_category_origin
 (
   id serial,
-  name character varying(255) NOT NULL,
+  name character varying(255),
   uri character varying(500) NOT NULL,
   type character varying(100) NOT NULL,
   CONSTRAINT custom_category_origin_pkey PRIMARY KEY (id)
@@ -2968,10 +2968,6 @@ ALTER TABLE custom_category ADD COLUMN custom_category_parent_key VARCHAR(4096);
 
 ALTER TABLE custom_category ADD CONSTRAINT custom_category_key_unique_c UNIQUE (custom_category_key);
 
-ALTER TABLE custom_category
-ADD CONSTRAINT custom_category_key_parent_ibfk1 FOREIGN KEY (custom_category_parent_key)
-      REFERENCES custom_category (custom_category_key) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- Column: deletedate
 
