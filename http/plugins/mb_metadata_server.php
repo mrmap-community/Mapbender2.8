@@ -6,6 +6,7 @@ require_once dirname(__FILE__) . "/../classes/class_Uuid.php";
 require_once dirname(__FILE__) . "/../classes/class_wfs.php";
 require_once dirname(__FILE__) . "/../classes/class_administration.php";
 require_once(dirname(__FILE__)."/../classes/class_universal_wfs_factory.php");
+require_once dirname(__FILE__) . "/../classes/class_customCategory.php";
 require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 
 $ajaxResponse = new AjaxResponse($_POST);
@@ -161,6 +162,15 @@ function gml2wkt($gml) {
 }
 //routines to do the ajax server side things
 switch ($ajaxResponse->getMethod()) {
+    case "getCustomCategories" :
+        $customCategory = new CustomCategory();
+        $customCategoriesFromDb = $customCategory->readFromDb($idFilter = false, $languageCode = "de", $showHidden = false, $outputFormat= "assocArray", $originIdFilter = false);
+        $result = $customCategory->buildStructure($customCategoriesFromDb);
+        $resultObj = array();
+        $resultObj["data"] = $result;
+        $ajaxResponse->setResult($resultObj);
+        $ajaxResponse->setSuccess(true);
+        break;
 	case "getWms" :
 		$wmsIdArray = getWms();
 		$wmsList = implode(",", $wmsIdArray);

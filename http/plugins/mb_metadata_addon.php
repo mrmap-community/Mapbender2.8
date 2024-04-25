@@ -15,6 +15,19 @@
 		}
 		return $str;
 	}
+	function displayCustomCategories ($sql) {
+	    if (Mapbender::session()->get("mb_lang") === "de") {
+	        $sql = str_replace("custom_category_description_en", "custom_category_description_de", $sql);
+	    }
+	    $str = "";
+	    $res = db_query($sql);
+	    while ($row = db_fetch_assoc($res)) {
+	        $str .= "<option value='" . $row["id"] . "'>" .
+	   	        htmlentities($row["name"], ENT_QUOTES, CHARSET) .
+	   	        "</option>";
+	    }
+	    return $str;
+	}
 ?>
 
 <script type="text/javascript">
@@ -57,6 +70,12 @@ $(function() {
 		<legend><?php echo _mb("Metadata upload");?></legend>
 		<input name="metadatafile" id="metadatafile" type="file"/>
 	</fieldset>
+	<!--div for custom tree selector-->
+	<!--<div id="custom_tree_selector_dialog" name="custom_tree_selector_dialog" type="hidden" style="display: none">
+		<legend><?php //echo _mb("Select categories from hierarchical tree");?></legend>
+		<input type="text" id="plugins4_q" value="" class="input" style="margin:0em auto 1em auto; display:block; padding:4px; border-radius:4px; border:1px solid silver;">
+		<div id="jstree_custom_categories_div"></div>
+	</div>-->
 	<!--fieldset for metadata form-->
 	<fieldset id="simple_metadata_editor" name="simple_metadata_editor" type="hidden"  style="display: none">
 	<div id="tabs">
@@ -160,9 +179,14 @@ $(function() {
 <?php
 	$sql = "SELECT custom_category_id AS id, custom_category_code_en AS name FROM custom_category";
 	echo displayCategories($sql);
+	//new 2020-08-26 - use custom_category_description uinstead of ...code
+	//$sql = "SELECT custom_category_id AS id, custom_category_description_en AS name FROM custom_category WHERE deletedate IS NULL";
+	//echo displayCustomCategories($sql);
 ?>
 			</select>
 			<img id="resetCustomCatsMd" title="<?php echo _mb("Reset selection");?>" src="../img/cross.png" style="cursor:pointer;"/>
+			<!-- <img id="startCustomTreeSelector" title="<?php //echo _mb("Select from hierachical structure");?>" src="../img/expanded_folder.png" style="cursor:pointer;" onclick='openCustomTreeSelector()';/>-->
+			
 		</p>
 	</fieldset>
 	</div>
