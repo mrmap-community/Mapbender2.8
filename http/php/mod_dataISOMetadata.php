@@ -1048,10 +1048,11 @@ SQL;
 	$e = new mb_notice("look for custom categories: ");
 	$countCustom = 0;
 	if (count($res) > 0) {
-	   $descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
-	   $MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
+	   
 	}
 	while ($row = db_fetch_array($res)) {
+	    $descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
+	    $MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
 		$keyword = $iso19139->createElement("gmd:keyword");
 		$e = new mb_exception("custom_category_key: " . $row['custom_category_key']);
 		//define HVD base uri - this is used as key for HVD categories - if such an uri is found, get the german translation for the theme and add a thesaurus!
