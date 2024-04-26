@@ -402,6 +402,7 @@ XML;
 			$this->keywords = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
 			//get thesaurus name only for found keywords!
 			$iKeyword = 0;
+			//TODO: find reason for double entries of inspire themes
 			foreach ($this->keywords as $keyword) {
 				$thesaurusName = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gco:CharacterString="'.$keyword.'"]/gmd:MD_Keywords/gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString');
 				$this->keywordsThesaurusName[$iKeyword] = $thesaurusName[0];
@@ -445,6 +446,8 @@ XML;
 				unset($thesaurusName);
 				$iKeyword++;
 			}
+			$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
+			$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
 			//solve problem with identical keywords for areas:
 			if ($this->inspireWholeArea == 0 && $this->inspireActualCoverage !== 0) {
 					$this->inspireWholeArea = $this->inspireActualCoverage;
@@ -452,6 +455,30 @@ XML;
 			if ($this->inspireWholeArea !== 0 && $this->inspireActualCoverage == 0) {
 					$this->inspireActualCoverage = $this->inspireWholeArea;
 			}
+			//extract keywords, that are defined via gmx:Anchor definitions
+			$AnchorKeywords = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gmx:Anchor');
+			foreach ($AnchorKeywords as $keyword) {
+			    $this->keywords[] = $keyword;
+			    $thesaurusName = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gmx:Anchor="'.$keyword.'"]/gmd:MD_Keywords/gmd:thesaurusName/gmd:CI_Citation/gmd:title/gmx:Anchor');
+			    $this->keywordsThesaurusName[$iKeyword] = $thesaurusName[0];
+			    /*
+			     * extract HVD category from dataset metadata as it is defined for Germany in future coming "Konventionen zu Metadaten" document
+			     * only use the gmx:Anchor variant !
+			     */
+			    //$e = new mb_exception("classes/class_iso19139.php - keyword: " . $keyword);
+			    $keywordAnchorHref = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gmx:Anchor="'.$keyword.'"]/gmd:MD_Keywords/gmd:keyword/gmx:Anchor/@xlink:href');
+			    $attributesJson = json_encode($keywordAnchorHref[0]);
+			    $attributesObj = json_decode($attributesJson);
+			    $uri = $attributesObj->{'@attributes'}->href;
+			    if (is_int($customCatHash[trim($uri)])) {
+			        $this->customCategories[] = $customCatHash[trim($uri)];
+			    }
+			    //$e = new mb_exception("classes/class_iso19139.php - keywordAnchorHref: " . json_encode($keywordAnchorHref));
+			    //$e = new mb_exception("classes/class_iso19139.php: customCategories: " . json_encode($this->customCategories));
+			    $iKeyword++;
+			}
+			$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
+			$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
 			$iKeyword = 0;
 			$this->isoCategoryKeys = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:topicCategory/gmd:MD_TopicCategoryCode');
 			//create mapbenders internal category objects
