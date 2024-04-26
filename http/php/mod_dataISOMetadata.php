@@ -1101,20 +1101,22 @@ SQL;
 		    $CI_Citation->appendChild($date1);
 		    $thesaurusName->appendChild($CI_Citation);
 		    $MD_Keywords->appendChild($thesaurusName);
-		    
+		    $descriptiveKeywords->appendChild($MD_Keywords);
+		    $MD_DataIdentification->appendChild($descriptiveKeywords);
 		} else {
 		    $keyword_cs = $iso19139->createElement("gco:CharacterString");
 		    $keywordText = $iso19139->createTextNode($row['custom_category_key']);
 		    $keyword_cs->appendChild($keywordText);
 		    $keyword->appendChild($keyword_cs);
 		    $MD_Keywords->appendChild($keyword); 
+		    $descriptiveKeywords->appendChild($MD_Keywords);
+		    $MD_DataIdentification->appendChild($descriptiveKeywords);
 		}
 		$countCustom++;
 	}
 	$e = new mb_notice("count custom categories: " . $countCustom);
 	//close decriptive keywords and generate a new entry for inspire themes:
-	$descriptiveKeywords->appendChild($MD_Keywords);
-	$MD_DataIdentification->appendChild($descriptiveKeywords);
+	
 	$descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
 	//****************************************************************************************************************************************************************************************
 	//keywords for INSPIRE themes:
