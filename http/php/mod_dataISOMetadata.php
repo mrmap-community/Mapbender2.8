@@ -1057,7 +1057,7 @@ SQL;
 		//define HVD base uri - this is used as key for HVD categories - if such an uri is found, get the german translation for the theme and add a thesaurus!
 		$hvdBaseUri = "http://data.europa.eu/bna/";
 		//in RLP the categories codes are extended: "HVD - " - this must be removed before exporting them ;-)
-		if (strpos($row['custom_category_key'], $hvdBaseUri) == 0) {
+		if (strpos($row['custom_category_key'], $hvdBaseUri) == 0 && $row['custom_category_key'] != 'inspireidentifiziert') {
 		    $e = new mb_exception("HVD cat found!");
 		    $keywordAnchor = $iso19139->createElement("gmx:Anchor");
 		    $keywordAnchorText = $iso19139->createTextNode(preg_replace("/^HVD - /", "", $row['custom_category_code_de']));
