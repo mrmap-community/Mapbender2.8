@@ -1019,11 +1019,13 @@ function fillISO19139($iso19139, $recordId)
 		$keyword->appendChild($keyword_cs);
 		$MD_Keywords->appendChild($keyword);
 	}
+	$descriptiveKeywords->appendChild($MD_Keywords);
+	$MD_DataIdentification->appendChild($descriptiveKeywords);
 	//pull special keywords from custom categories:
 
 	$sql = <<<SQL
 
-SELECT custom_category.custom_category_key FROM custom_category WHERE custom_category_id IN (
+SELECT custom_category.custom_category_key, custom_category.custom_category_code_de FROM custom_category WHERE custom_category_id IN (
 
 SELECT DISTINCT fkey_custom_category_id FROM (
 
@@ -1045,13 +1047,68 @@ SQL;
 	$res = db_prep_query($sql, $v, $t);
 	$e = new mb_notice("look for custom categories: ");
 	$countCustom = 0;
+	if (count($res) > 0) {
+	   $descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
+	   $MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
+	}
 	while ($row = db_fetch_array($res)) {
 		$keyword = $iso19139->createElement("gmd:keyword");
-		$keyword_cs = $iso19139->createElement("gco:CharacterString");
-		$keywordText = $iso19139->createTextNode($row['custom_category_key']);
-		$keyword_cs->appendChild($keywordText);
-		$keyword->appendChild($keyword_cs);
-		$MD_Keywords->appendChild($keyword);
+		$e = new mb_exception("custom_category_key: " . $row['custom_category_key']);
+		//define HVD base uri - this is used as key for HVD categories - if such an uri is found, get the german translation for the theme and add a thesaurus!
+		$hvdBaseUri = "http://data.europa.eu/bna/";
+		//in RLP the categories codes are extended: "HVD - " - this must be removed before exporting them ;-)
+		if (strpos($row['custom_category_key'], $hvdBaseUri) == 0) {
+		    $e = new mb_exception("HVD cat found!");
+		    $keywordAnchor = $iso19139->createElement("gmx:Anchor");
+		    $keywordAnchorText = $iso19139->createTextNode(preg_replace("/^HVD - /", "", $row['custom_category_code_de']));
+		    //$keywordAnchorText = $iso19139->createTextNode($row['custom_category_code_de']);
+		    $keywordAnchor->setAttribute("xlink:href", $row['custom_category_key']);
+		    $keywordAnchor->appendChild($keywordAnchorText);
+		    $keyword->appendChild($keywordAnchor);
+		    $MD_Keywords->appendChild($keyword); 
+		    //add thesaurus
+		    //part for the vocabulary - is always the same for the HVD themes
+		    $thesaurusName = $iso19139->createElement("gmd:thesaurusName");
+		    $CI_Citation = $iso19139->createElement("gmd:CI_Citation");
+		    $title = $iso19139->createElement("gmd:title");
+		     
+		    $titleAnchor = $iso19139->createElement("gmx:Anchor");
+		    $titleAnchorText = $iso19139->createTextNode("High-Value dataset categories");
+		    $titleAnchor->setAttribute("xlink:href", "http://data.europa.eu/bna/asd487ae75");
+		    $titleAnchor->appendChild($titleAnchorText);
+		    
+		    $title->appendChild($titleAnchor);
+		    $CI_Citation->appendChild($title);
+		    //$CI_Citation->appendChild($titleAnchor);
+		    
+		    $date1 = $iso19139->createElement("gmd:date");
+		    $CI_Date = $iso19139->createElement("gmd:CI_Date");
+		    $date2 = $iso19139->createElement("gmd:date");
+		    $gcoDate = $iso19139->createElement("gco:Date");
+		    $dateType = $iso19139->createElement("gmd:dateType");
+		    $dateTypeCode = $iso19139->createElement("gmd:CI_DateTypeCode");
+		    $dateTypeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
+		    $dateTypeCode->setAttribute("codeListValue", "publication");
+		    $dateTypeCodeText = $iso19139->createTextNode('publication');
+		    $dateText = $iso19139->createTextNode('2023-09-27');
+		    $dateTypeCode->appendChild($dateTypeCodeText);
+		    $dateType->appendChild($dateTypeCode);
+		    $gcoDate->appendChild($dateText);
+		    $date2->appendChild($gcoDate);
+		    $CI_Date->appendChild($date2);
+		    $CI_Date->appendChild($dateType);
+		    $date1->appendChild($CI_Date);
+		    $CI_Citation->appendChild($date1);
+		    $thesaurusName->appendChild($CI_Citation);
+		    $MD_Keywords->appendChild($thesaurusName);
+		    
+		} else {
+		    $keyword_cs = $iso19139->createElement("gco:CharacterString");
+		    $keywordText = $iso19139->createTextNode($row['custom_category_key']);
+		    $keyword_cs->appendChild($keywordText);
+		    $keyword->appendChild($keyword_cs);
+		    $MD_Keywords->appendChild($keyword); 
+		}
 		$countCustom++;
 	}
 	$e = new mb_notice("count custom categories: " . $countCustom);
