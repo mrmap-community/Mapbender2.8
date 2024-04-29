@@ -1114,6 +1114,8 @@ function fillISO19139($iso19139, $recordId)
 		$MD_DataIdentification->appendChild($graphicOverview);
 	}
 	
+	$inspireidentifiziert = false;
+	
 	/*
 	 * Get keywords from custom categories - they are normally based on controlled vocabularies
 	 */
@@ -1141,9 +1143,12 @@ SQL;
 	$t = array('i', 'i', 'i');
 	$res = db_prep_query($sql, $v, $t);
 	while ($row = db_fetch_array($res)) {
-	    if ($row['custom_category_key'] && $row['custom_category_key'] != '') {
+	    if ($row['custom_category_key'] && $row['custom_category_key'] != '' && $row['custom_category_key'] != 'inspireidentifiziert') {
 	        //use assiociative array
 	        $descriptiveCustomKeywords[$row['custom_category_key']] =  $row['custom_category_code_de'];
+	    }
+	    if ($row['custom_category_key'] == 'inspireidentifiziert') {
+	        $inspireidentifiziert = true;
 	    }
 	}
 	$descCustomKeywordsNode = generateDescriptiveKeywords($iso19139, $descriptiveCustomKeywords, $keywordType='custom');
@@ -1192,6 +1197,9 @@ SQL;
 	//generate keyword part - for services the inspire themes are not applicable!!!**********
 	//read keywords for resource out of the database/not only layer keywords also featuretype keywords if given!
 	$descriptiveStandardKeywords = array();
+	if ($inspireidentifiziert) {
+	    $descriptiveStandardKeywords[] = 'inspireidentifiziert';
+	}
 	$sql = "SELECT DISTINCT keyword.keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id";
 	$v = array((int)$mb_metadata['metadata_id']);
 	$t = array('i');
