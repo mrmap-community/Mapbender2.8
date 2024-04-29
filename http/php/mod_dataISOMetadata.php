@@ -1200,6 +1200,23 @@ SQL;
 	if ($inspireidentifiziert) {
 	    $descriptiveStandardKeywords[] = 'inspireidentifiziert';
 	}
+	//check opendata license
+	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
+	    $sql = "SELECT metadata_id, termsofuse.isopen from mb_metadata LEFT OUTER JOIN";
+	    $sql .= "  md_termsofuse ON  (mb_metadata.metadata_id = md_termsofuse.fkey_metadata_id) LEFT OUTER JOIN termsofuse ON";
+	    $sql .= " (md_termsofuse.fkey_termsofuse_id=termsofuse.termsofuse_id) where mb_metadata.metadata_id = $1";
+	    $v = array();
+	    $t = array();
+	    array_push($t, "i");
+	    array_push($v, (int)$mb_metadata['metadata_id']);
+	    $res = db_prep_query($sql,$v,$t);
+	    $row = db_fetch_array($res);
+	    if (isset($row['metadata_id'])) {
+	        if ($row['isopen'] == "1") {
+	            $descriptiveStandardKeywords[] = OPENDATAKEYWORD;
+	        }
+	    }
+	}
 	$sql = "SELECT DISTINCT keyword.keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id";
 	$v = array((int)$mb_metadata['metadata_id']);
 	$t = array('i');
