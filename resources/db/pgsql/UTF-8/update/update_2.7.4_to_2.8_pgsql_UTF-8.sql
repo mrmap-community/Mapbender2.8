@@ -2916,16 +2916,25 @@ UPDATE gui_element SET e_target = 'editMaintenance_collection, reindexWMS_collec
 CREATE TABLE custom_category_origin
 (
   id serial,
-  name character varying(255) NOT NULL,
+  name character varying(255),
   uri character varying(500) NOT NULL,
   type character varying(100) NOT NULL,
   CONSTRAINT custom_category_origin_pkey PRIMARY KEY (id)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE custom_category_origin
   OWNER TO postgres;
+
+-- Column: uuid
+
+-- ALTER TABLE custom_category_origin DROP COLUMN uuid;
+
+ALTER TABLE custom_category_origin ADD COLUMN uuid uuid;
+
+-- Column: upload_url
+
+-- ALTER TABLE custom_category_origin DROP COLUMN upload_url;
+
+ALTER TABLE custom_category_origin ADD COLUMN upload_url character varying(4096);
 
 
 ALTER TABLE custom_category ADD COLUMN fkey_custom_category_origin_id integer;
@@ -2959,10 +2968,30 @@ ALTER TABLE custom_category ADD COLUMN custom_category_parent_key VARCHAR(4096);
 
 ALTER TABLE custom_category ADD CONSTRAINT custom_category_key_unique_c UNIQUE (custom_category_key);
 
-ALTER TABLE custom_category
-ADD CONSTRAINT custom_category_key_parent_ibfk1 FOREIGN KEY (custom_category_parent_key)
-      REFERENCES custom_category (custom_category_key) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE CASCADE;
+
+-- Column: deletedate
+
+-- ALTER TABLE custom_category DROP COLUMN deletedate;
+
+ALTER TABLE custom_category ADD COLUMN deletedate timestamp without time zone;
+
+
+-- Column: lastchanged
+
+-- ALTER TABLE custom_category DROP COLUMN lastchanged;
+
+ALTER TABLE custom_category ADD COLUMN lastchanged timestamp without time zone;
+ALTER TABLE custom_category ALTER COLUMN lastchanged SET DEFAULT now();
+
+
+-- Column: createdate
+
+-- ALTER TABLE custom_category DROP COLUMN createdate;
+
+ALTER TABLE custom_category ADD COLUMN createdate timestamp without time zone;
+
+
+
 
 --remove application metadata from searchInterface for datasets
 -- View: search_dataset_view

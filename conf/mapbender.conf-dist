@@ -473,6 +473,11 @@ define("GPKG_ABSOLUTE_DOWNLOAD_URI", "https://www.geoportal.rlp.de/inspiredownlo
 # --------------------------------------------
 define("GPKG_AREA_LIMIT", "100");
 
+# --------------------------------------------
+# Export special keyword for opendata classified resources
+# --------------------------------------------
+#define("OPENDATAKEYWORD", "opendata");
+
 #
 ###HACK for GLOBALS
 $DBSERVER=DBSERVER;

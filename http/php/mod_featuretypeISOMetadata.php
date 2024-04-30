@@ -373,7 +373,25 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
                         $row['keyword']);
                 }
 	}
-
+	//check opendata license
+	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
+	    $sql = "SELECT wfs_id, termsofuse.isopen from wfs LEFT OUTER JOIN";
+	    $sql .= "  wfs_termsofuse ON  (wfs.wfs_id = wfs_termsofuse.fkey_wfs_id) LEFT OUTER JOIN termsofuse ON";
+	    $sql .= " (wfs_termsofuse.fkey_termsofuse_id=termsofuse.termsofuse_id) where wfs.wfs_id = $1";
+	    $v = array();
+	    $t = array();
+	    array_push($t, "i");
+	    array_push($v, (int)$mbMeta['wfs_id']);
+	    $res = db_prep_query($sql,$v,$t);
+	    $row = db_fetch_array($res);
+	    if (isset($row['wfs_id'])) {
+	        if ($row['isopen'] == "1") {
+	            $xmlBuilder->addValue($MD_Metadata,
+	                './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
+	                OPENDATAKEYWORD);
+	        }
+	    }
+	}
 	//pull special keywords from custom categories:	
 	$sql = "SELECT custom_category.custom_category_key FROM custom_category, wfs_featuretype_custom_category ftcc WHERE ftcc.fkey_featuretype_id = $1 AND ftcc.fkey_custom_category_id =  custom_category.custom_category_id AND custom_category_hidden = 0";
 	$v = array((integer)$recordId);

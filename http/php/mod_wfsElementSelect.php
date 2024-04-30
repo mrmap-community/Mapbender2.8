@@ -96,7 +96,8 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
             foreach ($elementInfo->element_names as $element_name) {
                 $value = str_replace("%%element[" . $element_index . "]%%", $result[$elementInfo->element_names[$element_index]][$list_index], $value);
                 if ($wfs_select_conf->option_value_ltrim) {
-                    $value = ltrim($value, $wfs_select_conf->option_value_ltrim);
+                    //$value = ltrim($value, $wfs_select_conf->option_value_ltrim);
+                    $value = preg_replace('/^' . $wfs_select_conf->option_value_ltrim . '/', '', $value);
                 }
                 if ($wfs_select_conf->option_value_cast_type) {
                     switch($wfs_select_conf->option_value_cast_type) {
@@ -108,7 +109,7 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
                 $text = str_replace("%%element[" . $element_index . "]%%", $result[$elementInfo->element_names[$element_index]][$list_index], $text);
                 $element_index++;
             }
-            $html_snippet .= "<option value='" . $value . "'>" . $text . "</option>\n";
+            $html_snippet .= "<option value='" . (string)$value . "'>" . $text . "</option>\n";
             $list_index++;
         }
         $html_snippet .= "</select>\n";
