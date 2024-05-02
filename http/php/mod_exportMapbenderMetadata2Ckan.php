@@ -375,9 +375,15 @@ if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     $testMatch = NULL;
 }
 $forceCache = true;
-$baseUrlPortal = "https://www.geoportal.rlp.de";
-$mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
+if (DEFINED('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
+    $baseUrlPortal = str_replace('/mapbender', '', MAPBENDER_PATH);
+    $mapbenderBaseUrl = MAPBENDER_PATH . '/';
+} else {
+    $baseUrlPortal = "https://www.geoportal.rlp.de";
+    $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
+}
 $mapbenderWebserviceUrl = $mapbenderBaseUrl;
+//use localhost to invoke search interface - will be much faster
 $mapbenderWebserviceUrl = "http://localhost/mapbender/";
 
 $cache = new Cache();
@@ -909,6 +915,28 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_2;
+                                        break;
+                                    case "remotelist":
+                                        $atomFeedAccessResource_3 = array("name" => "Download nach EU-Standard",
+                                        "description" => $value1->serviceTitle,
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_atom_feed_remotelist_" . $value1->serviceId,
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
+                                        );
+                                        $resourceArray[] = $atomFeedAccessResource_3;
+                                        break;
+                                    case "distribution":
+                                        $otherAccessResource_4 = array("name" => "Sonstiger Zugriff",
+                                        "description" => $value1->serviceTitle,
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_other_distribution_" . md5($value1->accessClient),
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
+                                        );
+                                        $resourceArray[] = $otherAccessResource_4;
                                         break;
                                 }
                                 //build ckan resource records for the atomfeed entries -> atomfeed xml, atomfeed html, maybe ogc api features interface
