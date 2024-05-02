@@ -769,7 +769,9 @@ function checkSrs(){
 				if(submit)submit.disabled = false;
 				if(submit_attr)submit_attr.disabled = false;
 				var msg = '<?php echo _mb("Please note: Wfs featuretype is  not requested in default srs, other srs is used (variation of transformation possible)! ");?>';
-				alert(msg);
+				if (displaySrsWarning != false) {
+					alert(msg);
+				}
 				return true;
 			}
 			else {
