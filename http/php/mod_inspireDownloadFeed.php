@@ -2396,7 +2396,9 @@ function fillMapbenderMetadata($dbResult, $generateFrom) {
 					}
 					if (count($mapbenderMetadata[$indexMapbenderMetadata]->output_formats) < 1) {
 						//set default output format to gml2 TODO - check if senseful
-						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "text/xml; subtype=gml/2.1.2";
+						//$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "text/xml; subtype=gml/2.1.2";
+						//- !!additional change in /data/mapbender/http/javascripts/mb_downloadFeedClient.php needed to encode "+"
+						$mapbenderMetadata[$indexMapbenderMetadata]->output_formats[0] = "application/gml+xml; version=3.2";
 					}
 					$mapbenderMetadata[$indexMapbenderMetadata]->output_formats = array_unique($mapbenderMetadata[$indexMapbenderMetadata]->output_formats);
 					//get geometry field name from featuretype information out of mapbender database
