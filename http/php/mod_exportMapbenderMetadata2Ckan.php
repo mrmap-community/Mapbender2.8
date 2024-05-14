@@ -362,6 +362,8 @@ $license_map = array(
 //require_once(dirname(__FILE__)."/../classes/class_syncCkan.php");
 $start = microtime(true);
 
+$ckanId = false;
+
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     //validate to csv integer list
     $testMatch = $_REQUEST["id"];
@@ -374,6 +376,20 @@ if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     $id = $testMatch;
     $testMatch = NULL;
 }
+
+if (isset($_REQUEST["ckanId"]) & $_REQUEST["ckanId"] != "") {
+    //validate to csv integer list
+    $testMatch = $_REQUEST["ckanId"];
+    $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
+    if (!preg_match($pattern,$testMatch)){
+        //echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo '{"success": false, "help": "Parameter ckanId is not valid (uuid)"}';
+        die();
+    }
+    $ckanId = $testMatch;
+    $testMatch = NULL;
+}
+
 $forceCache = true;
 if (DEFINED('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
     $baseUrlPortal = str_replace('/mapbender', '', MAPBENDER_PATH);
@@ -385,7 +401,7 @@ if (DEFINED('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
 $mapbenderWebserviceUrl = $mapbenderBaseUrl;
 //use localhost to invoke search interface - will be much faster
 $mapbenderWebserviceUrl = "http://localhost/mapbender/";
-
+//$mapbenderWebserviceUrl = "https://www.geoportal.rlp.de/mapbender/";
 $cache = new Cache();
 
 $cacheVariableName = md5($mapbenderBaseUrl. "ckan_metadata_" . $id);
@@ -532,17 +548,43 @@ if ($outputFormat == 'rdfxml') {
     //build organization part
     //get organisation list from webservice
     $connector = new connector();   
-    $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
-    $orgaListObject = json_decode($orgaListResult);
-    $orgaIdArray = array();
-    foreach ($orgaListObject->organizations as $orga) {
-        $orgaIdArray[] = (integer)$orga->id;
+    //load organization list from openDataOrganisations in case of parameter ckanId
+    if ($ckanId) {
+        $openOrgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOpenDataOrganizations.php?showOnlyDatasetMetadata=true");
+        //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: openOrgaListResult: " . $openOrgaListResult);
+        $openOrgaListObject = json_decode($openOrgaListResult);
+        $openOrgaIdArray = array();
+        $openOrgaSerialIdArray = array();
+        foreach ($openOrgaListObject as $orga) {
+            $openOrgaIdArray[] = (string)$orga->id;
+            $openOrgaSerialIdArray[] = (string)$orga->serialId;
+        }
+        //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: openOrgaIdArray: " . json_encode($openOrgaIdArray));
+        //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: ckanId: " . $ckanId);
+        if (!in_array($ckanId, $openOrgaIdArray)) {
+            header('Content-Type: application/json');
+            echo '{"success": false, "help": "There is no open data organization with requested uuid in the catalogue!"}';
+            die();
+        } else {
+            $key = array_search ($ckanId, $openOrgaIdArray);
+            $id = $openOrgaSerialIdArray[$key];
+        }
+    } else {
+        $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
+        //$e = new mb_exception("try to load: " . $mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
+        //$e = new mb_exception("result: " . $orgaListResult);
+        $orgaListObject = json_decode($orgaListResult);
+        $orgaIdArray = array();
+        foreach ($orgaListObject->organizations as $orga) {
+            $orgaIdArray[] = (integer)$orga->id;
+        } 
+        if (!in_array($id, $orgaIdArray)) {
+            header('Content-Type: application/json');
+            echo '{"success": false, "help": "There is no organization with requested id in the catalogue!"}';
+            die();
+        }
     }
-    if (!in_array($id, $orgaIdArray)) {
-        header('Content-Type: application/json');
-        echo '{"success": false, "help": "There is no organization with requested id in the catalogue!"}';
-        die();
-    }
+
     //get single orga info
     $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: organization: " . $orgaResult);
