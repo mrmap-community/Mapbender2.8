@@ -888,7 +888,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                 $layerViewResource_2 = array("name" => "GeoPortal.rlp",
                                     "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
                                     "format" => "HTML",
-                                    "url" => $basUrlPortal . "/maps?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
+                                    "url" => $baseUrlPortal . "/maps?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
                                     "id" => $gpDataset->uuid . "_geoportal_layer_" . $value1->id,
                                     "license_id" => $layerLicenseId
                                 );
@@ -1254,7 +1254,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                             $layerViewResource_2 = array("name" => "GeoPortal.rlp",
                                 "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
                                 "format" => "GeoPortal.rlp",
-                                "url" => $basUrlPortal . "/maps?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
+                                "url" => $baseUrlPortal . "/maps?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
                                 "id" => $package[$j]->id . "_geoportal_layer_" . $value1->id
                             );
                             $layerMetadataResource = array("name" => "Originäre Metadaten für Kartenebene",
