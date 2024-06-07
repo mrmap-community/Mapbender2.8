@@ -465,7 +465,23 @@ class SpatialDataCache():
                 if (len(entry) > 0):
                     #log.info(entry[0].attrib['href'])
                     # get dataset feed
-                    r = requests.get(entry[0].attrib['href'])
+                    # use timeout here!
+                    try:
+                        r = requests.get(entry[0].attrib['href'], timeout=30)
+                        #print(r.status_code)
+                    except requests.exceptions.Timeout:
+                        log.info("dataset feed needs more than 30 seconds - timeout reached")
+                        error_messages.append('ATOM Feed: needs more than 30 seconds - timeout reached')
+                        error_messages.append('Service is not usable for downloading dataset') 
+                        return_object['service_type'] = service_type
+                        return_object['service_version'] = service_version
+                        return_object['possible_dataset_type'] = possible_dataset_type
+                        return_object['access_uri'] = access_uri
+                        return_object['service_resource_name'] = service_resource_name
+                        return_object['error_messages'] = error_messages
+                        return json.dumps(return_object)
+
+                    #r = requests.get(entry[0].attrib['href'])
                     # log.info(r.text)
                     tree = ET.fromstring(r.text)
                     access_uri = entry[0].attrib['href']
