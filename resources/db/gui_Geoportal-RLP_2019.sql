@@ -1,4 +1,7 @@
 INSERT INTO gui (gui_id, gui_name, gui_description, gui_public) VALUES ('Geoportal-RLP_2019','Geoportal-RLP_2019','geheime GUI',1);
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','logo',1,0,'layout Logo unten links ','Hier gelangen Sie zum Geoportal Rheinland-Pfalz','img','../img/logo-geoportal.png','onclick="javascript:window.open(''https://www.geoportal.rlp.de'','''','''');"',NULL ,NULL,NULL ,NULL,NULL ,'margin-left: 15px;margin-top:3px;width:12em;position:relative;cursor:pointer;float:left;','','','','','','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_widget',1,0,'jQuery UI widget','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.widget.js','','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_position',1,0,'jQuery UI position','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.position.min.js','','','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','changeEPSG_Button',1,1,'','Kartenprojektion ändern','A','','',NULL ,NULL,NULL ,NULL,NULL ,'','<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M5.79707 11C5.73231 10.3643 5.7 9.69336 5.7 9C5.7 8.30664 5.73231 7.6357 5.79707 7H3.34141C3.12031 7.62556 3 8.29873 3 9C3 9.70127 3.12031 10.3744 3.34141 11H5.79707ZM5.9309 12H3.80269C4.45843 13.1336 5.47437 14.0327 6.69401 14.5409C6.35031 13.8478 6.09615 12.9816 5.9309 12ZM12.2029 11H14.6586C14.8797 10.3744 15 9.70127 15 9C15 8.29873 14.8797 7.62556 14.6586 7H12.2029C12.2677 7.6357 12.3 8.30664 12.3 9C12.3 9.69336 12.2677 10.3643 12.2029 11ZM12.0691 12C11.9038 12.9816 11.6497 13.8478 11.306 14.5409C12.5256 14.0327 13.5416 13.1336 14.1973 12H12.0691ZM7.1138 11H10.8862C10.9599 10.3744 11 9.70127 11 9C11 8.29873 10.9599 7.62556 10.8862 7H7.1138C7.0401 7.62556 7 8.29873 7 9C7 9.70127 7.0401 10.3744 7.1138 11ZM7.26756 12C7.61337 13.7934 8.25972 15 9 15C9.74028 15 10.3866 13.7934 10.7324 12H7.26756ZM5.9309 6C6.09615 5.01844 6.35031 4.15217 6.69401 3.45913C5.47437 3.9673 4.45843 4.86643 3.80269 6H5.9309ZM12.0691 6H14.1973C13.5416 4.86643 12.5256 3.9673 11.306 3.45913C11.6497 4.15217 11.9038 5.01844 12.0691 6ZM7.26756 6H10.7324C10.3866 4.2066 9.74028 3 9 3C8.25972 3 7.61337 4.2066 7.26756 6ZM9 17C4.58172 17 1 13.4183 1 9C1 4.58172 4.58172 1 9 1C13.4183 1 17 4.58172 17 9C17 13.4183 13.4183 17 9 17Z" fill="currentColor"/>
 </svg>EPSG','A','../plugins/mb_button.js','','changeEPSG','','');
@@ -10,14 +13,7 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
     margin: 5px;
 }
 /* END INSERT changeEPSG_Button -> elementVar -> css(text/css) */','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_datatables',1,1,'Includes the jQuery plugin datatables, use like this $(selector).datatables(options)','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','../plugins/jq_datatables.js','../extensions/dataTables-1.5/media/js/jquery.dataTables.min.js','','','http://www.datatables.net/');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jq_datatables','defaultCss','../extensions/dataTables-1.5/media/css/demo_table_jui.css','','file/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','changeEPSG',1,1,'change EPSG, Postgres required, overview is targed for full extent
-position:fixed;bottom:15px;left:15px;','Kartenprojektion ändern','select','','',15,NULL ,186,24,1000,'padding:3px;font-size:12px;border:solid 1px #ABADB3;','<option value="">undefined</option>','select','mod_changeEPSG.php','../extensions/proj4js/lib/proj4js-compressed.js','overview,mapframe1','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','changeEPSG','projections','EPSG:4326;Geographic Coordinates,EPSG:25832;UTM zone 32N,EPSG:31467;Gauss-Krueger 3','','php_var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','kml',1,1,'','','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','','../../lib/mb.ui.displayKmlFeatures.js','','','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_upload',1,1,'','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../plugins/jq_upload.js','','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_widget',1,1,'jQuery UI widget','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.widget.js','','','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','wfsConfTree',1,1,'list-style-type:none;position:relative;display:inline-block;top:0px;padding: 0;  margin: 0;z-index:305','Flurstück suchen','ul','','title="Nach Flurstücken suchen"',NULL ,NULL,NULL ,NULL,NULL ,'','','ul','../plugins/wfsConfTree_single.js','','mapframe1','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','wfsConfTree','FLST_Form_css','/* INSERT wfsconftree -> elementVar -> FLST_Form_css(text/css) */
 #wfsForm {
@@ -101,28 +97,79 @@ border:none !important;
 }
 /* END INSERT wfsconftree -> elementVar -> wfsconftree MenuButton(text/css) */','','text/css');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','wfsConfTree','wfs_spatial_request_conf_filename','wfs_default.conf','','php_var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_position',1,1,'jQuery UI position','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.position.min.js','','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','mobile_Map',1,0,'','','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_mobile.js','','mapframe1','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','sessionWmc',1,1,'','Please confirm','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_sessionWmc.js','','','mapframe1','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','displayTermsOfUse','1','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','specialCondition','<fieldset><p>Mit der weiteren Nutzung des Geoportals Rheinland-Pfalz akzeptieren Sie unsere <a class="external-link"  target="_parent" href="../../article/Rechtshinweis/">Nutzungsbedingungen</a>.</p></fieldset>','<fieldset><p>Fill specialCondition</p></fieldset>','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','specialConditionCSS','a.external-link{
-font-size:inherit;
-line-height:inherit;
-font-family:inherit;
-color:#D51F28;
-Background:url("../../portal/fileadmin/design/extlink.png")right center no-repeat, URL("../../portal/fileadmin/design/bullet_red.png")left center no-repeat;
-padding:0 13px 0 9px;
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','body',1,1,'body (obligatory)Javascripts: ../geoportal/mod_revertGuiSessionSettings.php
+','','body','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/wz_jsgraphics.js,geometry.js,../extensions/RaphaelJS/raphael-1.4.7.min.js,../extensions/spectrum-min.js,../extensions/uuid.js,../extensions/tokml.js,../extensions/togpx.js','','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','buttonsCSS','/* INSERT body -> elementVar -> buttonCSS(text/css) */
+.myOnClass,.myOverClass{background-color:#EEE !important;color:#333 !important;}
+.myOnClass{border-bottom: 1px solid #d62029 !important;}
+#Div_collection2 img{border-bottom:1px solid transparent;}
+#zoomFull:hover,#zoomOut1:hover,#zoomIn1:hover {background-color: #EEE;cursor:pointer;}
+/* END INSERT body -> elementVar -> buttonCSS(text/css) */','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','cacheGuiHtml','true','','php_var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','css_file_wfstree_single','../css/wfsconftree2.css','','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','favicon','../img/favicon.png','favicon','php_var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','fontsize','.ui-widget{font-size:0.9em !important}','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','includeWhileLoading','../geoportal/geoportal_splash_2019.php','','php_var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','jq_ui_autocomplete_css','../css/jquery.ui.autocomplete.2019.css','file/css','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','jq_ui_effects_transfer','.ui-effects-transfer { z-index:1003; border: 2px dotted gray; } ','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','jq_ui_theme','../extensions/jquery-ui-1.7.2.custom/css/smoothness/jquery-ui-1.7.2.custom.css','UI Theme from Themeroller','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','popupcss','../css/popup.css','file css','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','print_css','../geoportal/print_div.css','','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','tablesortercss','../css/tablesorter.css','file css','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','ui-dialog-override-css','/* INSERT body -> elementVar -> ui-dialog-override-css(text/css) */
+.ui-dialog {
+max-width: 85vw;
+max-height: 85vh;
+position:absolute;
+padding-top:unset !important;
+padding-right:unset !important;
+padding-bottom:1.2em !important;
+padding-left:unset !important;
+box-shadow: 0 5px 10px -2px rgb(201, 202, 202);
 }
-a.external-link:hover{
-text-decoration:underline;
+		.ui-dialog-content{
+			max-width: 80vw;
+			max-height: 70vh;
+		}
+.ui-corner-all {
+    -moz-border-radius: unset;
+    -webkit-border-radius: unset;
 }
-','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','tou_css','#sessionWmc_constraint_form tbody tr {display:block;}
-  #sessionWmc_constraint_form tbody td {display:block;padding: 0 0 15px 3px;} 
-  #sessionWmc_constraint_form fieldset {font-size: 0.88em;line-height:  165%;}','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui',1,1,'The jQuery UI core','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.core.min.js','','','');
+.ui-widget-content {
+    border: 1px solid #aaa;
+}
+
+.ui-widget {
+    font-family: Helvetica,Arial,sans-serif;
+    font-size: 1.1em;
+    letter-spacing: 1px;
+}
+
+.ui-widget-header {
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    border-bottom: 1px solid #aaaaaa;
+    background: none;
+}
+#loadwmc_wmclist, #kml-from-wmc {
+padding:0.1em !important;
+}
+/* END INSERT body -> elementVar -> ui-dialog-override-css(text/css) */','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','use_load_message','true','','php_var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','tinySliderModule',1,1,'','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/tiny-slider-master/dist/min/tiny-slider.js','','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_datatables',1,1,'Includes the jQuery plugin datatables, use like this $(selector).datatables(options)','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','../plugins/jq_datatables.js','../extensions/dataTables-1.5/media/js/jquery.dataTables.min.js','','','http://www.datatables.net/');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jq_datatables','defaultCss','../extensions/dataTables-1.5/media/css/demo_table_jui.css','','file/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','changeEPSG',1,1,'change EPSG, Postgres required, overview is targed for full extent
+position:fixed;bottom:15px;left:15px;','Kartenprojektion ändern','select','','',15,NULL ,186,24,1000,'padding:3px;font-size:12px;border:solid 1px #ABADB3;','<option value="">undefined</option>','select','mod_changeEPSG.php','../extensions/proj4js/lib/proj4js-compressed.js','overview,mapframe1','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','changeEPSG','projections','EPSG:4326;Geographic Coordinates,EPSG:25832;UTM zone 32N,EPSG:31467;Gauss-Krueger 3','','php_var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui',1,1,'The jQuery UI core','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/js/jquery-ui-1.8.16.custom.min.js','','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jq_ui','css','../extensions/jquery-ui-1.7.2.custom/css/ui-lightness/jquery-ui-1.7.2.custom.css','','file/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','Div_collection2',1,1,'NAVIGATION Put existing divs in new div object. List the elements comma-separated under target, and make sure they have a title.','','div','','',NULL ,NULL,NULL ,NULL,100,'width:100%;background-color:rgba(255,255,255,0.97);position:relative;top:0em;right: 0;box-shadow: 0 5px 10px -2px rgb(201, 202, 202);display:inline-block;','','div','../plugins/mb_div_collection.js','','mapsContainer,toolbarContainer,toolbar,app_metadata,jsonAutocompleteGazetteer','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','Div_collection2','css','#Div_collection2:hover{z-index:1050 !important}','','text/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','mobile_Map',1,0,'','','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_mobile.js','','mapframe1','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','applicationMetadata',1,1,'','Application info','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mod_applicationMetadata.php','','','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','applicationMetadata','displayTermsOfUse','1','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','app_metadata',1,1,'','','div','','class="toggleAppMetadata" title="App-Metadaten"',NULL ,NULL,NULL ,NULL,NULL ,'','<div id="appMetadataLogo"><img src="https://www.geoportal.rlp.de/static/useroperations/images/logo-gdi.png"></div><div id="appMetadataTitle">GeoPortal.rlp</div><svg style="transform:rotate(180deg);" width="17" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M16.0142 11.6191L14.6042 13.0291L9.01416 7.43914L3.42416 13.0291L2.01416 11.6191L9.01416 4.61914L16.0142 11.6191Z" stroke="currentColor" stroke-width="2"></path>
 </svg>
@@ -239,71 +286,57 @@ border-right: 2px solid #DDD !important;
 }
 
 /* END INSERT app_metadata-> elementVar -> css(text/css) */','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','Div_collection2',1,1,'NAVIGATION Put existing divs in new div object. List the elements comma-separated under target, and make sure they have a title.','','div','','',NULL ,NULL,NULL ,NULL,100,'width:100%;background-color:rgba(255,255,255,0.97);position:relative;top:0em;right: 0;box-shadow: 0 5px 10px -2px rgb(201, 202, 202);display:inline-block;','','div','../plugins/mb_div_collection.js','','mapsContainer,toolbarContainer,toolbar,app_metadata,jsonAutocompleteGazetteer','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','applicationMetadata',1,1,'','Application info','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mod_applicationMetadata.php','','','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','applicationMetadata','displayTermsOfUse','1','','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','tinySliderModule',1,1,'','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/tiny-slider-master/dist/min/tiny-slider.js','','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','body',1,1,'body (obligatory)Javascripts: ../geoportal/mod_revertGuiSessionSettings.php
-','','body','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/wz_jsgraphics.js,geometry.js,../extensions/RaphaelJS/raphael-1.4.7.min.js,../extensions/spectrum-min.js,../extensions/uuid.js,../extensions/tokml.js,../extensions/togpx.js','','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','includeWhileLoading','../geoportal/geoportal_splash.php','','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','jq_ui_theme','../extensions/jquery-ui-1.7.2.custom/css/smoothness/jquery-ui-1.7.2.custom.css','UI Theme from Themeroller','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','popupcss','../css/popup.css','file css','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','tablesortercss','../css/tablesorter.css','file css','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','fontsize','.ui-widget{font-size:0.9em !important}','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','print_css','../geoportal/print_div.css','','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','use_load_message','true','','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','favicon','../img/favicon.png','favicon','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','jq_ui_effects_transfer','.ui-effects-transfer { z-index:1003; border: 2px dotted gray; } ','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','jq_ui_autocomplete_css','../css/jquery.ui.autocomplete.2019.css','file/css','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','buttonsCSS','/* INSERT body -> elementVar -> buttonCSS(text/css) */
-.myOnClass,.myOverClass{background-color:#EEE !important;color:#333 !important;}
-.myOnClass{border-bottom: 1px solid #d62029 !important;}
-#Div_collection2 img{border-bottom:1px solid transparent;}
-#zoomFull:hover,#zoomOut1:hover,#zoomIn1:hover {background-color: #EEE;cursor:pointer;}
-/* END INSERT body -> elementVar -> buttonCSS(text/css) */','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','css_file_wfstree_single','../css/wfsconftree2.css','','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','ui-dialog-override-css','/* INSERT body -> elementVar -> ui-dialog-override-css(text/css) */
-.ui-dialog {
-max-width: 85vw;
-max-height: 85vh;
-position:absolute;
-padding-top:unset !important;
-padding-right:unset !important;
-padding-bottom:1.2em !important;
-padding-left:unset !important;
-box-shadow: 0 5px 10px -2px rgb(201, 202, 202);
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','sessionWmc',1,1,'','Please confirm','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_sessionWmc.js','','','mapframe1','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','displayTermsOfUse','1','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','specialCondition','<fieldset><p>Mit der weiteren Nutzung des Geoportals Rheinland-Pfalz akzeptieren Sie unsere <a class="external-link"  target="_parent" href="../../article/Rechtshinweis/">Nutzungsbedingungen</a>.</p></fieldset>','<fieldset><p>Fill specialCondition</p></fieldset>','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','specialConditionCSS','a.external-link{
+font-size:inherit;
+line-height:inherit;
+font-family:inherit;
+color:#D51F28;
+Background:url("../../portal/fileadmin/design/extlink.png")right center no-repeat, URL("../../portal/fileadmin/design/bullet_red.png")left center no-repeat;
+padding:0 13px 0 9px;
 }
-		.ui-dialog-content{
-			max-width: 80vw;
-			max-height: 70vh;
-		}
-.ui-corner-all {
-    -moz-border-radius: unset;
-    -webkit-border-radius: unset;
+a.external-link:hover{
+text-decoration:underline;
 }
-.ui-widget-content {
-    border: 1px solid #aaa;
-}
-
-.ui-widget {
-    font-family: Helvetica,Arial,sans-serif;
-    font-size: 1.1em;
-    letter-spacing: 1px;
-}
-
-.ui-widget-header {
-    border-top: none;
-    border-right: none;
-    border-left: none;
-    border-bottom: 1px solid #aaaaaa;
-    background: none;
-}
-#loadwmc_wmclist, #kml-from-wmc {
-padding:0.1em !important;
-}
-/* END INSERT body -> elementVar -> ui-dialog-override-css(text/css) */','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','body','cacheGuiHtml','false','','php_var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','logo',1,0,'layout Logo unten links ','Hier gelangen Sie zum Geoportal Rheinland-Pfalz','img','../img/logo-geoportal.png','onclick="javascript:window.open(''https://www.geoportal.rlp.de'','''','''');"',NULL ,NULL,NULL ,NULL,NULL ,'margin-left: 15px;margin-top:3px;width:12em;position:relative;cursor:pointer;float:left;','','','','','','','');
+','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','sessionWmc','tou_css','#sessionWmc_constraint_form tbody tr {display:block;}
+  #sessionWmc_constraint_form tbody td {display:block;padding: 0 0 15px 3px;} 
+  #sessionWmc_constraint_form fieldset {font-size: 0.88em;line-height:  165%;}','','text/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','selArea1',2,1,'ABHÄNGIGKEITEN
+zoombox
+<img..>../img/button_hessen/zoomArea4_off.png','Ausschnitt durch Aufziehen einer Fläche vergrößern','A','','',NULL ,NULL,NULL ,NULL,NULL ,'','<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24.000001" height="19" width="19">
+<path d="M15.139163 1041.2225c-.392993 1.7467-2.217698 2.2202-2.217698 2.2202l7.392464 7.4007 2.217697-2.2201z" fill-rule="evenodd" stroke="none" stroke-width="1.56905377" stroke-linejoin="round" transform="matrix(1.04595 0 0 1.0464 -.49952522 -1076.3057)" fill="currentColor"></path>
+<path d="M1.1597145 1037.5041c0 4.4746 3.6230358 8.1021 8.0922782 8.1021 4.4692413 0 8.0922783-3.6275 8.0922783-8.1021 0-4.4747-3.623037-8.1023-8.0922783-8.1023-4.4692424 0-8.0922782 3.6276-8.0922782 8.1023z" fill="none" stroke="currentColor" stroke-width="1.56905377" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="7" transform="matrix(1.04595 0 0 1.0464 -.49952522 -1076.3057)"></path>
+<g fill="none" stroke="currentColor" stroke-width="2.9000001" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.1501655 1032.8214v8.6M13.450165 1037.1214H4.8501655" overflow="visible" transform="matrix(1.04595 0 0 1.0464 -.39301842 -1075.90534813)"></path>
+</g>
+<path d="M18.72204773 16.33189514l-2.0919064-2.092796-2.09190744 2.092796 2.09190744 2.092796z" fill-rule="evenodd" fill="currentColor"></path>
+</svg>
+Auswahl vergrößern','A','mod_selArea.js','mod_box1.js','mapframe1','','http://www.mapbender.org/index.php/SelArea1');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','selArea1','css','#selArea1 svg {
+padding: 15px 14px 15px 17px;
+border-left: 1px solid #DDD;
+color: #777;
+background-color: rgba(255,255,255,0.98);}
+#selArea1 svg:hover {color: #333;background-color: #EEE;}','','text/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','loadwmc',2,1,'load workspace from WMC
+SRC: ../img/button_hessen/wmcload_off.png
+Attributes: onmouseover=''this.src = this.src.replace(/_off/,"_over");''  onmouseout=''this.src = this.src.replace(/_over/, "_off");''','Meine Themen verwalten','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','mod_loadwmc.php','popup.js','mapframe1','jq_ui_dialog,jq_ui_tabs,jq_upload,jq_datatables','http://www.mapbender.org/index.php/LoadWMC');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','allowResize','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','deleteWmc','1','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogHeight','550','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogWidth','350','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','editWmc','0','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','loadFromSession','1','','php_var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','mobileUrl','1','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','mobileUrlNewWindow','0','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','publishWmc','0','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','reinitializeLoadWmc','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','saveWmcTarget','savewmc','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','showPublic','0','','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','loadData',2,1,'IFRAME to load data','','iframe','../html/mod_blank.html','frameborder = "0" ',0,0,1,1,NULL ,'visibility:visible','','iframe','','','','','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','vis_timeline',2,1,'VIS Core','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/vis/dist/vis.js','','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','vis_timeline','file_vis_css','../extensions/vis/dist/vis.css','','file/css');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','digitize_widget',2,1,'Digitize
@@ -1051,10 +1084,6 @@ fill="currentColor" stroke="none">
 l-1133 6 0 1554 0 1554 -730 0 -730 0 0 -2305z"/>
 </g>
 </svg>Speichern','a','mod_savewmc.php','','mapframe1','jq_ui_dialog','http://www.mapbender.org/index.php/SaveWMC');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','lzwCompressed','false','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','overwrite','1','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','saveInSession','1','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','dialogHeight','650','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','css','/* INSERT savewmc -> elementVar -> css(text/css) */
 #savewmc_saveWMCForm label {
 margin: 7px 0px 4px 0px;}
@@ -1073,31 +1102,10 @@ letter-spacing:1px;}
 .wmcIsoTopicCategory {
 margin-right: 10px;}
 /* END INSERT savewmc -> elementVar -> css(text/css) */','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','featureInfo1',2,1,'FeatureInfoRequest','Datenabfrage','img','../img/geoportal2019/infoabfrage_off.svg','',NULL ,NULL,NULL ,NULL,3,'cursor:pointer;','','','mod_featureInfo.php','','mapframe1','','http://www.mapbender.org/index.php/FeatureInfo');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoDrawClick','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoLayerPopup','true','display featureInfo in dialog popup','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoLayerPreselect','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoPopupHeight','600','height of the featureInfo dialog popup','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoPopupWidth','550','width of the featureInfo dialog popup','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','reverseInfo','true','Reorder featureInfo result','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoPopupPosition','[20,80]','position of the featureInfoPopup [left,top]','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoCollectLayers','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoShowKmlTreeInfo','true','only if kmltree included in gui','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','resizeMapsize',2,1,'resize_mapsize -auto-','','div','','',1,1,1,1,NULL ,'div','','','mod_resize_mapsize.js','','mapframe1','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resizeMapsize','adjust_width','','to adjust the width of the mapframe on the right side of the window','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resizeMapsize','adjust_height','','to adjust the height of the mapframe on the bottom of the window','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resizeMapsize','resize_option','auto','auto (autoresize on load), button (resize by button)','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','layout_nutzungsbedingungen',2,0,'layout, ','Nutzungsbedingungen','div','','onclick="javascript:window.open(''http://10.176.178.10/mapbender/php/mod_getWmcDisclaimer.php?&id=25&languageCode=de&withHeader=true&hostName='','''','''');"',NULL ,NULL,NULL ,NULL,5,'position:fixed;width:150px;bottom:0px;right:0px;background-color:rgba(255,255,255,1);cursor:pointer;','Nutzungsbedingungen','div','','','','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','mousewheelZoom',2,1,'adds mousewheel zoom to map module (target)','Mousewheel zoom','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','mod_mousewheelZoom.js','../extensions/jquery.mousewheel.min.js','mapframe1','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mousewheelZoom','factor','2','The factor by which the map is zoomed on each mousewheel unit','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_mouse',2,1,'jQuery UI mouse','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.mouse.min.js','','jq_ui_widget','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','printPDF',2,1,'pdfprint','Druck','div','','',NULL ,NULL,250,231,5,'','<div id="printPDF_working_bg"></div><div id="printPDF_working"><img src="../img/indicator_wheel.gif" style="padding:10px 0 0 10px">Generating PDF</div><div id="printPDF_input"><form id="printPDF_form" action="../print/printFactory.php"><div id="printPDF_selector"></div><div class="print_option"><input type="hidden" id="map_url" name="map_url" value=""/><input type="hidden" id="legend_url" name="legend_url" value=""/><input type="hidden" id="opacity" name="opacity" value=""/> <input type="hidden" id="overview_url" name="overview_url" value=""/><input type="hidden" id="map_scale" name="map_scale" value=""/><input type="hidden" name="measured_x_values" /><input type="hidden" name="measured_y_values" /><input type="hidden" name="map_svg_kml" /><input type="hidden" name="svg_extent" /><input type="hidden" name="map_svg_measures" /><br /></div><div class="print_option" id="printPDF_formsubmit"><input id="submit" type="submit" value="Print"><br /></div></form><div id="printPDF_result"></div></div>','div','../plugins/mb_print.php','../../lib/printbox.js,../extensions/jquery-ui-1.8.16.custom/development-bundle/external/jquery.bgiframe-2.1.2.js,../extensions/jquery.form.min.js,../extensions/wz_jsgraphics.js','mapframe1','','http://www.mapbender.org/index.php/Print');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','css','#printPDF input, #printPDF select, #printPDF textarea {box-sizing: border-box;}','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','legendColumns','0','define number of columns on legendpage','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','reverseLegend','false','define whether the legend should be printed in reverse order','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','printLegend','true','define whether the legend should be printed or not','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','secureProtocol','true','define blabla','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','mbPrintConfig','{"Format wählen": "Dummy_A4.json","A4 Hochformat": "Hochformat_A4.json","A4 Hochformat mit Legende": "Hochformat_A4_Legende_mehrseitig.json","A4 Querformat": "Querformat_A4.json","A3 Hochformat": "Hochformat_A3.json","A3 Querformat": "Querformat_A3.json"}','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','dialogHeight','650','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','lzwCompressed','false','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','overwrite','1','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','savewmc','saveInSession','1','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','scalebar',2,1,'scalebar','Maßstabsleiste','div','','',NULL ,NULL,NULL ,NULL,NULL ,'background-color: rgba(255,255,255,0.8);  left: 0 !important; display: none;','','div','mod_scalebar_test.js','','mapframe1','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','scalebar','css','#mapframe1_scalebar div {
     margin: -3px 0 0px 15px;}
@@ -1106,6 +1114,91 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
 #mapframe1_scalebar{
 background-color: rgba(255,255,255,0.8);
 left: 0 !important;}','','text/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','resizeMapsize',2,1,'resize_mapsize -auto-','','div','','',1,1,1,1,NULL ,'div','','','mod_resize_mapsize.js','','mapframe1','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resizeMapsize','adjust_height','','to adjust the height of the mapframe on the bottom of the window','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resizeMapsize','adjust_width','','to adjust the width of the mapframe on the right side of the window','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resizeMapsize','resize_option','auto','auto (autoresize on load), button (resize by button)','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','layout_nutzungsbedingungen',2,0,'layout, ','Nutzungsbedingungen','div','','onclick="javascript:window.open(''http://10.176.178.10/mapbender/php/mod_getWmcDisclaimer.php?&id=25&languageCode=de&withHeader=true&hostName='','''','''');"',NULL ,NULL,NULL ,NULL,5,'position:fixed;width:150px;bottom:0px;right:0px;background-color:rgba(255,255,255,1);cursor:pointer;','Nutzungsbedingungen','div','','','','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','mousewheelZoom',2,1,'adds mousewheel zoom to map module (target)','Mousewheel zoom','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','mod_mousewheelZoom.js','../extensions/jquery.mousewheel.min.js','mapframe1','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mousewheelZoom','factor','2','The factor by which the map is zoomed on each mousewheel unit','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','printPDF',2,1,'pdfprint','Druck','div','','',NULL ,NULL,250,231,5,'','<div id="printPDF_working_bg"></div><div id="printPDF_working"><img src="../img/indicator_wheel.gif" style="padding:10px 0 0 10px">Generating PDF</div><div id="printPDF_input"><form id="printPDF_form" action="../print/printFactory.php"><div id="printPDF_selector"></div><div class="print_option"><input type="hidden" id="map_url" name="map_url" value=""/><input type="hidden" id="legend_url" name="legend_url" value=""/><input type="hidden" id="opacity" name="opacity" value=""/> <input type="hidden" id="overview_url" name="overview_url" value=""/><input type="hidden" id="map_scale" name="map_scale" value=""/><input type="hidden" name="measured_x_values" /><input type="hidden" name="measured_y_values" /><input type="hidden" name="map_svg_kml" /><input type="hidden" name="svg_extent" /><input type="hidden" name="map_svg_measures" /><br /></div><div class="print_option" id="printPDF_formsubmit"><input id="submit" type="submit" value="Print"><br /></div></form><div id="printPDF_result"></div></div>','div','../plugins/mb_print.php','../../lib/printbox.js,../extensions/jquery-ui-1.8.16.custom/development-bundle/external/jquery.bgiframe-2.1.2.js,../extensions/jquery.form.min.js,../extensions/wz_jsgraphics.js','mapframe1','','http://www.mapbender.org/index.php/Print');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','css','#printPDF input, #printPDF select, #printPDF textarea {box-sizing: border-box;}','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','legendColumns','0','define number of columns on legendpage','php_var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','mbPrintConfig','{"Format wählen": "Dummy_A4.json","A4 Hochformat": "Hochformat_A4_test.json","A4 Hochformat mit Legende": "Hochformat_A4_Legende_mehrseitig.json","A4 Querformat": "Querformat_A4.json","A3 Hochformat": "Hochformat_A3.json","A3 Querformat": "Querformat_A3.json"}','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','printLegend','true','define whether the legend should be printed or not','php_var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','reverseLegend','false','define whether the legend should be printed in reverse order','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','printPDF','secureProtocol','true','define blabla','php_var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','fullscreenbtn',2,1,'','','div','','class=''hide-during-splash''',NULL ,NULL,NULL ,NULL,100,'','<svg class="insideIframe" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M1 4C1 2.89543 1.89543 2 3 2H15C16.1046 2 17 2.89543 17 4V11C17 12.1046 16.1046 13 15 13H11L12 15V16H6V15L7 13H3C1.89543 13 1 12.1046 1 11V4ZM3 11H15V4H3V11Z" fill="currentColor"/>
+</svg>
+<svg class="outsideIframe" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M15 10V15.0004C15 16.1047 14.098 17 12.9915 17H5.00853C3.89925 17 3 16.1126 3 15.0004V10H0L9 1L18 10H15ZM7 11V17H11V11H7Z" fill="currentColor"/>
+</svg>','div','../plugins/mb_fullscreenbtn_dj.js','','','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','fullscreenbtn','css','/* INSERT fullscreenbtn -> elementVar -> css(text/css) */
+
+#fullscreenbtn{
+position:fixed;
+right:0;
+top:80px;
+background-color:rgba(255,255,255,0.98);
+font-family: Helvetica,Roboto,Arial,sans-serif;
+color: #777;
+font-style: normal;
+font-weight: 700;
+letter-spacing: 1px;
+padding:16px;
+border-left: 1px solid #DDD;
+box-shadow: 0 5px 10px -2px rgb(201, 202, 202);
+}
+#fullscreenbtn:hover{
+background-color:#EEE;
+cursor:pointer;
+color:#333;
+}
+
+/* END INSERT fullscreenbtn -> elementVar -> css(text/css) */
+','','text/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','copyright',2,1,'a Copyright in the map','Copyright','div','','',0,0,NULL ,NULL,1001,'','','div','mod_termsOfUse.php','','mapframe1','','http://www.mapbender.org/index.php/Copyright');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','copyright','css_text_copyright','#mapframe1_copyright div{
+
+color:unset;
+
+background-color:rgba(255,255,255,0.8);
+
+right:0px !important;
+
+bottom:0px !important;
+
+padding:1px 8px;
+
+z-index:1001 !important;}
+
+#mapframe1_copyright div:hover{
+
+background-color:rgba(255,255,255,1);}
+
+#mapframe1_copyright div a{
+
+font-family:Helvetica,Roboto,Arial,sans-serif;
+
+font-size: 12px;}
+
+#mapframe1_copyright div a:hover{} ','','text/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','copyright','mod_copyright_text','mapbender.org','define a copyright text which should be displayed','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','featureInfo1',2,1,'FeatureInfoRequest','Datenabfrage','img','../img/geoportal2019/infoabfrage_off.svg','',NULL ,NULL,NULL ,NULL,3,'cursor:pointer;','','','mod_featureInfo.php','','mapframe1','','http://www.mapbender.org/index.php/FeatureInfo');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoCollectLayers','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoDrawClick','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoLayerPopup','true','display featureInfo in dialog popup','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoLayerPreselect','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoPopupHeight','600','height of the featureInfo dialog popup','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoPopupPosition','[20,80]','position of the featureInfoPopup [left,top]','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoPopupWidth','550','width of the featureInfo dialog popup','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','featureInfoShowKmlTreeInfo','true','only if kmltree included in gui','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','featureInfo1','reverseInfo','true','Reorder featureInfo result','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer',2,1,'Client for json webservices like geonames.orgposition:fixed;top:0.5em;left: 1em;','Gazetteer','div','','title="Nach Addressen suchen"',NULL ,NULL,NULL ,NULL,2999,'float:right;position:absolute;right:0px;background-color:white;','','div','../plugins/mod_jsonAutocompleteGazetteer2019.php','','mapframe1','','http://www.mapbender.org/index.php/mod_jsonAutocompleteGazetteer.php');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer','gazetteerUrl','https://www.geoportal.rlp.de/mapbender/geoportal/gaz_geom_mobile.php','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer','helpText','','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer','isGeonames','false','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','mapsContainer',2,1,'This Container THEMEN appends all its target elements to its container inside li-childs
 ','','div ','','',NULL ,NULL,NULL ,NULL,NULL ,'','<a title="Kartenebenen auswählen" class="toggleLayerTree"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M2 3H16V5H2V3Z" fill=""/>
@@ -1115,7 +1208,7 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapsContainer','css','/* INSERT body -> mapsContainer -> css(text/css) */
 #mapsContainer {
    position:relative;
-   display: block;
+   dislay: none;
    float: left;
    border-bottom:1px solid transparent;
 }
@@ -1155,6 +1248,9 @@ border-bottom:1px solid #d62029 !important;
   padding:0;
   list-style-type:none;
   position: absolute;
+  /*display: block;
+  width: 388px;
+  box-shadow: 0px 5px 10px -2px rgb(201, 202, 202);*/
 }
 
 #loadWMC_Button,#savewmc, #WMS_preferencesButton {
@@ -1184,12 +1280,19 @@ border-bottom:1px solid #d62029 !important;
     margin-top: 11px;
     margin-left: 9px;
 }
+@media (max-width:508px) {
+.toggleLayerTree {text-indent:-84px;}
+.toggleLayerTree svg {float:right;margin: 16px 0 0 15px !important;}
+#savewmc{width:205px !important;}
+#loadWMC_Button{width:239px !important;}
+#treeContainer{min-width: unset !important;max-height:calc(100vh - 180px) !important;}
+}
 /* END INSERT body -> mapsContainer -> css(text/css) */','','text/css');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','mapframe1',2,1,'frame for a map
 ','','div','','',0,0,690,527,2,'overflow:hidden;background-color:#ffffff','','div','../plugins/mb_map.js','../../lib/history.js,map_obj.js,map.js,wms.js,wfs_obj.js,initWmcObj.php','','','http://www.mapbender.org/index.php/Mapframe');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','slippy','1','1 = Activates an animated, pseudo slippy map','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','skipWmsIfSrsNotSupported','1','if set to 1, it skips the WMS request if the current SRS is not supported by the WMS; if set to 0, the WMS is always queried. Default is 0, because of backwards compatibility','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','wfsConfIdString','94','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','slippy','1','1 = Activates an animated, pseudo slippy map','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','mapframe1','wfsConfIdString','606','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','deleteSessionWmc',2,1,'delete Session Wmc','Kartenansicht zurücksetzen','A','../img/button_blue_red/repaint_off.png','onclick=''$("#sessionWmc").mapbender().deleteWmc();''
 onmouseover=''$(this).addClass("myOverClass");'' onmouseout=''$(this).removeClass("myOverClass");''',NULL ,NULL,NULL ,NULL,NULL ,'position:unset','<svg width="16" height="16" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M2.75736 2.75736C3.84315 1.67157 5.34315 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13C4.027 13 1.55904 10.8377 1.08296 8H3.02282C3.46921 9.78103 5.08057 11.1 7 11.1C9.26437 11.1 11.1 9.26437 11.1 7C11.1 4.73563 9.26437 2.9 7 2.9C5.86782 2.9 4.84282 3.35891 4.10086 4.10086L6 6H1V1L2.75736 2.75736Z" fill="currentColor"/>
@@ -1207,6 +1310,8 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
   <path id="svg_3" d="m10.043528,38.202782l-9.281173,9.240414l46.646738,0l0,-46.449539l-37.365564,37.209125zm21.87467,-20.4189c0.336987,-0.330269 0.869781,-0.330269 1.203125,0l2.102036,2.091314c0.333336,0.330252 0.336952,0.866106 0.003628,1.196295c-0.166775,0.164221 -0.386063,0.247162 -0.601707,0.247162c-0.219154,0 -0.434822,-0.082941 -0.597931,-0.247162l-2.10915,-2.091295c-0.331608,-0.33021 -0.331608,-0.864359 0,-1.196314zm-2.901077,2.89426c0.333332,-0.330236 0.869757,-0.330236 1.199606,0l3.906706,3.886665c0.333359,0.330259 0.333359,0.866102 0.003582,1.19272c-0.16674,0.1661 -0.386028,0.250893 -0.60516,0.250893s-0.434948,-0.082926 -0.598099,-0.247269l-3.906635,-3.886709c-0.333355,-0.330177 -0.333355,-0.86611 0,-1.196301zm-2.906431,2.88895c0.333334,-0.330223 0.869699,-0.330223 1.20306,0l2.10202,2.094923c0.33337,0.330032 0.329746,0.866106 -0.003607,1.196293c-0.166803,0.165915 -0.382402,0.249065 -0.597919,0.249065c-0.219297,0 -0.434958,-0.083151 -0.601715,-0.249065l-2.101839,-2.093214c-0.331667,-0.330189 -0.331667,-0.867792 0,-1.198002zm-2.901098,2.89238c0.333305,-0.330252 0.869724,-0.326632 1.203238,0.003601l2.098253,2.091345c0.331589,0.33214 0.331589,0.866096 0,1.196314c-0.166786,0.166069 -0.384172,0.248991 -0.601572,0.248991c-0.215649,0 -0.434942,-0.082922 -0.601555,-0.248991l-2.098364,-2.094954c-0.331629,-0.331932 -0.331629,-0.866116 0,-1.196306zm-2.904753,2.894266c0.331644,-0.331959 0.867996,-0.331959 1.201515,0l3.90307,3.884958c0.333363,0.332088 0.333363,0.868034 0,1.199978c-0.166805,0.166054 -0.382439,0.248959 -0.597921,0.248959c-0.219307,0 -0.438585,-0.082905 -0.605333,-0.248959l-3.901331,-3.888432c-0.331438,-0.332111 -0.331438,-0.866253 0,-1.196505zm-3.607708,13.755163c-0.164837,0.167984 -0.384182,0.250881 -0.601563,0.250881c-0.21567,0 -0.431316,-0.081142 -0.597885,-0.247261l-3.90323,-3.884785c-0.333367,-0.330227 -0.333367,-0.864384 0,-1.196541s0.868009,-0.331909 1.199634,0l3.903044,3.884975c0.331575,0.328522 0.331575,0.862682 0,1.19273zm1.105467,-4.686001c-0.168697,0.167747 -0.387787,0.250759 -0.603462,0.250759c-0.217394,0 -0.434967,-0.081059 -0.597906,-0.247185l-2.105682,-2.094913c-0.333348,-0.330235 -0.333348,-0.864372 0,-1.191025c0.333348,-0.333824 0.869767,-0.337437 1.203253,-0.005352l2.103798,2.096714c0.331587,0.324902 0.331587,0.860786 0,1.191002zm2.900906,-2.890682c-0.166573,0.16589 -0.382233,0.24902 -0.60157,0.24902c-0.21563,0 -0.433065,-0.08313 -0.599789,-0.24902l-2.100113,-2.093208c-0.333366,-0.331932 -0.333366,-0.866116 0,-1.198086s0.869703,-0.328474 1.201326,0.003609l2.100145,2.094959c0.331652,0.330086 0.331652,0.866123 0,1.192726zm17.643661,2.888847l-15.710079,0l15.710079,-15.644333l0,15.644333zm-0.217373,-20.240208c-0.163151,0.165867 -0.382423,0.249041 -0.597939,0.249041c-0.219261,0 -0.438549,-0.083174 -0.605316,-0.249041l-2.101837,-2.091324c-0.333549,-0.330246 -0.333549,-0.864338 0,-1.196292c0.32967,-0.330277 0.86795,-0.330277 1.199455,0l2.102028,2.091287c0.333328,0.331947 0.335228,0.866114 0.003609,1.196329zm4.703983,-1.097187c-0.166698,0.166075 -0.386021,0.247259 -0.601574,0.247259s-0.434937,-0.081184 -0.598038,-0.247259l-3.903034,-3.886715c-0.333321,-0.330194 -0.333321,-0.867958 0,-1.198209s0.873371,-0.326599 1.20327,0.003593l3.902992,3.88688c0.331661,0.33021 0.328037,0.866114 -0.003616,1.19445z" fill-opacity="null" stroke-opacity="null" stroke-width="0" stroke="none" fill="currentColor"/>
  </g>
 </svg>Messen','A','../plugins/mb_measure_widget.php','../widgets/w_measure.js,../extensions/RaphaelJS/raphael-1.4.7.min.js','mapframe1','jq_ui_dialog,jq_ui_widget','http://www.mapbender.org/index.php/Measure');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','dialogHeight','300','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','dialogWidth','190','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','lineStrokeDefault','#C9F','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','lineStrokeSnapped','#F30','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','lineStrokeWidthDefault','3','','var');
@@ -1222,14 +1327,11 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','polygonFillSnapped','#FC3','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','polygonStrokeWidthDefault','1','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','polygonStrokeWidthSnapped','5','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','dialogHeight','300','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','measure_widget','dialogWidth','190','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','resultList',2,1,'position defined in elementVar','Result List','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','mod_ResultList.js','../../lib/resultGeometryListController.js, ../../lib/resultGeometryListModel.js','mapframe1','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList','position','[120,119]','position of the result list dialog','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList','resultListHeight','350','height of the result list dialog','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList','resultListTitle','Suchergebnisse','title of the result list dialog','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList','resultListWidth','500','width of the result list dialog','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList','tableTools666','[{ "sExtends": "xls",        "sButtonText": "Export to CSV",   "sFileName": "result.csv"  }]','set the initialization options for tableTools','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList','position','[120,119]','position of the result list dialog','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','zoomFull',2,1,'zoom to full extent button','Auf gesamte Karte zoomen','img','../img/geoportal2019/globe_off.svg','',NULL ,NULL,NULL ,NULL,103,'','','','mod_zoomFull.js','','mapframe1','','http://www.mapbender.org/index.php/ZoomFull');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','zoomIn1',2,1,'zoomIn button','In die Karte hineinzoomen','img','../img/geoportal2019/plus_off.svg','',NULL ,NULL,NULL ,NULL,103,'','','','mod_zoomIn1.js','','mapframe1','','http://www.mapbender.org/index.php/ZoomIn');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','zoomOut1',2,1,'zoomOut button','Aus der Karte herauszoomen','img','../img/geoportal2019/minus_off.svg','',NULL ,NULL,NULL ,NULL,103,'','','','mod_zoomOut1.js','','mapframe1','','http://www.mapbender.org/index.php/ZoomOut');
@@ -1242,9 +1344,10 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList_Highlight','resultHighlightColor','#ff0000','color of the highlighting','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList_Highlight','resultHighlightLineWidth','2','width of the highlighting line','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','resultList_Highlight','resultHighlightZIndex','149','zindex of the highlighting','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_mouse',2,0,'jQuery UI mouse','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.mouse.min.js','','jq_ui_widget','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','overview',2,1,'OverviewFrame','Übersichtskarte','div','','',NULL ,NULL,110,115,3,'margin:10px;overflow:hidden;background-color:#ffffff;right:0;bottom:22px;position:absolute;top:unset;left:unset;','<div id="overview_maps" style=""></div>','div','../plugins/mb_overview.js','map_obj.js,map.js,wms.js,wfs_obj.js,initWmcObj.php','mapframe1','mapframe1','http://www.mapbender.org/index.php/Overview');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','overview','skipWmsIfSrsNotSupported','0','if set to 1, it skips the WMS request if the current SRS is not supported by the WMS; if set to 0, the WMS is always queried. Default is 0, because of backwards compatibility','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','overview','overview_wms','0','wms that shows up as overview','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','overview','skipWmsIfSrsNotSupported','0','if set to 1, it skips the WMS request if the current SRS is not supported by the WMS; if set to 0, the WMS is always queried. Default is 0, because of backwards compatibility','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','showCoords_div',2,1,'displays coordinates by onmouseover
 ../img/button_hessen/showcoords_off.png','Koordinaten anzeigen','A','','onmouseover = "mb_regButton(''init_mod_showCoords_div'')" ',NULL ,NULL,NULL ,NULL,NULL ,'','<svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24.000001 24.000001" width="16"><g transform="matrix(1.2 0 0 1.2 -2.5355937 -1236.2991)"><path d="M7.0000003 1040.3622H17.000001M12.000001 1035.3621v10.0001" fill="none" stroke="currentColor" stroke-width="1.50000012"/><ellipse cx="12.000001" cy="1040.3622" rx="1.499993" ry="1.4999931" fill="currentColor"/><path d="M11.250001 1030.3622v1.9454c-3.8637771.3575-6.9473551 3.4415-7.3046881 7.3046h-1.945312v1.4981h1.945312c.356486 3.864 3.440264 6.9511 7.3046881 7.3086v1.9433h1.5v-1.9433c3.864427-.3575 6.948205-3.4446 7.304687-7.3086h1.945313v-1.4981h-1.945313c-.35733-3.8631-3.440907-6.9471-7.304687-7.3046v-1.9454zm.75 3.4063c.912362 0 1.781158.1826 2.570312.5156.789154.333 1.499679.816 2.095703 1.4121.596024.5962 1.077184 1.3063 1.410156 2.0957.332973.7894.517579 1.6575.517579 2.5703 0 .9129-.184606 1.7811-.517579 2.5704-.332972.7892-.814132 1.4997-1.410156 2.0957-.596024.5959-1.306549 1.0773-2.095703 1.4101-.789154.3328-1.65795.5176-2.570312.5176-.912362 0-1.781159-.1848-2.5703131-.5176-.789153-.3328-1.497726-.8142-2.09375-1.4101-.596024-.596-1.079137-1.3065-1.412109-2.0957-.332973-.7893-.515625-1.6575-.515625-2.5704 0-.9128.182652-1.7809.515625-2.5703.332972-.7894.816085-1.4995 1.412109-2.0957.596024-.5961 1.304597-1.0791 2.09375-1.4121.7891541-.333 1.6579511-.5156 2.5703131-.5156z" overflow="visible" fill-rule="evenodd"/></g></svg>Koordinaten anzeigen','A','mod_coords_div.php','../extensions/mapcode-js-master/mapcode.js,../extensions/mapcode-js-master/ndata.js,../extensions/mapcode-js-master/ctrynams.js','mapframe1','','http://www.mapbender.org/index.php/ShowCoords_div');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','showCoords_div','css','/* INSERT showCoords_div -> elementVar -> css(text/css) */
@@ -1285,43 +1388,7 @@ background-color: #EEE;
 }
 /* END INSERT showCoords_div -> elementVar -> css(text/css) */','','text/css');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','showCoords_div','useMapcode','true','','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','selArea1',2,1,'ABHÄNGIGKEITEN
-zoombox
-<img..>../img/button_hessen/zoomArea4_off.png','Ausschnitt durch Aufziehen einer Fläche vergrößern','A','','',NULL ,NULL,NULL ,NULL,NULL ,'','<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24.000001" height="19" width="19">
-<path d="M15.139163 1041.2225c-.392993 1.7467-2.217698 2.2202-2.217698 2.2202l7.392464 7.4007 2.217697-2.2201z" fill-rule="evenodd" stroke="none" stroke-width="1.56905377" stroke-linejoin="round" transform="matrix(1.04595 0 0 1.0464 -.49952522 -1076.3057)" fill="currentColor"></path>
-<path d="M1.1597145 1037.5041c0 4.4746 3.6230358 8.1021 8.0922782 8.1021 4.4692413 0 8.0922783-3.6275 8.0922783-8.1021 0-4.4747-3.623037-8.1023-8.0922783-8.1023-4.4692424 0-8.0922782 3.6276-8.0922782 8.1023z" fill="none" stroke="currentColor" stroke-width="1.56905377" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="7" transform="matrix(1.04595 0 0 1.0464 -.49952522 -1076.3057)"></path>
-<g fill="none" stroke="currentColor" stroke-width="2.9000001" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9.1501655 1032.8214v8.6M13.450165 1037.1214H4.8501655" overflow="visible" transform="matrix(1.04595 0 0 1.0464 -.39301842 -1075.90534813)"></path>
-</g>
-<path d="M18.72204773 16.33189514l-2.0919064-2.092796-2.09190744 2.092796 2.09190744 2.092796z" fill-rule="evenodd" fill="currentColor"></path>
-</svg>
-Auswahl vergrößern','A','mod_selArea.js','mod_box1.js','mapframe1','','http://www.mapbender.org/index.php/SelArea1');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','selArea1','css','#selArea1 svg {
-padding: 15px 14px 15px 17px;
-border-left: 1px solid #DDD;
-color: #777;
-background-color: rgba(255,255,255,0.98);}
-#selArea1 svg:hover {color: #333;background-color: #EEE;}','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','loadwmc',2,1,'load workspace from WMC
-SRC: ../img/button_hessen/wmcload_off.png
-Attributes: onmouseover=''this.src = this.src.replace(/_off/,"_over");''  onmouseout=''this.src = this.src.replace(/_over/, "_off");''','Meine Themen verwalten','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','mod_loadwmc.php','popup.js','mapframe1','jq_ui_dialog,jq_ui_tabs,jq_upload,jq_datatables','http://www.mapbender.org/index.php/LoadWMC');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','deleteWmc','1','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogHeight','550','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','dialogWidth','350','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','loadFromSession','1','','php_var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','mobileUrl','1','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','mobileUrlNewWindow','0','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','publishWmc','0','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','saveWmcTarget','savewmc','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','showPublic','0','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','editWmc','0','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','reinitializeLoadWmc','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadwmc','allowResize','true','','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','loadData',2,1,'IFRAME to load data','','iframe','../html/mod_blank.html','frameborder = "0" ',0,0,1,1,NULL ,'visibility:visible','','iframe','','','','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer',2,1,'Client for json webservices like geonames.orgposition:fixed;top:0.5em;left: 1em;','Gazetteer','div','','title="Nach Addressen suchen"',NULL ,NULL,NULL ,NULL,2999,'float:right;position:absolute;right:0px;background-color:white;','','div','../plugins/mod_jsonAutocompleteGazetteer2019.php','','mapframe1','','http://www.mapbender.org/index.php/mod_jsonAutocompleteGazetteer.php');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer','gazetteerUrl','https://www.geoportal.rlp.de/mapbender/geoportal/gaz_geom_mobile.php','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer','helpText','','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','jsonAutocompleteGazetteer','isGeonames','false','','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','pan1',2,1,'pan','Ausschnitt verschieben','img','../img/geoportal2019/move_off.svg','',NULL ,NULL,NULL ,NULL,3,'cursor:pointer;padding-top: 14px !important; padding-bottom: 12px !important;','','','mod_pan.js','','mapframe1','','http://www.mapbender.org/index.php/Pan');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','scaleDiv',2,1,'','Maßstab','div','','class=''hide-during-splash''',NULL ,NULL,NULL ,NULL,100,'','<svg style=''float:right;transform:rotate(90deg);'' width="17" height="18" viewBox="0 0 18 18" fill="none"  xmlns="http://www.w3.org/2000/svg">
 <path d="M16.0142 11.6191L14.6042 13.0291L9.01416 7.43914L3.42416 13.0291L2.01416 11.6191L9.01416 4.61914L16.0142 11.6191Z" stroke="currentColor" stroke-width="2"/>
 </svg>','div','../plugins/mb_scaleContainer.js','','scaleSelect, scaleText','','');
@@ -1381,7 +1448,6 @@ margin-top:5px;
 
 /* END INSERT scaleDiv -> elementVar -> css(text/css) */
 ','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','pan1',2,1,'pan','Ausschnitt verschieben','img','../img/geoportal2019/move_off.svg','',NULL ,NULL,NULL ,NULL,3,'cursor:pointer;padding-top: 14px !important; padding-bottom: 12px !important;','','','mod_pan.js','','mapframe1','','http://www.mapbender.org/index.php/Pan');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','metadataCarouselTinySlider',2,1,'','Metadata carousel','div','','',NULL ,NULL,NULL ,NULL,NULL ,'box-sizing: border-box;','','','../plugins/mod_metadataCarouselTinySlider.php','','','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','metadataCarouselTinySlider','allowResize','true','This element var defines if the viewer should extent wmc to viewer screen size','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','metadataCarouselTinySlider','css_file_metadata_carousel_mb','../css/tiny-slider-mapbender.css','','file/css');
@@ -1392,42 +1458,12 @@ INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, contex
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','metadataCarouselTinySlider','resourceFilter','[]','array of ids to restrict the metadata resources ','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','metadataCarouselTinySlider','searchUrl','../php/mod_callMetadata.php?protocol=https&','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','metadataCarouselTinySlider','slidesPerSide','3','','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','copyright',2,1,'a Copyright in the map','Copyright','div','','',0,0,NULL ,NULL,1001,'','','div','mod_termsOfUse.php','','mapframe1','','http://www.mapbender.org/index.php/Copyright');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','copyright','mod_copyright_text','mapbender.org','define a copyright text which should be displayed','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','copyright','css_text_copyright','#mapframe1_copyright div{
-
-color:unset;
-
-background-color:rgba(255,255,255,0.8);
-
-right:0px !important;
-
-bottom:0px !important;
-
-padding:1px 8px;
-
-z-index:1001 !important;}
-
-#mapframe1_copyright div:hover{
-
-background-color:rgba(255,255,255,1);}
-
-#mapframe1_copyright div a{
-
-font-family:Helvetica,Roboto,Arial,sans-serif;
-
-font-size: 12px;}
-
-#mapframe1_copyright div a:hover{} ','','text/css');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','toggleModule',3,1,'','','div','','',1,1,1,1,2,'','','div','mod_toggleModule.php','','pan1','','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','kmlTree',3,1,'','Eigene Daten','ul','','',NULL ,NULL,1,1,2,'position:absolute;right:0px;','','ul','../plugins/kmlTree.php','../extensions/togeojson.js,../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.sortable.js,../extensions/fontIconPicker-2.0.0/jquery.fonticonpicker.js','mapframe1','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree','activateRegistrationGroupFilter','1','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree','buffer','100','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree','kmlTree','../css/kmltree.css','','file/css');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree','openData_only','1','','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_button',4,1,'jQuery UI button','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.button.js','','jq_ui,jq_ui_widget','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','renderGML',4,0,'renders a gml contained in $_SESSION[''GML'']','','div','','',NULL ,NULL,NULL ,NULL,1,'','','','../javascripts/mod_renderGML.php','','overview,mapframe1','','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_droppable',4,1,'jQuery UI droppable','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.droppable.min.js','','jq_ui,jq_ui_widget,jq_ui_mouse,jq_ui_draggable','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','carouselDiv',4,1,'','Maßstab','div','','',NULL ,NULL,NULL ,NULL,99,'','<div id="carouselDiv_btn">
 <svg style=''transform:rotate(0deg);margin: 0 auto;width: 100%;'' width="17" height="18" viewBox="0 0 18 18" fill="none"  xmlns="http://www.w3.org/2000/svg">
 <path d="M16.0142 11.6191L14.6042 13.0291L9.01416 7.43914L3.42416 13.0291L2.01416 11.6191L9.01416 4.61914L16.0142 11.6191Z" stroke="currentColor" stroke-width="2"/>
@@ -1530,47 +1566,94 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 
 visibility:hidden;overflow:hidden;
 visibility:visible;position:relative;display:block,clear:left','','div','','',NULL ,3,NULL ,NULL,300,'','','div','../html/mod_treefolderPlain2019.php','jsTree2019.js','mapframe1','mapframe1','http://www.mapbender.org/index.php/TreeGde');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','localizetree','false','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','metadatalink','true','link for layer-metadata','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','activatedimension','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','alerterror','false','alertbox for wms loading error','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','css','/* INSERT treeGDE-> elementVar -> css(text/css) */ .treeGDE3_tr { background-color: #555; border-bottom: 1px solid #efefef; } .treeGDE3_tr b { color: #fff; margin: 0px 5px 0px 0px; } .treeGDE3_tr td:first-child { box-shadow: unset; } .treeGDE3_tr td:last-child { width: 100%; } .treeGDE3_tr td:first-child img.action { padding-left: 5px; cursor:pointer; } .treeGDE3_tr td:last-child img.action { cursor:pointer; } .treeGDE3_tr td:last-child input { margin: 0 7px 0 0; vertical-align: middle; } #treeContainer { width: 388px; min-width: 388px; max-width: calc(100vw - 65px); box-shadow: 0px 5px 10px -2px rgb(201, 202, 202); max-height: calc(100vh - 147px); overflow: auto; resize: horizontal; background: url("../img/geoportal2019/greysquare.jpg") no-repeat right bottom; } #treeContainer table{ width:100%; } #contextMenu tr { background-color: #333 !important; } #contextMenu table td:last-child { width: unset !important; } #contextMenu { box-shadow: 2px 2px 10px 0px black; } .menu td:last-child img { margin-bottom: -6px; margin-right: 11px; } .treegde2019 { width: 13px; margin-bottom: -6px; margin-right: 5px; } .node { max-width: calc(100% - 65px); display: inline-block; vertical-align: middle; padding: 5px 0; } #contextMenu td a.node { max-width: calc(100% - 50px); } #treeContainer img { border: unset; vertical-align: middle; margin-top:0px !important; margin-right:3px !important; margin-bottom:0px !important; margin-left:0px !important; } #treeContainer td { white-space: normal; height: 36px; } #root_id td { height:0px; } /* END INSERT treeGDE-> elementVar -> css(text/css) */','','text/css');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','datalink','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','menu','wms_up,wms_down,opacity_up,opacity_down,layer_up,layer_down,zoom,hide,change_style,remove','context menu elements','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','imagedir','../img/geoportal2019','image directory','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','enlargetreewidth','false','false, oder ganzzahl für Pixelbreite','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','ficheckbox','true','checkbox for featureInfo requests','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','handlesublayer','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','imagedir','../img/geoportal2019','image directory','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','localizetree','false','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','menu','wms_up,wms_down,opacity_up,opacity_down,layer_up,layer_down,zoom,hide,change_style,remove','context menu elements','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','metadatalink','true','link for layer-metadata','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','openfolder','false','initial open folder','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','reverse','true','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','showstatus','true','show status in folderimages','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','switchwms','true','enables/disables all layer of a wms','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','wmsbuttons','false','wms management buttons','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','activatedimension','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','reverse','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','alerterror','false','alertbox for wms loading error','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','ficheckbox','true','checkbox for featureInfo requests','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','handlesublayer','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','treeGDE','css','/* INSERT treeGDE-> elementVar -> css(text/css) */ .treeGDE3_tr { background-color: #555; border-bottom: 1px solid #efefef; } .treeGDE3_tr b { color: #fff; margin: 0px 5px 0px 0px; } .treeGDE3_tr td:first-child { box-shadow: unset; } .treeGDE3_tr td:last-child { width: 100%; } .treeGDE3_tr td:first-child img.action { padding-left: 5px; cursor:pointer; } .treeGDE3_tr td:last-child img.action { cursor:pointer; } .treeGDE3_tr td:last-child input { margin: 0 7px 0 0; vertical-align: middle; } #treeContainer { width: 388px; min-width: 388px; max-width: calc(100vw - 65px); box-shadow: 0px 5px 10px -2px rgb(201, 202, 202); max-height: calc(100vh - 147px); overflow: auto; resize: horizontal; background: url("../img/geoportal2019/greysquare.jpg") no-repeat right bottom; } #treeContainer table{ width:100%; } #contextMenu tr { background-color: #333 !important; } #contextMenu table td:last-child { width: unset !important; } #contextMenu { box-shadow: 2px 2px 10px 0px black; } .menu td:last-child img { margin-bottom: -6px; margin-right: 11px; } .treegde2019 { width: 13px; margin-bottom: -6px; margin-right: 5px; } .node { max-width: calc(100% - 65px); display: inline-block; vertical-align: middle; padding: 5px 0; } #contextMenu td a.node { max-width: calc(100% - 50px); } #treeContainer img { border: unset; vertical-align: middle; margin-top:0px !important; margin-right:3px !important; margin-bottom:0px !important; margin-left:0px !important; } #treeContainer td { white-space: normal; height: 36px; } #root_id td { height:0px; } /* END INSERT treeGDE-> elementVar -> css(text/css) */','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_tabs',5,1,'horizontal tabs from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.tabs.js','','jq_ui,jq_ui_widget','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','renderGML',4,0,'renders a gml contained in $_SESSION[''GML'']','','div','','',NULL ,NULL,NULL ,NULL,1,'','','','../javascripts/mod_renderGML.php','','overview,mapframe1','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_button',4,0,'jQuery UI button','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.button.js','','jq_ui,jq_ui_widget','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_droppable',4,0,'jQuery UI droppable','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.droppable.min.js','','jq_ui,jq_ui_widget,jq_ui_mouse,jq_ui_draggable','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_slider',5,0,'slider from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.slider.min.js','','jq_ui,jq_ui_mouse,jq_ui_widget','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_draggable',5,0,'Draggable from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.draggable.min.js','','jq_ui,jq_ui_mouse,jq_ui_widget','http://jqueryui.com/demos/draggable/');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','kml',5,1,'','','div','','',NULL ,NULL,NULL ,NULL,NULL ,'','','div','','../../lib/mb.ui.displayKmlFeatures.js','','','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','overviewToggle',5,1,'2019','Übersichtskarte','div','','class="overviewToggleClosed"',NULL ,NULL,NULL ,NULL,400,'display:flex;align-items:center;position:absolute;right:0px;bottom:20px;background-color:#EEE;border-top:2px solid #DDD;border-left:2px solid #DDD;border-bottom:2px solid #DDD;display:none;','<svg width="17" height="18" viewBox="0 0 18 18" fill="none"  xmlns="http://www.w3.org/2000/svg">
+<path d="M16.0142 11.6191L14.6042 13.0291L9.01416 7.43914L3.42416 13.0291L2.01416 11.6191L9.01416 4.61914L16.0142 11.6191Z" stroke="currentColor" stroke-width="2"/>
+</svg>','div','../javascripts/mod_overviewToggle2019.js','','overview','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','overviewToggle','css','
+/* INSERT overviewToggle -> elementVar -> css(text/css) */
+
+.overviewToggleClosed svg {
+float: right;
+transform: rotate(-90deg);
+}
+.overviewToggleOpened svg {
+float: left;
+transform: rotate(90deg);
+}
+.overviewToggleOpened, .overviewToggleClosed {
+color:#777;padding:5px;
+}
+.overviewToggleOpened:hover, .overviewToggleClosed:hover {
+color:#333;
+}
+
+/* END INSERT overviewToggle -> elementVar -> css(text/css) */
+','','text/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_resizable',5,0,'Resizable from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','../plugins/jq_ui_resizable.js','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.resizable.js','','jq_ui,jq_ui_mouse,jq_ui_widget','http://jqueryui.com/demos/resizable/');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_tabs',5,0,'horizontal tabs from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.tabs.js','','jq_ui,jq_ui_widget','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','legend',5,1,'legend','Legende','div','','',20,NULL ,NULL,NULL ,NULL,'','','div','../javascripts/mod_legendDiv.php','','mapframe1','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','showlayertitle','true','show the layer title in the legend','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','showwmstitle','true','show the wms title in the legend','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','stickylegend','false','parameter to decide wether the legend should stick on the mapframe1','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','reverse','true','','var');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','reverseLegend','true','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','checkbox_on_off','false','display or hide the checkbox to set the legend on/off','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','css_file_legend','../css/legend.css','','file/css');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','legendlink','false','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','reverse','true','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','reverseLegend','true','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','showgroupedlayertitle','true','show the title of the grouped layers in the legend','var');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','kmlTree_Button',5,1,'','Digitalisieren','A','','',NULL ,NULL,NULL ,NULL,NULL ,'','<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M13.68 2.15L15.85 4.32C16.05 4.52 16.05 4.83 15.85 5.03L14.5 6.39L11.62 3.51L12.97 2.15C13.17 1.95 13.48 1.95 13.68 2.15ZM2 13.13L10.5 4.63L13.38 7.51L4.88 16.01H2V13.13Z" fill="currentColor"/>
-</svg>Objekte Digitalisieren','A','../plugins/mb_button.js','','kmlTree','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','digitize_kml_css','../css/digitize_new.css','','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','iconpicker','../extensions/fontIconPicker-2.0.0/css/jquery.fonticonpicker.min.css','','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','iconpickertheme','../extensions/fontIconPicker-2.0.0/themes/grey-theme/jquery.fonticonpicker.grey.min.css','','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','makiicons','../extensions/makiicons/style.css','maki icon css','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','override_css','.ui-menu.digitize-contextmenu {
-z-index: 4000 !important; /*old value:4*/
-width: 150px !important; /*old value:120(defined somewhere)*/
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','showlayertitle','true','show the layer title in the legend','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','showwmstitle','true','show the wms title in the legend','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','legend','stickylegend','false','parameter to decide wether the legend should stick on the mapframe1','var');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','toolbar',5,1,'This toolbar NAVIGATION appends all its target elements to its container
+~modified js~','Navigation','div ','','class=''mb-toolbar''',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_toolbar.js','','featureInfo1,pan1','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','toolbar','css','.mb-toolbar {
+padding:0px;
+margin:0px;
+float:left;
+}
+.mb-toolbar li {
+border-left: 2px solid #DDD;
+float:left;
+}
+
+.mb-toolbar li:last-child {
+border-right: 2px solid #DDD;
+}
+/*.mb-toolbar ul{
+display:block;
+float:left;
+margin: 4px 7px 0px 0px;
+}*/
+
+.mb-toolbar ul {
+margin:0px;
+padding:0px;
+list-style-type: none;
+}
+
+#toolbar img {
+padding: 10px;
+display: block;
 }','','text/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','spectrum','../extensions/spectrum.css','spectrum color picker css','file/css');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','tablesortercss','../css/tablesorter.css','','file/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','scaleSelect',5,1,'Scale-Selectbox','Maßstabsauswahl','select','','onchange=''mod_scaleSelect(this)''',NULL ,NULL,NULL ,NULL,NULL ,'','<option value = ''''>Scale</option> <option value=''100''>1 : 100</option> <option value=''250''>1 : 250</option> <option value=''500''>1 : 500</option> <option value=''1000''>1 : 1000</option> <option value=''2500''>1 : 2500</option> <option value=''5000''>1 : 5000</option> <option value=''10000''>1 : 10000</option> <option value=''25000''>1 : 25000</option> <option value=''30000''>1 : 30000</option> <option value=''50000''>1 : 50000</option> <option value=''75000''>1 : 75000</option> <option value=''100000''>1 : 100000</option> <option value=''200000''>1 : 200000</option> <option value=''300000''>1 : 300000</option> <option value=''400000''>1 : 400000</option> <option value=''500000''>1 : 500000</option> <option value=''600000''>1 : 600000</option> <option value=''700000''>1 : 700000</option> <option value=''800000''>1 : 800000</option> <option value=''900000''>1 : 900000</option> <option value=''1000000''>1 : 1000000</option>','select','../plugins/mb_selectScale.js','','mapframe1','','http://www.mapbender.org/index.php?title=ScaleSelect');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','toolbarContainer',5,1,'This toolbar Container appends all its target elements to its container Werkzeuge
 ','Werkzeuge','div ','','',NULL ,NULL,NULL ,NULL,NULL ,'','<a title="Werkzeuge" class="toggleToolsContainer"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M3 3H8V8H3V3ZM10 3H15V8H10V3ZM10 10H15V15H10V10ZM3 10H8V15H3V10Z" fill="currentColor"/>
@@ -1579,7 +1662,7 @@ Werkzeuge</a>','div','../plugins/mb_toolbar_cont.js','','changeEPSG_Button,legen
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','toolbarContainer','css','/* INSERT toolbarContainer-> elementVar -> css(text/css) */
 #toolbarContainer {
    position:relative;
-   display: block;
+   dislay: block;
    float: left;
    border-bottom:1px solid transparent;
 }
@@ -1644,66 +1727,28 @@ border-bottom:1px solid #d62029 !important;
    cursor:pointer;
    background-color:#EEE
 }
+@media (max-width:508px) {
+.toggleToolsContainer svg{float:right;margin:16px 0 0 112px !important;}
+.toggleToolsContainer{text-indent:-205px;}
+#toolsContainer{max-width:calc(100vw - 100px);}
+}
 /* END INSERT toolbarContainer-> elementVar -> css(text/css) */','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','toolbar',5,1,'This toolbar NAVIGATION appends all its target elements to its container
-~modified js~','Navigation','div ','','class=''mb-toolbar''',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_toolbar.js','','featureInfo1,pan1','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','toolbar','css','.mb-toolbar {
-padding:0px;
-margin:0px;
-float:left;
-}
-.mb-toolbar li {
-border-left: 2px solid #DDD;
-float:left;
-}
-
-.mb-toolbar li:last-child {
-border-right: 2px solid #DDD;
-}
-/*.mb-toolbar ul{
-display:block;
-float:left;
-margin: 4px 7px 0px 0px;
-}*/
-
-.mb-toolbar ul {
-margin:0px;
-padding:0px;
-list-style-type: none;
-}
-
-#toolbar img {
-padding: 10px;
-display: block;
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','scaleSelect',5,1,'Scale-Selectbox','Maßstabsauswahl','select','','onchange=''mod_scaleSelect(this)''',NULL ,NULL,NULL ,NULL,NULL ,'','<option value = ''''>Scale</option> <option value=''100''>1 : 100</option> <option value=''250''>1 : 250</option> <option value=''500''>1 : 500</option> <option value=''1000''>1 : 1000</option> <option value=''2500''>1 : 2500</option> <option value=''5000''>1 : 5000</option> <option value=''10000''>1 : 10000</option> <option value=''25000''>1 : 25000</option> <option value=''30000''>1 : 30000</option> <option value=''50000''>1 : 50000</option> <option value=''75000''>1 : 75000</option> <option value=''100000''>1 : 100000</option> <option value=''200000''>1 : 200000</option> <option value=''300000''>1 : 300000</option> <option value=''400000''>1 : 400000</option> <option value=''500000''>1 : 500000</option> <option value=''600000''>1 : 600000</option> <option value=''700000''>1 : 700000</option> <option value=''800000''>1 : 800000</option> <option value=''900000''>1 : 900000</option> <option value=''1000000''>1 : 1000000</option>','select','../plugins/mb_selectScale.js','','mapframe1','','http://www.mapbender.org/index.php?title=ScaleSelect');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','kmlTree_Button',5,1,'','Digitalisieren','A','','',NULL ,NULL,NULL ,NULL,NULL ,'','<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.68 2.15L15.85 4.32C16.05 4.52 16.05 4.83 15.85 5.03L14.5 6.39L11.62 3.51L12.97 2.15C13.17 1.95 13.48 1.95 13.68 2.15ZM2 13.13L10.5 4.63L13.38 7.51L4.88 16.01H2V13.13Z" fill="currentColor"/>
+</svg>Objekte Digitalisieren','A','../plugins/mb_button.js','','kmlTree','','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','digitize_kml_css','../css/digitize_new.css','','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','iconpicker','../extensions/fontIconPicker-2.0.0/css/jquery.fonticonpicker.min.css','','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','iconpickertheme','../extensions/fontIconPicker-2.0.0/themes/grey-theme/jquery.fonticonpicker.grey.min.css','','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','makiicons','../extensions/makiicons/style.css','maki icon css','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','override_css','.ui-menu.digitize-contextmenu {
+z-index: 4000 !important; /*old value:4*/
+width: 150px !important; /*old value:120(defined somewhere)*/
 }','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_resizable',5,1,'Resizable from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','../plugins/jq_ui_resizable.js','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.resizable.js','','jq_ui,jq_ui_mouse,jq_ui_widget','http://jqueryui.com/demos/resizable/');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_draggable',5,1,'Draggable from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.draggable.min.js','','jq_ui,jq_ui_mouse,jq_ui_widget','http://jqueryui.com/demos/draggable/');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_autocomplete',5,1,'Module to manage jQuery UI autocomplete module','','div','','',-1,-1,15,15,NULL ,'','','div','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.autocomplete.js','','jq_ui,jq_ui_widget,jq_ui_position','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','overviewToggle',5,1,'2019','Übersichtskarte','div','','class="overviewToggleClosed"',NULL ,NULL,NULL ,NULL,400,'display:flex;align-items:center;position:absolute;right:0px;bottom:20px;background-color:#EEE;border-top:2px solid #DDD;border-left:2px solid #DDD;border-bottom:2px solid #DDD;display:none;','<svg width="17" height="18" viewBox="0 0 18 18" fill="none"  xmlns="http://www.w3.org/2000/svg">
-<path d="M16.0142 11.6191L14.6042 13.0291L9.01416 7.43914L3.42416 13.0291L2.01416 11.6191L9.01416 4.61914L16.0142 11.6191Z" stroke="currentColor" stroke-width="2"/>
-</svg>','div','../javascripts/mod_overviewToggle2019.js','','overview','','');
-INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','overviewToggle','css','
-/* INSERT overviewToggle -> elementVar -> css(text/css) */
-
-.overviewToggleClosed svg {
-float: right;
-transform: rotate(-90deg);
-}
-.overviewToggleOpened svg {
-float: left;
-transform: rotate(90deg);
-}
-.overviewToggleOpened, .overviewToggleClosed {
-color:#777;padding:5px;
-}
-.overviewToggleOpened:hover, .overviewToggleClosed:hover {
-color:#333;
-}
-
-/* END INSERT overviewToggle -> elementVar -> css(text/css) */
-','','text/css');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_dialog',5,1,'Module to manage jQuery UI dialog windows with multiple options for customization.','','div','','',-1,-1,15,15,NULL ,'','','div','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.dialog.js','','jq_ui,jq_ui_widget,jq_ui_button,jq_ui_draggable,jq_ui_mouse,jq_ui_position,jq_ui_resizable','');
-INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_slider',5,1,'slider from the jQuery UI framework','','','','',NULL ,NULL,NULL ,NULL,NULL ,'','','','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/minified/jquery.ui.slider.min.js','','jq_ui,jq_ui_mouse,jq_ui_widget','');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','spectrum','../extensions/spectrum.css','spectrum color picker css','file/css');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','kmlTree_Button','tablesortercss','../css/tablesorter.css','','file/css');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_autocomplete',5,0,'Module to manage jQuery UI autocomplete module','','div','','',-1,-1,15,15,NULL ,'','','div','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.autocomplete.js','','jq_ui,jq_ui_widget,jq_ui_position','');
+INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','jq_ui_dialog',5,0,'Module to manage jQuery UI dialog windows with multiple options for customization.','','div','','',-1,-1,15,15,NULL ,'','','div','','../extensions/jquery-ui-1.8.16.custom/development-bundle/ui/jquery.ui.dialog.js','','jq_ui,jq_ui_widget,jq_ui_button,jq_ui_draggable,jq_ui_mouse,jq_ui_position,jq_ui_resizable','');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','toolbar3',6,1,'This toolbar ZOOM TOOLS TOP RIGHT appends all its target elements to its container','Werkzeuge','div','','class=''mb-toolbar3'' ',NULL ,NULL,NULL ,NULL,NULL ,'','','div','../plugins/mb_toolbar.js','','zoomIn1,zoomFull,zoomOut1,selArea1','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','toolbar3','css','.mb-toolbar3 {
 position: fixed;
@@ -1742,6 +1787,7 @@ INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title,
 </svg>Meine Themen','A','../plugins/mb_button.js','','loadwmc','','');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadWMC_Button','dialogHeight','650','','var');
 INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadWMC_Button','dialogWidth','700','','var');
+INSERT INTO gui_element_vars(fkey_gui_id, fkey_e_id, var_name, var_value, context, var_type) VALUES ('Geoportal-RLP_2019','loadWMC_Button','reinitializeLoadWmc','true','','var');
 INSERT INTO gui_element (fkey_gui_id, e_id, e_pos, e_public, e_comment, e_title, e_element,e_src, e_attributes, e_left, e_top, e_width, e_height, e_z_index, e_more_styles, e_content, e_closetag, e_js_file, e_mb_mod, e_target, e_requires,e_url) VALUES ('Geoportal-RLP_2019','legendButton',7,1,'popup
 <IMG..>../img/button_hessen/legend_off.png','Legende anzeigen','A','','',NULL ,NULL,NULL ,NULL,NULL ,'','<svg width="16" height="16" viewBox="0 0 17 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M4.25 4C4.25 4.69036 3.69036 5.25 3 5.25C2.30964 5.25 1.75 4.69036 1.75 4C1.75 3.30964 2.30964 2.75 3 2.75C3.69036 2.75 4.25 3.30964 4.25 4Z" fill="currentColor"/>
@@ -1899,4 +1945,3 @@ width:35%;
 min-width:150px;
 }
 /* END INSERT body -> WMS_preferenceDiv -> css(text/css) */','','text/css');
-

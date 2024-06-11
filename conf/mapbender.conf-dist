@@ -332,7 +332,7 @@ define("SESSION_NAME", "MAPBENDER");
 # class_map.php, frames/index.php, class_gui
 #
 define("MAPBENDER_VARIABLE_CACHE", false);
-define("MAPBENDER_CACHE_TYPE", "apc");
+define("MAPBENDER_CACHE_TYPE", "apcu");
 
 # --------------------------------------------
 # define memcached server connections, if memcached ist used for session storing
@@ -402,7 +402,7 @@ define("WRAPPER_PATH","/portal/karten.html");
 # --------------------------------------------
 # define if mapbender is already integrated in new django portal
 # --------------------------------------------
-define("DJANGO_PORTAL", true);
+define("DJANGO_PORTAL", false);
 
 define("OWSPROXY_ALLOW_SESSION_GRABBING", false);
 
