@@ -289,17 +289,26 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                 var kml = $('#mapframe1').data('kml');
                 kml.exportItem = exportItem;
                 var url = item.url;
-                $('li[title="' + url + '"] > a').die('contextmenu').live('contextmenu', contextmenuLayer);
-                $('li[title="' + url + '"] > ul > li').die('contextmenu').live('contextmenu', contextmenuObject)
-                    .die('click').live('click', function(e) {
+                $('li[title="' + url + '"] > a').die('contextmenu').live('contextmenu', function(e) {
+                    e.preventDefault();
+                    contextmenuLayer(e);
+                    return false;
+                });
+                $('li[title="' + url + '"] > ul > li').die('contextmenu').live('contextmenu', function(e) {
+                    e.preventDefault();
+                    contextmenuObject(e);
+                    return false;
+                }).die('click').live('click', function(e) {
                         if ($(e.srcElement).is('button,input')) {
                             return;
                         }
+                        e.preventDefault();
                         var idx = $(this).attr('idx');
                         var kml = $('#mapframe1').data('kml');
                         var url = $(this).parent().parent().attr('title');
                         kml.zoomToFeature(url, idx);
-                        editObject($(this), null)(e);
+                        return false;
+                        //editObject($(this), null)(e);
                     });
                 $('li[title="' + url + '"] > .digitize-menu-arrow').die('click').live('click', contextmenuLayer);
                 $('li[title="' + url + '"] > ul > li > .digitize-menu-arrow').die('click').live('click', contextmenuObject);
