@@ -533,7 +533,7 @@ if ($outputFormat == 'rdfxml') {
     $catalog = $rdfXmlDoc->createElement ( "dcat:Catalog" );
     $catalog->setAttribute ( "rdf:about", $baseUrlPortal );
     $catalogTitle = $rdfXmlDoc->createElement ( "dct:title" );
-    $catalogTitleText = $rdfXmlDoc->createTextNode ( "GeoPortal.rlp" );
+    $catalogTitleText = $rdfXmlDoc->createTextNode ( "Geoportal-Hessen" );
     $catalogTitle->appendChild($catalogTitleText);
     $catalogLanguage = $rdfXmlDoc->createElement ( "dct:language" );
     $catalogLanguage->setAttribute('rdf:resource', 'http://publications.europa.eu/resource/authority/language/DEU');
@@ -885,8 +885,8 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                     "license_id" => $layerLicenseId
                                 );
                                 $resourceArray[] = $layerViewResource_1;
-                                $layerViewResource_2 = array("name" => "GeoPortal.rlp",
-                                    "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
+                                $layerViewResource_2 = array("name" => "Geoportal-Hessen",
+                                    "description" =>  $layerTitle . " - Anzeige im Geoportal-Hessen",
                                     "format" => "HTML",
                                     "url" => $baseUrlPortal . "/map?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
                                     "id" => $gpDataset->uuid . "_geoportal_layer_" . $value1->id,
@@ -1037,7 +1037,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                 $title = "Original Metadaten HTML";
                 $description = false;
                 $format = "HTML";
-                $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
+                $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.hessen.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
                 
                 $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, 'cc-zero', false, $format_mapping, $is_hvd);
                 $distributionArray[] = $Distribution;
@@ -1231,7 +1231,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
             $metadataResource = array("name" => "Originäre Metadaten",
                                       "description" => $dataset->title . " - Anzeige der originären Metadaten",
                                       "format" => "HTML",
-                                      "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
+                                      "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.hessen.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
             );
             $package[$j]->resource[] = $metadataResource;
             //TODO the same for categories - map them to tpp categories
@@ -1251,9 +1251,9 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                 "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
                                 "id" => $package[$j]->id . "_mapviewer_layer_" . $value1->id
                             );
-                            $layerViewResource_2 = array("name" => "GeoPortal.rlp",
-                                "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
-                                "format" => "GeoPortal.rlp",
+                            $layerViewResource_2 = array("name" => "Geoportal-Hessen",
+                                "description" =>  $layerTitle . " - Anzeige im Geoportal.Hessen",
+                                "format" => "Geoportal-Hessen",
                                 "url" => $baseUrlPortal . "/map?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
                                 "id" => $package[$j]->id . "_geoportal_layer_" . $value1->id
                             );
