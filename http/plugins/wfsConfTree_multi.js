@@ -50,14 +50,14 @@ var ConfTree = function(o){
 		});
 	}
 	var $wfsConfDialog = $("<div></div>").dialog({
-		width: 500,
-		height: 600,
+		dialogClass: "dialog_flst",
+		width: 260,
+		height: 390,
+		position: [o.$target.offset().left+20, o.$target.offset().top+80],
 		autoOpen: false,
-		buttons:{
-			"schliessen" : function(){
-					$(this).dialog("close");
-				}
-			}
+		close: function() {
+			$("#mod_gaz_drawstandingHighlightWFS0").remove();
+        }
 	});
 	$("button.toggle",$confTree).live('click', function(){
 		if($(this).parent().hasClass("open")){
@@ -75,7 +75,7 @@ var ConfTree = function(o){
 		$confTree.append("<li class='emptymessage'>"+translatedI18nObject.labelNoWfsConfAvailable+"</li>");
 		$confTree.addClass('conftree');
 
-		var $WFSConffolder = $('<li class="open wfsconf"><ul></ul></li>');
+		var $WFSConffolder = $('<li class="open wfsconf" style="margin:0;padding:0;"><ul style="margin:0;padding:0;"></ul></li>');
 		$confTree.append($WFSConffolder);
 		for(var i in  aWFSConf){
 			// remove default "no wfs conf"message
@@ -84,7 +84,7 @@ var ConfTree = function(o){
 			$featuretypeFolder = $WFSConffolder.find("li.featuregroup_"+aWFSConf[i].featureTypeId);
 			wfsconfs.push(aWFSConf[i].id);
 			if($featuretypeFolder.size() == 0){
-				$featuretypeFolder = $('<li class="open featuregroup_'+ aWFSConf[i].featureTypeId + '"><button class="toggle"></button>'+ aWFSConf[i].abstr + '<ul></ul></li>');
+				$featuretypeFolder = $('<li style="margin:0;padding:0;" class="open featuregroup_'+ aWFSConf[i].featureTypeId + '"><ul style="margin:0;padding:0;"></ul></li>');
 				$WFSConffolder.find(" > ul").append($featuretypeFolder);
 				$featuretypeList = $featuretypeFolder.find("ul");
 			}else{
@@ -94,7 +94,7 @@ var ConfTree = function(o){
 			switch(parseInt(aWFSConf[i].type,10)){
 					/* search */
 					case 0: 
-						$wfsconfEntry = $('<li class="search" ><img src="../img/button_blue_red/gazetteer2_off.png" /><button class="remove">remo</button><img class="meta" src="../img/button_blue_red/getArea_over.png" />  <a href="#" class="dialogopen">'+ aWFSConf[i].label +'</a></li>');
+						$wfsconfEntry = $('<li style="margin:0;padding:0;" class="search" > <a id="menuitem_' + aWFSConf[i].featureTypeId + '" href="#" class="dialogopen">'+ aWFSConf[i].label +'</a></li>');
 					break;
 					
 					/* digitize */
@@ -129,10 +129,11 @@ var ConfTree = function(o){
 				switch(parseInt(wfsConf.type,10)){
 
 					/* search */
-					case 0: 
+					case 0:
+						$('#toolsContainer').hide() && $('a.toggleToolsContainer').removeClass('activeToggle');
 					/* download */
 					case 2: 
-						var $iframe = $('<iframe name="'+o.id+'_" style="border:none; width: 100%; height: 100%;" src="../javascripts/mod_wfsGazetteerEditor_client.php?'+querystring+'"></iframe>');
+						var $iframe = $('<iframe name="'+o.id+'_" style="border:none; width: 100%; height: 100%;" src="../javascripts/mod_wfsGazetteerEditor_client_flst.php?'+querystring+'"></iframe>');
 						$wfsConfDialog.empty();
 						$wfsConfDialog.append($iframe);	
 						$wfsConfDialog.dialog("open");
