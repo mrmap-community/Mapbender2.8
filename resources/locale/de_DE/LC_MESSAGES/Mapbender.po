@@ -4410,8 +4410,8 @@ msgstr "Markieren Sie das gewünschte Gebiet auf der Karte."
 msgid "List of available datasets"
 msgstr "Liste der verfügbaren Datensätze"
 
-msgid "Check download options"
-msgstr "Prüfung der Download Möglichkeiten" 
+msgid "Check download options (may need some minutes)"
+msgstr "Prüfung der Download Möglichkeiten (kann ein paar Minuten dauern)" 
 
 msgid "Dataset list"
 msgstr "Liste der Datensätze"
