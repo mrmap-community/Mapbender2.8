@@ -17,8 +17,19 @@ require_once dirname(__FILE__) ."/../core/globalSettings.php";
 require_once dirname(__FILE__) ."/../http/classes/class_administration.php";
 require_once dirname(__FILE__) ."/../tools/mod_monitorCapabilities_defineGetMapBbox.php";
 require_once dirname(__FILE__) ."/../http/classes/class_bbox.php";
+
 //require_once dirname(__FILE__) ."/../http/classes/class_universal_wfs_factory.php";
 //require_once(dirname(__FILE__)."/../http/classes/class_mb_exception.php");
+
+if (file_exists ( dirname ( __FILE__ ) . "/../../conf/excludeFromMonitoring.json" )) {
+	$configObject = json_decode ( file_get_contents ( "../../conf/excludeFromMonitoring.json" ) );
+}
+if (isset ( $configObject ) && isset ( $configObject->wms ) && count($configObject->wms) > 0 ) {
+	$wmsToExclude = $configObject->wms;
+}
+if (isset ( $configObject ) && isset ( $configObject->wfs ) && count($configObject->wfs) > 0 ) {
+	$wfsToExclude = $configObject->wfs;
+}
 
 //do db close at the most reasonable point 
 $admin = new administration();
@@ -165,11 +176,16 @@ for ($iz = 0; $iz < count($user_id_all); $iz++) {
 	switch ($serviceType) {
 		case "WMS":
 			$service_id_own = $admin->getWmsByWmsOwner($userid);
+			//remove services not to monitor
+			$service_id_own = array_diff($service_id_own, $wmsToExclude);
 			break;
 		case "WFS":
 			$service_id_own = $admin->getWfsByWfsOwner($userid);
+			//remove services not to monitor
+			$service_id_own = array_diff($service_id_own, $wfsToExclude);
 			break;
 	}
+	
 	//initialize monitoring processes
 	echo "Starting monitoring cycle...$br";
 	echo $serviceType." services are requested for availability.$br"; 
