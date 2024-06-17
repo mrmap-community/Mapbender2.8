@@ -709,7 +709,7 @@ if ($outputFormat == 'rdfxml') {
                 $iso19139Md->createFromUrl($metadataUrl);
                 $dataset = $rdfXmlDoc->createElement ( "dcat:dataset" );
                 $Dataset = $rdfXmlDoc->createElement ( "dcat:Dataset" );
-                $resourceIdentifier = $iso19139Md->datasetIdCodeSpace . "/" . $iso19139Md->datasetId;
+                $resourceIdentifier = $iso19139Md->datasetIdCodeSpace . $iso19139Md->datasetId;
                 //alternative: 
                 if ($orig_identifier) {
                     $Dataset->setAttribute ( "rdf:about",  $resourceIdentifier );
