@@ -244,6 +244,13 @@ define("METADATA_DIR", "../../metadata");
 define("METADATA_DEFAULT_CODESPACE", "http://www.mapbender.org");
 
 #---------------------------------------------
+# METADATA Portal Name
+#---------------------------------------------
+# This name is used when exporting metadata to dcat-ap - the distribution names may include the name of the portal
+#---------------------------------------------
+define("METADATA_PORTAL_NAME", "Mapbender Metadata Portal");
+
+#---------------------------------------------
 # External Validator
 #---------------------------------------------
 # This is an absolute URL to an external validation service

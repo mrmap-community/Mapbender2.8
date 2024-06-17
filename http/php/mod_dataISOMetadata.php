@@ -953,6 +953,9 @@ function fillISO19139($iso19139, $recordId)
 	$code = $iso19139->createElement("gmd:code");
 	$code_cs = $iso19139->createElement("gco:CharacterString");
 
+	//new resource identifier handling - will already be created by class_iso19139.php - since 2024/06
+    //if the metadata will be initiated via class, the identifier may already be there - here the metadata is called by sql :-(
+
 	if (isset($departmentMetadata['mb_group_registry_url']) && $departmentMetadata['mb_group_registry_url'] !== "") {
 		if (substr($departmentMetadata['mb_group_registry_url'], -1) !== '/') {
 			$uniqueResourceIdentifierCodespace = $departmentMetadata['mb_group_registry_url'] . '/';
