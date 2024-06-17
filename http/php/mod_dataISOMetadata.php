@@ -559,7 +559,7 @@ function generateDescriptiveKeywords($iso19139, $descriptiveKeywordsArray, $keyw
                     $descriptiveKeywords->appendChild($MD_Keywords);
                 } else {
                     $keyword_cs = $iso19139->createElement("gco:CharacterString");
-                    $keywordText = $iso19139->createTextNode($row['custom_category_key']);
+                    $keywordText = $iso19139->createTextNode($value);
                     $keyword_cs->appendChild($keywordText);
                     $keyword->appendChild($keyword_cs);
                     $MD_Keywords->appendChild($keyword);
