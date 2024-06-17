@@ -1074,7 +1074,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 			}
 		break;
 	}
-	$cache->isActive = false; //TODO delete productive
+	//$cache->isActive = false; //TODO delete productive
 	//$e = new mb_exception("mod_inspireDownloadFeed.php: cachedVariableTimestamp: ".date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)));
 	if ($cache->isActive && $cache->cachedVariableExists($atomFeedKey) && (date("Y-m-d H:i:s",$cache->cachedVariableCreationTime($atomFeedKey)) > $maxDate)) {
 		#$e = new mb_exception("class_map.php: read ".$atomFeedKey." from ".$cache->cacheType." cache!");
