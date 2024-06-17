@@ -144,6 +144,9 @@ var ConfTree = function(o){
 					break;
 				}
 
+				event.preventDefault();
+				return false;
+
 				};
 			})(aWFSConf[i]));
 			$wfsconfEntry.find("button.remove").click(function(){
