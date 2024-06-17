@@ -1225,3 +1225,7 @@ GRANT ALL ON TABLE ckan_sync_log TO mapbenderdbuser;
 
 ALTER TABLE mb_metadata ADD COLUMN further_links_json text;
 
+-- add column for external_id to mb_group table
+
+ALTER TABLE mb_group ADD mb_group_external_id_1 text NULL;
+

@@ -47,9 +47,10 @@ class Group implements RPCObject {
 	var $homepage;
 	var $uuid;
 	var $timestamp;
-	var $adminCode;
+	var $admin_code;
     var $ckanId;
 	var $searchable;
+	var $external_id;
 
     	static $displayName = "Group";
     	static $internalName = "group";
@@ -111,7 +112,8 @@ class Group implements RPCObject {
 	       	"logo_path" => $this->logo_path,
 			"spatialSecurity" => $this->spatialSecurity,
 			"homepage" => $this->homepage,
-			"adminCode" => $this->adminCode,
+			"admin_code" => $this->admin_code,
+			"external_id" => $this->external_id,
 			"uuid" => $this->uuid,
 			"searchable" => $this->searchable
 			//"ckanId" => $this->ckanId
@@ -181,7 +183,8 @@ class Group implements RPCObject {
 		$this->logo_path = isset($changes->logo_path) ? $changes->logo_path : $this->logo_path;
 		$this->spatialSecurity = isset($changes->spatialSecurity) ? $changes->spatialSecurity : $this->spatialSecurity;
 		$this->homepage = isset($changes->homepage) ? $changes->homepage : $this->homepage;
-		$this->adminCode = isset($changes->adminCode) ? $changes->adminCode : $this->adminCode;
+		$this->admin_code = isset($changes->admin_code) ? $changes->admin_code : $this->admin_code;
+		$this->external_id = isset($changes->external_id) ? $changes->external_id : $this->external_id;
 		$this->searchable = isset($changes->searchable) ? $changes->searchable : $this->searchable;
 		return true;
 	}
@@ -204,8 +207,9 @@ class Group implements RPCObject {
 			"mb_group_logo_path = $13, ".
 			"mb_group_homepage = $14, ".
 			"mb_group_admin_code = $15, ".
-			"searchable = $16 ".
-			"WHERE mb_group_id = $17 ";
+			"mb_group_external_id_1 = $16, ".
+			"searchable = $17 ".
+			"WHERE mb_group_id = $18 ";
 
 			$v = array(
 				$this->name,
@@ -222,7 +226,8 @@ class Group implements RPCObject {
 				$this->email,
 				$this->logo_path,
 				$this->homepage,
-				$this->adminCode,
+				$this->admin_code,
+				$this->external_id,
 				$this->searchable,
 				$this->id
 			);
@@ -230,7 +235,7 @@ class Group implements RPCObject {
 			$t = array(
 				"s", "i", "s", "s", "s",
 				"i", "s", "s", "s", "s", 
-				"s", "s", "s", "s", "s", "b", "i"
+				"s", "s", "s", "s", "s", "s", "b", "i"
 			);
 
 			$update_result = db_prep_query($sql_update,$v,$t);
@@ -297,7 +302,8 @@ class Group implements RPCObject {
             	$this->logo_path = $row["mb_group_logo_path"];
 	    		$this->homepage = $row["mb_group_homepage"];
 				$this->uuid = $row["uuid"];
-				$this->adminCode = $row["mb_group_admin_code"];
+				$this->admin_code = $row["mb_group_admin_code"];
+				$this->external_id = $row["mb_group_external_id_1"];
 				$this->timestamp = $row["timestamp"];
 				$this->ckanId = $row["mb_group_ckan_uuid"];
 				$this->searchable = $row["searchable"];
