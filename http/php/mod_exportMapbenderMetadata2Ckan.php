@@ -711,11 +711,11 @@ if ($outputFormat == 'rdfxml') {
                 $Dataset = $rdfXmlDoc->createElement ( "dcat:Dataset" );
                 $resourceIdentifier = $iso19139Md->datasetIdCodeSpace . $iso19139Md->datasetId;
                 //alternative: 
-                if ($orig_identifier) {
-                    $Dataset->setAttribute ( "rdf:about",  $resourceIdentifier );
-                } else {
+                //if ($orig_identifier) {
+                //    $Dataset->setAttribute ( "rdf:about",  $resourceIdentifier );
+                //} else {
                     $Dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
-                }
+                //}
                 //title
                 $title = $rdfXmlDoc->createElement ( "dct:title" );
                 $titleText = $rdfXmlDoc->createTextNode( $gpDataset->title );
@@ -728,7 +728,11 @@ if ($outputFormat == 'rdfxml') {
                 $Dataset->appendChild($description);
                 //identifier
                 $identifier = $rdfXmlDoc->createElement ( "dct:identifier" );
-                $identifierText = $rdfXmlDoc->createTextNode( $gpDataset->uuid );
+                if ($orig_identifier) {
+                    $identifierText = $rdfXmlDoc->createTextNode( $resourceIdentifier );
+                } else {
+                    $identifierText = $rdfXmlDoc->createTextNode( $gpDataset->uuid );
+                }
                 $identifier->appendChild($identifierText);
                 $Dataset->appendChild($identifier);
                 //keywords
