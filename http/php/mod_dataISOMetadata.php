@@ -450,6 +450,131 @@ function proxyFile($iso19139str, $outputFormat)
 	}
 }
 
+function generateDescriptiveKeywords($iso19139, $descriptiveKeywordsArray, $keywordType='default'){
+    $descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
+    $MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
+    switch ($keywordType){
+        case "default":
+            foreach ($descriptiveKeywordsArray as $keywordString) {
+                $keyword = $iso19139->createElement("gmd:keyword");
+                $keyword_cs = $iso19139->createElement("gco:CharacterString");
+                $keywordText = $iso19139->createTextNode($keywordString);
+                $keyword_cs->appendChild($keywordText);
+                $keyword->appendChild($keyword_cs);
+                $MD_Keywords->appendChild($keyword);
+            }
+            //add dummy keyword, cause it is needed for validation!!!!
+            if (count($descriptiveKeywordsArray) == 0) {
+                $keyword = $iso19139->createElement("gmd:keyword");
+                $keyword_cs = $iso19139->createElement("gco:CharacterString");
+                $keywordText = $iso19139->createTextNode("DummyKeyword");
+                $keyword_cs->appendChild($keywordText);
+                $keyword->appendChild($keyword_cs);
+                $MD_Keywords->appendChild($keyword);
+            }
+            break;
+        case "inspire":
+            foreach ($descriptiveKeywordsArray as $keywordString) {
+                $keyword = $iso19139->createElement("gmd:keyword");
+                $keyword_cs = $iso19139->createElement("gco:CharacterString");
+                $keywordText = $iso19139->createTextNode($keywordString);
+                $keyword_cs->appendChild($keywordText);
+                $keyword->appendChild($keyword_cs);
+                $MD_Keywords->appendChild($keyword);
+            }
+            //part for the vocabulary - is always the same for the inspire themes
+            $thesaurusName = $iso19139->createElement("gmd:thesaurusName");
+            $CI_Citation = $iso19139->createElement("gmd:CI_Citation");
+            $title = $iso19139->createElement("gmd:title");
+            $title_cs = $iso19139->createElement("gco:CharacterString");
+            $titleText = $iso19139->createTextNode("GEMET - INSPIRE themes, version 1.0");
+            $title_cs->appendChild($titleText);
+            $title->appendChild($title_cs);
+            $CI_Citation->appendChild($title);
+            $date1 = $iso19139->createElement("gmd:date");
+            $CI_Date = $iso19139->createElement("gmd:CI_Date");
+            $date2 = $iso19139->createElement("gmd:date");
+            $gcoDate = $iso19139->createElement("gco:Date");
+            $dateType = $iso19139->createElement("gmd:dateType");
+            $dateTypeCode = $iso19139->createElement("gmd:CI_DateTypeCode");
+            $dateTypeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
+            $dateTypeCode->setAttribute("codeListValue", "publication");
+            $dateTypeCodeText = $iso19139->createTextNode('publication');
+            $dateText = $iso19139->createTextNode('2008-06-01');
+            $dateTypeCode->appendChild($dateTypeCodeText);
+            $dateType->appendChild($dateTypeCode);
+            $gcoDate->appendChild($dateText);
+            $date2->appendChild($gcoDate);
+            $CI_Date->appendChild($date2);
+            $CI_Date->appendChild($dateType);
+            $date1->appendChild($CI_Date);
+            $CI_Citation->appendChild($date1);
+            $thesaurusName->appendChild($CI_Citation);
+            $MD_Keywords->appendChild($thesaurusName);
+            break;
+        case "custom":
+            foreach ($descriptiveKeywordsArray as $key => $value) {
+                $keyword = $iso19139->createElement("gmd:keyword");
+                $e = new mb_exception("custom_category_key: " . $key);
+                //define HVD base uri - this is used as key for HVD categories - if such an uri is found, get the german translation for the theme and add a thesaurus!
+                $hvdBaseUri = "http://data.europa.eu/bna/";
+                //in RLP the categories codes are extended: "HVD - " - this must be removed before exporting them ;-)
+                if (strpos($key, $hvdBaseUri) == 0 && $key != 'inspireidentifiziert') {
+                    $e = new mb_exception("HVD cat found!");
+                    $keywordAnchor = $iso19139->createElement("gmx:Anchor");
+                    $keywordAnchorText = $iso19139->createTextNode(preg_replace("/^HVD - /", "", $value));
+                    //$keywordAnchorText = $iso19139->createTextNode($row['custom_category_code_de']);
+                    $keywordAnchor->setAttribute("xlink:href", $key);
+                    $keywordAnchor->appendChild($keywordAnchorText);
+                    $keyword->appendChild($keywordAnchor);
+                    $MD_Keywords->appendChild($keyword);
+                    //add thesaurus
+                    //part for the vocabulary - is always the same for the HVD themes
+                    $thesaurusName = $iso19139->createElement("gmd:thesaurusName");
+                    $CI_Citation = $iso19139->createElement("gmd:CI_Citation");
+                    $title = $iso19139->createElement("gmd:title");
+                    $titleAnchor = $iso19139->createElement("gmx:Anchor");
+                    $titleAnchorText = $iso19139->createTextNode("High-Value dataset categories");
+                    $titleAnchor->setAttribute("xlink:href", "http://data.europa.eu/bna/asd487ae75");
+                    $titleAnchor->appendChild($titleAnchorText);
+                    $title->appendChild($titleAnchor);
+                    $CI_Citation->appendChild($title);
+                    $date1 = $iso19139->createElement("gmd:date");
+                    $CI_Date = $iso19139->createElement("gmd:CI_Date");
+                    $date2 = $iso19139->createElement("gmd:date");
+                    $gcoDate = $iso19139->createElement("gco:Date");
+                    $dateType = $iso19139->createElement("gmd:dateType");
+                    $dateTypeCode = $iso19139->createElement("gmd:CI_DateTypeCode");
+                    $dateTypeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
+                    $dateTypeCode->setAttribute("codeListValue", "publication");
+                    $dateTypeCodeText = $iso19139->createTextNode('publication');
+                    $dateText = $iso19139->createTextNode('2023-09-27');
+                    $dateTypeCode->appendChild($dateTypeCodeText);
+                    $dateType->appendChild($dateTypeCode);
+                    $gcoDate->appendChild($dateText);
+                    $date2->appendChild($gcoDate);
+                    $CI_Date->appendChild($date2);
+                    $CI_Date->appendChild($dateType);
+                    $date1->appendChild($CI_Date);
+                    $CI_Citation->appendChild($date1);
+                    $thesaurusName->appendChild($CI_Citation);
+                    $MD_Keywords->appendChild($thesaurusName);
+                    $descriptiveKeywords->appendChild($MD_Keywords);
+                } else {
+                    $keyword_cs = $iso19139->createElement("gco:CharacterString");
+                    $keywordText = $iso19139->createTextNode($row['custom_category_key']);
+                    $keyword_cs->appendChild($keywordText);
+                    $keyword->appendChild($keyword_cs);
+                    $MD_Keywords->appendChild($keyword);
+                    $descriptiveKeywords->appendChild($MD_Keywords);
+                }
+            }
+            break;
+    }
+    $descriptiveKeywords->appendChild($MD_Keywords);
+    return $descriptiveKeywords; 
+}
+
 //some needfull functions to pull metadata out of the database!
 function fillISO19139($iso19139, $recordId)
 {
@@ -831,6 +956,9 @@ function fillISO19139($iso19139, $recordId)
 	$code = $iso19139->createElement("gmd:code");
 	$code_cs = $iso19139->createElement("gco:CharacterString");
 
+	//new resource identifier handling - will already be created by class_iso19139.php - since 2024/06
+    //if the metadata will be initiated via class, the identifier may already be there - here the metadata is called by sql :-(
+
 	if (isset($departmentMetadata['mb_group_registry_url']) && $departmentMetadata['mb_group_registry_url'] !== "") {
 		if (substr($departmentMetadata['mb_group_registry_url'], -1) !== '/') {
 			$uniqueResourceIdentifierCodespace = $departmentMetadata['mb_group_registry_url'] . '/';
@@ -991,42 +1119,16 @@ function fillISO19139($iso19139, $recordId)
 		$graphicOverview->appendChild($MD_BrowseGraphic);
 		$MD_DataIdentification->appendChild($graphicOverview);
 	}
-	//generate keyword part - for services the inspire themes are not applicable!!!**********
-	//read keywords for resource out of the database/not only layer keywords also featuretype keywords if given!
-	$sql = "SELECT DISTINCT keyword.keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id";
-	$v = array((int)$mb_metadata['metadata_id']);
-	$t = array('i');
-	$res = db_prep_query($sql, $v, $t);
-	$descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
-	$MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
-	//$countNormalKeywords = 0;
-	$keywordExist = false;
-	while ($row = db_fetch_array($res)) {
-		if (isset($row['keyword']) && $row['keyword'] != "") {
-			//$countNormalKeywords++;
-			$keywordExist = true;
-			$keyword = $iso19139->createElement("gmd:keyword");
-			$keyword_cs = $iso19139->createElement("gco:CharacterString");
-			$keywordText = $iso19139->createTextNode($row['keyword']);
-			$keyword_cs->appendChild($keywordText);
-			$keyword->appendChild($keyword_cs);
-			$MD_Keywords->appendChild($keyword);
-		}
-	}
-	//add dummy keyword, cause it is needed for validation!!!!
-	if ($keywordExist == false) {
-		$keyword = $iso19139->createElement("gmd:keyword");
-		$keyword_cs = $iso19139->createElement("gco:CharacterString");
-		$keywordText = $iso19139->createTextNode("DummyKeyword");
-		$keyword_cs->appendChild($keywordText);
-		$keyword->appendChild($keyword_cs);
-		$MD_Keywords->appendChild($keyword);
-	}
-	//pull special keywords from custom categories:
-
+	
+	$inspireidentifiziert = false;
+	
+	/*
+	 * Get keywords from custom categories - they are normally based on controlled vocabularies
+	 */
+	$descriptiveCustomKeywords = array();
 	$sql = <<<SQL
 
-SELECT custom_category.custom_category_key FROM custom_category WHERE custom_category_id IN (
+SELECT custom_category.custom_category_key, custom_category.custom_category_code_de FROM custom_category WHERE custom_category_id IN (
 
 SELECT DISTINCT fkey_custom_category_id FROM (
 
@@ -1046,27 +1148,24 @@ SQL;
 	$v = array((int)$mb_metadata['metadata_id'], (int)$mb_metadata['metadata_id'], (int)$mb_metadata['metadata_id']);
 	$t = array('i', 'i', 'i');
 	$res = db_prep_query($sql, $v, $t);
-	$e = new mb_notice("look for custom categories: ");
-	$countCustom = 0;
 	while ($row = db_fetch_array($res)) {
-		$keyword = $iso19139->createElement("gmd:keyword");
-		$keyword_cs = $iso19139->createElement("gco:CharacterString");
-		$keywordText = $iso19139->createTextNode($row['custom_category_key']);
-		$keyword_cs->appendChild($keywordText);
-		$keyword->appendChild($keyword_cs);
-		$MD_Keywords->appendChild($keyword);
-		$countCustom++;
+	    if ($row['custom_category_key'] && $row['custom_category_key'] != '' && $row['custom_category_key'] != 'inspireidentifiziert') {
+	        //use assiociative array
+	        $descriptiveCustomKeywords[$row['custom_category_key']] =  $row['custom_category_code_de'];
+	    }
+	    if ($row['custom_category_key'] == 'inspireidentifiziert') {
+	        $inspireidentifiziert = true;
+	    }
 	}
-	$e = new mb_notice("count custom categories: " . $countCustom);
-	//close decriptive keywords and generate a new entry for inspire themes:
-	$descriptiveKeywords->appendChild($MD_Keywords);
-	$MD_DataIdentification->appendChild($descriptiveKeywords);
-	$descriptiveKeywords = $iso19139->createElement("gmd:descriptiveKeywords");
+	$descCustomKeywordsNode = generateDescriptiveKeywords($iso19139, $descriptiveCustomKeywords, $keywordType='custom');
+	
 	//****************************************************************************************************************************************************************************************
 	//keywords for INSPIRE themes:
-	$inspireCategoryDefined = false;
-	$MD_Keywords = $iso19139->createElement("gmd:MD_Keywords");
+	/*
+	 * INSPIRE Categories - came from a controllled vocabulary (GEMET ...) 
+	 */
 	//read out the inspire categories and push them in as controlled keywords
+	$descriptiveInspireKeywords = array(); 
 	$sql = <<<SQL
 
 SELECT inspire_category.inspire_category_code_en FROM inspire_category WHERE inspire_category_id IN (
@@ -1091,53 +1190,61 @@ SQL;
 	$t = array('i', 'i', 'i');
 	$res = db_prep_query($sql, $v, $t);
 	while ($row = db_fetch_array($res)) {
-		//part for the name of the inspire category
-		$keyword = $iso19139->createElement("gmd:keyword");
-		$keyword_cs = $iso19139->createElement("gco:CharacterString");
-		$keywordText = $iso19139->createTextNode($row['inspire_category_code_en']);
-		$keyword_cs->appendChild($keywordText);
-		$keyword->appendChild($keyword_cs);
-		$MD_Keywords->appendChild($keyword);
-		$inspireCategoryDefined = true;
+	    if (isset($row['inspire_category_code_en']) && $row['inspire_category_code_en'] != "") {
+	        $descriptiveInspireKeywords[] =  $row['inspire_category_code_en'];
+	    }
 	}
-	//part for the vocabulary - is always the same for the inspire themes
-	$thesaurusName = $iso19139->createElement("gmd:thesaurusName");
-	$CI_Citation = $iso19139->createElement("gmd:CI_Citation");
-	$title = $iso19139->createElement("gmd:title");
-	$title_cs = $iso19139->createElement("gco:CharacterString");
-	$titleText = $iso19139->createTextNode("GEMET - INSPIRE themes, version 1.0");
-
-	$title_cs->appendChild($titleText);
-	$title->appendChild($title_cs);
-	$CI_Citation->appendChild($title);
-
-	$date1 = $iso19139->createElement("gmd:date");
-	$CI_Date = $iso19139->createElement("gmd:CI_Date");
-	$date2 = $iso19139->createElement("gmd:date");
-	$gcoDate = $iso19139->createElement("gco:Date");
-	$dateType = $iso19139->createElement("gmd:dateType");
-	$dateTypeCode = $iso19139->createElement("gmd:CI_DateTypeCode");
-	$dateTypeCode->setAttribute("codeList", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode");
-	$dateTypeCode->setAttribute("codeListValue", "publication");
-	$dateTypeCodeText = $iso19139->createTextNode('publication');
-	$dateText = $iso19139->createTextNode('2008-06-01');
-	$dateTypeCode->appendChild($dateTypeCodeText);
-	$dateType->appendChild($dateTypeCode);
-	$gcoDate->appendChild($dateText);
-	$date2->appendChild($gcoDate);
-	$CI_Date->appendChild($date2);
-	$CI_Date->appendChild($dateType);
-	$date1->appendChild($CI_Date);
-
-	$CI_Citation->appendChild($date1);
-	$thesaurusName->appendChild($CI_Citation);
-
-	#$MD_Keywords->appendChild($keyword);
-	$MD_Keywords->appendChild($thesaurusName);
-	$descriptiveKeywords->appendChild($MD_Keywords);
-	//only append child descriptiveKeywords if an INSPIRE category was found!
-	if ($inspireCategoryDefined) {
-		$MD_DataIdentification->appendChild($descriptiveKeywords);
+	$descInspireKeywordsNode = generateDescriptiveKeywords($iso19139, $descriptiveInspireKeywords, $keywordType='inspire');
+	
+	/*
+	 * Get keywords - some without controlled vocabularies, some from controlled vocabularies
+	 *
+	 */
+	//generate keyword part - for services the inspire themes are not applicable!!!**********
+	//read keywords for resource out of the database/not only layer keywords also featuretype keywords if given!
+	$descriptiveStandardKeywords = array();
+	if ($inspireidentifiziert) {
+	    $descriptiveStandardKeywords[] = 'inspireidentifiziert';
+	}
+	//check opendata license
+	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
+	    $sql = "SELECT metadata_id, termsofuse.isopen from mb_metadata LEFT OUTER JOIN";
+	    $sql .= "  md_termsofuse ON  (mb_metadata.metadata_id = md_termsofuse.fkey_metadata_id) LEFT OUTER JOIN termsofuse ON";
+	    $sql .= " (md_termsofuse.fkey_termsofuse_id=termsofuse.termsofuse_id) where mb_metadata.metadata_id = $1";
+	    $v = array();
+	    $t = array();
+	    array_push($t, "i");
+	    array_push($v, (int)$mb_metadata['metadata_id']);
+	    $res = db_prep_query($sql,$v,$t);
+	    $row = db_fetch_array($res);
+	    if (isset($row['metadata_id'])) {
+	        if ($row['isopen'] == "1") {
+	            $descriptiveStandardKeywords[] = OPENDATAKEYWORD;
+	        }
+	    }
+	}
+	$sql = "SELECT DISTINCT keyword.keyword FROM keyword, mb_metadata_keyword WHERE mb_metadata_keyword.fkey_metadata_id=$1 AND mb_metadata_keyword.fkey_keyword_id=keyword.keyword_id";
+	$v = array((int)$mb_metadata['metadata_id']);
+	$t = array('i');
+	$res = db_prep_query($sql, $v, $t);
+	while ($row = db_fetch_array($res)) {
+	    if (isset($row['keyword']) && $row['keyword'] != "") {
+	        //only add keyword, if not already in inspire themes keyword - alse it will be double!
+	        if (!in_array($row['keyword'], $descriptiveInspireKeywords)) {
+	           $descriptiveStandardKeywords[] =  $row['keyword'];
+	        }
+	    }
+	}
+	$descStandardKeywordsNode = generateDescriptiveKeywords($iso19139, $descriptiveStandardKeywords, $keywordType='default');
+	
+	if (!is_null($descStandardKeywordsNode)) {
+	   $MD_DataIdentification->appendChild($descStandardKeywordsNode);
+	}
+	if (!is_null($descCustomKeywordsNode)) {
+	   $MD_DataIdentification->appendChild($descCustomKeywordsNode);
+	}
+	if (!is_null($descInspireKeywordsNode)) {
+	   $MD_DataIdentification->appendChild($descInspireKeywordsNode);
 	}
 	//New 2020 - use class to get license information
 	//Resource Constraints B 8 - to be handled with xml snippets from constraints class

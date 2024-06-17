@@ -47,6 +47,7 @@ class SpatialDataCache():
         self.supported_formats = ["GeoTIFF", "GML", "Database", "shapefile", ]
         self.max_pixels = 3000
         self.max_features = 5000
+        self.max_features_oaf = 1000
         # self.output_folder = '/tmp/'
         if output_filename:
             self.output_filename = output_filename
@@ -214,7 +215,7 @@ class SpatialDataCache():
                 metadata_info['epsg_id'] = 0
         return metadata_info
     
-    def get_coupled_services(self, spatial_dataset_identifier):
+    def get_coupled_services(self, spatial_dataset_identifier, record_id):
         service_query = PropertyIsEqualTo('csw:OperatesOn', spatial_dataset_identifier)
         # look for srv:serviceTypeVersion to find the atom feeds
         self.csw.getrecords2(constraints=[service_query], maxrecords=20, outputschema='http://www.isotc211.org/2005/gmd')
@@ -225,6 +226,11 @@ class SpatialDataCache():
             # log.info(self.csw.records[rec].serviceidentification.type)
             # log.info(self.csw.records[rec].serviceidentification.version)
             pass
+        if len(self.csw.records) == 0:
+            log.info('no service for sdi found in csw - search for fileidentifier')
+            service_query = PropertyIsEqualTo('csw:OperatesOn', record_id)
+            self.csw.getrecords2(constraints=[service_query], maxrecords=20, outputschema='http://www.isotc211.org/2005/gmd')
+        log.info("found "+str(len(self.csw.records))+" services for fileidentifier "+str(record_id))
         return self.csw.records
 
     def check_atom(self, service, dataset_type, spatial_dataset_identifier:str, epsg_id):
@@ -459,7 +465,23 @@ class SpatialDataCache():
                 if (len(entry) > 0):
                     #log.info(entry[0].attrib['href'])
                     # get dataset feed
-                    r = requests.get(entry[0].attrib['href'])
+                    # use timeout here!
+                    try:
+                        r = requests.get(entry[0].attrib['href'], timeout=30)
+                        #print(r.status_code)
+                    except requests.exceptions.Timeout:
+                        log.info("dataset feed needs more than 30 seconds - timeout reached")
+                        error_messages.append('ATOM Feed: needs more than 30 seconds - timeout reached')
+                        error_messages.append('Service is not usable for downloading dataset') 
+                        return_object['service_type'] = service_type
+                        return_object['service_version'] = service_version
+                        return_object['possible_dataset_type'] = possible_dataset_type
+                        return_object['access_uri'] = access_uri
+                        return_object['service_resource_name'] = service_resource_name
+                        return_object['error_messages'] = error_messages
+                        return json.dumps(return_object)
+
+                    #r = requests.get(entry[0].attrib['href'])
                     # log.info(r.text)
                     tree = ET.fromstring(r.text)
                     access_uri = entry[0].attrib['href']
@@ -585,6 +607,7 @@ class SpatialDataCache():
                 # log.info("image " + str(inc) + " saved!")
                 inc = inc + 1
         if download_service_type == 'vector_oaf':
+            log.info("download via oaf!")
             ogc_api_features_base_url = download_service.distribution.online[0].url
             polygon_box = polygon.bounds
             # add bbox value, limit, and format
@@ -593,32 +616,68 @@ class SpatialDataCache():
             # log.info(download_url)
             r = requests.get(download_url)
             json_result = json.loads(r.text)
-            if 'numberMatched' in json_result.keys():
-                log.info('numberMatched: ' + str(json_result['numberMatched']))
-            if 'numberReturned' in json_result.keys():
-                log.info('numberReturned:' + str(json_result['numberReturned']))
+            #if 'numberMatched' in json_result.keys():
+            #    log.info('numberMatched: ' + str(json_result['numberMatched']))
+            #if 'numberReturned' in json_result.keys():
+            #    log.info('numberReturned:' + str(json_result['numberReturned']))
             bboxes = []
             # if number of matched is greater then number returned - build bboxes
             if 'numberMatched' in json_result.keys() and 'numberReturned' in json_result.keys():
                 if int(json_result['numberMatched']) > (json_result['numberReturned']):
-                    bboxes = self.calculate_feature_bboxes(metadata_info, int(json_result['numberMatched']))
+                    bboxes = self.calculate_feature_bboxes(metadata_info, int(json_result['numberMatched']), self.max_features_oaf)
+                    #split each box into two boxes until the number of objects in box is lesser than max_features_oaf
+                    bboxes_new = []
+                    for bbox in bboxes:
+                        bbox_feature_count = 0
+                        download_url = ogc_api_features_base_url + "?f=json&limit=10&bbox=" + str(bbox.bounds[0]) + "," + str(bbox.bounds[1]) + "," + str(bbox.bounds[2]) + "," + str(bbox.bounds[3])
+                        # log.info(download_url)
+                        r = requests.get(download_url)
+                        json_result = json.loads(r.text)
+                        number_matched = 0
+                        #if 'numberMatched' in json_result.keys():
+                        #    log.info('single bbox numberMatched: ' + str(json_result['numberMatched']))
+                        #if 'numberReturned' in json_result.keys():
+                        #    log.info('single bbox numberReturned:' + str(json_result['numberReturned']))
+                        number_matched = int(json_result['numberMatched'])
+                        if number_matched < self.max_features_oaf:
+                            bboxes_new.append(bbox)
+                        else:
+                            # invoke recursive function
+                            #log.info("invoke recursive bboxes!")
+                            sub_bboxes = self.get_recursive_bboxes_oaf(bbox, [], ogc_api_features_base_url, self.max_features_oaf)
+                            #log.info("number of found subboxes: " + str(len(sub_bboxes)))
+                            # append subboxes to bboxes_new
+                            for sub_bbox in sub_bboxes:
+                                bboxes_new.append(sub_bbox)
                 else:
                     geom_box = box(polygon_box[0], polygon_box[1], polygon_box[2], polygon_box[3])
-                    bboxes.append(geom_box)
+                    bboxes_new.append(geom_box)
             else:
                 geom_box = box(polygon_box[0], polygon_box[1], polygon_box[2], polygon_box[3])
-                bboxes.append(geom_box)
+                bboxes_new.append(geom_box)
+            # write bbox as geojson ti tmp folder
+            #geom_boxes_multipolygon = multipolygons(bboxes_new)
+            #geojson_boxes = to_geojson(geom_boxes_multipolygon)
+            # log.info(geojson_boxes)  
+            # write to folder
+            #data_file_name = metadata_info['fileidentifier'] + "_features_bboxes_new.geojson" 
+            #open_option = "w"
+            #bboxes_file = open(self.tmp_output_folder + data_file_name, open_option)
+            #bboxes_file.write(geojson_boxes)
+            #bboxes_file.close()    
             inc_bboxes = 0 
-            for bbox in bboxes:
-                download_url = ogc_api_features_base_url + "?f=json&limit=100&bbox=" + str(bbox.bounds[0]) + "," + str(bbox.bounds[1]) + "," + str(bbox.bounds[2]) + "," + str(bbox.bounds[3])
+            for bbox in bboxes_new:
+                #TODO invoke tiling of bboxes recursively if number of features in box is bigger than maxfeatures!
+                download_url = ogc_api_features_base_url + "?f=json&limit=1000&bbox=" + str(bbox.bounds[0]) + "," + str(bbox.bounds[1]) + "," + str(bbox.bounds[2]) + "," + str(bbox.bounds[3])
                 r = requests.get(download_url)
                 out = open(self.tmp_output_folder + metadata_info['fileidentifier'] + "_json _" + str(inc_bboxes) + ".geojson", 'w')
                 out.write(r.text)
                 out.close()
                 dataset_file_array.append(self.tmp_output_folder + metadata_info['fileidentifier'] + "_json _" + str(inc_bboxes) + ".geojson")
                 inc_bboxes = inc_bboxes + 1
-                log.info("json saved!")
+                #log.info("json saved!")
         if download_service_type == 'raster_atom' or download_service_type == 'vector_atom':
+            log.info("download via atom!")
             r = requests.get(download_service.distribution.online[0].url)
             # parse inspire service feed
             tree = ET.fromstring(r.text)
@@ -718,14 +777,50 @@ class SpatialDataCache():
         bboxes_file.close()
         """
         return bboxes
-        
-    def calculate_feature_bboxes(self, metadata_info, number_of_features:int):
+    
+    def get_recursive_bboxes_oaf(self, bbox, bboxes, oaf_base_url:str, max_features:int):
+        """
+        returns an array of shapely box objects where max_features will not exceed
+        starts with the initial bbox where max_features has exeeded
+        initially bboxes is an empty array
+        """
+        new_bboxes = []
+        # split bbox into two bboxes and get number of features for each of them
+        if bbox.bounds[2] - bbox.bounds[0] > bbox.bounds[3] - bbox.bounds[1]:
+            # dx > dy - split x
+            new_bboxes.append(box(bbox.bounds[0], bbox.bounds[1], bbox.bounds[0] + (bbox.bounds[2] - bbox.bounds[0]) / 2, bbox.bounds[3]))
+            new_bboxes.append(box(bbox.bounds[0] + (bbox.bounds[2] - bbox.bounds[0]) / 2, bbox.bounds[1], bbox.bounds[2], bbox.bounds[3]))
+        else:
+             # dx < dy - split y
+            new_bboxes.append(box(bbox.bounds[0], bbox.bounds[1], bbox.bounds[2],  bbox.bounds[1] + (bbox.bounds[3] - bbox.bounds[1]) / 2))
+            new_bboxes.append(box(bbox.bounds[0], bbox.bounds[1] + (bbox.bounds[3] - bbox.bounds[1]) / 2, bbox.bounds[2], bbox.bounds[3])) 
+        for single_bbox in new_bboxes:
+            # count features
+            download_url = oaf_base_url + "?f=json&limit=10&bbox=" + str(single_bbox.bounds[0]) + "," + str(single_bbox.bounds[1]) + "," + str(single_bbox.bounds[2]) + "," + str(single_bbox.bounds[3])
+            #log.info(download_url)
+            r = requests.get(download_url)
+            json_result = json.loads(r.text)
+            number_matched = 0
+            #if 'numberMatched' in json_result.keys():
+            #    log.info('single bbox numberMatched: ' + str(json_result['numberMatched']))
+            #if 'numberReturned' in json_result.keys():
+            #    log.info('single bbox numberReturned:' + str(json_result['numberReturned']))
+            number_matched = int(json_result['numberMatched'])
+            if number_matched < max_features:
+                #log.info("append bbox with less than max_features objects")
+                bboxes.append(single_bbox)
+            else:
+                #log.info("invoke function recursively cause max_features was exceeded!")
+                bboxes = self.get_recursive_bboxes_oaf(single_bbox, bboxes, oaf_base_url, max_features)
+        return bboxes
+
+    def calculate_feature_bboxes(self, metadata_info, number_of_features:int, max_features:int):
         """
         returns an array of shapely box objects
         """
         polygon = from_geojson(self.area_of_interest_geojson)
         polygon_box = polygon.bounds
-        number_of_boxes = math.ceil(number_of_features / self.max_features)
+        number_of_boxes = math.ceil(number_of_features / max_features)
         # calculate delta lon in meter (lon is first value x)
         # middle_phi = polygon_box[1] + (polygon_box[3] - polygon_box[1]) / 2
         delta_lon_deg = polygon_box[2] - polygon_box[0]
@@ -858,7 +953,7 @@ class SpatialDataCache():
                 services = []
                 if intersects(polygon, bbox_geom):
                     #log.info("Try to download " + metadata_info['title'] + " - type: " + dataset['type'] + " - sdi: " + str(metadata_info['spatial_dataset_identifier']))
-                    services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
+                    services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']), str(metadata_info['fileidentifier']))
                 else :
                     # unset fileidentifier because it does not make sense to download this dataset 
                     # downloadable_dataset['fileidentifier'] = ''
@@ -888,11 +983,7 @@ class SpatialDataCache():
             log.info('Search in catalogue: ' + csw_uri);
             self.csw = CatalogueServiceWeb(self.catalogue_uri)
             # look for srv:serviceTypeVersion to find the atom feeds
-            try:
-                self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
-            except:
-                log.info('An error occured when requesting the catalogue for identifier *' + spatial_dataset_identifier + '* - search in next catalogue!')
-                continue
+            self.csw.getrecords2(constraints=[dataset_query], maxrecords=20, esn = 'full', outputschema='http://www.isotc211.org/2005/gmd')
             if len(self.csw.records) == 1:
                 return list(self.csw.records.values())[0]
             else:
@@ -947,7 +1038,7 @@ class SpatialDataCache():
                 download_process_metadata = {}
                 start_time_services_metadata = time.time()
                 services = []
-                services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']))
+                services = self.get_coupled_services(str(metadata_info['spatial_dataset_identifier']), str(metadata_info['fileidentifier']))
                 downloadable_dataset['time_to_resolve_services'] = str(time.time() - start_time_services_metadata)
                 log.info("number of found services: " + str(len(services)))
                 # debug - show service information
@@ -991,15 +1082,21 @@ class SpatialDataCache():
                             #self.clean_tmp_files(tmp_files)
                         if dataset['type'] == 'vector':
                             dataset_aggregate_filename = dataset['file_identifier'] + '.geojson'
+                            dataset_aggregate_filename2 = dataset['file_identifier'] + '.vrt'
                             dataset_bbox_filename = dataset['file_identifier'] + '_features_bboxes.geojson'
                             if download_service.serviceidentification.version == 'predefined ATOM':
                                 epsg_id = metadata_info['epsg_id']
                             else:
                                 epsg_id = 4326
                             start_aggregation_time = time.time() 
+                            #https://gis.stackexchange.com/questions/255586/gdal-vectortranslate-returns-empty-object
                             for dataset_file in dataset_file_array:
+                                #srcDS = gdal.OpenEx(dataset_file)
+                                log.info("open geojson file: " + dataset_file)
                                 #gdal.VectorTranslate(dataset['file_identifier'] + '.geojson', dataset_file, accessMode="append", srcSRS="EPSG:" + str(epsg_id), dstSRS="EPSG:4326")
-                                gdal.VectorTranslate(self.tmp_output_folder + dataset_aggregate_filename, dataset_file, accessMode="append", srcSRS="EPSG:" + str(epsg_id), dstSRS="EPSG:4326", spatFilter=polygon_box, spatSRS='EPSG:4326')
+                                gdal.VectorTranslate(self.tmp_output_folder + dataset_aggregate_filename, dataset_file, accessMode="append", layerName=dataset['file_identifier'] + '_geojson', srcSRS="EPSG:" + str(epsg_id), dstSRS="EPSG:4326", spatFilter=polygon_box, spatSRS='EPSG:4326')
+                                #ds = gdal.VectorTranslate(self.tmp_output_folder + dataset_aggregate_filename, srcDS=srcDS, accessMode="append", format = 'GeoJSON', srcSRS="EPSG:" + str(epsg_id), dstSRS="EPSG:4326", spatFilter=polygon_box, spatSRS='EPSG:4326')
+                                #del ds
                             download_process_metadata['aggregation_time'] = str(time.time() - start_aggregation_time)
                             # add to geopackage
                             start_import_time = time.time() 
@@ -1012,7 +1109,7 @@ class SpatialDataCache():
                         # delete downloaded files and aggregate file
                         log.info("clean tmp files: " + json.dumps(tmp_files))
                         # TODO: delete all png files 
-                        self.clean_tmp_files(tmp_files)
+                        #self.clean_tmp_files(tmp_files)
                         # store original metadata as a parent metadata into geopackage
                         if md_id:
                             gpkg.add_original_metadata(md_id, metadata.xml.decode("utf-8"))

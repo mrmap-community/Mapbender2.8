@@ -136,6 +136,7 @@ function fillISO19139($iso19139, $recordId) {
 	$downloadOptionsConnector = new connector ( "http://localhost" . $_SERVER ['SCRIPT_NAME'] . "/../mod_getDownloadOptions.php?id=" . $recordId );
 	// echo "http://localhost".$_SERVER['SCRIPT_NAME']."/../mod_getDownloadOptions.php?id=".$recordId;
 	$downloadOptions = json_decode ( $downloadOptionsConnector->file );
+	//$e = new mb_exception("php/mod_inspireAtomFeedISOMetadata.php: download options: " . json_encode($downloadOptions));
 	// var_dump($downloadOptions);
 	// switch for generateFrom
 	if ($downloadOptions == null) {
@@ -168,6 +169,7 @@ function fillISO19139($iso19139, $recordId) {
 					$mapbenderMetadata ['mdFileIdentifier'] = $recordId;
 					$mapbenderMetadata ['serviceId'] = $option->serviceId;
 					$mapbenderMetadata ['resourceId'] = $option->resourceId;
+					$mapbenderMetadata ['isopen'] = $option->isopen;
 					$foundOption = true;
 					break;
 				}
@@ -196,6 +198,7 @@ SQL;
 			$mapbenderMetadata ['datasetId'] = $mbMetadata ['datasetid'];
 			$mapbenderMetadata ['datasetIdCodeSpace'] = $mbMetadata ['datasetid_codespace'];
 			$mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
+			$mapbenderMetadata ['isopen'] = $option->isopen;
 			// read information for layer/layer_epsg/wms/layer classification - 'inspireidentifiziert'?
 			$sql = <<<SQL
 			select * from (select layer.layer_id, layer.layer_minscale, layer.layer_maxscale, wms.wms_timestamp, wms.wms_owner, wms.fkey_mb_group_id, wms.contactorganization, layer.uuid, wms.contactelectronicmailaddress, wms.wms_timestamp_create, wms.fees, wms.accessconstraints from layer inner join wms on layer.fkey_wms_id = wms.wms_id where layer.layer_id = $1) as wms_layer, layer_epsg where wms_layer.layer_id = layer_epsg.fkey_layer_id and layer_epsg.epsg = 'EPSG:4326';
@@ -245,6 +248,7 @@ SQL;
 					// $mapbenderMetadata['serviceId'] = $option->serviceId;
 					// $mapbenderMetadata['resourceId'] = $option->resourceId;
 					$mapbenderMetadata ['downloadLink'] = $option->link;
+					$mapbenderMetadata ['isopen'] = $option->isopen;
 					$foundOption = true;
 					break;
 				}
@@ -330,6 +334,7 @@ SQL;
 		            // $mapbenderMetadata['serviceId'] = $option->serviceId;
 		            // $mapbenderMetadata['resourceId'] = $option->resourceId;
 		            $mapbenderMetadata ['downloadLink'] = $option->link;
+		            $mapbenderMetadata ['isopen'] = $option->isopen;
 		            $foundOption = true;
 		            break;
 		        }
@@ -363,11 +368,17 @@ SQL;
 		    $mapbenderMetadata ['mdOrigin'] = $mbMetadata ['origin'];
 		    $mapbenderMetadata ['serviceUuid'] = $mbMetadata ['uuid'];
 		    $mapbenderMetadata ['metadataId'] = $mbMetadata ['metadata_id'];
-		    $mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
-		    $mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
-		    // $mapbenderMetadata['serviceTimestamp'] = date("Y-m-d",strtotime($mb_metadata['lastchanged']));
+		    //$mapbenderMetadata ['serviceTimestamp'] = strtotime ( $mbMetadata ['wms_timestamp'] );
+		    //$mapbenderMetadata ['serviceTimestampCreate'] = strtotime ( $mbMetadata ['wms_timestamp_create'] );
 		    
-		    // $mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d",strtotime($mb_metadata['lastchanged']));
+		    /*$e = new mb_exception($mbMetadata['lastchanged']);
+		    $e = new mb_exception($mbMetadata['createdate']);
+		    $e = new mb_exception($mbMetadata['changedate']);*/
+		    $mapbenderMetadata['serviceTimestamp'] = date("Y-m-d",strtotime($mbMetadata['lastchanged']));
+		    $mapbenderMetadata['serviceTimestampCreate'] = date("Y-m-d",strtotime($mbMetadata['createdate']));
+		    /*$e = new mb_exception($mapbenderMetadata['serviceTimestamp']);
+		    $e = new mb_exception($mapbenderMetadata['serviceTimestampCreate']);*/
+		    
 		    $mapbenderMetadata ['serviceDepartment'] = $mbMetadata ['responsible_party'];
 		    if ($mbMetadata ['responsible_party_email'] != '') {
 		        $mapbenderMetadata ['serviceDepartmentMail'] = $mbMetadata ['responsible_party_email'] ;
@@ -424,6 +435,7 @@ SQL;
 					$mapbenderMetadata ['mdFileIdentifier'] = $recordId;
 					$mapbenderMetadata ['serviceId'] = $option->serviceId;
 					$mapbenderMetadata ['resourceId'] = $option->resourceId;
+					$mapbenderMetadata ['isopen'] = $option->isopen;
 					$foundOption = true;
 					break;
 				}
@@ -504,6 +516,7 @@ SQL;
 				if ($option->type == "wfsrequest") {
 					$mapbenderMetadata ['mdFileIdentifier'] = $recordId;
 					$mapbenderMetadata ['serviceId'] = $option->serviceId;
+					$mapbenderMetadata ['isopen'] = $option->isopen;
 					if ($option->serviceId == $wfsId) {
 						$mapbenderMetadata ['mdFileIdentifier'] = $recordId;
 						$mapbenderMetadata ['serviceId'] = $option->serviceId;
@@ -804,11 +817,13 @@ SQL;
 	// generate dateStamp part B 10.2 (if available)
 	$dateStamp = $iso19139->createElement ( "gmd:dateStamp" );
 	$mddate = $iso19139->createElement ( "gco:Date" );
+	$e = new mb_exception($mapbenderMetadata ['serviceTimestamp']);
 	if (isset ( $mapbenderMetadata ['serviceTimestamp'] )) {
 		$mddateText = $iso19139->createTextNode ( date ( "Y-m-d", $mapbenderMetadata ['serviceTimestamp'] ) );
 	} else {
 		$mddateText = $iso19139->createTextNode ( "2000-01-01" );
 	}
+	$e = new mb_exception(date ( "Y-m-d", $mapbenderMetadata ['serviceTimestamp'] ));
 	$mddate->appendChild ( $mddateText );
 	$dateStamp->appendChild ( $mddate );
 	$dateStamp = $MD_Metadata->appendChild ( $dateStamp );
@@ -1046,6 +1061,14 @@ SQL;
 	        $administrativeArea_cs->appendChild($administrativeAreaText);
 	        $administrativeArea->appendChild($administrativeArea_cs);
 	        $CI_Address->appendChild($administrativeArea);
+	    }
+	}
+	//$mapbenderMetadata ['isopen'] = $option->isopen;
+	//check opendata license
+	$e = new mb_exception("php/mod_inspireAtomFeedISOMetadata.php: mapbenderMetadata.isopen: " . $mapbenderMetadata['isopen']);
+	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
+	    if (isset($mapbenderMetadata['isopen']) && $mapbenderMetadata['isopen'] == "1") {
+	        $keywordsArray[] = OPENDATAKEYWORD;
 	    }
 	}
 	//	

@@ -78,7 +78,7 @@
 				echo nl2br(htmlentities(_mb("List of available datasets") . ":", ENT_QUOTES, "UTF-8"));
 			?></b></div>";
 		spinnerHtml = "<div id='load-options-spinner' ><b><?php 
-				echo nl2br(htmlentities(_mb("Check download options") . ":", ENT_QUOTES, "UTF-8"));
+				echo nl2br(htmlentities(_mb("Check download options (may need some minutes)") . ":", ENT_QUOTES, "UTF-8"));
 			?></b><br><img src='../img/indicator_wheel.gif'></div>";
 	    // table of found dataset metadata information
         datasetListHtml = '<div id="dataset-list" title="<?php echo _mb("Dataset list"); ?>">' +

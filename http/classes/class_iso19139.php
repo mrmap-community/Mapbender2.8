@@ -20,6 +20,7 @@ require_once(dirname(__FILE__)."/../../conf/isoMetadata.conf");
 require_once(dirname(__FILE__)."/class_connector.php");
 require_once(dirname(__FILE__)."/class_Uuid.php");
 require_once(dirname(__FILE__)."/class_crs.php");
+require_once(dirname(__FILE__)."/class_administration.php");
 require_once(dirname(__FILE__) . "/class_propagateMetadata.php");
 require_once dirname(__FILE__) . "/../../tools/wms_extent/extent_service.conf";
 class Iso19139 {
@@ -402,6 +403,7 @@ XML;
 			$this->keywords = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString');
 			//get thesaurus name only for found keywords!
 			$iKeyword = 0;
+			//TODO: find reason for double entries of inspire themes
 			foreach ($this->keywords as $keyword) {
 				$thesaurusName = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gco:CharacterString="'.$keyword.'"]/gmd:MD_Keywords/gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString');
 				$this->keywordsThesaurusName[$iKeyword] = $thesaurusName[0];
@@ -445,6 +447,8 @@ XML;
 				unset($thesaurusName);
 				$iKeyword++;
 			}
+			$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
+			$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
 			//solve problem with identical keywords for areas:
 			if ($this->inspireWholeArea == 0 && $this->inspireActualCoverage !== 0) {
 					$this->inspireWholeArea = $this->inspireActualCoverage;
@@ -452,6 +456,30 @@ XML;
 			if ($this->inspireWholeArea !== 0 && $this->inspireActualCoverage == 0) {
 					$this->inspireActualCoverage = $this->inspireWholeArea;
 			}
+			//extract keywords, that are defined via gmx:Anchor definitions
+			$AnchorKeywords = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gmx:Anchor');
+			foreach ($AnchorKeywords as $keyword) {
+			    $this->keywords[] = $keyword;
+			    $thesaurusName = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gmx:Anchor="'.$keyword.'"]/gmd:MD_Keywords/gmd:thesaurusName/gmd:CI_Citation/gmd:title/gmx:Anchor');
+			    $this->keywordsThesaurusName[$iKeyword] = $thesaurusName[0];
+			    /*
+			     * extract HVD category from dataset metadata as it is defined for Germany in future coming "Konventionen zu Metadaten" document
+			     * only use the gmx:Anchor variant !
+			     */
+			    //$e = new mb_exception("classes/class_iso19139.php - keyword: " . $keyword);
+			    $keywordAnchorHref = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:descriptiveKeywords[gmd:MD_Keywords/gmd:keyword/gmx:Anchor="'.$keyword.'"]/gmd:MD_Keywords/gmd:keyword/gmx:Anchor/@xlink:href');
+			    $attributesJson = json_encode($keywordAnchorHref[0]);
+			    $attributesObj = json_decode($attributesJson);
+			    $uri = $attributesObj->{'@attributes'}->href;
+			    if (is_int($customCatHash[trim($uri)])) {
+			        $this->customCategories[] = $customCatHash[trim($uri)];
+			    }
+			    //$e = new mb_exception("classes/class_iso19139.php - keywordAnchorHref: " . json_encode($keywordAnchorHref));
+			    //$e = new mb_exception("classes/class_iso19139.php: customCategories: " . json_encode($this->customCategories));
+			    $iKeyword++;
+			}
+			$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
+			$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
 			$iKeyword = 0;
 			$this->isoCategoryKeys = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:topicCategory/gmd:MD_TopicCategoryCode');
 			//create mapbenders internal category objects
@@ -1542,6 +1570,7 @@ XML;
 	} 
 
 	public function createFromDBInternalId($metadataId){
+		$admin = new administration();
 		$sql = "SELECT * , st_xmin(the_geom) || ',' || st_ymin(the_geom) || ',' || st_xmax(the_geom) || ',' || st_ymax(the_geom)  as bbox2d, st_asgml(3,bounding_geom) as bounding_polygon from mb_metadata WHERE metadata_id = $1";
 		$v = array($metadataId);
 		$t = array('i');
@@ -1621,14 +1650,13 @@ XML;
 			$this->isoCategories = array();
 			$this->inspireCategories = array();
 			$this->customCategories = array();
-			//*/
-
+			*/
 			$this->hierarchyLevel = $row['type'];
 			$this->tmpExtentBegin = $row['tmp_reference_1'];//"1900-01-01";
 			$this->tmpExtentEnd = $row['tmp_reference_2'];//"1900-01-01";
 			$this->randomId =  $row['randomid'];
 			$this->owner = $row['fkey_mb_user_id']; //dummy entry for metadata owner - in case of metadataURL entries the owner of the corresponding service
-                        $this->fkey_mb_group_id = $row['fkey_mb_group_id']; //entry for organization for which this metadata should be published - overwrites metadata point of contact - in case of inheritance by metadata proxy!
+            $this->fkey_mb_group_id = $row['fkey_mb_group_id']; //entry for organization for which this metadata should be published - overwrites metadata point of contact - in case of inheritance by metadata proxy!
 			$this->href = $row['link'];// "";
 			$this->format = $row['md_format'];//"";
 			$this->type = $row['linktype'];//"";
@@ -1665,6 +1693,37 @@ XML;
 			$this->fkeyWmcSerialId = $row['fkey_wmc_serial_id'];
 			$this->fkeyMapviewerId = $row['fkey_mapviewer_id'];
 			$this->furtherLinksJson = $row['further_links_json'];
+			/* generate resource identifier for metador records
+			*  they don't have given datasetId and datasetIdCodeSpace attributes
+			*/
+			$departmentMetadata = $admin->getOrgaInfoFromRegistry('metadata', $metadataId, $this->owner);
+			if (isset($departmentMetadata['mb_group_registry_url']) && $departmentMetadata['mb_group_registry_url'] !== "") {
+				if (substr($departmentMetadata['mb_group_registry_url'], -1) !== '/') {
+					$uniqueResourceIdentifierCodespace = $departmentMetadata['mb_group_registry_url'] . '/';
+				} else {
+					$uniqueResourceIdentifierCodespace =  $departmentMetadata['mb_group_registry_url'];
+				}
+			} else {
+				if (isset($departmentMetadata['mb_group_homepage']) && $departmentMetadata['mb_group_homepage'] !== "") {
+					if (substr($departmentMetadata['mb_group_homepage'], -1) !== '/') {
+						$uniqueResourceIdentifierCodespace = $departmentMetadata['mb_group_homepage'] . '/' . 'registry/spatial/dataset/';
+					} else {
+						$uniqueResourceIdentifierCodespace =  $departmentMetadata['mb_group_homepage'] . 'registry/spatial/dataset/';
+					}
+				} else {
+					if (defined('METADATA_DEFAULT_CODESPACE')) {
+						if (substr($departmentMetadata['mb_group_homepage'], -1) !== '/') {
+							$uniqueResourceIdentifierCodespace = METADATA_DEFAULT_CODESPACE . '/' . 'registry/spatial/dataset/';
+						} else {
+							$uniqueResourceIdentifierCodespace =  METADATA_DEFAULT_CODESPACE . 'registry/spatial/dataset/';
+						}
+					} else {
+						$uniqueResourceIdentifierCodespace = "http://www.mapbender.org/registry/spatial/dataset/";
+					}
+				}
+			}
+			$this->datasetIdCodeSpace = rtrim($uniqueResourceIdentifierCodespace, '/');
+			$this->datasetId = $this->fileIdentifier;
 			//get relations from other tables:
 			//get categories and keywords
 			//get isoCategories

@@ -245,6 +245,13 @@ define("METADATA_DIR", "../../metadata");
 define("METADATA_DEFAULT_CODESPACE", "http://www.mapbender.org");
 
 #---------------------------------------------
+# METADATA Portal Name
+#---------------------------------------------
+# This name is used when exporting metadata to dcat-ap - the distribution names may include the name of the portal
+#---------------------------------------------
+define("METADATA_PORTAL_NAME", "Mapbender Metadata Portal");
+
+#---------------------------------------------
 # External Validator
 #---------------------------------------------
 # This is an absolute URL to an external validation service
@@ -332,7 +339,7 @@ define("SESSION_NAME", "MAPBENDER");
 # class_map.php, frames/index.php, class_gui
 #
 define("MAPBENDER_VARIABLE_CACHE", false);
-define("MAPBENDER_CACHE_TYPE", "apc");
+define("MAPBENDER_CACHE_TYPE", "apcu");
 
 # --------------------------------------------
 # define memcached server connections, if memcached ist used for session storing
@@ -402,7 +409,7 @@ define("WRAPPER_PATH","/portal/karten.html");
 # --------------------------------------------
 # define if mapbender is already integrated in new django portal
 # --------------------------------------------
-define("DJANGO_PORTAL", true);
+define("DJANGO_PORTAL", false);
 
 define("OWSPROXY_ALLOW_SESSION_GRABBING", false);
 
@@ -472,6 +479,11 @@ define("GPKG_ABSOLUTE_DOWNLOAD_URI", "https://www.geoportal.rlp.de/inspiredownlo
 # Max area for download of gpkg in squarekilometer
 # --------------------------------------------
 define("GPKG_AREA_LIMIT", "100");
+
+# --------------------------------------------
+# Export special keyword for opendata classified resources
+# --------------------------------------------
+#define("OPENDATAKEYWORD", "opendata");
 
 #
 ###HACK for GLOBALS

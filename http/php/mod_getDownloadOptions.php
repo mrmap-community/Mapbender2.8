@@ -475,8 +475,12 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				            $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $distribution['dcat:accessUrl'];
 				            $downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = md5($distribution['dcat:accessUrl']);
 				            $downloadOptions->{$idList[$i]}->option[$j]->serviceTitle = $distribution['dcterms:title'];
-				        }
-				        
+				            //new in 2024
+				            $downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
+				            $downloadOptions->{$idList[$i]}->option[$j]->licenseSourceNote = $row['license_source_note'];
+				        } 
 				    }
 				    if ($linkListFound && $mandatoryFieldsAvailable) {
     				    $downloadOptions->{$idList[$i]}->title = $row['title'];

@@ -6,8 +6,15 @@ require_once(dirname(__FILE__)."/../../core/globalSettings.php");
 require_once(dirname(__FILE__)."/../classes/class_connector.php");
 require_once(dirname(__FILE__)."/../classes/class_iso19139.php");
 require_once(dirname(__FILE__)."/../classes/class_cache.php");
+require_once(dirname(__FILE__)."/../classes/class_administration.php");
 
 header('Content-Type: application/json');
+$admin = new administration();
+if (defined('METADATA_PORTAL_NAME') && METADATA_PORTAL_NAME != "") {
+    $portalName = METADATA_PORTAL_NAME;
+} else {
+    $portalName = "Mapbender Metadata Portal";
+}
 /*
  * mapping of categories - hard coded for Rhineland-Palatinate - TODO: should be outsourced to conf folder
  */
@@ -361,6 +368,8 @@ $license_map = array(
 
 //require_once(dirname(__FILE__)."/../classes/class_syncCkan.php");
 $start = microtime(true);
+$orig_identifier = false;
+$ckanId = false;
 
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     //validate to csv integer list
@@ -374,12 +383,33 @@ if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     $id = $testMatch;
     $testMatch = NULL;
 }
-$forceCache = true;
-$baseUrlPortal = "https://www.geoportal.rlp.de";
-$mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
-$mapbenderWebserviceUrl = $mapbenderBaseUrl;
-$mapbenderWebserviceUrl = "http://localhost/mapbender/";
 
+if (isset($_REQUEST["ckanId"]) & $_REQUEST["ckanId"] != "") {
+    //validate to csv integer list
+    $testMatch = $_REQUEST["ckanId"];
+    $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
+    if (!preg_match($pattern,$testMatch)){
+        //echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo '{"success": false, "help": "Parameter ckanId is not valid (uuid)"}';
+        die();
+    }
+    $ckanId = $testMatch;
+    $testMatch = NULL;
+}
+
+$forceCache = true;
+if (DEFINED('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
+    $baseUrlPortal = str_replace('/mapbender', '', MAPBENDER_PATH);
+    $mapbenderBaseUrl = MAPBENDER_PATH . '/';
+} else {
+    $baseUrlPortal = "https://www.geoportal.rlp.de";
+    $mapbenderBaseUrl = "https://www.geoportal.rlp.de/mapbender/";
+}
+$mapbenderWebserviceUrl = $mapbenderBaseUrl;
+//use localhost to invoke search interface - will be much faster
+$mapbenderWebserviceUrl = "http://localhost/mapbender/";
+//debug - comment out following
+//$mapbenderWebserviceUrl = "https://www.geoportal.rlp.de/mapbender/";
 $cache = new Cache();
 
 $cacheVariableName = md5($mapbenderBaseUrl. "ckan_metadata_" . $id);
@@ -397,6 +427,22 @@ if (isset($_REQUEST["cache"]) & $_REQUEST["cache"] != "") {
     }
     if ($testMatch == 'false') {
         $forceCache = false;
+    }
+    $testMatch = NULL;
+}
+
+if (isset($_REQUEST["orig_identifier"]) & $_REQUEST["orig_identifier"] != "") {
+    //validate
+    $testMatch = $_REQUEST["orig_identifier"];
+    if ($testMatch != 'true' && $testMatch != 'false'){
+        echo '{"success": false, "help": "Parameter orig_identifier is not valid (true/false)"}';
+        die();
+    }
+    if ($testMatch == 'false') {
+        $orig_identifier = false;
+    }
+    if ($testMatch == 'true') {
+        $orig_identifier = true;
     }
     $testMatch = NULL;
 }
@@ -511,7 +557,7 @@ if ($outputFormat == 'rdfxml') {
     $catalog = $rdfXmlDoc->createElement ( "dcat:Catalog" );
     $catalog->setAttribute ( "rdf:about", $baseUrlPortal );
     $catalogTitle = $rdfXmlDoc->createElement ( "dct:title" );
-    $catalogTitleText = $rdfXmlDoc->createTextNode ( "GeoPortal.rlp" );
+    $catalogTitleText = $rdfXmlDoc->createTextNode ( $portalName );
     $catalogTitle->appendChild($catalogTitleText);
     $catalogLanguage = $rdfXmlDoc->createElement ( "dct:language" );
     $catalogLanguage->setAttribute('rdf:resource', 'http://publications.europa.eu/resource/authority/language/DEU');
@@ -526,17 +572,43 @@ if ($outputFormat == 'rdfxml') {
     //build organization part
     //get organisation list from webservice
     $connector = new connector();   
-    $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
-    $orgaListObject = json_decode($orgaListResult);
-    $orgaIdArray = array();
-    foreach ($orgaListObject->organizations as $orga) {
-        $orgaIdArray[] = (integer)$orga->id;
+    //load organization list from openDataOrganisations in case of parameter ckanId
+    if ($ckanId) {
+        $openOrgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOpenDataOrganizations.php?showOnlyDatasetMetadata=true");
+        //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: openOrgaListResult: " . $openOrgaListResult);
+        $openOrgaListObject = json_decode($openOrgaListResult);
+        $openOrgaIdArray = array();
+        $openOrgaSerialIdArray = array();
+        foreach ($openOrgaListObject as $orga) {
+            $openOrgaIdArray[] = (string)$orga->id;
+            $openOrgaSerialIdArray[] = (string)$orga->serialId;
+        }
+        //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: openOrgaIdArray: " . json_encode($openOrgaIdArray));
+        //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: ckanId: " . $ckanId);
+        if (!in_array($ckanId, $openOrgaIdArray)) {
+            header('Content-Type: application/json');
+            echo '{"success": false, "help": "There is no open data organization with requested uuid in the catalogue!"}';
+            die();
+        } else {
+            $key = array_search ($ckanId, $openOrgaIdArray);
+            $id = $openOrgaSerialIdArray[$key];
+        }
+    } else {
+        $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
+        //$e = new mb_exception("try to load: " . $mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
+        //$e = new mb_exception("result: " . $orgaListResult);
+        $orgaListObject = json_decode($orgaListResult);
+        $orgaIdArray = array();
+        foreach ($orgaListObject->organizations as $orga) {
+            $orgaIdArray[] = (integer)$orga->id;
+        } 
+        if (!in_array($id, $orgaIdArray)) {
+            header('Content-Type: application/json');
+            echo '{"success": false, "help": "There is no organization with requested id in the catalogue!"}';
+            die();
+        }
     }
-    if (!in_array($id, $orgaIdArray)) {
-        header('Content-Type: application/json');
-        echo '{"success": false, "help": "There is no organization with requested id in the catalogue!"}';
-        die();
-    }
+
     //get single orga info
     $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: organization: " . $orgaResult);
@@ -616,6 +688,8 @@ if ($outputFormat == 'rdfxml') {
             $e = new mb_exception("Dataset number: ".$datasetCount);
             //$e = new mb_exception("Dataset uuid: ".$gpDataset->uuid);
             $e = new mb_exception("Dataset title: ".$gpDataset->title);
+            //extract / generate resource identifier 
+
             $notEmptyArray = array('uuid', 'title', 'abstract');
             $exportMetadata = true;
             foreach ($notEmptyArray as $mandatoryElement) {
@@ -626,9 +700,22 @@ if ($outputFormat == 'rdfxml') {
                 }
             }
             if ($exportMetadata) {
+                $iso19139Md = new Iso19139();
+                /*
+                 * invoke dataset metadata from proxy and get tags/categories/...
+                 */
+                $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
+                $metadataUrl = $metadataResolverUrl . $gpDataset->uuid;
+                $iso19139Md->createFromUrl($metadataUrl);
                 $dataset = $rdfXmlDoc->createElement ( "dcat:dataset" );
                 $Dataset = $rdfXmlDoc->createElement ( "dcat:Dataset" );
-                $Dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
+                $resourceIdentifier = $iso19139Md->datasetIdCodeSpace . $iso19139Md->datasetId;
+                //alternative: 
+                //if ($orig_identifier) {
+                //    $Dataset->setAttribute ( "rdf:about",  $resourceIdentifier );
+                //} else {
+                    $Dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
+                //}
                 //title
                 $title = $rdfXmlDoc->createElement ( "dct:title" );
                 $titleText = $rdfXmlDoc->createTextNode( $gpDataset->title );
@@ -641,19 +728,14 @@ if ($outputFormat == 'rdfxml') {
                 $Dataset->appendChild($description);
                 //identifier
                 $identifier = $rdfXmlDoc->createElement ( "dct:identifier" );
-                $identifierText = $rdfXmlDoc->createTextNode( $gpDataset->uuid );
+                if ($orig_identifier) {
+                    $identifierText = $rdfXmlDoc->createTextNode( $resourceIdentifier );
+                } else {
+                    $identifierText = $rdfXmlDoc->createTextNode( $gpDataset->uuid );
+                }
                 $identifier->appendChild($identifierText);
                 $Dataset->appendChild($identifier);
                 //keywords
-                /*
-                 * invoke dataset metadata from proxy and get tags/categories/...
-                 */
-                $metadataResolverUrl = $mapbenderWebserviceUrl . "php/mod_dataISOMetadata.php?cache=true&outputFormat=iso19139&id=";
-                $metadataUrl = $metadataResolverUrl . $gpDataset->uuid;
-                //$metadataResult = $connector->load($metadataUrl);
-                $iso19139Md = new Iso19139();
-                //$e = new mb_exception("Parse ISO Metadata");
-                $iso19139Md->createFromUrl($metadataUrl);
                 //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php keywords: " . json_encode($iso19139Md->keywords));
                 //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php keywordsThesaurusName: " . json_encode($iso19139Md->keywordsThesaurusName));
                 //generate tags
@@ -837,10 +919,10 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                     "license_id" => $layerLicenseId
                                 );
                                 $resourceArray[] = $layerViewResource_1;
-                                $layerViewResource_2 = array("name" => "GeoPortal.rlp",
-                                    "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
+                                $layerViewResource_2 = array("name" => $portalName,
+                                    "description" =>  $layerTitle . " - Anzeige im " . $portalName,
                                     "format" => "HTML",
-                                    "url" => $mapbenderBaseUrl . "../portal/karten.html?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
+                                    "url" => $baseUrlPortal . "/map?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
                                     "id" => $gpDataset->uuid . "_geoportal_layer_" . $value1->id,
                                     "license_id" => $layerLicenseId
                                 );
@@ -910,6 +992,28 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_2;
                                         break;
+                                    case "remotelist":
+                                        $atomFeedAccessResource_3 = array("name" => "Download nach EU-Standard",
+                                        "description" => $value1->serviceTitle,
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_atom_feed_remotelist_" . $value1->serviceId,
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
+                                        );
+                                        $resourceArray[] = $atomFeedAccessResource_3;
+                                        break;
+                                    case "distribution":
+                                        $otherAccessResource_4 = array("name" => "Sonstiger Zugriff",
+                                        "description" => $value1->serviceTitle,
+                                        "format" => "HTML",
+                                        "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "id" => $gpDataset->uuid . "_other_distribution_" . md5($value1->accessClient),
+                                        "license_id" => $value1->licenseId,
+                                        "license_source_note" => $value1->licenseSourceNote
+                                        );
+                                        $resourceArray[] = $otherAccessResource_4;
+                                        break;
                                 }
                                 //build ckan resource records for the atomfeed entries -> atomfeed xml, atomfeed html, maybe ogc api features interface
                             }
@@ -967,7 +1071,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                 $title = "Original Metadaten HTML";
                 $description = false;
                 $format = "HTML";
-                $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
+                $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=" . urlencode($mapbenderBaseUrl) . "php%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
                 
                 $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, 'cc-zero', false, $format_mapping, $is_hvd);
                 $distributionArray[] = $Distribution;
@@ -1161,7 +1265,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
             $metadataResource = array("name" => "Originäre Metadaten",
                                       "description" => $dataset->title . " - Anzeige der originären Metadaten",
                                       "format" => "HTML",
-                                      "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=https%3A%2F%2Fwww.geoportal.rlp.de%2Fmapbender%2Fphp%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
+                                      "url" => $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=" . urlencode($mapbenderBaseUrl) . "php%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $dataset->uuid
             );
             $package[$j]->resource[] = $metadataResource;
             //TODO the same for categories - map them to tpp categories
@@ -1181,10 +1285,10 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                 "url" => $mapbenderBaseUrl . "extensions/mobilemap/map.php?layerid=" . $value1->id,
                                 "id" => $package[$j]->id . "_mapviewer_layer_" . $value1->id
                             );
-                            $layerViewResource_2 = array("name" => "GeoPortal.rlp",
-                                "description" =>  $layerTitle . " - Anzeige im GeoPortal.rlp",
-                                "format" => "GeoPortal.rlp",
-                                "url" => $mapbenderBaseUrl . "../portal/karten.html?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
+                            $layerViewResource_2 = array("name" => $portalName,
+                                "description" =>  $layerTitle . " - Anzeige im " . $portalName,
+                                "format" => $portalName,
+                                "url" => $baseUrlPortal . "/map?LAYER[zoom]=1&LAYER[id]=" . $value1->id,
                                 "id" => $package[$j]->id . "_geoportal_layer_" . $value1->id
                             );
                             $layerMetadataResource = array("name" => "Originäre Metadaten für Kartenebene",

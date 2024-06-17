@@ -598,6 +598,29 @@ function fillISO19139($iso19139, $recordId) {
 			$MD_Keywords->appendChild ( $keyword );
 		}
 	}
+	//check opendata license
+	if (DEFINED("OPENDATAKEYWORD") && OPENDATAKEYWORD != '') {
+	    $sql = "SELECT wms_id, termsofuse.isopen from wms LEFT OUTER JOIN";
+	    $sql .= "  wms_termsofuse ON  (wms.wms_id = wms_termsofuse.fkey_wms_id) LEFT OUTER JOIN termsofuse ON";
+	    $sql .= " (wms_termsofuse.fkey_termsofuse_id=termsofuse.termsofuse_id) where wms.wms_id = $1";
+	    $v = array();
+	    $t = array();
+	    array_push($t, "i");
+	    array_push($v, (int)$mapbenderMetadata ['wms_id']);
+	    $res = db_prep_query($sql,$v,$t);
+	    $row = db_fetch_array($res);
+	    if (isset($row['wms_id'])) {
+	        if ($row['isopen'] == "1") {
+	            // a special keyword 
+	            $keyword = $iso19139->createElement ( "gmd:keyword" );
+	            $keyword_cs = $iso19139->createElement ( "gco:CharacterString" );
+	            $keywordText = $iso19139->createTextNode ( OPENDATAKEYWORD );
+	            $keyword_cs->appendChild ( $keywordText );
+	            $keyword->appendChild ( $keyword_cs );
+	            $MD_Keywords->appendChild ( $keyword );
+	        }
+	    }
+	}
 	// a special keyword for service type wms as INSPIRE likes it ;-)
 	$keyword = $iso19139->createElement ( "gmd:keyword" );
 	$keyword_cs = $iso19139->createElement ( "gco:CharacterString" );

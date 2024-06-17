@@ -70,6 +70,7 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
         //$e = new mb_exception("php/mod_wfsElementSelect.php: elementInfo: " . json_encode($elementInfo));
         //$e = new mb_exception("php/mod_wfsElementSelect.php: elementInfo: " . json_encode($wfs->version));
         $result = $wfs->getFeatureElementList($elementInfo->featuretype_name, $elementInfo->element_names, $elementInfo->namespace, $elementInfo->namespace_location, $filter=null, $version=false, $method="GET");
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: result from wfs: " . json_encode($result));
         //order by name if defined
         if (isset($wfs_select_conf->element_id_order) && is_int($wfs_select_conf->element_id_order)) {
             //transpose
@@ -81,6 +82,7 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
             transpose($resultT, $result);
             unset($resultT);
         }
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: result from wfs: " . json_encode($result));
         //build select html
         $html_snippet = "<select id='" . $wfs_select_conf->select_id . "'>\n";
         if ($wfs_select_conf->option_empty) {
@@ -89,29 +91,33 @@ if ($ajaxResponse->getMethod() == 'getSelectField') {
             $html_snippet .= "    <option></option>\n";
         }
         $list_index = 0;
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: number of records: " . json_encode($elementInfo));
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: number of records: " . json_encode($result[$elementInfo->{$element_names[0]}]));
         foreach ($result[$elementInfo->element_names[0]] as $element_0) {
             $value = $wfs_select_conf->option_value_template;
             $text = $wfs_select_conf->option_text_template;
             $element_index = 0;
             foreach ($elementInfo->element_names as $element_name) {
                 $value = str_replace("%%element[" . $element_index . "]%%", $result[$elementInfo->element_names[$element_index]][$list_index], $value);
-                if ($wfs_select_conf->option_value_ltrim) {
-                    $value = ltrim($value, $wfs_select_conf->option_value_ltrim);
-                }
-                if ($wfs_select_conf->option_value_cast_type) {
-                    switch($wfs_select_conf->option_value_cast_type) {
-                        case "int":
-                            $value = intval($value);
-                            break;
-                    }
-                }
                 $text = str_replace("%%element[" . $element_index . "]%%", $result[$elementInfo->element_names[$element_index]][$list_index], $text);
                 $element_index++;
             }
-            $html_snippet .= "<option value='" . $value . "'>" . $text . "</option>\n";
+            if ($wfs_select_conf->option_value_ltrim) {
+                $value = preg_replace('/^' . $wfs_select_conf->option_value_ltrim . '/', '', $value);
+            }
+            if ($wfs_select_conf->option_value_cast_type) {
+                switch($wfs_select_conf->option_value_cast_type) {
+                    case "int":
+                        $value = intval($value);
+                        break;
+                }
+            }
+            $html_snippet .= "<option value='" . (string)$value . "'>" . $text . "</option>\n";
+            //$e = new mb_exception("php/mod_wfsElementSelect.php: " . "<option value='" . (string)$value . "'>" . $text . "</option>\n");
             $list_index++;
         }
         $html_snippet .= "</select>\n";
+        //$e = new mb_exception("php/mod_wfsElementSelect.php: html select: " . $html_snippet);
         $ajaxResponse->setSuccess(true);
         $ajaxResponse->setMessage("Select options generated from wfs");
   

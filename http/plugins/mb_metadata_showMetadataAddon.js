@@ -411,6 +411,114 @@ var ShowMetadataAddonApi = function() {
 		that.fillResourceForm(resourceId, resourceType);
 	}
 
+	
+	/*
+	 * New form element for select custom category from a tree model 2024
+	 */
+	openCustomTreeSelector = function() {
+		//alert("openCustomTreeSelector");
+		$("#simple_metadata_editor").css("display", "none");
+		//$("#custom_tree_selector_dialog").dialog();
+		$("#custom_tree_selector_dialog").css("display", "block");
+		//alter function on save button
+		originalButtons =  $(this).dialog("option", "buttons");
+		$metadataAddonPopup.dialog('option', 'buttons', {
+		    'take over': function() {
+		        //alert("pushed save button");
+		        $("#custom_tree_selector_dialog").css("display", "none");
+		        $("#simple_metadata_editor").css("display", "block");
+		        that.closeCustomTreeSelector();
+		        //$(this).dialog('close');
+		    }
+		});
+		//call json via ajax TODO - pull data for different jstree versions?
+		var req = new Mapbender.Ajax.Request({
+			url: "../plugins/mb_metadata_server.php",
+			method: "getCustomCategories",
+			parameters: {
+			},
+			callback: function (obj, result, message) {
+				if (!result) {
+					return;
+				}	
+				//show tree - initialize jstree
+				alert("show tree");
+				alert(JSON.stringify(obj));//{data:[...
+				//for v 3
+				//$('#jstree_custom_categories_div').jstree({ 'core' : { obj },'plugins' : [ 'wholerow', 'checkbox', 'search']});
+				//for v 1
+				$('#jstree_custom_categories_div').jstree({
+					'core' : { obj },
+					'plugins' : [ 'ui', 'json_data', 'wholerow', 'checkbox', 'search'],
+					"json_data" : {
+			            "data" : [
+			                {
+			                    "data" : "A node",
+			                    "metadata" : { id : 23 },
+			                    "children" : [ "Child 1", "A Child 2" ]
+			                },
+			                {
+			                    "attr" : { "id" : "li.node.id1" },
+			                    "data" : {
+			                        "title" : "Long format demo",
+			                        "attr" : { "href" : "#" }
+			                    }
+			                }
+			            ]
+			        }      
+				});
+				
+				//activate leafs with same id as option has already activated
+				alert("activate leafs");
+			}
+		});
+		req.send();		
+	}
+	
+	/*
+	 * 
+	 */
+	this.closeCustomTreeSelector = function() {
+		//alert("closeCustomTreeSelector");
+		$("#custom_tree_selector_dialog").css("display", "none");
+		$("#simple_metadata_editor").css("display", "block");
+		//restore old save buttons
+		$metadataAddonPopup.dialog('option', 'buttons', {
+			"close": function() {
+				$(this).dialog('close');
+			},
+			"save": function() {
+				//get data from form
+				//supress validation for the link only way
+				//example $("#myform").validate().element( "#myselect" );
+				//$("#myform").validate({
+				// ignore: ".ignore"
+				//})
+				if ($("#addonChooser").css("display") == "block") {
+					//don't allow saving but do something else
+					return;
+					
+				}
+				if ($("#simple_metadata_editor").css("display") == "block") {
+					//validate form before send it!
+					if ($metadataAddonForm.valid() != true) {
+						alert("Form not valid - please check your input!"); //TODO use translations and make a php file from this
+						return;
+					}
+				}
+				var formData = $metadataAddonForm.easyform("serialize");
+				if (!isNew) {
+					that.updateAddedMetadata(metadataId, resourceId, resourceType, formData);
+				} else {
+					that.insertAddedMetadata(resourceId, resourceType, formData);	
+				}
+				//$('#mb_md_layer_tree').refresh;
+				$(this).dialog('close');
+		    }
+		});
+		//activate ids in options as they are selected in tree
+	}
+		
  	enableResetButtonMd = function() {
         	$("#resetIsoTopicCatsMd").click(function() {
             		$("#md_md_topic_category_id option").removeAttr("selected");
