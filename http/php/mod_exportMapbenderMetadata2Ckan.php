@@ -368,7 +368,7 @@ $license_map = array(
 
 //require_once(dirname(__FILE__)."/../classes/class_syncCkan.php");
 $start = microtime(true);
-$orig_identifier = false;
+$orig_identifier = true;
 $ckanId = false;
 
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
@@ -634,6 +634,7 @@ if ($outputFormat == 'rdfxml') {
     <foaf:name>
     Landesamt für Vermessung und Geobasisinformationen
     </foaf:name>
+    <foaf:mbox>vertrieb-geodienste@vermkv.rlp.de</foaf:mbox>
     </foaf:Organization>
     */
     //create organization entry
@@ -643,6 +644,11 @@ if ($outputFormat == 'rdfxml') {
     $organizationNameText = $rdfXmlDoc->createTextNode( $orgaObject->title );
     $organizationName->appendChild( $organizationNameText );
     $organization->appendChild( $organizationName );  
+    $organizationEmail = $rdfXmlDoc->createElement ( "foaf:mbox" );
+    $organizationEmailText = $rdfXmlDoc->createTextNode( $orgaObject->department_email );
+    $organizationEmail->appendChild( $organizationEmailText );
+    $organization->appendChild( $organizationEmail ); 
+
     $RDF->appendChild ( $catalog );
     //iterate over datasets
     /*
@@ -685,9 +691,9 @@ if ($outputFormat == 'rdfxml') {
         $result = $connector->load($pageUrl);
         $resultObject = json_decode($result);
         foreach($resultObject->dataset->srv as $gpDataset) {
-            $e = new mb_exception("Dataset number: ".$datasetCount);
+            $e = new mb_notice("Dataset number: ".$datasetCount);
             //$e = new mb_exception("Dataset uuid: ".$gpDataset->uuid);
-            $e = new mb_exception("Dataset title: ".$gpDataset->title);
+            $e = new mb_notice("Dataset title: ".$gpDataset->title);
             //extract / generate resource identifier 
 
             $notEmptyArray = array('uuid', 'title', 'abstract');
@@ -710,13 +716,7 @@ if ($outputFormat == 'rdfxml') {
                 $dataset = $rdfXmlDoc->createElement ( "dcat:dataset" );
                 $Dataset = $rdfXmlDoc->createElement ( "dcat:Dataset" );
                 $resourceIdentifier = $iso19139Md->datasetIdCodeSpace . $iso19139Md->datasetId;
-                //alternative: 
-                //if ($orig_identifier) {
-                //    $Dataset->setAttribute ( "rdf:about",  $resourceIdentifier );
-                //} else {
-                    $Dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
-                //}
-                //title
+                $Dataset->setAttribute ( "rdf:about", $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
                 $title = $rdfXmlDoc->createElement ( "dct:title" );
                 $titleText = $rdfXmlDoc->createTextNode( $gpDataset->title );
                 $title->appendChild($titleText);
@@ -735,6 +735,16 @@ if ($outputFormat == 'rdfxml') {
                 }
                 $identifier->appendChild($identifierText);
                 $Dataset->appendChild($identifier);
+                //add adms:identifier as demanded in https://www.dcat-ap.de/def/dcatde/2.0/implRules/#example-3-portal-hinzufugen-einer-weiteren-distribution-und-einer-id
+                /*<adms:identifier>
+                    <skos:notation>http://data.nordportal.eu/datasets/34567</skos:notation> 
+                </adms:identifier>*/
+                $admsIdentifier = $rdfXmlDoc->createElement ( "adms:identifier" );
+                $skosNotation = $rdfXmlDoc->createElement ( "skos:notation" );
+                $skosNotationText = $rdfXmlDoc->createTextNode( $baseUrlPortal ."/dataset/" . $gpDataset->uuid );
+                $skosNotation->appendChild($skosNotationText);
+                $admsIdentifier->appendChild($skosNotation);
+                $Dataset->appendChild($admsIdentifier);
                 //keywords
                 //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php keywords: " . json_encode($iso19139Md->keywords));
                 //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php keywordsThesaurusName: " . json_encode($iso19139Md->keywordsThesaurusName));
