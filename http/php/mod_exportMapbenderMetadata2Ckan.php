@@ -554,6 +554,7 @@ if ($outputFormat == 'rdfxml') {
     $RDF->setAttribute ( "xmlns:dcatap", "http://data.europa.eu/r5r/" );
     $RDF->setAttribute ( "xmlns:dcatde", "http://dcat-ap.de/def/dcatde/" );
     $RDF->setAttribute ( "xmlns:adms", "http://www.w3.org/ns/adms#" );
+    $RDF->setAttribute ( "xmlns:skos", "http://www.w3.org/2004/02/skos/core#" );
     //build catalog part
     $catalog = $rdfXmlDoc->createElement ( "dcat:Catalog" );
     $catalog->setAttribute ( "rdf:about", $baseUrlPortal );
