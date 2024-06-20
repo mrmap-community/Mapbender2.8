@@ -58,11 +58,14 @@ class searchMetadata
 	var $hostName;
 	var $resourceIds;
 	var $restrictToOpenData;
+	var $restrictToHvd;
 	var $originFromHeader;
 	var $resolveCoupledResources; //only for class of dataset metadata - it pulls the coupled ressources (ogc-services : wms-layer/wfs-featuretypes)
 	var $https;
 	var $protocol;
-	function __construct($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResources, $searchPages, $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources = false, $https = false)
+	var $hvdInspireCats;
+	var $hvdCustomCats;
+	function __construct($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResources, $searchPages, $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources = false, $https = false, $restrictToHvd)
 	{
 		$this->userId = (int) $userId;
 		$this->searchId = $searchId;
@@ -95,6 +98,11 @@ class searchMetadata
 		} else {
 			$this->restrictToOpenData = false;
 		}
+		if ($restrictToHvd === "true") {
+			$this->restrictToHvd = true;
+		} else {
+			$this->restrictToHvd = false;
+		}
 		$this->originFromHeader = $originFromHeader;
 		$this->internalResult = null; //will only be filled, if resultTarget = 'internal', includes json for wms or wfs
 		$this->resolveCoupledResources = $resolveCoupledResources;
@@ -110,6 +118,16 @@ class searchMetadata
 		$this->maxWeight = 0;
 		$this->scale = 'linear';
 		$this->minFontSize = 10;
+
+		if (file_exists ( dirname ( __FILE__ ) . "/../../conf/hvd_cats.json" )) {
+			$configObject = json_decode ( file_get_contents ( "../../conf/hvd_cats.json" ) );
+		}
+		if (isset ( $configObject ) && isset ( $configObject->hvd_inspire_cat ) && count($configObject->hvd_inspire_cat) > 0 ) {
+			$this->hvdInspireCats = $configObject->hvd_inspire_cat;
+		}
+		if (isset ( $configObject ) && isset ( $configObject->hvd_custom_cat ) && count($configObject->hvd_custom_cat) > 0 ) {
+			$this->hvdCustomCats = $configObject->hvd_custom_cat;
+		}
 
 		if (defined("ABSOLUTE_TMPDIR")) {
 			$this->tempFolder = ABSOLUTE_TMPDIR;
@@ -1363,6 +1381,29 @@ class searchMetadata
 		//
 		if (strtolower($this->searchResources) !== "wmc" && $this->restrictToOpenData) {
 			array_push($whereCondArray, '(isopen = 1)');
+		}
+		//search filter for HVD classification 
+		//
+		if (strtolower($this->searchResources) == "dataset" && $this->restrictToHvd) {
+			//FIX INSPIRE Category ids: [1,2,3]
+			//FIX CUSTOM Category ids: [2,3,4]
+			//{"hvd_inspire_cat": [1,2,3], "hvd_custom_cat": [3,4,5]}
+			//array_push($whereCondArray, '(isopen = 1)');
+			$e = new mb_exception("classes/class_metadata.php: inspire cats: " . json_encode($this->hvdInspireCats));
+			$hvdFilter = "";
+			foreach ($this->hvdInspireCats as $inspireCatId) {
+ 				$hvdFilter .= " md_inspire_cats like '%{" . $inspireCatId . "}%' OR";
+			}
+			foreach ($this->hvdCustomCats as $customCatId) {
+				$hvdFilter .= " md_inspire_cats like '%{" . $customCatId . "}%' OR";
+		   	}
+			$hvdFilter = ltrim($hvdFilter, " ");
+			//remove trailing " OR"
+			$hvdFilter = preg_replace('/ OR$/', '$1', $hvdFilter);
+			if ($hvdFilter && $hvdFilter !== "") {
+				$hvdFilter = "(" . $hvdFilter . ")";
+				array_push($whereCondArray, $hvdFilter);
+			}
 		}
 		//search filter for md_topic_categories
 		//
