@@ -20,9 +20,11 @@ require_once dirname(__FILE__) ."/../http/classes/class_bbox.php";
 
 //require_once dirname(__FILE__) ."/../http/classes/class_universal_wfs_factory.php";
 //require_once(dirname(__FILE__)."/../http/classes/class_mb_exception.php");
+$wfsToExclude = array();
+$wmsToExclude = array();
 
-if (file_exists ( dirname ( __FILE__ ) . "/../../conf/excludeFromMonitoring.json" )) {
-	$configObject = json_decode ( file_get_contents ( "../../conf/excludeFromMonitoring.json" ) );
+if (file_exists ( dirname ( __FILE__ ) . "/../conf/excludeFromMonitoring.json" )) {
+	$configObject = json_decode ( file_get_contents ( "../conf/excludeFromMonitoring.json" ) );
 }
 if (isset ( $configObject ) && isset ( $configObject->wms ) && count($configObject->wms) > 0 ) {
 	$wmsToExclude = $configObject->wms;
