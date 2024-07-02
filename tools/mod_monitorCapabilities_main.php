@@ -20,8 +20,8 @@ require_once dirname(__FILE__) ."/../http/classes/class_bbox.php";
 
 //require_once dirname(__FILE__) ."/../http/classes/class_universal_wfs_factory.php";
 //require_once(dirname(__FILE__)."/../http/classes/class_mb_exception.php");
-$wfsToExclude = array();
-$wmsToExclude = array();
+$wfsToExclude = [];
+$wmsToExclude = [];
 
 if (file_exists ( dirname ( __FILE__ ) . "/../conf/excludeFromMonitoring.json" )) {
 	$configObject = json_decode ( file_get_contents ( "../conf/excludeFromMonitoring.json" ) );
@@ -107,7 +107,7 @@ if ($cl) {
 
 //$e = new mb_notice("mod_monitorCapabilities_main.php: group: ".$group);
 
-$userIdArray = array();
+$userIdArray = [];
 
 //loop for doing the monitor for all registrating institutions ****************
 if (!is_null($group)) {
@@ -123,7 +123,7 @@ if (!is_null($group)) {
 	$v = array($group);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);
-	$userIdArray = array();
+	$userIdArray = [];
 	while ($row = db_fetch_array($res)) {
 		$userIdArray[] = $row["fkey_mb_user_id"];
 	}
@@ -169,7 +169,7 @@ $serviceTypes = array('WMS','WFS');
 //$serviceTypes = array('WMS');
 foreach ($serviceTypes as $serviceType) {
 
-$time_array = array();
+$time_array = [];
 
 for ($iz = 0; $iz < count($user_id_all); $iz++) {
     //$e = new mb_exception("/tools/mod_monitorCapabilities_main.php: - initialize monitoring for userid: ".$user_id_all[$iz]);
@@ -410,8 +410,8 @@ for ($iz = 0; $iz < count($user_id_all); $iz++) {
     //foreach ($serviceTypes as $serviceType) {
 	// when time limit has ended: begin to collect results for every 
 	// registrating user
-	$problemOWS = array();//define array with id's of problematic wms
-	$commentProblemOWS = array();
+	$problemOWS = [];//define array with id's of problematic wms
+	$commentProblemOWS = [];
 	$userid = $user_id_all[$iz];
 	//get the old upload_id from the monitoring to identify it in the database
 	$time = $time_array[$userid];	
