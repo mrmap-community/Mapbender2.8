@@ -714,7 +714,7 @@ class searchMetadata
 			$countUniqueLayers = count($uniqueAllCoupledLayers);
 			$countUniqueFeaturetypes = count($uniqueAllCoupledFeaturetypes);
 			if ($countUniqueLayers >= 1) {
-				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, $this->orderBy, implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https);
+				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, $this->orderBy, implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
 				$srvCount = 0;
 				foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
 					foreach ($server->layer as $layer) {
