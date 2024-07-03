@@ -740,7 +740,7 @@ class searchMetadata
 				}
 			}
 			if ($countUniqueFeaturetypes >= 1) {
-				$coupledFeaturetypes = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueFeaturetypes, null, null, null, $this->languageCode, null, 'wfs', 1, 'json', 'internal', null, null, $this->hostName, $this->orderBy, implode(',', $uniqueAllCoupledFeaturetypes), $this->restrictToOpenData, $this->originFromHeader, false, $this->https);
+				$coupledFeaturetypes = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueFeaturetypes, null, null, null, $this->languageCode, null, 'wfs', 1, 'json', 'internal', null, null, $this->hostName, $this->orderBy, implode(',', $uniqueAllCoupledFeaturetypes), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
 				$srvCount = 0;
 				foreach (json_decode($coupledFeaturetypes->internalResult)->wfs->srv as $server) {
 					foreach ($server->ftype as $featuretype) {
