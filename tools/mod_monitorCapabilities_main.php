@@ -20,9 +20,11 @@ require_once dirname(__FILE__) ."/../http/classes/class_bbox.php";
 
 //require_once dirname(__FILE__) ."/../http/classes/class_universal_wfs_factory.php";
 //require_once(dirname(__FILE__)."/../http/classes/class_mb_exception.php");
+$wfsToExclude = [];
+$wmsToExclude = [];
 
-if (file_exists ( dirname ( __FILE__ ) . "/../../conf/excludeFromMonitoring.json" )) {
-	$configObject = json_decode ( file_get_contents ( "../../conf/excludeFromMonitoring.json" ) );
+if (file_exists ( dirname ( __FILE__ ) . "/../conf/excludeFromMonitoring.json" )) {
+	$configObject = json_decode ( file_get_contents ( "../conf/excludeFromMonitoring.json" ) );
 }
 if (isset ( $configObject ) && isset ( $configObject->wms ) && count($configObject->wms) > 0 ) {
 	$wmsToExclude = $configObject->wms;
@@ -70,6 +72,7 @@ function getTagsOutOfXML($reportFile,$tagsToReturn, $serviceType="wms") {
 // commandline
 if ($_SERVER["argc"] > 0) {
 	$cl = true;
+	echo "Invoked from cli\n\n";
 	if ($_SERVER["argc"] > 1 && $_SERVER["argv"][1] !== "") {
 		$param = $_SERVER["argv"][1];
 		if (substr($param, 0,5) == "user:") {
@@ -96,7 +99,7 @@ else {
 	echo _mb("You can pass the GET arguments 'user' or 'group'!");
 	die;
 }
-
+//echo json_encode($wmsToExclude);
 $br = "<br><br>";
 if ($cl) {
 	$br = "\n\n";
@@ -104,11 +107,11 @@ if ($cl) {
 
 //$e = new mb_notice("mod_monitorCapabilities_main.php: group: ".$group);
 
-$userIdArray = array();
+$userIdArray = [];
 
 //loop for doing the monitor for all registrating institutions ****************
 if (!is_null($group)) {
-	echo "monitoring " . $group;
+	echo "Monitoring for group: " . $group;
 	if (!is_numeric($group)) {
 		echo _mb("Parameter 'group' must be numeric.");
 		die;
@@ -120,7 +123,7 @@ if (!is_null($group)) {
 	$v = array($group);
 	$t = array('i');
 	$res = db_prep_query($sql,$v,$t);
-	$userIdArray = array();
+	$userIdArray = [];
 	while ($row = db_fetch_array($res)) {
 		$userIdArray[] = $row["fkey_mb_user_id"];
 	}
@@ -166,7 +169,7 @@ $serviceTypes = array('WMS','WFS');
 //$serviceTypes = array('WMS');
 foreach ($serviceTypes as $serviceType) {
 
-$time_array = array();
+$time_array = [];
 
 for ($iz = 0; $iz < count($user_id_all); $iz++) {
     //$e = new mb_exception("/tools/mod_monitorCapabilities_main.php: - initialize monitoring for userid: ".$user_id_all[$iz]);
@@ -176,16 +179,23 @@ for ($iz = 0; $iz < count($user_id_all); $iz++) {
 	switch ($serviceType) {
 		case "WMS":
 			$service_id_own = $admin->getWmsByWmsOwner($userid);
+			//echo "Services to monitor before - " . $serviceType . ": " . json_encode($service_id_own) . $br;
 			//remove services not to monitor
-			$service_id_own = array_diff($service_id_own, $wmsToExclude);
+			//echo "Services to exclude - " . $serviceType . ": " . json_encode($wmsToExclude) . $br;
+			$service_id_own = array_values(array_diff($service_id_own, $wmsToExclude));
+			//echo "Services to monitor after - " . $serviceType . ": " . json_encode($service_id_own) . $br;
+
 			break;
 		case "WFS":
 			$service_id_own = $admin->getWfsByWfsOwner($userid);
+
 			//remove services not to monitor
-			$service_id_own = array_diff($service_id_own, $wfsToExclude);
+			$service_id_own = array_values(array_diff($service_id_own, $wfsToExclude));
+
 			break;
 	}
-	
+
+	echo "Services to monitor - " . $serviceType . ": " . json_encode($service_id_own) . $br;
 	//initialize monitoring processes
 	echo "Starting monitoring cycle...$br";
 	echo $serviceType." services are requested for availability.$br"; 
@@ -391,6 +401,7 @@ set_time_limit(TIME_LIMIT);
 // wait until all monitoring processes are finished - each single monitoring has the same limit!!!!
 echo "please wait " . TIME_LIMIT . " seconds for the monitoring to finish...$br";
 sleep(TIME_LIMIT);
+
 //when time limit has ended: begin to collect results for every registrating user
 for ($iz = 0; $iz < count($user_id_all); $iz++) {
     //logit("/tools/mod_monitorCapabilities.php - collect info from xml for user: ".$user_id_all[$iz]);
@@ -399,8 +410,8 @@ for ($iz = 0; $iz < count($user_id_all); $iz++) {
     //foreach ($serviceTypes as $serviceType) {
 	// when time limit has ended: begin to collect results for every 
 	// registrating user
-	$problemOWS = array();//define array with id's of problematic wms
-	$commentProblemOWS = array();
+	$problemOWS = [];//define array with id's of problematic wms
+	$commentProblemOWS = [];
 	$userid = $user_id_all[$iz];
 	//get the old upload_id from the monitoring to identify it in the database
 	$time = $time_array[$userid];	
@@ -515,6 +526,8 @@ for ($iz = 0; $iz < count($user_id_all); $iz++) {
 	}
 	unset($problemOWS);
 	unset($commentProblemOWS);
+	//don't send emails for debbuging
+	//die();
 	//end of loop for single monitor requests
 	// Send an email to the user if body string exists
 	if ($body) {

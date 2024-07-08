@@ -1060,7 +1060,7 @@ function generateFeed($feedDoc, $recordId, $generateFrom) {
 			$atomFeedKey .= $layerId;
 		break;
 		case "wfs":
-			$atomFeedKey .= $wfsId;
+			$atomFeedKey .= $featuretypeId;
 			switch ($mapbenderMetadata[$m]->wfs_version) {
 				case "2.0.2":
 					$typeParameterName = "typeNames";

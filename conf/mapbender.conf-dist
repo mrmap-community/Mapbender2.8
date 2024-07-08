@@ -339,7 +339,7 @@ define("SESSION_NAME", "MAPBENDER");
 # class_map.php, frames/index.php, class_gui
 #
 define("MAPBENDER_VARIABLE_CACHE", false);
-define("MAPBENDER_CACHE_TYPE", "apcu");
+define("MAPBENDER_CACHE_TYPE", "apc");
 
 # --------------------------------------------
 # define memcached server connections, if memcached ist used for session storing

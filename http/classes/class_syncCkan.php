@@ -108,7 +108,7 @@ $this->frequencyMap = array(
 
    //TODO: Following function is only needed til php 5.5 - after upgrade to debian 8 it is obsolet - see also class_iso19139.php!
    public function array_column(array $input, $columnKey, $indexKey = null) {
-        $array = array();
+        $array = [];
         foreach ($input as $value) {
             if ( !array_key_exists($columnKey, $value)) {
                 trigger_error("Key \"$columnKey\" does not exist in array");
@@ -260,7 +260,7 @@ $this->frequencyMap = array(
             return false;
         }
         $listOfFilteredData = json_decode($ckanConnector->file);
-        $externalCkanMetadataArray = array();
+        $externalCkanMetadataArray = [];
         $countExternalCkanMetadataArray = 0;
         if ($listOfFilteredData->success == true) {
             foreach($listOfFilteredData->result->results as $dataset) {
@@ -302,7 +302,7 @@ $ckanPackage->license_id = "odc-odbl";
 		$ckanPackage->{$central_filterArray[0]} = $central_filterArray[1];
 	}
 	//$ckanPackage->transparency_category_de_rp = "spatial_data";
-	$resourcesArray = array();
+	$resourcesArray = [];
 
 	foreach($ckanPackageRemote->result->resources as $resource) {
 		$newResource = new stdClass();
@@ -330,7 +330,7 @@ $ckanPackage->license_id = "odc-odbl";
 	$ckanPackage->resources = $resourcesArray;
 
 	//$e = new mb_exception("ckan json object test: ".json_encode($ckanPackage));
-        $returnArray = array();
+        $returnArray = [];
         $returnArray['json'] = json_encode($ckanPackage);	
 	return $returnArray;	
     }
@@ -348,7 +348,7 @@ $ckanPackage->license_id = "odc-odbl";
         //$e = new mb_exception("Number of type ".$recordType." datasets for orga: ".$orgaName." in portal CSW: ".$cswClient->operationResult);
 	$maxRecords = (integer)$cswClient->operationResult;
 	$pages = ceil($maxRecords / $recordsPerPage);
-	$metadataArray = array();
+	$metadataArray = [];
 	$numberOfMetadataRecords = 0;
 	for ($i = 0; $i <= $pages-1 ; $i++) {
 		$cswClient = new cswClient();
@@ -437,7 +437,7 @@ $ckanPackage->license_id = "odc-odbl";
 
     //function to give back a mixed upper/lowercase string array from the input of a lowercase array and the haystack which is mixed upper/and lowercase 
     public function searchUpperLowerCase($lowerCaseStringArray, $mixedStringArray) {
-	$result = array();
+	$result = [];
 	foreach($lowerCaseStringArray as $lowerCaseString) {
 		if (array_search($lowerCaseString, $mixedStringArray) !== false) {
 			$result[] = $mixedStringArray[array_search($lowerCaseString, $mixedStringArray)];
@@ -546,15 +546,15 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
 			}
 			$queryObject->rows = (string)$numberOfPackagesPerPage;
 			//$e = new mb_exception("number of packages: ".$numberOfPackages);
-			$listOfFilteredDataArray = array();
+			$listOfFilteredDataArray = [];
 			for ($nP = 1; $nP <= $numberOfPages ; $nP++) {
 				//$e = new mb_exception("page: ".$nP);
 				$queryObject->start = ($nP - 1) * $numberOfPackagesPerPage;
 				$listOfFilteredDataArray[] = $ckan->action_package_search(json_encode($queryObject));
 			}
  			$countCkanMetadataArray = 0;
-			$ckanMetadataArray = array();
- 			$ckanPackageNames = array();
+			$ckanMetadataArray = [];
+ 			$ckanPackageNames = [];
 			$syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->count_ckan_packages = $numberOfPackages;
 			foreach ($listOfFilteredDataArray as $listOfFilteredData) {
                         	if ($listOfFilteredData->success == true) {
@@ -588,7 +588,7 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                         if ($countMetadataArray == 0) {
                         } else {
                             $numberRemoteCkanMetadata = 0;
-                            $cswUuids = array();
+                            $cswUuids = [];
                             foreach($externalCkanMetadataArray as $externalCkanMetadata) {
                                 if ($listAllMetadataInJson == true) {
                                     $syncListResultRemoteCkan->external_ckan[$numberOfCatalogue]->datasource_metadata[$numberRemoteCkanMetadata]->id = $externalCkanMetadata['uuid'];
@@ -724,15 +724,15 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
 			}
 			$queryObject->rows = (string)$numberOfPackagesPerPage;
 			//$e = new mb_exception("number of packages: ".$numberOfPackages);
-			$listOfFilteredDataArray = array();
+			$listOfFilteredDataArray = [];
 			for ($nP = 1; $nP <= $numberOfPages ; $nP++) {
 				//$e = new mb_exception("page: ".$nP);
 				$queryObject->start = ($nP - 1) * $numberOfPackagesPerPage;
 				$listOfFilteredDataArray[] = $ckan->action_package_search(json_encode($queryObject));
 			}
 			$countCkanMetadataArray = 0;
-			$ckanMetadataArray = array();
- 			$ckanPackageNames = array();
+			$ckanMetadataArray = [];
+ 			$ckanPackageNames = [];
 			$syncListResultCsw->external_csw[$numberOfCatalogue]->count_ckan_packages = $numberOfPackages;
 			foreach ($listOfFilteredDataArray as $listOfFilteredData) {
                         	if ($listOfFilteredData->success == true) {
@@ -766,7 +766,7 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                         if ($countMetadataArray == 0) {
                         } else {
                             $numberCswMetadata = 0;
-                            $cswUuids = array();
+                            $cswUuids = [];
                             foreach($cswMetadataArray as $cswMetadata) {
                                 if ($listAllMetadataInJson == true) {
                                     $syncListResultCsw->external_csw[$numberOfCatalogue]->datasource_metadata[$numberCswMetadata]->id = $cswMetadata['uuid'];
@@ -894,15 +894,15 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
 			}
 			$queryObject->rows = (string)$numberOfPackagesPerPage;
 			//$e = new mb_exception("number of packages: ".$numberOfPackages);
-			$listOfFilteredDataArray = array();
+			$listOfFilteredDataArray = [];
 			for ($nP = 1; $nP <= $numberOfPages ; $nP++) {
 				//$e = new mb_exception("page: ".$nP);
 				$queryObject->start = ($nP - 1) * $numberOfPackagesPerPage;
 				$listOfFilteredDataArray[] = $ckan->action_package_search(json_encode($queryObject));
 			}
 			$countCkanMetadataArray = 0;
-			$ckanMetadataArray = array();
- 			$ckanPackageNames = array();
+			$ckanMetadataArray = [];
+ 			$ckanPackageNames = [];
 			$syncListResult->geoportal_organization[$numberGeoportalOrga]->count_ckan_packages = $numberOfPackages;
 			foreach ($listOfFilteredDataArray as $listOfFilteredData) {
                         	if ($listOfFilteredData->success == true) {
@@ -949,9 +949,9 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                         }
                         $res = db_prep_query($sql, $v, $t);
                         $countMetadataArray = 0;
-			$metadataArray = array();
-                        $featuretypeArray = array();
-                        $layerArray = array();
+			$metadataArray = [];
+                        $featuretypeArray = [];
+                        $layerArray = [];
                         //echo "List of datasets in geoportal instance:"."<br>";
                         while($row = db_fetch_array($res)){
                             $metadataArray[$countMetadataArray]["hasResource"] = false;
@@ -981,7 +981,7 @@ $e = new mb_exception("classes/class_syncCkan.php: uuid from departmentArray: ".
                             }*/
                         } else {
                             $numberGeoportalMetadata = 0;
-                            $geoportalUuids = array();
+                            $geoportalUuids = [];
                             foreach($metadataArray as $geoportalMetadata) {
                                 if (count($layerArray) > 0  || count($featuretypeArray) > 0) {
                                     //use only those that have resources!
@@ -1079,7 +1079,7 @@ SQL;
          * New 2024 - log result of snyc process to mapbender database
          */
         $startTime = date('Y-m-d H:i:s');
-        $error_messages = array();
+        $error_messages = [];
         //$this->logSyncResultToDb($startTime, $endTime, $dataSourceType, $orgaId, $created, $updated, $deleted, $error_messages, $result);
         /*
          * 
@@ -1144,8 +1144,8 @@ SQL;
 		            //do some special preproccessing 
 		            switch ($dataSourceType) {
 		                case "mapbender":
-                            $layerArrayMetadata = array();
-                            $featuretypeArrayMetadata = array();
+                            $layerArrayMetadata = [];
+                            $featuretypeArrayMetadata = [];
                             foreach ($datasetMetadata->resources->coupledResources->layerIds as $layerId) {
                                 $layerArrayMetadata[] = $layerId;
                             }
@@ -1295,7 +1295,7 @@ SQL;
 		$ckanPackage->{$ckanCategoryFilter[0]} = $ckanCategoryFilter[1];
 		//$ckanPackage->type = "ckan-govdata-full-1-1";
 		$ckanPackage->type = "dataset";
-		$ckanPackage->tags = array();
+		$ckanPackage->tags = [];
 		$keywords = array_unique($keywords);
 		$keywordIndex = 0;
 	    for ($i=0; $i < count($keywords); $i++) {
@@ -1305,7 +1305,7 @@ SQL;
 			}
         }
 		//Add resources (name/url/format)
-		$resourcesArray = array();
+		$resourcesArray = [];
 		if (isset($resourceName) && $resourceName !=="") {
 			$resourcesArray[0]->name = $resourceName;
 		} else {
@@ -1320,7 +1320,7 @@ SQL;
 		//$e = new mb_exception("classes/class_syncCkan.php: Original metadata url: ".$originalMetadataUrl);
 
 		//Add further resource (name/id/description/url/format)
-		$viewArray = array();
+		$viewArray = [];
 
 		$resourcesArray[1]->name = "Originäre Metadaten";// für ".$row['layer_title'];
 		$resourcesArray[1]->id = $fileIdentifier."_iso19139";
@@ -1344,7 +1344,7 @@ SQL;
 		$ckanPackage->resources = $resourcesArray;
 	}
 
-    $returnArray = array();
+    $returnArray = [];
     $returnArray['json'] = json_encode($ckanPackage);
 	//$e = new mb_exception("classes/class_syncCkan.php: package from csw: ".$returnArray['json']);
 	$returnArray['views'] = $viewArray;
@@ -1359,7 +1359,7 @@ SQL;
 	$ckanPackage->license_title = $row['description'];
 	$ckanPackage->license_url = $row['descriptionlink'];
         //build resource:
-	$resourcesArray = array();
+	$resourcesArray = [];
         $resourcesArray[0]->name = "";
         $resourcesArray[0]->url = "";
         $resourcesArray[0]->format = "";*/
@@ -1465,9 +1465,9 @@ SQL;
     	}
     	$ckanPackage->type = "geodata";
     	//build resources:
-    	$resourcesArray = array();
+    	$resourcesArray = [];
     	//initialize views - things for which a preview should be available 
-    	$viewArray = array();
+    	$viewArray = [];
     	$indexResourceArray = 0;
     	$indexViewArray = 0;
     	//add html preview for metadata
@@ -1542,7 +1542,7 @@ SQL;
         }
         //for INSPIRE ATOM Feed implementations
         //$e = new mb_exception("Download options for: ".$metadataUuid);
-        $downloadOptionsMetadataArray = array();
+        $downloadOptionsMetadataArray = [];
         $downloadOptionsMetadataArray[0] = $metadataUuid;
         $downloadOptionsJson = getDownloadOptions($downloadOptionsMetadataArray);
         $metadataObject = json_decode($downloadOptionsJson)->{$metadataUuid};
@@ -1678,8 +1678,8 @@ SQL;
         //$ckanPackage->govdata_categories[] = "geo";
 	    $ckanPackage->dcat_ap_eu_data_category[] = "GOVE";
         //and further categories and keywords
-        $keywordIdArray = array();
-        $topicIdArray = array();
+        $keywordIdArray = [];
+        $topicIdArray = [];
         //TODO: check if it easier to pull aggregated information from search table! Keywords and categories!
         //get iso categories and all keywords from metadata and coupled layers / featuretypes
         //categories
@@ -1737,7 +1737,7 @@ SQL;
         $topicIdArray = array_unique($topicIdArray);
         //generate tags TODO - check for one single select above!
         if (count($keywordIdArray) > 0) {
-            $keywordArray = array();
+            $keywordArray = [];
             $sql = "SELECT keyword FROM keyword WHERE keyword_id in (".implode(",", $keywordIdArray).")";
             $res = db_query($sql);
             while($row = db_fetch_array($res)) {
@@ -1753,7 +1753,7 @@ SQL;
         if (count($layerArray) == 0 && count($featuretypeArray) == 0) {
             return false;
         }
-        $returnArray = array();
+        $returnArray = [];
         $returnArray['json'] = json_encode($ckanPackage);
         //$e = new mb_exception("json: ".$returnArray['json']);
         $returnArray['views'] = $viewArray;

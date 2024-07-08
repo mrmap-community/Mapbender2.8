@@ -82,7 +82,7 @@ $searchURL = $_SERVER['QUERY_STRING'];
 $searchURL = urldecode($searchURL);
 //control if some request variables are not set and set them explicit to NULL
 
-$checkForNullRequests = array("registratingDepartments","isoCategories","inspireThemes","customCategories","regTimeBegin","regTimeEnd","timeBegin","timeEnd","searchBbox","searchTypeBbox","searchResources","orderBy","hostName","resourceIds","restrictToOpenData");
+$checkForNullRequests = array("registratingDepartments","isoCategories","inspireThemes","customCategories","regTimeBegin","regTimeEnd","timeBegin","timeEnd","searchBbox","searchTypeBbox","searchResources","orderBy","hostName","resourceIds","restrictToOpenData", "restrictToHvd");
 
 for($i=0; $i < count($checkForNullRequests); $i++){
 	if (!$_REQUEST[$checkForNullRequests[$i]] or $_REQUEST[$checkForNullRequests[$i]] == 'false' or $_REQUEST[$checkForNullRequests[$i]] == 'undefined') {
@@ -323,6 +323,24 @@ if (isset($_REQUEST["restrictToOpenData"]) & $_REQUEST["restrictToOpenData"] != 
 		break;
 		case "false":
 			$restrictToOpenData = "false";
+		break;	
+	}
+	$testMatch = NULL;
+}
+
+//$restrictToHvd = false;
+if (isset($_REQUEST["restrictToHvd"]) & $_REQUEST["restrictToHvd"] != "") {
+	$testMatch = $_REQUEST["restrictToHvd"];	
+ 	if (!($testMatch == 'true' or $testMatch == 'false')){ 
+		echo 'Parameter <b>restrictToHvd</b> is not valid (true,false).<br/>'; 
+		die(); 		
+ 	}
+	switch ($testMatch) {
+		case "true":
+			$restrictToHvd = "true";
+		break;
+		case "false":
+			$restrictToHvd = "false";
 		break;	
 	}
 	$testMatch = NULL;
@@ -642,6 +660,7 @@ $classificationElements[8]['name'] = 'restrictToOpenData';
 $classificationElements[9]['name'] = 'searchResources';
 $classificationElements[10]['name'] = 'timeBegin';
 $classificationElements[11]['name'] = 'timeEnd';
+$classificationElements[12]['name'] = 'restrictToHvd';
 
 $classificationElements[0]['source'] = '';
 $classificationElements[1]['source'] = 'database';
@@ -655,6 +674,7 @@ $classificationElements[8]['source'] = '';
 $classificationElements[9]['source'] = '';
 $classificationElements[10]['source'] = '';
 $classificationElements[11]['source'] = '';
+$classificationElements[12]['source'] = '';
 
 $classificationElements[0]['list'] = true;
 $classificationElements[1]['list'] = true;
@@ -668,6 +688,7 @@ $classificationElements[8]['list'] = false;
 $classificationElements[9]['list'] = true;
 $classificationElements[10]['list'] = false;
 $classificationElements[11]['list'] = false;
+$classificationElements[12]['list'] = false;
 
 //Defining of the different result categories		
 		$resourceCategories = array();
@@ -680,124 +701,127 @@ $classificationElements[11]['list'] = false;
 switch($languageCode){
         case 'de':
         	$classificationElements[0]['name2show'] = 'Suchbegriff(e):';
-		$classificationElements[1]['name2show'] = 'Anbietende Stelle(n):';
-		$classificationElements[3]['name2show'] = 'INSPIRE Themen:';
-		$classificationElements[2]['name2show'] = 'ISO Kategorien:';
-		$classificationElements[4]['name2show'] = 'RP Kategorien:';
-		$classificationElements[5]['name2show'] = 'Räumliche Einschränkung:';
-		$classificationElements[6]['name2show'] = 'Registrierung/Aktualisierung von:';
-		$classificationElements[7]['name2show'] = 'Registrierung/Aktualisierung bis:';
-		$classificationElements[8]['name2show'] = 'Nur OpenData Ressourcen:';
-		$classificationElements[9]['name2show'] = 'Art der Ressource:';
-		$classificationElements[10]['name2show'] = 'Datenaktualität von:';
-		$classificationElements[11]['name2show'] = 'Datenaktualität bis:';
+			$classificationElements[1]['name2show'] = 'Anbietende Stelle(n):';
+			$classificationElements[3]['name2show'] = 'INSPIRE Themen:';
+			$classificationElements[2]['name2show'] = 'ISO Kategorien:';
+			$classificationElements[4]['name2show'] = 'RP Kategorien:';
+			$classificationElements[5]['name2show'] = 'Räumliche Einschränkung:';
+			$classificationElements[6]['name2show'] = 'Registrierung/Aktualisierung von:';
+			$classificationElements[7]['name2show'] = 'Registrierung/Aktualisierung bis:';
+			$classificationElements[8]['name2show'] = 'Nur OpenData Ressourcen:';
+			$classificationElements[9]['name2show'] = 'Art der Ressource:';
+			$classificationElements[10]['name2show'] = 'Datenaktualität von:';
+			$classificationElements[11]['name2show'] = 'Datenaktualität bis:';
+			$classificationElements[12]['name2show'] = 'Nur HVD:';
 
-		$resourceCategories['wms'] = 'Kartenebenen';
-		$resourceCategories['wfs'] = 'Such- und Download- und Erfassungsmodule';
-		$resourceCategories['wmc'] = 'Kartenzusammenstellungen';
-		$resourceCategories['dataset'] = 'Datensätze';
-		$resourceCategories['georss'] = 'KML/Newsfeeds';
-		$resourceCategories['application'] = 'Anwendungen';
+			$resourceCategories['wms'] = 'Kartenebenen';
+			$resourceCategories['wfs'] = 'Such- und Download- und Erfassungsmodule';
+			$resourceCategories['wmc'] = 'Kartenzusammenstellungen';
+			$resourceCategories['dataset'] = 'Datensätze';
+			$resourceCategories['georss'] = 'KML/Newsfeeds';
+			$resourceCategories['application'] = 'Anwendungen';
 
-		$orderByTitle['header'] = 'Sortierung nach:';
-		$orderByTitle['id'] = 'Identifizierungsnummer';
-		$orderByTitle['title'] = 'Alphabetisch';
-		$orderByTitle['rank'] = 'Nachfrage';
-		$orderByTitle['date'] = 'Letzte Änderung';
+			$orderByTitle['header'] = 'Sortierung nach:';
+			$orderByTitle['id'] = 'Identifizierungsnummer';
+			$orderByTitle['title'] = 'Alphabetisch';
+			$orderByTitle['rank'] = 'Nachfrage';
+			$orderByTitle['date'] = 'Letzte Änderung';
 
-		$maxResultsTitle['header'] = 'Treffer pro Seite:'; 
+			$maxResultsTitle['header'] = 'Treffer pro Seite:'; 
 
 	
        	break;
         case 'en':
         	$classificationElements[0]['name2show'] = 'Search Term(s):';
-		$classificationElements[1]['name2show'] = 'Department(s):';
-		$classificationElements[3]['name2show'] = 'INSPIRE Themes:';
-		$classificationElements[2]['name2show'] = 'ISO Topic Categories:';
-		$classificationElements[4]['name2show'] = 'RP Categories:';
-		$classificationElements[5]['name2show'] = 'Spatial Filter:';
-		$classificationElements[6]['name2show'] = 'Registration/Update from:';
-		$classificationElements[7]['name2show'] = 'Registration/Update till:';		
-		$classificationElements[8]['name2show'] = 'Only OpenData resources:';
-		$classificationElements[9]['name2show'] = 'Kind of resource:';
-		$classificationElements[10]['name2show'] = 'Actuality of dataset from:';
-		$classificationElements[11]['name2show'] = 'Actuality of dataset to:';
+			$classificationElements[1]['name2show'] = 'Department(s):';
+			$classificationElements[3]['name2show'] = 'INSPIRE Themes:';
+			$classificationElements[2]['name2show'] = 'ISO Topic Categories:';
+			$classificationElements[4]['name2show'] = 'RP Categories:';
+			$classificationElements[5]['name2show'] = 'Spatial Filter:';
+			$classificationElements[6]['name2show'] = 'Registration/Update from:';
+			$classificationElements[7]['name2show'] = 'Registration/Update till:';		
+			$classificationElements[8]['name2show'] = 'Only OpenData resources:';
+			$classificationElements[9]['name2show'] = 'Kind of resource:';
+			$classificationElements[10]['name2show'] = 'Actuality of dataset from:';
+			$classificationElements[11]['name2show'] = 'Actuality of dataset to:';
+			$classificationElements[12]['name2show'] = 'Only HVD:';
 
-		$resourceCategories['wms'] = 'Maplayers';
-		$resourceCategories['wfs'] = 'Search- and Downloadservices';
-		$resourceCategories['wmc'] = 'Combined Maps';
-		$resourceCategories['dataset'] = 'Datasets';
-		$resourceCategories['georss'] = 'KML/Newsfeeds';
-		$resourceCategories['application'] = 'Applications';
+			$resourceCategories['wms'] = 'Maplayers';
+			$resourceCategories['wfs'] = 'Search- and Downloadservices';
+			$resourceCategories['wmc'] = 'Combined Maps';
+			$resourceCategories['dataset'] = 'Datasets';
+			$resourceCategories['georss'] = 'KML/Newsfeeds';
+			$resourceCategories['application'] = 'Applications';
 
-		$orderByTitle['header'] = 'Sort by:';
-		$orderByTitle['id'] = 'identification number';
-		$orderByTitle['title'] = 'alphabetically';
-		$orderByTitle['rank'] = 'demand';
-		$orderByTitle['date'] = 'last change';
+			$orderByTitle['header'] = 'Sort by:';
+			$orderByTitle['id'] = 'identification number';
+			$orderByTitle['title'] = 'alphabetically';
+			$orderByTitle['rank'] = 'demand';
+			$orderByTitle['date'] = 'last change';
 
-		$maxResultsTitle['header'] = 'Results per page:';
+			$maxResultsTitle['header'] = 'Results per page:';
 
         break;
         case 'fr':
         	$classificationElements[0]['name2show'] = 'Mots clés:';
-		$classificationElements[1]['name2show'] = 'Fournisseur de données:';
-		$classificationElements[3]['name2show'] = 'Thèmes INSPIRE:';
-		$classificationElements[2]['name2show'] = 'Catégories ISO:';
-		$classificationElements[4]['name2show'] = 'Catégories GR:';
-		$classificationElements[5]['name2show'] = 'Requête spatiale:';
-		$classificationElements[6]['name2show'] = 'Enregistrement/Mise à jour du :';
-		$classificationElements[7]['name2show'] = 'Enregistrement/Mise à jour au:';
-		$classificationElements[8]['name2show'] = 'Pas plus de OpenData:';
-		$classificationElements[9]['name2show'] = 'Art der Ressource:';
-		$classificationElements[10]['name2show'] = 'Actuality of dataset from:';
-		$classificationElements[11]['name2show'] = 'Actuality of dataset to:';
+			$classificationElements[1]['name2show'] = 'Fournisseur de données:';
+			$classificationElements[3]['name2show'] = 'Thèmes INSPIRE:';
+			$classificationElements[2]['name2show'] = 'Catégories ISO:';
+			$classificationElements[4]['name2show'] = 'Catégories GR:';
+			$classificationElements[5]['name2show'] = 'Requête spatiale:';
+			$classificationElements[6]['name2show'] = 'Enregistrement/Mise à jour du :';
+			$classificationElements[7]['name2show'] = 'Enregistrement/Mise à jour au:';
+			$classificationElements[8]['name2show'] = 'Pas plus de OpenData:';
+			$classificationElements[9]['name2show'] = 'Art der Ressource:';
+			$classificationElements[10]['name2show'] = 'Actuality of dataset from:';
+			$classificationElements[11]['name2show'] = 'Actuality of dataset to:';
+			$classificationElements[12]['name2show'] = 'Only HVD:';
 
-		$resourceCategories['wms'] = 'Services de visualisation';
-		$resourceCategories['wfs'] = 'Services de recherche et de téléchargement';
-		$resourceCategories['wmc'] = 'Cartes composées';
-		$resourceCategories['dataset'] = 'Datasets';
-		$resourceCategories['georss'] = 'KML/Newsfeeds';		
-		$resourceCategories['application'] = 'Applications';
+			$resourceCategories['wms'] = 'Services de visualisation';
+			$resourceCategories['wfs'] = 'Services de recherche et de téléchargement';
+			$resourceCategories['wmc'] = 'Cartes composées';
+			$resourceCategories['dataset'] = 'Datasets';
+			$resourceCategories['georss'] = 'KML/Newsfeeds';		
+			$resourceCategories['application'] = 'Applications';
 
-		$orderByTitle['header'] = 'classé selon:';
-		$orderByTitle['id'] = 'numéro d\'identification';
-		$orderByTitle['title'] = 'par ordre alphabétique';
-		$orderByTitle['rank'] = 'vue';
-		$orderByTitle['date'] = 'mise à jour';
+			$orderByTitle['header'] = 'classé selon:';
+			$orderByTitle['id'] = 'numéro d\'identification';
+			$orderByTitle['title'] = 'par ordre alphabétique';
+			$orderByTitle['rank'] = 'vue';
+			$orderByTitle['date'] = 'mise à jour';
 
-		$maxResultsTitle['header'] = 'Résultat par page:';
+			$maxResultsTitle['header'] = 'Résultat par page:';
 
        	break;
      	default:
         	$classificationElements[0]['name2show'] = 'Suchbegriff(e):';
-		$classificationElements[1]['name2show'] = 'Anbietende Stelle(n):';
-		$classificationElements[3]['name2show'] = 'INSPIRE Themen:';
-		$classificationElements[2]['name2show'] = 'ISO Kategorien:';
-		$classificationElements[4]['name2show'] = 'RP Kategorien:';
-		$classificationElements[5]['name2show'] = 'Räumliche Einschränkung:';
-		$classificationElements[6]['name2show'] = 'Registrierung/Aktualisierung von:';
-		$classificationElements[7]['name2show'] = 'Registrierung/Aktualisierung bis:';
-		$classificationElements[8]['name2show'] = 'Nur OpenData Ressourcen:';
-		$classificationElements[9]['name2show'] = 'Art der Ressource:';
-		$classificationElements[10]['name2show'] = 'Actuality of dataset from:';
-		$classificationElements[11]['name2show'] = 'Actuality of dataset to:';
+			$classificationElements[1]['name2show'] = 'Anbietende Stelle(n):';
+			$classificationElements[3]['name2show'] = 'INSPIRE Themen:';
+			$classificationElements[2]['name2show'] = 'ISO Kategorien:';
+			$classificationElements[4]['name2show'] = 'RP Kategorien:';
+			$classificationElements[5]['name2show'] = 'Räumliche Einschränkung:';
+			$classificationElements[6]['name2show'] = 'Registrierung/Aktualisierung von:';
+			$classificationElements[7]['name2show'] = 'Registrierung/Aktualisierung bis:';
+			$classificationElements[8]['name2show'] = 'Nur OpenData Ressourcen:';
+			$classificationElements[9]['name2show'] = 'Art der Ressource:';
+			$classificationElements[10]['name2show'] = 'Actuality of dataset from:';
+			$classificationElements[11]['name2show'] = 'Actuality of dataset to:';
+			$classificationElements[12]['name2show'] = 'Only HVD:';
+			
+			$resourceCategories['wms'] = 'Kartenebenen';
+			$resourceCategories['wfs'] = 'Such- und Downloaddienste';
+			$resourceCategories['wmc'] = 'Kartenzusammenstellungen';
+			$resourceCategories['dataset'] = 'Datasets';
+			$resourceCategories['georss'] = 'KML/Newsfeeds';
+			$resourceCategories['application'] = 'Applications';
 
-		$resourceCategories['wms'] = 'Kartenebenen';
-		$resourceCategories['wfs'] = 'Such- und Downloaddienste';
-		$resourceCategories['wmc'] = 'Kartenzusammenstellungen';
-		$resourceCategories['dataset'] = 'Datasets';
-		$resourceCategories['georss'] = 'KML/Newsfeeds';
-		$resourceCategories['application'] = 'Applications';
+			$orderByTitle['header'] = 'Sortierung nach:';
+			$orderByTitle['id'] = 'ID';
+			$orderByTitle['title'] = 'Titel';
+			$orderByTitle['rank'] = 'Relevanz';
+			$orderByTitle['date'] = 'Letzte Änderung';
 
-		$orderByTitle['header'] = 'Sortierung nach:';
-		$orderByTitle['id'] = 'ID';
-		$orderByTitle['title'] = 'Titel';
-		$orderByTitle['rank'] = 'Relevanz';
-		$orderByTitle['date'] = 'Letzte Änderung';
-
-		$maxResultsTitle['header'] = 'Results per page:';
-
+			$maxResultsTitle['header'] = 'Results per page:';
 }	
 
 //write language code to session! TODO: This is problematic, cause it is too late for the translation! Should be done before!
@@ -1130,13 +1154,13 @@ if ($resultTarget == 'file') {
 		$e = new mb_notice($str);
 		exec($str);*/
 		
-		$metadata = new searchMetadata($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResourcesArray[$i], $searchPages[$i], $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources, $https);
+		$metadata = new searchMetadata($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResourcesArray[$i], $searchPages[$i], $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources, $https, $restrictToHvd);
 	}
 }
 if ($resultTarget == 'web' or $resultTarget == 'debug' or $resultTarget == 'webclient' or $resultTarget == 'categories') {
 	if (count($searchResourcesArray) == 1) {
 		//$e = new mb_exception("originFromHeader: ".$originFromHeader);
-		$metadata = new searchMetadata($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResourcesArray[0], $searchPages[0], $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources, $https);
+		$metadata = new searchMetadata($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResourcesArray[0], $searchPages[0], $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources, $https, $restrictToHvd);
 		#if ($outputFormat == 'xml') {
 		#	header("Content-type: application/xhtml+xml; charset=UTF-8");		
 		#}

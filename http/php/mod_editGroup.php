@@ -26,7 +26,7 @@ require_once(dirname(__FILE__)."/../php/mb_validatePermission.php");
 //security_patch_log(__FILE__,__LINE__);
 //import_request_variables("PG");
 
-$postvars = explode(",", "selected_group,name,title,owner_name,owner_id,description,address,postcode,city,stateorprovince,country,voicetelephone,facsimiletelephone,email,logo_path,homepage,adminCode,action,searchable");
+$postvars = explode(",", "selected_group,name,title,owner_name,owner_id,description,address,postcode,city,stateorprovince,country,voicetelephone,facsimiletelephone,email,logo_path,homepage,admin_code,external_id,action,searchable");
 foreach ($postvars as $value) {
    ${$value} = $_POST[$value];
 }

@@ -79,7 +79,8 @@ if($action == 'save'){
 		$changes->logo_path = $logo_path;
 		$changes->spatialSecurity = $spatialSecurity;
 		$changes->homepage = $homepage;
-		$changes->adminCode = $adminCode;
+		$changes->admin_code = $admin_code;
+		$changes->external_id = $external_id;
 		switch ($searchable) {
 			case "on":
 				$changes->searchable = 't';
@@ -123,7 +124,8 @@ if ($action == 'update') {
 		$changes->logo_path = $logo_path;
 		$changes->spatialSecurity = $spatialSecurity;
 		$changes->homepage = $homepage;
-		$changes->adminCode = $adminCode;
+		$changes->admin_code = $admin_code;
+		$changes->external_id = $external_id;
 		switch ($searchable) {
 			case "on":
 				$changes->searchable = 't';
@@ -159,7 +161,8 @@ if (!isset($name) || $selected_group == 'new'){
 	$logo_path = "";
 	$spatialSecurity = "";
 	$homepage = "";
-	$adminCode = "";
+	$admin_code = "";
+	$external_id = "";
 	$searchable = "t";
 }
 
@@ -215,7 +218,8 @@ if(isset($selected_group) && $selected_group != 0){
 		$logo_path = $data["logo_path"];
 		$spatialSecurity = $data["spatialSecurity"];
 		$homepage = $data["homepage"];
-		$adminCode = $data["adminCode"];
+		$admin_code = $data["admin_code"];
+		$external_id = $data["external_id"];
 		$searchable = $data["searchable"];
 	}
 	$owner = new User(intval($owner_id));
@@ -352,12 +356,21 @@ echo "<tr>";
    echo "</td>";
 echo "</tr>";
 
-#adminCode
+#admin_code
 echo "<tr>";
    echo "<td>Verwaltungseinheit: </td>";
    echo "<td>";
-   echo "<input type='text' size='30' name='adminCode' value='" .
-          htmlentities($adminCode, ENT_QUOTES, "UTF-8") . "'>";
+   echo "<input type='text' size='30' name='admin_code' value='" .
+          htmlentities($admin_code, ENT_QUOTES, "UTF-8") . "'>";
+   echo "</td>";
+echo "</tr>";
+
+#external_id
+echo "<tr>";
+   echo "<td>Externe ID: </td>";
+   echo "<td>";
+   echo "<input type='text' size='30' name='external_id' value='" .
+          htmlentities($external_id, ENT_QUOTES, "UTF-8") . "'>";
    echo "</td>";
 echo "</tr>";
 

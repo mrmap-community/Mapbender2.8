@@ -169,10 +169,11 @@ class Monitor {
 					case "WFS":
 						$wfsFactory = new UniversalWfsFactory();
 						$wfs = $wfsFactory->createFromDb($this->getTagOutOfXML($this->reportFile,'wfs_id',$this->serviceType));
-						$featureInfoArray = array();
+						$featureInfoArray = [];
 						foreach($wfs->featureTypeArray as $featureType) {
-							//$e = new mb_exception("ft name: ".$featureType->name);
-							//$e = new mb_exception("wfs version: ".$wfs->getVersion());
+							$featureInfo = new stdClass();
+							$e = new mb_exception("ft name: ".$featureType->name);
+							$e = new mb_exception("wfs version: ".$wfs->getVersion());
 							$featureInfo->featureTypeName = $featureType->name;
 							$feature = $wfs->getFeature($featureType->name, null, null, null, null, 1);
 							//*************************************************************************
