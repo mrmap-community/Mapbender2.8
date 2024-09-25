@@ -34,6 +34,84 @@
 $(function() {
 	$("#tabs").tabs({ active: 1 })
 });
+
+if (typeof regionData === 'undefined') {
+    var regionData = [
+        { "name": "Land Hessen", "minx": 7.7724673, "miny": 49.3952723, "maxx": 10.2364142, "maxy": 51.6577888 },
+        { "name": "Kreisfreie Stadt Darmstadt", "minx": 8.5581615, "miny": 49.795668, "maxx": 8.7498738, "maxy": 49.9538042 },
+        { "name": "Kreisfreie Stadt Frankfurt am Main", "minx": 8.4727605, "miny": 50.0153529, "maxx": 8.8004049, "maxy": 50.2271424 },
+        { "name": "Kreisfreie Stadt Offenbach am Main", "minx": 8.7224425, "miny": 50.0468179, "maxx": 8.8427322, "maxy": 50.1373991 },
+        { "name": "Landeshauptstadt Wiesbaden", "minx": 8.1106718, "miny": 49.9932374, "maxx": 8.3861621, "maxy": 50.1518097 },
+        { "name": "Landkreis Bergstraße", "minx": 8.3547184, "miny": 49.3952723, "maxx": 8.9516627, "maxy": 49.7549725 },
+        { "name": "Landkreis Darmstadt-Dieburg", "minx": 8.5198584, "miny": 49.7222217, "maxx": 9.050527, "maxy": 50.0019389 },
+        { "name": "Landkreis Groß-Gerau", "minx": 8.2907728, "miny": 49.7167083, "maxx": 8.6303116, "maxy": 50.0838616 },
+        { "name": "Hochtaunuskreis", "minx": 8.315463, "miny": 50.1556196, "maxx": 8.7123607, "maxy": 50.4151701 },
+        { "name": "Main-Kinzig-Kreis", "minx": 8.779774, "miny": 50.0671687, "maxx": 9.7488228, "maxy": 50.4635019 },
+        { "name": "Main-Taunus-Kreis", "minx": 8.3176451, "miny": 49.9965095, "maxx": 8.6027339, "maxy": 50.2027387 },
+        { "name": "Odenwaldkreis", "minx": 8.7844421, "miny": 49.4705521, "maxx": 9.1505795, "maxy": 49.8563463 },
+        { "name": "Landkreis Offenbach", "minx": 8.591374, "miny": 49.9465204, "maxx": 9.0513656, "maxy": 50.1333751 },
+        { "name": "Rheingau-Taunus-Kreis", "minx": 7.7724673, "miny": 49.9718445, "maxx": 8.4114872, "maxy": 50.2960947 },
+        { "name": "Wetteraukreis", "minx": 8.5141314, "miny": 50.1621976, "maxx": 9.2903794, "maxy": 50.4998794 },
+        { "name": "Landkreis Gießen", "minx": 8.5192258, "miny": 50.4158743, "maxx": 9.1344183, "maxy": 50.7093332 },
+        { "name": "Lahn-Dill-Kreis", "minx": 8.1098772, "miny": 50.3951233, "maxx": 8.6513325, "maxy": 50.8829177 },
+        { "name": "Landkreis Limburg-Weilburg", "minx": 7.9640111, "miny": 50.2636458, "maxx": 8.4673504, "maxy": 50.5996859 },
+        { "name": "Landkreis Marburg-Biedenkopf", "minx": 8.3546475, "miny": 50.6737656, "maxx": 9.150879, "maxy": 50.9968235 },
+        { "name": "Vogelsbergkreis", "minx": 8.9059715, "miny": 50.3854959, "maxx": 9.6501385, "maxy": 50.8366276 },
+        { "name": "Kreisfreie Stadt Kassel", "minx": 9.3510229, "miny": 51.2603806, "maxx": 9.5700842, "maxy": 51.369403 },
+        { "name": "Landkreis Fulda", "minx": 9.4272478, "miny": 50.3561445, "maxx": 10.0830766, "maxy": 50.8095215 },
+        { "name": "Landkreis  Hersfeld-Rotenburg", "minx": 9.4328317, "miny": 50.7174394, "maxx": 10.0648471, "maxy": 51.085492 },
+        { "name": "Landkreis Kassel", "minx": 9.092857, "miny": 51.1704232, "maxx": 9.761612, "maxy": 51.6577888 },
+        { "name": "Schwalm-Eder-Kreis", "minx": 8.9728688, "miny": 50.7728747, "maxx": 9.7811284, "maxy": 51.2576257 },
+        { "name": "Landkreis Waldeck-Frankenberg", "minx": 8.4732746, "miny": 50.9354961, "maxx": 9.2218375, "maxy": 51.5189199 },
+        { "name": "Werra-Meißner-Kreis", "minx": 9.6237862, "miny": 50.992088, "maxx": 10.2364142, "maxy": 51.4210554 },
+]};
+
+// Function to populate the multiselect-box with options
+function populateRegionOptions() {
+        let selectBox = document.getElementById('regions');
+        regionData.forEach((region) => {
+                let option = document.createElement('option');
+                option.value = JSON.stringify(region);
+                option.textContent = region.name;
+                selectBox.appendChild(option);
+        });
+}
+
+// Function to calculate the extent of selected regions
+function calculateExtent() {
+        let selectBox = document.getElementById('regions');
+        let selectedOptions = Array.from(selectBox.selectedOptions);
+
+        if (selectedOptions.length === 0) {
+                // If no options are selected, use the default extent
+                document.getElementById('west').value = -180;
+                document.getElementById('south').value = -90;
+                document.getElementById('east').value = 180;
+                document.getElementById('north').value = 90;
+                return; // Exit early
+        }
+
+        let extent = { minx: Infinity, miny: Infinity, maxx: -Infinity, maxy: -Infinity };
+
+        selectedOptions.forEach((option) => {
+        let region = JSON.parse(option.value);
+        extent.minx = Math.min(extent.minx, region.minx);
+        extent.miny = Math.min(extent.miny, region.miny);
+        extent.maxx = Math.max(extent.maxx, region.maxx);
+        extent.maxy = Math.max(extent.maxy, region.maxy);
+        });
+
+        // Set the input fields with the bounding box coordinates
+        document.getElementById('west').value = extent.minx;
+        document.getElementById('south').value = extent.miny;
+        document.getElementById('east').value = extent.maxx;
+        document.getElementById('north').value = extent.maxy;
+}
+
+// Call the function to populate the multiselect-box on page load
+
+populateRegionOptions();
+
 </script>
 <div class="demo">
 
@@ -262,6 +340,13 @@ $(function() {
 			<input class="required" name="north" id="north"/>
 		</label>
 		</fieldset>
+		<fieldset>
+		<legend>Select Regions<img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("");?>Wählen Sie eine Verwaltungseinheit aus - Land oder Landkreis. Wenn Sie mehrere Landkreise auswählen, wird die Ausdehnung entsprechend berechnet und eingefügt'}" src="../img/questionmark.png" alt="" /></legend>
+		<select multiple id="regions" name="regions">
+		<!-- Options will be added dynamically using JavaScript at the top -->
+		</select>
+		<button type="button" onclick="calculateExtent()">Calculate Extent</button>
+	    </fieldset>
 		<fieldset>
 			<legend><?php echo _mb("User defined region");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("You can define your own bounding box or region if you upload an gml geometry object. Only bbox and polygons are accepted at the moment!");?>'}" src="../img/questionmark.png" alt="" /></legend>
 			<table id='geometryuploadtable' name='geometryuploadtable'><tr><td><img id="uploadgmlimage" name= "uploadgmlimage" onclick='initUploadGmlForm();' src='../img/button_blue_red/up.png' id='uploadImage' title='upload'  /></td><td><?php echo _mb("Upload a surronding geometry for this dataset");?><img class="help-dialog" title="<?php echo _mb("Help");?>" help="{text:'<?php echo _mb("Help for geometry upload possibility");?>'}" src="../img/questionmark.png" alt="" /><img class="delete_polygon" id="delete_existing_polygon" onclick="" name="delete_existing_polygon" src='../img/cross.png' type="hidden" style="display: none" title="<?php echo _mb("Delete actual polygon");?>"/></td></tr></table>
