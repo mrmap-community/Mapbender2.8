@@ -782,7 +782,7 @@ class searchMetadata
 						}
 					}
 				}
-				if ($featuretypeCount == 0 && $layerCount == 0) {
+				/*if ($featuretypeCount == 0 && $layerCount == 0) {
 					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/"));
 					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
 					foreach ($downloadOptionsFromMetadata->{$datasetMatrix[$i]['fileidentifier']}->option as $dlOption) {
@@ -790,7 +790,7 @@ class searchMetadata
 							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
 						}
 					}
-				}
+				}*/
 			}
 		}
 	}
