@@ -1,3 +1,0 @@
-CREATE SCHEMA django AUTHORIZATION $MAPBENDER_DATABASE_USER
-
-ALTER DATABASE $POSTGRES_DB SET search_path TO mapbender,public,pg_catalog,topology

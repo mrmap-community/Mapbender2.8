@@ -9,7 +9,9 @@ services:
     networks:
       - internal
     env_file:
-      - ./docker/postgis/.db.env
+      - ./docker/postgis/.db.env 
+    ports:
+      - "0.0.0.0:5432:5432"
 
   mapbender:
     build:
@@ -21,8 +23,9 @@ services:
         source: ./docker/mapbender/bash_scripts
         target: /docker/bash_scripts
       - type: bind
-        source: ./
-        target: /mapbender
+        source: ./resources/db/pgsql
+        target: /mapbender/resources/db/pgsql
+
     #   - type: bind
     #     source: ./resources/customconfigs/de-rp/data/conf
     #     target: /data/mapbender/conf

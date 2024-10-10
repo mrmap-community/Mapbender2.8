@@ -52,6 +52,7 @@ RUN apt-get update \
     libmemcached-dev \
     libmemcached-tools \
     libpq-dev \
+    netcat-traditional \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 RUN printf "\n" | pecl install imagick\
@@ -77,8 +78,7 @@ RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini \
     && docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
     # && apt-get install libapache2-mod-php7.4 
-RUN apt-get install -y netcat
-
+RUN apt-get update && apt-get install -y postgresql postgresql-contrib
 ############################################################
 # adopt php logging - only log errors - needed here, else the installation will throw many notices
 ############################################################
@@ -86,5 +86,6 @@ RUN apt-get install -y netcat
 #     cp /etc/php/7.4/apache2/php.ini /etc/php/7.4/apache2/php.ini_geoportal_backup && \
 #     sed -i "s/error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT/error_reporting = E_ERROR/g" /etc/php/7.4/cli/php.ini  && \
 #     sed -i "s/;error_log = php_errors.log/error_log = \/tmp\/php7_cli_errors\.log/g" /etc/php/7.4/cli/php.ini
+
 
 ENTRYPOINT [ "/docker/bash_scripts/wait_db.sh", "/docker/bash_scripts/init_db.sh" ]
