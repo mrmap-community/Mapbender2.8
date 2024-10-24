@@ -1482,7 +1482,12 @@ SQL;
 	// a problem will occur, if the link to get map is not the same as the link to get caps? So how can we handle this? It seems to be very silly!
 	$gmdProtocol = $iso19139->createElement ( "gmd:protocol" );
 	$gmdProtocol_cs = $iso19139->createElement ( "gco:CharacterString" );
-	$gmdProtocolText = $iso19139->createTextNode ( "http-get" ); // ?TODO what to put in here?
+	//https://docs.geonetwork-opensource.org/3.12/tutorials/inspire/download-atom/#external-mode-implementation
+	/*<gmd:protocol>
+    <gco:CharacterString>INSPIRE-ATOM</gco:CharacterString>
+   	</gmd:protocol>*/
+
+	$gmdProtocolText = $iso19139->createTextNode ( "INSPIRE-ATOM" ); // ?TODO what to put in here?
 	
 	/*
 	 * $gmdName=$iso19139->createElement("gmd:name");
