@@ -278,8 +278,8 @@ abstract class Wfs extends Ows {
 					"</wfs:Query>";
 		}
 		$postData .= "</wfs:GetFeature>";	
-                $e = new mb_notice("class_wfs.php: getFeaturePost: ".$postData);
-	        if ($filter == null) {
+        $e = new mb_notice("class_wfs.php: getFeaturePost: ".$postData);
+	    if ($filter == null) {
 			if ($maxFeatures != null) {
 				$e = new mb_notice("maxfeatures: ".$maxFeatures);
 				return $this->getFeatureGet($featureTypeName, null, $maxFeatures);
@@ -797,7 +797,20 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     			$resultOfCount = $this->post($this->getFeature, $postData); //from class_ows!
                 	break;
 		    case "GET":
-    			$url = $this->getFeature.$this->getConjunctionCharacter($this->getFeature)."service=WFS&request=GetFeature&version=".$version."&".strtolower($typeNameParameterName)."=".$featureTypeName."&resultType=hits";
+				//add namespace
+    			if (strpos($featureTypeName, ":") !== false) {
+    				$ft = $this->findFeatureTypeByName($featureTypeName);
+    				$ns = $this->getNamespace($featureTypeName);
+    				$url = $ft->getNamespace($ns);
+					if ($version == "2.0.0" || $version == "2.0.2") {
+    					$namespaces = "&NAMESPACES=xmlns(" . $ns . "," . $url . ")";	
+					} else {
+						$namespaces = "&NAMESPACE=xmlns(" . $ns . "=" . $url . ")";	
+					}
+    			} else {
+					$namespaces = "";
+				}
+    			$url = $this->getFeature.$this->getConjunctionCharacter($this->getFeature)."service=WFS&request=GetFeature&version=".$version."&".strtolower($typeNameParameterName)."=".$featureTypeName."&resultType=hits".$namespaces;
     			if ($filter != null) {
     			    $url .= "&FILTER=".urlencode($filter);
     			}
