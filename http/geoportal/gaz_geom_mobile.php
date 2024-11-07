@@ -219,7 +219,8 @@ foreach ($gazetteerObject->features as $feature) {
 	$returnObject->geonames[$countGeonames]->maxy = str_replace(',', '.',$feature->bbox[3]);
     if ($forcePoint){
 	    $returnObject->geonames[$countGeonames]->centerPoint = "POINT(".(double)(($feature->bbox[2] + $feature->bbox[0])/2).",".(double)(($feature->bbox[3] + $feature->bbox[1])/2).")";
-    }
+		$returnObject->geonames[$countGeonames]->wkt = "POINT(".(double)(($feature->bbox[2] + $feature->bbox[0])/2)." ".(double)(($feature->bbox[3] + $feature->bbox[1])/2).")";
+	}
 	//slight adoption of zoombox for addresses - +/- 
 
 
