@@ -1855,7 +1855,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					$ftAllowedAttributesArray = array ();
 					foreach ( $ftElementArray as $ftElement ) {
 						// $e = new mb_exception($ftElement->name ." - " .$ftElement->type);
-					    if (in_array((string)$ftElement->type, array("string", "xsd:string", "int", "xsd:decimal"))) {
+					    if (in_array((string)$ftElement->type, array("string", "xsd:string", "int", "xsd:decimal", "decimal"))) {
 							$ftAllowedAttributesArray [] = $ftElement->name;
 						}
 					}
