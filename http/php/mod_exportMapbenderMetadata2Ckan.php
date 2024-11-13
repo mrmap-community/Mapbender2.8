@@ -844,7 +844,7 @@ if ($outputFormat == 'rdfxml') {
                     $Dataset->appendChild($dctLicense);
                     //TODO add source_note to search_views!!!!
                 } else {
-                    if (isnull($gpDataset->license_id)) {
+                    if (is_null($gpDataset->license_id)) {
                         $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
                         $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
                         $Dataset->appendChild($dctLicense);
@@ -950,7 +950,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                 //extract layer title from hierarchy
                                 $layerTitle = $value1->srv->layer[0]->title;
                                 $layerLicenseId = $value1->srv->license_id;
-                                if (isnull($layerLicenseId)) {
+                                if (is_null($layerLicenseId)) {
                                     $layerLicenseId = "other-closed";
                                 }
                                 //build ckan resource records for the layer. For each layer we have metadata, full viewer, geoportal viewer, wms interface
