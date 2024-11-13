@@ -983,7 +983,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         $resourceArray[] = $featuretypeAccessResource_1;
                                         break;
                                     case "directwfs":
-                                            $featuretypeAccessResource_1 = array("name" => "WebFeatureService",
+                                            $featuretypeAccessResource_1 = array("name" => "WFS Schnittstelle",
                                             "description" =>   "Objektart: " . $value1->resourceName. " - WFS",
                                             "format" => "WFS",
                                             "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
