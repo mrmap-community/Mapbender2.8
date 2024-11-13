@@ -680,7 +680,7 @@ if ($outputFormat == 'rdfxml') {
     //without open data filter on datasets
     //$baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     //with open data filter on datasets
-    if ($restriectToOpenData) {
+    if ($restrictToOpenData) {
         $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     } else {
         $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
