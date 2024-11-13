@@ -370,6 +370,7 @@ $license_map = array(
 $start = microtime(true);
 $orig_identifier = true;
 $ckanId = false;
+$restrictToOpenData = true;
 
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
     //validate to csv integer list
@@ -447,6 +448,22 @@ if (isset($_REQUEST["orig_identifier"]) & $_REQUEST["orig_identifier"] != "") {
     $testMatch = NULL;
 }
 
+if (isset($_REQUEST["restrictToOpenData"]) & $_REQUEST["restrictToOpenData"] != "") {
+    //validate
+    $testMatch = $_REQUEST["restrictToOpenData"];
+    if ($testMatch != 'true' && $testMatch != 'false'){
+        echo '{"success": false, "help": "Parameter restrictToOpenData is not valid (true/false)"}';
+        die();
+    }
+    if ($testMatch == 'false') {
+        $restrictToOpenData = false;
+    }
+    if ($testMatch == 'true') {
+        $restrictToOpenData = true;
+    }
+    $testMatch = NULL;
+}
+
 if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
     //validate
     $testMatch = $_REQUEST["outputFormat"];
@@ -475,7 +492,8 @@ function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false,
         "cc-by-sa-4.0" => "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
         "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
         "dl-de-by-1.0" => "http://dcat-ap.de/def/licenses/dl-by-de/1.0",
-        "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0"
+        "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0",
+        "other-closed" => "http://dcat-ap.de/def/licenses/other-closed"
     );
     $Distribution = $rdfXmlDoc->createElement ( "dcat:Distribution" );
     $Distribution->setAttribute ( "rdf:about", $uri);
@@ -662,7 +680,11 @@ if ($outputFormat == 'rdfxml') {
     //without open data filter on datasets
     //$baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     //with open data filter on datasets
-    $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
+    if ($restriectToOpenData) {
+        $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
+    } else {
+        $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
+    }
     $baseUrlCount = $baseUrl. "&maxResults=1";
     $mapbenderMetadataUrl = "";
     //count all resources
@@ -821,6 +843,11 @@ if ($outputFormat == 'rdfxml') {
                     $dctLicense->setAttribute('rdf:resource', $license_map[$gpDataset->license_id]);
                     $Dataset->appendChild($dctLicense);
                     //TODO add source_note to search_views!!!!
+                } 
+                if (isnull($gpDataset->license_id)) {
+                    $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+                    $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
+                    $Dataset->appendChild($dctLicense);
                 }
                 /*
                  * 
@@ -922,6 +949,9 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                 //extract layer title from hierarchy
                                 $layerTitle = $value1->srv->layer[0]->title;
                                 $layerLicenseId = $value1->srv->license_id;
+                                if (isnull($layerLicenseId)) {
+                                    $layerLicenseId = "other-closed";
+                                }
                                 //build ckan resource records for the layer. For each layer we have metadata, full viewer, geoportal viewer, wms interface
                                 $layerViewResource_1 = array("name" => "Online Karte",
                                     "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
