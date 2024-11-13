@@ -683,7 +683,7 @@ if ($outputFormat == 'rdfxml') {
     if ($restrictToOpenData) {
         $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     } else {
-        $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&restrictToOpenData=true&resolveCoupledResources=true&registratingDepartments=".$orgaId;
+        $baseUrl = $mapbenderBaseSearchInterface . "searchResources=dataset&resolveCoupledResources=true&registratingDepartments=".$orgaId;
     }
     $baseUrlCount = $baseUrl. "&maxResults=1";
     $mapbenderMetadataUrl = "";
@@ -843,11 +843,12 @@ if ($outputFormat == 'rdfxml') {
                     $dctLicense->setAttribute('rdf:resource', $license_map[$gpDataset->license_id]);
                     $Dataset->appendChild($dctLicense);
                     //TODO add source_note to search_views!!!!
-                } 
-                if (isnull($gpDataset->license_id)) {
-                    $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
-                    $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
-                    $Dataset->appendChild($dctLicense);
+                } else {
+                    if (isnull($gpDataset->license_id)) {
+                        $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+                        $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
+                        $Dataset->appendChild($dctLicense);
+                    }
                 }
                 /*
                  * 
