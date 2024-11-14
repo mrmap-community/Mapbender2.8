@@ -1001,7 +1001,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                             break;
                         case "inspireAtomFeeds":
                             foreach ($value as $key1 => $value1) {
-                                $inspireAtomFeedsLicenseId = $value1->license_id;
+                                $inspireAtomFeedsLicenseId = $value1->licenseId;
                                 if (is_null($inspireAtomFeedsLicenseId) || $inspireAtomFeedsLicenseId == false) {
                                     $inspireAtomFeedsLicenseId = "other-closed";
                                 }
@@ -1018,7 +1018,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         $resourceArray[] = $featuretypeAccessResource_1;
                                         break;
                                     case "directwfs":
-                                            $featuretypeAccessResource_1 = array("name" => "WFS Schnittstelle",
+                                            $featuretypeAccessResource_2 = array("name" => "WFS Schnittstelle",
                                             "description" =>   "Objektart: " . $value1->resourceName. " - WFS",
                                             "format" => "WFS",
                                             "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
@@ -1026,7 +1026,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                             "license_id" => $inspireAtomFeedsLicenseId,
                                             "license_source_note" => $value1->licenseSourceNote
                                             );
-                                            $resourceArray[] = $featuretypeAccessResource_1;
+                                            $resourceArray[] = $featuretypeAccessResource_2;
                                             break; 
                                     case "wfsrequest":
                                         $atomFeedAccessResource_1 = array("name" => "Vektordownload nach EU-Standard",
@@ -1056,7 +1056,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_remotelist_" . $value1->serviceId,
-                                        "license_id" => $license_map[$gpDataset->license_id],
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_3;
@@ -1067,7 +1067,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_other_distribution_" . md5($value1->accessClient),
-                                        "license_id" => $license_map[$gpDataset->license_id],
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $otherAccessResource_4;
