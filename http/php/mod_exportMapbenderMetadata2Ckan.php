@@ -611,6 +611,16 @@ if ($outputFormat == 'rdfxml') {
         //$e = new mb_exception("try to load: " . $mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
         //$e = new mb_exception("result: " . $orgaListResult);
         $orgaListObject = json_decode($orgaListResult);
+        $orgaIdArray = array();
+        $orgaSerialIdArray = array();
+        foreach ($orgaListObject as $orga) {
+            $orgaIdArray[] = (string)$orga->id;
+            $orgaSerialIdArray[] = (string)$orga->serialId;
+        }
+
+
+
+
     } else {
     //load organization list from openDataOrganisations in case of parameter ckanId
     if ($ckanId) {
