@@ -613,7 +613,7 @@ if ($outputFormat == 'rdfxml') {
         $orgaListObject = json_decode($orgaListResult);
         $orgaIdArray = array();
         $orgaUuidArray = array();
-        foreach ($orgaListObject as $orga) {
+        foreach ($orgaListObject->organizations as $orga) {
             $orgaIdArray[] = (string)$orga->id;
             $orgaUuidArray[] = (string)$orga->uuid;
         }
