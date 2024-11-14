@@ -816,7 +816,7 @@ if ($outputFormat == 'rdfxml') {
                 foreach ($iso19139Md->keywords as $keyword) {
                     //check for keyword without thesaurus
                     $keyword = trim($keyword);
-                    if ($iso19139Md->keywordsThesaurusName[$keyword_idx] == null) {
+                    if ($iso19139Md->keywordsThesaurusName[$keyword_idx] == null && $keyword != "DummyKeyword") {
                         $keywordE = $rdfXmlDoc->createElement ( "dcat:keyword" );
                         $keywordText = $rdfXmlDoc->createTextNode( $keyword );
                         $keywordE->appendChild($keywordText);
