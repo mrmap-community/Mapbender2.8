@@ -625,9 +625,6 @@ if ($outputFormat == 'rdfxml') {
             $key = array_search ($mapbenderUuid, $orgaUuidArray);
             $id = $orgaUuidArray[$key];
         }
-
-
-
     } else {
     //load organization list from openDataOrganisations in case of parameter ckanId
     if ($ckanId) {
@@ -670,7 +667,9 @@ if ($outputFormat == 'rdfxml') {
     $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: organization: " . $orgaResult);
     $orgaObject = json_decode($orgaResult);
-    
+    if ($mapbenderUuid) {
+        $orgaObject->id = $mapbenderUuid;
+    }
     $catalogDescription = $rdfXmlDoc->createElement ( "dct:description" );
     $catalogDescriptionText = $rdfXmlDoc->createTextNode ( "Geo-Metadaten der Organisation " . $orgaObject->title);
     $catalogDescription->appendChild($catalogDescriptionText);
