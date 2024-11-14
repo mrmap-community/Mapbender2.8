@@ -623,7 +623,7 @@ if ($outputFormat == 'rdfxml') {
             die();
         } else {
             $key = array_search ($mapbenderUuid, $orgaUuidArray);
-            $id = $orgaUuidArray[$key];
+            $id = $orgaIdArray[$key];
         }
     } else {
     //load organization list from openDataOrganisations in case of parameter ckanId
