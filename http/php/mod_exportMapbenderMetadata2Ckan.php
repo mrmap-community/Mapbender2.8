@@ -612,12 +612,19 @@ if ($outputFormat == 'rdfxml') {
         //$e = new mb_exception("result: " . $orgaListResult);
         $orgaListObject = json_decode($orgaListResult);
         $orgaIdArray = array();
-        $orgaSerialIdArray = array();
+        $orgaUuidArray = array();
         foreach ($orgaListObject as $orga) {
             $orgaIdArray[] = (string)$orga->id;
-            $orgaSerialIdArray[] = (string)$orga->serialId;
+            $orgaUuidArray[] = (string)$orga->serialId;
         }
-
+        if (!in_array($mapbenderUuid, $orgaUuidArray)) {
+            header('Content-Type: application/json');
+            echo '{"success": false, "help": "There is no open data organization with requested uuid in the catalogue!"}';
+            die();
+        } else {
+            $key = array_search ($mapbenderUuid, $orgaUuidArray);
+            $id = $orgaUuidArray[$key];
+        }
 
 
 
