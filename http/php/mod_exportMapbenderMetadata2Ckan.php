@@ -370,7 +370,7 @@ $license_map = array(
 $start = microtime(true);
 $orig_identifier = true;
 $ckanId = false;
-$mapbenderUuid = false;
+//$mapbenderUuid = false;
 $restrictToOpenData = true;
 
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
@@ -400,7 +400,7 @@ if (isset($_REQUEST["ckanId"]) & $_REQUEST["ckanId"] != "") {
 }
 
 
-if (isset($_REQUEST["mapbenderUuid"]) & $_REQUEST["mapbenderUuid"] != "") {
+/*if (isset($_REQUEST["mapbenderUuid"]) & $_REQUEST["mapbenderUuid"] != "") {
     //validate to uuid
     $testMatch = $_REQUEST["mapbenderUuid"];
     $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
@@ -411,7 +411,7 @@ if (isset($_REQUEST["mapbenderUuid"]) & $_REQUEST["mapbenderUuid"] != "") {
     }
     $mapbenderUuid = $testMatch;
     $testMatch = NULL;
-}
+}*/
 
 $forceCache = true;
 if (DEFINED('MAPBENDER_PATH') && MAPBENDER_PATH != '') {
@@ -607,7 +607,7 @@ if ($outputFormat == 'rdfxml') {
     //build organization part
     //get organisation list from webservice
     $connector = new connector();   
-    if ($mapbenderUuid) {
+    /*if ($mapbenderUuid) {
         $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
         //$e = new mb_exception("try to load: " . $mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
         //$e = new mb_exception("result: " . $orgaListResult);
@@ -626,7 +626,7 @@ if ($outputFormat == 'rdfxml') {
             $key = array_search ($mapbenderUuid, $orgaUuidArray);
             $id = $orgaIdArray[$key];
         }
-    } else {
+    } else {*/
         //load organization list from openDataOrganisations in case of parameter ckanId
         if ($ckanId) {
             $openOrgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOpenDataOrganizations.php?showOnlyDatasetMetadata=true");
@@ -663,7 +663,7 @@ if ($outputFormat == 'rdfxml') {
                 die();
             }
         }
-    }
+    //}
 
     //get single orga info
     $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
@@ -671,9 +671,9 @@ if ($outputFormat == 'rdfxml') {
     $orgaObject = json_decode($orgaResult);
     
     //overwrite $orgaObject->id with $mapbenderUuid if the service is invoked with this parameter!
-    if ($mapbenderUuid) {
+    /*if ($mapbenderUuid) {
         $orgaObject->id = $mapbenderUuid;
-    }
+    }*/
 
     $catalogDescription = $rdfXmlDoc->createElement ( "dct:description" );
     $catalogDescriptionText = $rdfXmlDoc->createTextNode ( "Geo-Metadaten der Organisation " . $orgaObject->title);
