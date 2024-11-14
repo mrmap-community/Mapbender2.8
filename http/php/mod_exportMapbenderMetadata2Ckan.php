@@ -370,6 +370,7 @@ $license_map = array(
 $start = microtime(true);
 $orig_identifier = true;
 $ckanId = false;
+$mapbenderUuid = false;
 $restrictToOpenData = true;
 
 if (isset($_REQUEST["id"]) & $_REQUEST["id"] != "") {
@@ -395,6 +396,19 @@ if (isset($_REQUEST["ckanId"]) & $_REQUEST["ckanId"] != "") {
         die();
     }
     $ckanId = $testMatch;
+    $testMatch = NULL;
+}
+
+if (isset($_REQUEST["mapbenderUuid"]) & $_REQUEST["mapbenderUuid"] != "") {
+    //validate to csv integer list
+    $testMatch = $_REQUEST["mapbenderUuid"];
+    $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
+    if (!preg_match($pattern,$testMatch)){
+        //echo 'id: <b>'.$testMatch.'</b> is not valid.<br/>';
+        echo '{"success": false, "help": "Parameter mapbenderUuid is not valid (uuid)"}';
+        die();
+    }
+    $mapbenderUuid = $testMatch;
     $testMatch = NULL;
 }
 
@@ -592,6 +606,12 @@ if ($outputFormat == 'rdfxml') {
     //build organization part
     //get organisation list from webservice
     $connector = new connector();   
+    if ($mapbenderUuid) {
+        $orgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
+        //$e = new mb_exception("try to load: " . $mapbenderWebserviceUrl . "php/mod_showOrganizationList.php");
+        //$e = new mb_exception("result: " . $orgaListResult);
+        $orgaListObject = json_decode($orgaListResult);
+    } else {
     //load organization list from openDataOrganisations in case of parameter ckanId
     if ($ckanId) {
         $openOrgaListResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOpenDataOrganizations.php?showOnlyDatasetMetadata=true");
@@ -628,7 +648,7 @@ if ($outputFormat == 'rdfxml') {
             die();
         }
     }
-
+    }
     //get single orga info
     $orgaResult = $connector->load($mapbenderWebserviceUrl . "php/mod_showOrganizationInfo.php?outputFormat=ckan&id=" . $id);
     //$e = new mb_exception("php/mod_exportMapbenderMetadata2Ckan.php: organization: " . $orgaResult);
