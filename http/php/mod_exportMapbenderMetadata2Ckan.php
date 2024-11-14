@@ -1056,7 +1056,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_remotelist_" . $value1->serviceId,
-                                        "license_id" => $inspireAtomFeedsLicenseId,
+                                        "license_id" => $license_map[$gpDataset->license_id],
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_3;
@@ -1067,7 +1067,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_other_distribution_" . md5($value1->accessClient),
-                                        "license_id" => $inspireAtomFeedsLicenseId,
+                                        "license_id" => $license_map[$gpDataset->license_id],
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $otherAccessResource_4;
