@@ -615,7 +615,7 @@ if ($outputFormat == 'rdfxml') {
         $orgaUuidArray = array();
         foreach ($orgaListObject as $orga) {
             $orgaIdArray[] = (string)$orga->id;
-            $orgaUuidArray[] = (string)$orga->serialId;
+            $orgaUuidArray[] = (string)$orga->uuid;
         }
         if (!in_array($mapbenderUuid, $orgaUuidArray)) {
             header('Content-Type: application/json');
