@@ -844,7 +844,7 @@ if ($outputFormat == 'rdfxml') {
                     $Dataset->appendChild($dctLicense);
                     //TODO add source_note to search_views!!!!
                 } else {
-                    if (is_null($gpDataset->license_id)) {
+                    if (is_null($gpDataset->license_id) || ($gpDataset->license_id == false)) {
                         $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
                         $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
                         $Dataset->appendChild($dctLicense);
@@ -950,7 +950,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                 //extract layer title from hierarchy
                                 $layerTitle = $value1->srv->layer[0]->title;
                                 $layerLicenseId = $value1->srv->license_id;
-                                if (is_null($layerLicenseId)) {
+                                if (is_null($layerLicenseId) || $layerLicenseId == false) {
                                     $layerLicenseId = "other-closed";
                                 }
                                 //build ckan resource records for the layer. For each layer we have metadata, full viewer, geoportal viewer, wms interface
@@ -1001,6 +1001,10 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                             break;
                         case "inspireAtomFeeds":
                             foreach ($value as $key1 => $value1) {
+                                $inspireAtomFeedsLicenseId = $value1->license_id;
+                                if (is_null($inspireAtomFeedsLicenseId) || $inspireAtomFeedsLicenseId == false) {
+                                    $inspireAtomFeedsLicenseId = "other-closed";
+                                }
                                 switch ($value1->type) {
                                     case "ogcapifeatures":
                                         $featuretypeAccessResource_1 = array("name" => "OGC API Features (REST)",
@@ -1008,7 +1012,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_ogc_api_interface_" . $value1->resourceName . "_" . $value1->serviceId,
-                                        "license_id" => $value1->licenseId,
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $featuretypeAccessResource_1;
@@ -1019,7 +1023,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                             "format" => "WFS",
                                             "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                             "id" => $gpDataset->uuid . "_wfs_interface_" . $value1->resourceName . "_" . $value1->serviceId,
-                                            "license_id" => $value1->licenseId,
+                                            "license_id" => $inspireAtomFeedsLicenseId,
                                             "license_source_note" => $value1->licenseSourceNote
                                             );
                                             $resourceArray[] = $featuretypeAccessResource_1;
@@ -1030,7 +1034,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_wfs_" . $value1->serviceId,
-                                        "license_id" => $value1->licenseId,
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_1;
@@ -1041,7 +1045,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_wms_" . $value1->resourceId,
-                                        "license_id" => $value1->licenseId,
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_2;
@@ -1052,7 +1056,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_atom_feed_remotelist_" . $value1->serviceId,
-                                        "license_id" => $value1->licenseId,
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $atomFeedAccessResource_3;
@@ -1063,7 +1067,7 @@ POLYGON ((6.2766 53.2216, 9.2271 53.2216, 9.2271 55.3428, 6.2766 55.3428, 6.2766
                                         "format" => "HTML",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                         "id" => $gpDataset->uuid . "_other_distribution_" . md5($value1->accessClient),
-                                        "license_id" => $value1->licenseId,
+                                        "license_id" => $inspireAtomFeedsLicenseId,
                                         "license_source_note" => $value1->licenseSourceNote
                                         );
                                         $resourceArray[] = $otherAccessResource_4;
