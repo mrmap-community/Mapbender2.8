@@ -4303,7 +4303,7 @@ msgid "click on single orange box generate download link below map (if seen)!"
 msgstr "Klick auf orange Box generiert Downloadlink unterhalb des Kartenbildes (wenn vorhanden)!"
 
 msgid "INSPIRE Download Service (predefined ATOM) for dataset"
-msgstr "INSPIRE Downloaddienst (predefined ATOM) für Datensatz"
+msgstr "ATOM-Feed"
 
 msgid "based on WFS datasource"
 msgstr "basierend auf WFS Datenquelle"
