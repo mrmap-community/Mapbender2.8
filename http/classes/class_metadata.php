@@ -753,7 +753,25 @@ class searchMetadata
 			for ($i = 0; $i < count($datasetMatrix); $i++) {
 				$layerCount = 0;
 				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
-					$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
+					
+					//first add whole srv result
+					$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
+					$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
+					# not only add the service object, but also the layer title, ...
+					# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
+					// extract layer with id from subtree
+					if (is_array($subTree->layer) && isset($layer->id)) {
+						$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
+					
+						//reinitialize layer array
+						if ($coupledLayer != false) {
+							//delete sublayers from found layer !
+							unset($coupledLayer->layer);
+							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
+							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
+						}
+					}
+					//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
 					$layerCount++;
 				}
 				$featuretypeCount = 0;
@@ -2211,6 +2229,29 @@ class searchMetadata
 				#exit;
 			}
 			fclose($h);
+		}
+	}
+
+	// recursive function to extract a layer by id from a returned hierarchical wms srv layer array search result 
+	private function findLayer($layerArray, $layerId) {
+		$e = new mb_notice("classes/class_metadata.php: method->findLayer: search for id: " . (integer)$layerId);
+		if (is_array($layerArray)) {
+			//sometimes we get a list of all sublayers - we have to iterate over them
+			// invoke recursive for each sublayer
+			foreach ($layerArray as $subLayer) {
+				if ((integer)$subLayer->id == (integer)$layerId) {
+					if (isset($subLayer)) {
+						return $subLayer;
+					}
+				} else {
+					//go to next hierarchy level
+					if (is_array($subLayer->layer)) {
+						return $this->findLayer($subLayer->layer, $layerId);
+					}
+				}
+			}
+		} else {
+			$e = new mb_notice("classes/class_metadata.php: method->findLayer: layer object is not an array!");
 		}
 	}
 
