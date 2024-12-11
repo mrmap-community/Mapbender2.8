@@ -334,8 +334,8 @@ class searchMetadata
 						$this->orderBy = " ORDER BY wms_timestamp DESC ";
 						break;
 					//Ticket 6655: Changed order of Datasetsearch subservices 
-					case "intern":
-						$this->orderBy = " ORDER BY wms_id,layer_title ASC";					
+					case "intern":					
+						$this->orderBy = " ORDER BY wms_id,layer_id ASC";
 						break;
 					default:
 						$this->orderBy = " ORDER BY load_count DESC";
@@ -810,8 +810,7 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
 						}
 					}
-					//Ticket 6655: Changed order of Datasetsearch subservices
-					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
+
 				}
 			}
 		}
@@ -820,47 +819,32 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 //$matrix ist Matrix von oben
 //$sorted_id_list ist die nach Titeln und WMS sortierte LayerID Liste
 
-
-	private function sortMetadataJSON($matrix, $sorted_id_list,$coupled_layers,$layerSearchArray){
-		
-		$layerCount = 0;
-		// erste Schleife geht über die Datensätze
-	    for ($i = 0; $i < count($matrix); $i++) {
-			
-				$a =array();
-				//im Kopf der Schleife: unsortierte Layer, aber pro Datensatz (srv[$i]), deshalb der ganze Aufwand
-				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
-					
-					$kandidat = $layer->id;
-					
-					for($j = 0;$j < count($sorted_id_list);$j++){
-						//es wird geschaut, an welcher Stelle in der sortierten Liste sich der Layer befindet und die Position wird in array a eingefügt
-						if($kandidat == $sorted_id_list[$j]){
-							$a[] = $j;
-							
-						}
-						
-					}
-					
+	private function sortMetadataJSON($matrix, $sorted_id_list, $coupled_layers, $layerSearchArray) {
+		$sorted_id_map = array_flip($sorted_id_list);
+		$coupled_layers_srv = json_decode($coupled_layers->internalResult)->wms->srv;
+	
+		for ($i = 0; $i < count($matrix); $i++) {
+			$layers = $this->datasetJSON->dataset->srv[$i]->coupledResources->layer;
+			$sorted_layers = array();
+	
+			foreach ($layers as $layer) {
+				$layer_id = $layer->id;
+				if (isset($sorted_id_map[$layer_id])) {
+					$position = $sorted_id_map[$layer_id];
+					$sorted_layers[$position] = $layer_id;
 				}
-				sort($a);
-				$c = 0;
-				for($p = 0;$p < count($a); $p++){
-						for($k = 0; $k < count($sorted_id_list); $k++){
-							if($k == $a[$p]){
-								
-								
-								$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $sorted_id_list[$k];
-								$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = json_decode($coupled_layers->internalResult)->wms->srv[$layerSearchArray[$sorted_id_list[$k]]];
-								
-								$c++;
-								break;
-							}
-						}
-				}
+			}
+	
+			ksort($sorted_layers);
+			$c = 0;
+	
+			foreach ($sorted_layers as $position => $layer_id) {
+				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $layer_id;
+				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = $coupled_layers_srv[$layerSearchArray[$layer_id]];
+				$c++;
+			}
 		}
 	}
-
 
 	private function generateApplicationMetadataJSON($res, $n)
 	{
