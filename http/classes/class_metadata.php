@@ -65,6 +65,7 @@ class searchMetadata
 	var $protocol;
 	var $hvdInspireCats;
 	var $hvdCustomCats;
+	var $internalProcessCoupledWMS = false;
 	function __construct($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResources, $searchPages, $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources = false, $https = false, $restrictToHvd)
 	{
 		$this->userId = (int) $userId;
@@ -335,7 +336,8 @@ class searchMetadata
 						break;
 					//Ticket 6655: Changed order of Datasetsearch subservices 
 					case "intern":					
-						$this->orderBy = " ORDER BY wms_id,layer_id ASC";
+						$this->orderBy = " ORDER BY wms_id,layer_pos,layer_title ASC";
+						$this->internalProcessCoupledWMS = true;
 						break;
 					default:
 						$this->orderBy = " ORDER BY load_count DESC";
@@ -734,16 +736,16 @@ class searchMetadata
 							}
 						}
 						//TODO!: do this also for the next hierachylevel - maybe invoke it recursive!!!
-						foreach ($layer->layer as $sublayer) {
+						// foreach ($layer->layer as $sublayer) {
 							
-							$layerSearchArray[$sublayer->id] = $srvCount;
-							//pull inspire downloadoptions from layer information
-							foreach ($sublayer->downloadOptions as $downloadOption) {
-								if ($downloadOption->uuid != null) {
-									$downloadOptionsArray[$downloadOption->uuid] = json_encode($downloadOption->option);
-								}
-							}
-						}
+						// 	$layerSearchArray[$sublayer->id] = $srvCount;
+						// 	//pull inspire downloadoptions from layer information
+						// 	foreach ($sublayer->downloadOptions as $downloadOption) {
+						// 		if ($downloadOption->uuid != null) {
+						// 			$downloadOptionsArray[$downloadOption->uuid] = json_encode($downloadOption->option);
+						// 		}
+						// 	}
+						// }
 					}
 					$srvCount++;
 				}
@@ -942,15 +944,19 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 		if ($n != 0) {
 			for ($i = 0; $i < count($wmsMatrix); $i++) {
 				$layerID = $wmsMatrix[$i]['layer_id'];
-				if (!in_array($layerID, $layerIdArray) or !in_array($rootLayerId, $layerIdArray)) {
+				if (!in_array($layerID, $layerIdArray) or !in_array($rootLayerId, $layerIdArray) or $this->internalProcessCoupledWMS) {
 					$wmsID = $wmsMatrix[$i]['wms_id']; //get first wms id - in the next loop - dont get second, but some else!
 					//Select all layers of with this wms_id into new array per WMS - the grouping should be done by wms!
 					$subLayers = $this->filter_by_value($wmsMatrix, 'wms_id', $wmsID);
 					//Sort array by load_count - problem: maybe there are some groups between where count is to low (they have no load count because you cannot load them by name)? - Therefor we need some ideas - or pull them out of the database and show them greyed out. Another way will be to define a new group (or wms with the same id) for those layers which are more than one integer away from their parents
 					$subLayersFlip = $this->flipDiagonally($subLayers);
 					$index = array_search($layerID, $subLayersFlip['layer_id']);
-					//This functions returns itself if the root layer is not initally selected - and by that not found
-					$rootIndex = $this->getLayerParent($subLayersFlip, $index);
+					//Ticket #7889: Optimization of coupled WMS logic to optimize runtime -> Handling coupled layers in a flat structure
+					if ($this->internalProcessCoupledWMS){
+						$rootIndex = $index;
+					}else{
+						$rootIndex = $this->getLayerParent($subLayersFlip, $index);
+					}
 					$rootLayerPos = $subLayers[$rootIndex]['layer_pos'];
 					//This rootLayerID is not necessarily the layer with layer_pos = 0 - because of the search result - it is just the "root" of the selected layer in the search result overview - there it can be itself				
 					$rootLayerId = $subLayers[$rootIndex]['layer_id'];
@@ -1071,7 +1077,10 @@ $layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
 					$this->wmsJSON->wms->srv[$j]->layer[0]->bbox = $subLayers[$rootIndex]['bbox'];
 					$this->wmsJSON->wms->srv[$j]->layer[0]->permission = $this->getPermissionValueForLayer($subLayers[$rootIndex]['layer_id'], $subLayers[$rootIndex]['wms_id']); //TODO: Make this much more faster
 					//when the entry for the first server has been written, the server entry is fixed and the next one will be a new server or a part of the old one.
-					$layerIdArray = $this->writeWMSChilds($layerIdArray, $rootLayerPos, $subLayers, $this->wmsJSON->wms->srv[$j]->layer[0]);
+					//Ticket #7889: Optimization of coupled WMS logic to optimize runtime -> Handling coupled layers in a flat structure
+					if (!$this->internalProcessCoupledWMS){
+						$layerIdArray = $this->writeWMSChilds($layerIdArray, $rootLayerPos, $subLayers, $this->wmsJSON->wms->srv[$j]->layer[0]);
+					}
 					$j++;
 				}
 			}
