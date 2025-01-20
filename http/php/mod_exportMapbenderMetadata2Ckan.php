@@ -1055,7 +1055,7 @@ if ($outputFormat == 'rdfxml') {
                                         "description" => "Ebene: " . $layerTitle,
                                         "format" => "WMS",
                                         "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
-                                        "original_url" => $layerGetCapabilitiesUrl,
+                                        "original_url" => str_replace("http://localhost", $baseUrlPortal, $layerGetCapabilitiesUrl),
                                         "id" => $gpDataset->uuid . "_wms_interface_" . $value1->id,
                                         "license_id" => $layerLicenseId
                                     );
@@ -1452,7 +1452,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                 "description" => "Ebene: " . $layerTitle,
                                 "format" => "WMS",
                                 "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
-                                "original_url" => $layerOriginalUrl,
+                                "original_url" => str_replace("http://localhost", $baseUrlPortal,$layerOriginalUrl),
                                 "id" => $package[$j]->id . "_wms_interface_" . $value1->id
                             );
                             //check if id already exists
