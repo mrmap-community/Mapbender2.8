@@ -1451,7 +1451,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                 "description" => "Ebene: " . $layerTitle,
                                 "format" => "WMS",
                                 "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
-                                "original_url" => $layerOriginalUrl;
+                                "original_url" => $layerOriginalUrl,
                                 "id" => $package[$j]->id . "_wms_interface_" . $value1->id
                             );
                             //check if id already exists
@@ -1505,7 +1505,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                         "description" => $value1->serviceTitle,
                                         "format" => "ATOM",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                        "original_url" => $value1->originalCapabilitiesUrl;
+                                        "original_url" => $value1->originalCapabilitiesUrl,
                                         "id" => $package[$j]->id . "_atom_feed_wfs_" . $value1->serviceId
                                     );
                                     //check if id already exists
