@@ -926,7 +926,9 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->abstract = $subLayers[$rootIndex]['wms_abstract'];
 					$this->wmsJSON->wms->srv[$j]->date = date("d.m.Y", $subLayers[$rootIndex]['wms_timestamp']);
 					$this->wmsJSON->wms->srv[$j]->loadCount = (int) $subLayers[$rootIndex]['load_count'];
-					$this->wmsJSON->wms->srv[$j]->getMapUrl = $this->getMapUrlfromWMSId((int) $subLayers[$rootIndex]['wms_id']);
+					$this->wmsJSON->wms->srv[$j]->getMapUrl = $this->getUrlsFromWMSId((int) $subLayers[$rootIndex]['wms_id'])['getMap'];
+					//add getcapabilities url
+					$this->wmsJSON->wms->srv[$j]->originalGetCapabilitiesUrl = $this->getUrlsFromWMSId((int) $subLayers[$rootIndex]['wms_id'])['getCapabilities'];
 					$spatialSource = "";
 					$stateOrProvince = $subLayers[$rootIndex]['stateorprovince'];
 					if ($stateOrProvince == "NULL" || $stateOrProvince == "") {
@@ -1864,14 +1866,15 @@ class searchMetadata
 		return $return_permission;
 	}
 
-	private function getMapUrlfromWMSId($wmsId)
+	private function getUrlsFromWMSId($wmsId)
 	{
-		$sql = "SELECT wms_getmap, wms_owsproxy FROM wms WHERE wms_id = $1";
+		$sql = "SELECT wms_getmap, wms_getcapabilities, wms_owsproxy FROM wms WHERE wms_id = $1";
 		$v = array($wmsId);
 		$t = array('i');
 		$res = db_prep_query($sql, $v, $t);
 		while ($row = db_fetch_array($res)) {
 			$getMap = $row['wms_getmap'];
+			$getCapabilities = $row['wms_getcapabilities'];
 			$owsProxy = $row['wms_owsproxy'];
 		}
 		//hostname does not exist! - use hostname from parameter instead
@@ -1880,7 +1883,13 @@ class searchMetadata
 			$sessionId = "00000000000000000000000000000000";
 			$getMap = $this->protocol . "://" . $this->hostName . "/owsproxy/" . $sessionId . "/" . $owsProxy . "?";
 		}
-		return $getMap;
+		if ($owsProxy != null && $owsProxy != '') {
+			$sessionId = "00000000000000000000000000000000";
+			$getCapabilities = $this->protocol . "://" . $this->hostName . "/owsproxy/" . $sessionId . "/" . $owsProxy . "?";
+		}
+		$returnArray['getMap'] = $getMap;
+		$returnArray['getCapabilities'] = $getCapabilities;
+		return $returnArray;
 	}
 
 	private function getInfofromLayerId($layerId)
