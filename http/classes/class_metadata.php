@@ -792,7 +792,7 @@ class searchMetadata
 				if ($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']] != null) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds = json_decode($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']]);
 				} else {
-					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
 					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
 					foreach ($downloadOptionsFromMetadata->{$datasetMatrix[$i]['fileidentifier']}->option as $dlOption) {
 						if ($dlOption->type == "downloadlink" || $dlOption->type == "distribution" || $dlOption->type == "remotelist") {
@@ -984,7 +984,7 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->layer[0]->maxScale = $legendInfo['maxScale'];
 					//pull downloadOptions as json with function from other script: php/mod_getDownloadOptions.php
 					$downloadOptionsCs = str_replace("{", "", str_replace("}", "", str_replace("}{", ",", $legendInfo['downloadOptions'])));
-					$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+					$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
 					$this->wmsJSON->wms->srv[$j]->layer[0]->downloadOptions = $downloadOptions;
 
 					if ($subLayers[$rootIndex]['layer_name'] == '') {
@@ -2080,7 +2080,7 @@ class searchMetadata
 			$servObject->layer[$countsublayer]->minScale = $legendInfo['minScale'];
 			$servObject->layer[$countsublayer]->maxScale = $legendInfo['maxScale'];
 			$downloadOptionsCs = str_replace("{", "", str_replace("}", "", str_replace("}{", ",", $legendInfo['downloadOptions'])));
-			$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+			$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
 			$servObject->layer[$countsublayer]->downloadOptions = $downloadOptions;
 			$servObject->layer[$countsublayer]->mdLink = $this->protocol . "://" . $this->hostName . "/mapbender/php/mod_showMetadata.php?languageCode=" . $this->languageCode . "&resource=layer&layout=tabs&id=" . $child['layer_id'];
 			if ($child['layer_name'] == '') {

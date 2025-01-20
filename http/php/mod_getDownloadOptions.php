@@ -111,7 +111,7 @@ if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
 $mapbenderPathArray = parse_url($mapbenderPath);
 $mapbenderServerUrl = $mapbenderPathArray['scheme']."://".$mapbenderPathArray['host'];
 
-function getDownloadOptions($idList, $webPath=false, $mapbenderServerUrl) {
+function getDownloadOptions($idList, $webPath=false, $mapbenderServerUrl=false) {
 	global $configObject;
 	//define query to pull all download options - actually only the inspire download services (atom feeds, ogc api features, directwfs)
 	
@@ -283,7 +283,7 @@ die();*/
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id']; //wms_id
 					$downloadOptions->{$idList[$i]}->option[$j]->serviceUuid = $row['service_uuid'];//This is a layer uuid - not a service uuid!!!!
 					$downloadOptions->{$idList[$i]}->option[$j]->resourceId = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
+					$downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'];
 					$downloadOptions->{$idList[$i]}->option[$j]->format = $row['format'];
 					$downloadOptions->{$idList[$i]}->option[$j]->dataLink = $row['datalink'];
 					//new 2019/07
