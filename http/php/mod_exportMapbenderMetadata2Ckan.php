@@ -1215,8 +1215,8 @@ if ($outputFormat == 'rdfxml') {
                         if (!key_exists('license_source_note', $resource)) {
                             $resource['license_source_note'] = false;
                         }
-                        if (isset($resource['originalGetCapabilitiesUrl'])) {
-                            $originalAccessUrl = $resource->originalGetCapabilitiesUrl;
+                        if (isset($resource['original_url'])) {
+                            $originalAccessUrl = $resource['original_url'];
                         } else {
                             $originalAccessUrl = false;
                         }
@@ -1427,6 +1427,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                             $coupledLayerArray[] = $value1->id;
                             //extract layer title from hierarchy
                             $layerTitle = $value1->srv->layer[0]->title;
+                            $layerOriginalUrl = $value1->srv->layer[0]->originalGetCapabilitiesUrl;
                             //build ckan resource records for the layer. For each layer we have metadata, full viewer, geoportal viewer, wms interface
                             $layerViewResource_1 = array("name" => "Online Karte",
                                 "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
@@ -1450,6 +1451,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                 "description" => "Ebene: " . $layerTitle,
                                 "format" => "WMS",
                                 "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
+                                "original_url" => $layerOriginalUrl;
                                 "id" => $package[$j]->id . "_wms_interface_" . $value1->id
                             );
                             //check if id already exists
@@ -1503,6 +1505,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                         "description" => $value1->serviceTitle,
                                         "format" => "ATOM",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                        "original_url" => $value1->originalCapabilitiesUrl;
                                         "id" => $package[$j]->id . "_atom_feed_wfs_" . $value1->serviceId
                                     );
                                     //check if id already exists
