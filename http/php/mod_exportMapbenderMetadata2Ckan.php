@@ -1096,7 +1096,7 @@ if ($outputFormat == 'rdfxml') {
                                                 "description" =>   "Objektart: " . $value1->resourceName. " - WFS",
                                                 "format" => "WFS",
                                                 "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                                "original_url" => $value1->originalGetCapabilitiesUrl,
+                                                "original_url" => str_replace("http://localhost", $baseUrlPortal, $value1->originalCapabilitiesUrl),
                                                 "id" => $gpDataset->uuid . "_wfs_interface_" . $value1->resourceName . "_" . $value1->serviceId,
                                                 "license_id" => $inspireAtomFeedsLicenseId,
                                                 "license_source_note" => $value1->licenseSourceNote
@@ -1506,7 +1506,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                         "description" => $value1->serviceTitle,
                                         "format" => "ATOM",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                        "original_url" => str_replace("http://localhost", $baseUrlPortal, $value1->originalCapabilitiesUrl),
+                                        //"original_url" => str_replace("http://localhost", $baseUrlPortal, $value1->originalCapabilitiesUrl),
                                         "id" => $package[$j]->id . "_atom_feed_wfs_" . $value1->serviceId
                                     );
                                     //check if id already exists
