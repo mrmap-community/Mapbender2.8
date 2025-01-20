@@ -111,7 +111,7 @@ if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '') {
 $mapbenderPathArray = parse_url($mapbenderPath);
 $mapbenderServerUrl = $mapbenderPathArray['scheme']."://".$mapbenderPathArray['host'];
 
-function getDownloadOptions($idList, $webPath=false) {
+function getDownloadOptions($idList, $webPath=false, $mapbenderServerUrl) {
 	global $configObject;
 	//define query to pull all download options - actually only the inspire download services (atom feeds, ogc api features, directwfs)
 	
@@ -538,7 +538,7 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 	return $result;
 }
 
-$downloadOptions = getDownloadOptions($idList, $mapbenderPath);
+$downloadOptions = getDownloadOptions($idList, $mapbenderPath, $mapbenderServerUrl);
 
 if ($downloadOptions != "null" && $outputFormat == "json") {
 	header('Content-Type: application/json; charset='.CHARSET);
