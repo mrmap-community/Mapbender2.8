@@ -498,7 +498,7 @@ if (isset($_REQUEST["outputFormat"]) & $_REQUEST["outputFormat"] != "") {
     $testMatch = NULL;
 }
 
-function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $license_id, $license_source_note, $format_mapping, $is_hvd) {
+function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false, $format, $accessUrl, $originalAccessUrl=false, $license_id, $license_source_note, $format_mapping, $is_hvd) {
     $license_map = array(
         "cc-zero" => "http://dcat-ap.de/def/licenses/cc-zero",
         "dl-de-by-2.0" => "http://dcat-ap.de/def/licenses/dl-by-de/2.0",
@@ -558,6 +558,13 @@ function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false,
     $distributionAccessUrl = $rdfXmlDoc->createElement ( "dcat:accessURL" );
     $distributionAccessUrl->setAttribute ( "rdf:resource", $accessUrl);
     $Distribution->appendChild($distributionAccessUrl);
+
+    if ($originalAccessUrl) {
+        $distributionAccessUrl = $rdfXmlDoc->createElement ( "openhessen:accessURL" );
+        $distributionAccessUrl->setAttribute ( "rdf:resource", $originalAccessUrl);
+        $Distribution->appendChild($distributionAccessUrl);
+    }
+
     if ($is_hvd == true) {
         //<dcatap:applicableLegislation rdf:resource="http://data.europa.eu/eli/reg_impl/2023/138/oj"/>
         $dcatapApplicableLegislation = $rdfXmlDoc->createElement ( "dcatap:applicableLegislation" );
@@ -613,6 +620,7 @@ if ($outputFormat == 'rdfxml') {
         $RDF->setAttribute ( "xmlns:dcatde", "http://dcat-ap.de/def/dcatde/" );
         $RDF->setAttribute ( "xmlns:adms", "http://www.w3.org/ns/adms#" );
         $RDF->setAttribute ( "xmlns:skos", "http://www.w3.org/2004/02/skos/core#" );
+        $RDF->setAttribute ( "xmlns:openhessen", "http://opendata.hessen.de" );
         //build catalog part
         $catalog = $rdfXmlDoc->createElement ( "dcat:Catalog" );
         $catalog->setAttribute ( "rdf:about", $baseUrlPortal );
@@ -1040,10 +1048,13 @@ if ($outputFormat == 'rdfxml') {
                                         "license_id" => "cc-zero"
                                     );
                                     $resourceArray[] = $layerMetadataResource;
+                                    //get wms_getcapabilities_url by layer_id
+
                                     $layerWMSResource = array("name" => "WMS Schnittstelle",
                                         "description" => "Ebene: " . $layerTitle,
                                         "format" => "WMS",
                                         "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
+                                        "original_url" => $value1->originalGetCapabilitiesUrl,
                                         "id" => $gpDataset->uuid . "_wms_interface_" . $value1->id,
                                         "license_id" => $layerLicenseId
                                     );
@@ -1084,6 +1095,7 @@ if ($outputFormat == 'rdfxml') {
                                                 "description" =>   "Objektart: " . $value1->resourceName. " - WFS",
                                                 "format" => "WFS",
                                                 "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
+                                                "original_url" => $value1->originalGetCapabilitiesUrl,
                                                 "id" => $gpDataset->uuid . "_wfs_interface_" . $value1->resourceName . "_" . $value1->serviceId,
                                                 "license_id" => $inspireAtomFeedsLicenseId,
                                                 "license_source_note" => $value1->licenseSourceNote
@@ -1193,7 +1205,7 @@ if ($outputFormat == 'rdfxml') {
                     $format = "HTML";
                     $accessUrl = $mapbenderBaseUrl . "php/mod_exportIso19139.php?url=" . urlencode($mapbenderBaseUrl) . "php%2Fmod_dataISOMetadata.php%3FoutputFormat%3Diso19139%26id%3D" . $gpDataset->uuid;
                     
-                    $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, 'cc-zero', false, $format_mapping, $is_hvd);
+                    $Distribution = createDistributionElement($rdfXmlDoc, $uri, $title, $description, $format, $accessUrl, false, 'cc-zero', false, $format_mapping, $is_hvd);
                     $distributionArray[] = $Distribution;
                     
                     foreach ($resourceArrayNew as $resource) {
@@ -1203,7 +1215,12 @@ if ($outputFormat == 'rdfxml') {
                         if (!key_exists('license_source_note', $resource)) {
                             $resource['license_source_note'] = false;
                         }
-                        $Distribution = createDistributionElement($rdfXmlDoc, $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'], $resource['name'], $resource['description'], $resource['format'], $resource['url'], $resource['license_id'], $resource['license_source_note'], $format_mapping, $is_hvd);
+                        if (isset($resource['originalGetCapabilitiesUrl'])) {
+                            $originalAccessUrl = $resource->originalGetCapabilitiesUrl;
+                        } else {
+                            $originalAccessUrl = false;
+                        }
+                        $Distribution = createDistributionElement($rdfXmlDoc, $baseUrlPortal . "/dataset/" . $gpDataset->uuid . "/resource/" . $resource['id'], $resource['name'], $resource['description'], $resource['format'], $resource['url'], $originalAccessUrl, $resource['license_id'], $resource['license_source_note'], $format_mapping, $is_hvd);
                         $distributionArray[] = $Distribution;
                         //$e = new mb_exception("php/ - resource json: " . json_encode($resource));
                         //$distribution = $rdfXmlDoc->createElement ( "dcat:distribution" );
