@@ -975,6 +975,7 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->layer[0]->mdLink = $this->protocol . "://" . $this->hostName . "/mapbender/php/mod_showMetadata.php?languageCode=" . $this->languageCode . "&resource=layer&layout=tabs&id=" . (int) $subLayers[$rootIndex]['layer_id'];
 					$this->wmsJSON->wms->srv[$j]->layer[0]->previewURL = $this->protocol . "://" . $this->hostName . "/mapbender/geoportal/mod_showPreview.php?resource=layer&id=" . (int) $subLayers[$rootIndex]['layer_id'];
 					$legendInfo = $this->getInfofromLayerId($this->wmsJSON->wms->srv[$j]->layer[0]->id);
+					$this->wmsJSON->wms->srv[$j]->layer[0]->originalGetCapabilitiesUrl = $legendInfo['originalCapabilitiesUrl'];
 					$this->wmsJSON->wms->srv[$j]->layer[0]->getLegendGraphicUrl = $legendInfo['getLegendGraphicUrl'];
 					$this->wmsJSON->wms->srv[$j]->layer[0]->getLegendGraphicUrlFormat = $legendInfo['getLegendGraphicUrlFormat'];
 					$this->wmsJSON->wms->srv[$j]->layer[0]->legendUrl = $legendInfo['legendUrl'];
@@ -1884,7 +1885,7 @@ class searchMetadata
 
 	private function getInfofromLayerId($layerId)
 	{
-		$sql = "SELECT layer_wms.*, layer_style.legendurl, layer_style.legendurlformat FROM (SELECT layer_id, f_get_download_options_for_layer(layer_id) as layer_metadata, layer_minscale, layer_maxscale, wms_getlegendurl, wms_owsproxy FROM layer INNER JOIN wms ON layer.fkey_wms_id = wms.wms_id WHERE layer.layer_id = $1) as layer_wms LEFT OUTER JOIN layer_style ON layer_style.fkey_layer_id = layer_wms.layer_id";
+		$sql = "SELECT layer_wms.*, layer_style.legendurl, layer_style.legendurlformat FROM (SELECT layer_id, f_get_download_options_for_layer(layer_id) as layer_metadata, layer_minscale, layer_maxscale, wms_getlegendurl, wms_owsproxy, wms_getcapabilities FROM layer INNER JOIN wms ON layer.fkey_wms_id = wms.wms_id WHERE layer.layer_id = $1) as layer_wms LEFT OUTER JOIN layer_style ON layer_style.fkey_layer_id = layer_wms.layer_id";
 		$v = array($layerId);
 		$t = array('i');
 		$res = db_prep_query($sql, $v, $t);
@@ -1896,6 +1897,7 @@ class searchMetadata
 			$minScale = $row['layer_minscale'];
 			$maxScale = $row['layer_maxscale'];
 			$downloadOptions = $row['layer_metadata'];
+			$originalCapabilitiesUrl = $row['wms_getcapabilities'];
 		}
 		//hostname does not exist! - use hostname from parameter instead
 		if ($owsProxy != null && $owsProxy != '' && $getLegendUrl != '' && $getLegendUrl != null) {
@@ -1905,6 +1907,11 @@ class searchMetadata
 			$legendUrl = str_replace($getLegendUrl, $getLegendUrlNew, $legendUrl);
 			$getLegendUrl = $getLegendUrlNew;
 		}
+		if ($owsProxy != null && $owsProxy != '') {
+			$sessionId = "00000000000000000000000000000000";
+			$originalCapabilitiesUrl = $this->protocol . "://" . $this->hostName . "/owsproxy/" . $sessionId . "/" . $owsProxy . "?";
+		}
+		$returnArray['originalCapabilitiesUrl'] = $originalCapabilitiesUrl;
 		$returnArray['legendUrl'] = $legendUrl;
 		$returnArray['getLegendGraphicUrl'] = $getLegendUrl;
 		$returnArray['getLegendGraphicUrlFormat'] = $legendUrlFormat;
@@ -2066,6 +2073,7 @@ class searchMetadata
 			$servObject->layer[$countsublayer]->previewURL = $this->protocol . "://" . $this->hostName . "/mapbender/geoportal/mod_showPreview.php?resource=layer&id=" . $child['layer_id'];
 			$servObject->layer[$countsublayer]->getCapabilitiesUrl = $this->protocol . "://" . $this->hostName . "/mapbender/php/wms.php?layer_id=" . $child['layer_id'] . "&INSPIRE=1&VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities";
 			$legendInfo = $this->getInfofromLayerId($servObject->layer[$countsublayer]->id);
+			$servObject->layer[$countsublayer]->originalGetCapabilitiesUrl = $legendInfo['originalCapabilitiesUrl'];
 			$servObject->layer[$countsublayer]->getLegendGraphicUrl = $legendInfo['getLegendGraphicUrl'];
 			$servObject->layer[$countsublayer]->getLegendGraphicUrlFormat = $legendInfo['getLegendGraphicUrlFormat'];
 			$servObject->layer[$countsublayer]->legendUrl = $legendInfo['legendUrl'];

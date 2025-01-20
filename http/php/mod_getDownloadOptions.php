@@ -21,6 +21,7 @@
 //Script for pulling all download options for one or more metadataset which are identified by their fileidentifier
 require_once(dirname(__FILE__) . "/../../core/globalSettings.php");
 require_once(dirname(__FILE__) . "/../classes/class_Uuid.php");
+require_once(dirname(__FILE__) . "/../classes/class_administration.php");
 global $configObject;
 if (file_exists(dirname(__FILE__)."/../../conf/linkedDataProxy.json")) {
      $configObject = json_decode(file_get_contents("../../conf/linkedDataProxy.json"));
@@ -243,7 +244,7 @@ die();*/
 						$m = count($downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType);
 						//echo "m: ".$m."<br>";
 						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m] = $row['resource_id'];
-$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
+						$downloadOptions->{$idList[$i]}->option[$serviceIdIndex]->featureType[$m]->name = $row['resource_name'];
 					}
 					if (!$wfsRequestObjectExists){
 						$downloadOptions->{$idList[$i]}->option[$j]->type = "wfsrequest";
@@ -488,6 +489,8 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    }
 				    break;
 				case "directwfs":
+					//2025 - add originalGetCapabilitiesUrl if security proxy is not enabled to enhance DCAT interface for open hessen
+
 				    $downloadOptions->{$idList[$i]}->option[$j]->type = "directwfs";
 				    
 				    $downloadOptions->{$idList[$i]}->option[$j]->serviceId = $row['service_id'];
@@ -507,7 +510,9 @@ $downloadOptions->{$idList[$i]}->option[$j]->resourceName = $row['resource_name'
 				    //FEATURETYPE_ID=32&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1
 				    $downloadOptions->{$idList[$i]}->option[$j]->accessUrl = $webPath."php/wfs.php?FEATURETYPE_ID=".$row['resource_id']."&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1";
 				    $downloadOptions->{$idList[$i]}->option[$j]->accessClient = $webPath."php/wfs.php?FEATURETYPE_ID=".$row['resource_id']."&REQUEST=GetCapabilities&SERVICE=WFS&INSPIRE=1";
-				    //new in 2024
+				    // new 2025
+					$downloadOptions->{$idList[$i]}->option[$j]->originalGetCapabilitiesUrl = $mapbenderServerUrl . "/registry/wfs/" . $row['service_id'] . "?";
+					//new in 2024
 				    $downloadOptions->{$idList[$i]}->option[$j]->licenseId = $row['tou_name'];
 				    $downloadOptions->{$idList[$i]}->option[$j]->isopen = $row['tou_isopen'];
 				    $downloadOptions->{$idList[$i]}->option[$j]->licenseInternalId = $row['tou_id'];
