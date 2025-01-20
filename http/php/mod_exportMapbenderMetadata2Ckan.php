@@ -1019,6 +1019,7 @@ if ($outputFormat == 'rdfxml') {
                                     $coupledLayerArray[] = $value1->id;
                                     //extract layer title from hierarchy
                                     $layerTitle = $value1->srv->layer[0]->title;
+                                    $layerGetCapabilitiesUrl = $value1->srv->originalGetCapabilitiesUrl;
                                     $layerLicenseId = $value1->srv->license_id;
                                     if (is_null($layerLicenseId) || $layerLicenseId == false) {
                                         $layerLicenseId = "other-closed";
@@ -1054,7 +1055,7 @@ if ($outputFormat == 'rdfxml') {
                                         "description" => "Ebene: " . $layerTitle,
                                         "format" => "WMS",
                                         "url" => $mapbenderBaseUrl . "php/wms.php?layer_id=" . $value1->id . "&REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS",
-                                        "original_url" => $value1->originalGetCapabilitiesUrl,
+                                        "original_url" => $layerGetCapabilitiesUrl,
                                         "id" => $gpDataset->uuid . "_wms_interface_" . $value1->id,
                                         "license_id" => $layerLicenseId
                                     );
@@ -1427,7 +1428,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                             $coupledLayerArray[] = $value1->id;
                             //extract layer title from hierarchy
                             $layerTitle = $value1->srv->layer[0]->title;
-                            $layerOriginalUrl = $value1->srv->layer[0]->originalGetCapabilitiesUrl;
+                            $layerOriginalUrl = $value1->srv->originalGetCapabilitiesUrl;
                             //build ckan resource records for the layer. For each layer we have metadata, full viewer, geoportal viewer, wms interface
                             $layerViewResource_1 = array("name" => "Online Karte",
                                 "description" => $layerTitle . " - Vorschau im integrierten Kartenviewer",
@@ -1505,7 +1506,7 @@ if ($forceCache && $cache->isActive && $cache->cachedVariableExists("mapbender:"
                                         "description" => $value1->serviceTitle,
                                         "format" => "ATOM",
                                         "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                        "original_url" => $value1->originalCapabilitiesUrl,
+                                        "original_url" => str_replace("http://localhost", $baseUrlPortal, $value1->originalCapabilitiesUrl),
                                         "id" => $package[$j]->id . "_atom_feed_wfs_" . $value1->serviceId
                                     );
                                     //check if id already exists
