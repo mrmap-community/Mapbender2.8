@@ -1096,7 +1096,7 @@ if ($outputFormat == 'rdfxml') {
                                                 "description" =>   "Objektart: " . $value1->resourceName. " - WFS",
                                                 "format" => "WFS",
                                                 "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                                "original_url" => str_replace("http://localhost", $baseUrlPortal, $value1->originalCapabilitiesUrl),
+                                                "original_url" => str_replace("http://127.0.0.1", $baseUrlPortal, str_replace("http://localhost", $baseUrlPortal, $value1->originalGetCapabilitiesUrl)),
                                                 "id" => $gpDataset->uuid . "_wfs_interface_" . $value1->resourceName . "_" . $value1->serviceId,
                                                 "license_id" => $inspireAtomFeedsLicenseId,
                                                 "license_source_note" => $value1->licenseSourceNote
