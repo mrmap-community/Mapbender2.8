@@ -291,12 +291,14 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                 var url = item.url;
                 $('li[title="' + url + '"] > a').die('contextmenu').live('contextmenu', function(e) {
                     e.preventDefault();
-                    contextmenuLayer(e);
+                    var self = this;
+                    contextmenuLayer.call(self, e);
                     return false;
                 });
                 $('li[title="' + url + '"] > ul > li').die('contextmenu').live('contextmenu', function(e) {
                     e.preventDefault();
-                    contextmenuObject(e);
+                    var self = this;
+                    contextmenuLayer.call(self, e);
                     return false;
                 }).die('click').live('click', function(e) {
                         if ($(e.srcElement).is('button,input')) {
