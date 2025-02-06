@@ -782,7 +782,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     			}
     			$postData .="<wfs:Query ";
     			if($destSrs) {
-    				$postData .= "srsName=\"" . $srsName . "\" ";
+    				$postData .= "srsName=\"" . $destSrs . "\" ";
     			}
     			//add namespace
     			if (strpos($featureTypeName, ":") !== false) {
@@ -793,7 +793,8 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
     			}
     			$postData .= $typeNameParameterName."=\"" . $featureTypeName . "\"  >";
     			$postData .= $filter ."</wfs:Query>";
-    			$postData .= "</wfs:GetFeature>";		
+    			$postData .= "</wfs:GetFeature>";	
+				#$e = new mb_exception("POST for count: " . $postData);	
     			$resultOfCount = $this->post($this->getFeature, $postData); //from class_ows!
                 	break;
 		    case "GET":
@@ -811,9 +812,11 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 					$namespaces = "";
 				}
     			$url = $this->getFeature.$this->getConjunctionCharacter($this->getFeature)."service=WFS&request=GetFeature&version=".$version."&".strtolower($typeNameParameterName)."=".$featureTypeName."&resultType=hits".$namespaces;
-    			if ($filter != null) {
+    			
+				if ($filter != null) {
     			    $url .= "&FILTER=".urlencode($filter);
     			}
+				#$e = new mb_exception("URL for count by GET: " . $url);
     			//auth is already integrated in ows class
     			//do request
     			$resultOfCount = $this->get($url); //from class_ows!
