@@ -392,7 +392,7 @@ XML;
 						$this->datasetIdCodeSpace = $codeSpace[0];
 					} else {
 						//neither MD_Identifier nor RS_Identifier are defined in a right way
-						$e = new mb_exception("class_iso19139.php: No datasetId found in metadata record!");
+						$e = new mb_exception("class_iso19139.php: No datasetId found in metadata record " . $this->fileIdentifier . " - with hierachylevel: " . $this->hierarchyLevel ." and title: " . $this->title );
 					}
 				}
 			}
