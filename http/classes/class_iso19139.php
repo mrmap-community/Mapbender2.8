@@ -358,39 +358,42 @@ XML;
 			//First check if MD_Identifier is set, then check if RS_Identifier is used!
 			//Initialize datasetid
 			$this->datasetId = 'undefined';
-			$code = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString');
-			if (isset($code[0]) && $code[0] != '') {
-				//new implementation:
-				//http://inspire.ec.europa.eu/file/1705/download?token=iSTwpRWd&usg=AOvVaw18y1aTdkoMCBxpIz7tOOgu
-				//from 2017-03-02 - the MD_Identifier - see C.2.5 Unique resource identifier - it is separated with a slash - the codespace should be everything after the last slash 
-				//now try to check if a single slash is available and if the md_identifier is a url
-				$parsedUrl = parse_url($code[0]);
+			//look only for dataset ids, if not service!
+			if (!in_array($this->hierarchyLevel, array('service', 'application'))) {
+				$code = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString');
+				if (isset($code[0]) && $code[0] != '') {
+					//new implementation:
+					//http://inspire.ec.europa.eu/file/1705/download?token=iSTwpRWd&usg=AOvVaw18y1aTdkoMCBxpIz7tOOgu
+					//from 2017-03-02 - the MD_Identifier - see C.2.5 Unique resource identifier - it is separated with a slash - the codespace should be everything after the last slash 
+					//now try to check if a single slash is available and if the md_identifier is a url
+					$parsedUrl = parse_url($code[0]);
 
-				if (($parsedUrl['scheme'] == 'http' || $parsedUrl['scheme'] == 'https') && strpos($parsedUrl['path'],'/') !== false) {
-					$explodedUrl = explode('/', $code[0]);
-					$this->datasetId = $explodedUrl[count($explodedUrl) - 1];
-					$this->datasetIdCodeSpace = rtrim($code[0], $this->datasetId);	
-                    //$e = new mb_exception("datasetId: ".$this->datasetId." - datasetIdCodeSpace: ".$this->datasetIdCodeSpace);
-				} else {
-					if (($parsedUrl['scheme'] == 'http' || $parsedUrl['scheme'] == 'https') && strpos($code[0],'#') !== false) {
-						//$e = new mb_exception($code[0]);
-						$explodedUrl = explode('#', $code[0]);
-						$this->datasetId = $explodedUrl[1];
-						$this->datasetIdCodeSpace = $explodedUrl[0];
+					if (($parsedUrl['scheme'] == 'http' || $parsedUrl['scheme'] == 'https') && strpos($parsedUrl['path'],'/') !== false) {
+						$explodedUrl = explode('/', $code[0]);
+						$this->datasetId = $explodedUrl[count($explodedUrl) - 1];
+						$this->datasetIdCodeSpace = rtrim($code[0], $this->datasetId);	
+						//$e = new mb_exception("datasetId: ".$this->datasetId." - datasetIdCodeSpace: ".$this->datasetIdCodeSpace);
 					} else {
-						$this->datasetId = $code[0];
-						$this->datasetIdCodeSpace = "";	
+						if (($parsedUrl['scheme'] == 'http' || $parsedUrl['scheme'] == 'https') && strpos($code[0],'#') !== false) {
+							//$e = new mb_exception($code[0]);
+							$explodedUrl = explode('#', $code[0]);
+							$this->datasetId = $explodedUrl[1];
+							$this->datasetIdCodeSpace = $explodedUrl[0];
+						} else {
+							$this->datasetId = $code[0];
+							$this->datasetIdCodeSpace = "";	
+						}
 					}
-				}
-			} else { //try to read code from RS_Identifier 		
-				$code = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
-				$codeSpace = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:codeSpace/gco:CharacterString');
-				if (isset($codeSpace[0]) && isset($code[0]) && $codeSpace[0] != '' && $code[0] != '') {
-					$this->datasetId = $code[0];
-					$this->datasetIdCodeSpace = $codeSpace[0];
-				} else {
-					//neither MD_Identifier nor RS_Identifier are defined in a right way
-					$e = new mb_exception("class_iso19139.php: No datasetId found in metadata record!");
+				} else { //try to read code from RS_Identifier 		
+					$code = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
+					$codeSpace = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:RS_Identifier/gmd:codeSpace/gco:CharacterString');
+					if (isset($codeSpace[0]) && isset($code[0]) && $codeSpace[0] != '' && $code[0] != '') {
+						$this->datasetId = $code[0];
+						$this->datasetIdCodeSpace = $codeSpace[0];
+					} else {
+						//neither MD_Identifier nor RS_Identifier are defined in a right way
+						$e = new mb_exception("class_iso19139.php: No datasetId found in metadata record!");
+					}
 				}
 			}
 			//try another approach - if datasetId == undefined
