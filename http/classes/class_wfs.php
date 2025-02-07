@@ -1060,10 +1060,12 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 				break;
 		}
 		if ($getFeatureByIdName != false) {
+			//as defined in the spec, the stored query GetFeatureById don't need a giben typename(s) parameter ...
+			//https://portal.ogc.org/files/?artifact_id=39967
 		    $getRequest = $this->getFeature .
 		    $this->getConjunctionCharacter($this->getFeature) .
 		    "service=WFS&request=GetFeature&version=" .
-		    $this->getVersion() . "&".strtolower($typeNameParameterName)."=" . $featureTypeName."&STOREDQUERY_ID=".$getFeatureByIdName."&ID=".$id;
+		    $this->getVersion() . "&STOREDQUERY_ID=".$getFeatureByIdName."&ID=".$id;
 		} else {		    
 		    $getRequest = $this->getFeature .
 			$this->getConjunctionCharacter($this->getFeature) . 
@@ -1094,7 +1096,8 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 					break;
 			}
 		}
-		$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
+		//$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - stored queries array:  " . json_encode($this->storedQueriesArray));
+		//$e = new mb_exception("classes/class_wfs.php - getfeaturebyid - request: ".$getRequest);
 		return $this->get($getRequest); //from class_ows!
 	}
 	
