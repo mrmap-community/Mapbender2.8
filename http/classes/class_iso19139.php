@@ -605,9 +605,9 @@ XML;
 			$this->refSystem = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString');
 			$this->refSystem = $this->refSystem[0];
 			if ($this->refSystem == '' || !isset($this->refSystem)) {
-			    //try to find it in anchor tag instead
+			    //try to find it in anchor tag instead - use xlink:href attribute instead of text
 			    //$e  = new mb_exception("classes/class_iso19139.php: try to search epsg in gmx:Anchor tag: ".json_encode($this->refSystem));
-			    $this->refSystem = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gmx:Anchor');
+			    $this->refSystem = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gmx:Anchor/@xlink:href');
 			    $this->refSystem = $this->refSystem[0];
 			}
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
