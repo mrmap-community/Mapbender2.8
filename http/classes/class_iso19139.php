@@ -447,8 +447,8 @@ XML;
 				unset($thesaurusName);
 				$iKeyword++;
 			}
-			$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
-			$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
+			//$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
+			//$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
 			//solve problem with identical keywords for areas:
 			if ($this->inspireWholeArea == 0 && $this->inspireActualCoverage !== 0) {
 					$this->inspireWholeArea = $this->inspireActualCoverage;
@@ -478,8 +478,8 @@ XML;
 			    //$e = new mb_exception("classes/class_iso19139.php: customCategories: " . json_encode($this->customCategories));
 			    $iKeyword++;
 			}
-			$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
-			$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
+			//$e = new mb_exception("classes/class_iso19139.php - this->keywordsThesaurusName: " . json_encode($this->keywordsThesaurusName));
+			//$e = new mb_exception("classes/class_iso19139.php - this->keywords: " . json_encode($this->keywords));
 			$iKeyword = 0;
 			$this->isoCategoryKeys = $iso19139Xml->xpath('//gmd:MD_Metadata/gmd:identificationInfo/'.$identifikationXPath.'/gmd:topicCategory/gmd:MD_TopicCategoryCode');
 			//create mapbenders internal category objects
@@ -610,7 +610,7 @@ XML;
 			//parse codes to get EPSG:XXXXX TODO use other function to support other codes
 			//get last part of string separated by the colon symbol
 			if ($this->hierarchyLevel != 'service' && $this->hierarchyLevel != '') {
-				$e = new mb_exception("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
+				$e = new mb_notice("classes/class_iso19139.php: epsg to lookup:".$this->refSystem);
 				try {
 			        $crsObject = new Crs($this->refSystem);
 				} catch (Exception $e) {
@@ -619,7 +619,7 @@ XML;
 			        $crsObject = false;
 				}
 				if ($crsObject != false) {
-					$e = new mb_exception("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
+					$e = new mb_notice("classes/class_iso19139.php: resolved epsg id:".$crsObject->identifierCode);
 			        $epsgId = $crsObject->identifierCode;
 			        $this->refSystem = "EPSG:".$epsgId;
 				} 
