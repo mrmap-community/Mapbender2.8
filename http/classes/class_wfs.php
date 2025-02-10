@@ -828,11 +828,19 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 			$exceptionTest =  new SimpleXMLElement($resultOfCount);
 			if ($exceptionTest == false) {
 				throw new Exception('Cannot parse WFS number of hits request!');
-				return false;
 			}
 		}
 		catch (Exception $e) {
     			$e = new mb_exception($e->getMessage());
+				if ($method == "GET") {
+					$e = new mb_exception("request for count: " . $url);
+				}
+				if ($method == "POST") {
+					$e = new mb_exception("post url: " . $this->getFeature);
+					$e = new mb_exception("post data: " . $postData);
+				}
+	
+				$e = new mb_exception("returned result: " . $resultOfCount);
 		}
 		switch ($version) {
 			case "2.0.0":

@@ -2062,7 +2062,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$numberOfObjects = $wfs->countFeatures ( $collection, $filter, "EPSG:4326", "2.0.0", false, $wfs_http_method );
 						}
 						// $numberOfObjects = 1000;
-						$e = new mb_exception("counted features: ".$numberOfObjects);
+						//$e = new mb_exception("counted features: ".$numberOfObjects);
 						if ($numberOfObjects == 0 || $numberOfObjects == false) {
 							$returnObject->success = false;
 							$returnObject->message = "No results found or an error occured - see server logs - please try it again! Use the back button!";
