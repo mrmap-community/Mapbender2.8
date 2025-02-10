@@ -1193,6 +1193,37 @@ if (isset ( $_REQUEST ["bbox"] ) & $_REQUEST ["bbox"] != "") {
 			die ();
 		}
 	}
+	//check minx, miny, maxx, maxy - depends on crs
+	$insideGlobalBbox = true;
+	if ((float)$testMatchArray[0] > 180.0 || (float)$testMatchArray[0] < -180.0 || (float)$testMatchArray[2] > 180.0 || (float)$testMatchArray[2] < -180.0) {
+		$insideGlobalBbox = false;
+	}
+	if ((float)$testMatchArray[1] > 90.0 || (float)$testMatchArray[1] < -90.0 || (float)$testMatchArray[3] > 90.0 || (float)$testMatchArray[3] < -90.0) {
+		$insideGlobalBbox = false;
+	}
+	#  WGS 84 longitude, WGS 84 latitude
+	if ($insideGlobalBbox == false) {
+		switch( $f ) {
+			case "json":
+				header("HTTP/1.1 400 Bad Request");
+				header ( "Content-type: application/json" );
+				echo '{
+						"error": "Bad Request", 
+						"message": "Parameter bbox not inside global WGS84 bbox." 
+				}';
+				break;	
+			case "xml":
+				header("HTTP/1.1 400 Bad Request");
+				header ( "Content-type: application/xml" );
+				echo '<result><error>Bad Request</error><message>Parameter bbox not inside global WGS84 bbox.</message></result>';
+				break;
+			default:
+				header("HTTP/1.1 400 Bad Request");
+				echo "Bad Request: Parameter bbox not inside global WGS84 bbox.";
+				break;
+		}
+		die();
+	}
 	$bbox = $testMatch;
 	$testMatch = NULL;
 }
@@ -2031,7 +2062,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 							$numberOfObjects = $wfs->countFeatures ( $collection, $filter, "EPSG:4326", "2.0.0", false, $wfs_http_method );
 						}
 						// $numberOfObjects = 1000;
-						// $e = new mb_exception("counted features: ".$numberOfObjects);
+						$e = new mb_exception("counted features: ".$numberOfObjects);
 						if ($numberOfObjects == 0 || $numberOfObjects == false) {
 							$returnObject->success = false;
 							$returnObject->message = "No results found or an error occured - see server logs - please try it again! Use the back button!";
