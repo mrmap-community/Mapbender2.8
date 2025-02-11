@@ -134,7 +134,7 @@ class Ogr {
             fclose($h);
         }
         $filenameGeojson = $tmpDir."/".$filenameUniquePart.".geojson";
-        exec('ogr2ogr -a_srs "EPSG:4326" -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES', $output);
+        exec('ogr2ogr -a_srs "EPSG:4326" -dim 2 -f "GeoJSON" '.$filenameGeojson.' '. $filenameGml.' -lco WRITE_BBOX=YES', $output);
         //read geojson
         if($h = fopen($filenameGeojson, "r")){
             $geojson = fread($h, filesize($filenameGeojson));
