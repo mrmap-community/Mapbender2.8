@@ -2577,7 +2577,7 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					    //$testformat = "text/xml; subtype=gml/2.1";
 					    //$e = new mb_exception("php/mod_linkedDataProxy.php item:". $item);
 					    //request with registrated wfs version - don't force wfs 2.0.0
-					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, false, "EPSG:4326" );
+					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, false, "EPSG:4326", true );
 					    $gmlFeatureCache = $features;
 					    $useGdal = $useGdal === false ? false : checkValidForGDAL($features);
 					    if ($useGdal) {
