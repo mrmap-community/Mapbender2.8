@@ -1125,8 +1125,7 @@ $bboxFilter = '<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0"><fes:BBOX>
 		}
 	
 		if ($getFeatureByIdName != false) {
-			$getRequest .= "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
-				"&STOREDQUERY_ID=" . $getFeatureByIdName . "&ID=" . $id;
+			$getRequest .= "&STOREDQUERY_ID=" . $getFeatureByIdName . "&ID=" . $id;
 		}else{
 			//Former Logic - If Switch is not used.
 			$getRequest .= "&" . strtolower($typeNameParameterName) . "=" . $featureTypeName .
