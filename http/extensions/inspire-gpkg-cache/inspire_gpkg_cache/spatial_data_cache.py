@@ -5,6 +5,7 @@ import os
 import shutil
 import time
 import uuid
+import json
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
@@ -123,6 +124,16 @@ class SpatialDataCache():
                     inverse=True,
                     outputType=gdal.GDT_Byte)
         ds = None
+
+    def store_data_configuration(self):
+        """
+        Store data configuration to tmp folder to allow debugging afterwards, if problems occur
+        """
+        data_conf_file_name = "data_configuration.json" 
+        open_option = "w"
+        data_conf_file = open(self.tmp_output_folder +  data_conf_file_name, open_option)
+        data_conf_file.write(json.dumps(self.data_configuration))
+        data_conf_file.close()
 
     def resolve_dataset_metadata(self, fileidentifier):
         """Method that load the dataset metadata from the configured CSW by using the GetRecordById
@@ -1003,6 +1014,7 @@ class SpatialDataCache():
         # https://towardsdatascience.com/use-python-to-convert-polygons-to-raster-with-gdal-rasterizelayer-b0de1ec3267
         # https://www.programcreek.com/python/example/101827/gdal.RasterizeLayer
         self.create_initial_mask()
+        self.store_data_configuration()
         gpkg.add_tif_layer('area_of_interest_mask_tif', self.tmp_output_folder + 'area_of_interest.tif')
         gpkg.add_geojson_layer( "area_of_interest_geojson", self.tmp_output_folder + "area_of_interest.geojson")
         downloadable_datasets = []
