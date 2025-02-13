@@ -244,6 +244,20 @@ function gdalCountFeatures($features, $format, $layername){
     return $ogr->ogrCountFeatures($features, $format, $layername);
 }
 
+//Checks for problems that are not necessarily causing an error but returning wrong results when using GDAL
+function checkValidForGDAL($xmlString){
+	$xml = simplexml_load_string($xmlString);
+	if($xml){
+		if ($xml->getName() !== 'FeatureCollection') {
+			return false;
+		}
+	}else{
+		return false;
+	}
+	//Further checks could be implemented here
+	return true;
+}
+
 function gdalGml2geojson($features) {
     $ogr = new Ogr();
     //$ogr->logRuntime = true;
@@ -2563,8 +2577,9 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 					    //$testformat = "text/xml; subtype=gml/2.1";
 					    //$e = new mb_exception("php/mod_linkedDataProxy.php item:". $item);
 					    //request with registrated wfs version - don't force wfs 2.0.0
-					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, false, "EPSG:4326" );
+					    $features = $wfs->getFeatureById ( $collection, $forcedOutputFormat, $item, false, "EPSG:4326", true );
 					    $gmlFeatureCache = $features;
+					    $useGdal = $useGdal === false ? false : checkValidForGDAL($features);
 					    if ($useGdal) {
 					        //FIX for mapserver wfs 1.1.0 (e.g. 7.6.2) - if srs "urn:ogc:def:crs:EPSG::4326" is requested, it answers with "EPSG:4326" in returned gml. 
 					        if ($wfsVersion == "1.1.0") {
