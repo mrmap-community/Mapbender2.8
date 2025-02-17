@@ -1411,12 +1411,17 @@ XML;
 			//$html .= '<p>';
 			$html .= '<fieldset><legend>'._mb("Online access").'</legend>';
 			$html .= $tableBegin;
-			$html .= $t_a."<b>".$iso19139Hash[4]['html']."</b>: ".$t_b."<a property=\"url\" href='".$iso19139Hash[4]['value']."' target='_blank'>".$iso19139Hash[4]['value']."</a>".$t_c;
+			$html .= $t_a."<b>".$iso19139Hash[4]['html']."</b>: ".$t_b;
+			//use array instead of string - 2025-02-17
+			foreach ($iso19139Hash[4]['value'] as $resourceLocator) {
+				$html .= "<a property=\"url\" href='".$resourceLocator."' target='_blank'>".$resourceLocator."</a><br>";
+			}
+			$html .= $t_c;
 			if ($iso19139Hash[3]['value'] == 'service' && $iso19139Hash[10]['value'] == 'download') {
 					//show link to own atom feed download client
 					//push ATOM Service feed url to client	
-					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '' && parse_url($iso19139Hash[4]['value'])) {	
-						$html .= $t_a."<b>"._mb("ATOM Feed client")."</b>: ".$t_b."<a href='".MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($iso19139Hash[4]['value'])."' target='_blank'>"._mb("Download")."</a>".$t_c;
+					if (defined("MAPBENDER_PATH") && MAPBENDER_PATH != '' && parse_url($iso19139Hash[4]['value'][0])) {	
+						$html .= $t_a."<b>"._mb("ATOM Feed client")."</b>: ".$t_b."<a href='".MAPBENDER_PATH."/plugins/mb_downloadFeedClient.php?url=".urlencode($iso19139Hash[4]['value'][0])."' target='_blank'>"._mb("Download")."</a>".$t_c;
 					}
 					
 			}
