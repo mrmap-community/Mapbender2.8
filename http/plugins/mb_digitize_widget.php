@@ -298,7 +298,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                 $('li[title="' + url + '"] > ul > li').die('contextmenu').live('contextmenu', function(e) {
                     e.preventDefault();
                     var self = this;
-                    contextmenuLayer.call(self, e);
+                    contextmenuObject.call(self, e);
                     return false;
                 }).die('click').live('click', function(e) {
                         if ($(e.srcElement).is('button,input')) {
