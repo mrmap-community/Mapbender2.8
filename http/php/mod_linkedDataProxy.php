@@ -1843,6 +1843,15 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 			$returnObject->links [2]->title = "The OpenAPI definition as JSON";
 			$returnObject->links [2]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collections=api" );
 			// TODO conformance
+			// TODO link to dataset/service iso metadata
+
+			// as defined by inspire ... - not no!
+			$returnObject->links [2]->rel = "service-desc";
+			//$returnObject->links [2]->type = "application/xml";
+			$returnObject->links [2]->type = "application/vnd.iso.19139+xml";
+			$returnObject->links [2]->title = "ISO19139 Service Metadata for API";
+			$returnObject->links [2]->href = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . "/mapbender/php/mod_featuretypeISOMetadata.php?SERVICETYPE=ogcapifeatures_wfs&SERVICE=WFS&outputFormat=iso19139&Id=" . $wfs->id;
+			//https://www.geoportal.rlp.de/mapbender/php/mod_featuretypeISOMetadata.php?SERVICETYPE=ogcapifeatures&SERVICE=WFS&outputFormat=iso19139&Id=2998
 			// TODO data
 			$returnObject->links [3]->rel = "data";
 			$returnObject->links [3]->type = "application/json";
@@ -1871,6 +1880,28 @@ if (! isset ( $wfsid ) || $wfsid == "") {
 				$returnObject->collections [$collectionCount]->links [1]->title = "Information about the " . $featureType->title . " data";
 				$returnObject->collections [$collectionCount]->links [1]->href = get2Rest ( $_SERVER ['REQUEST_URI'] . "&collection=" . $featureType->name );
 				// alternate
+				// coupled iso metadata
+				//$e = new mb_exception("featuretype id: " . $featureType->id);
+				$sql = "SELECT uuid FROM mb_metadata WHERE metadata_id in (SELECT fkey_metadata_id FROM ows_relation_metadata WHERE fkey_featuretype_id = $1)";
+				//$sql = "SELECT wfs.wfs_version FROM wfs_featuretype INNER JOIN wfs ON wfs_featuretype.fkey_wfs_id = wfs.wfs_id WHERE wfs_featuretype.featuretype_id = $1";
+				$v = array($featureType->id);
+				$t = array('i');
+				$res = db_prep_query($sql,$v,$t);
+				if (!$res) {
+					//$e = new mb_exception("No coupled dataset metadata found for featuretype with id:".$featureType->id);
+				} else {
+					$i = 1;
+					while ($row = db_fetch_array($res)){
+						$i = $i + 1;
+						//$e = new mb_exception("test: " . json_encode($row));
+						$returnObject->collections [$collectionCount]->links [$i]->rel = "data-desc";
+						$returnObject->collections [$collectionCount]->links [$i]->type = "application/xml";
+						$returnObject->collections [$collectionCount]->links [$i]->type = "application/vnd.iso.19139+xml";
+						$returnObject->collections [$collectionCount]->links [$i]->title = "Coupled dataset metadata for featuretype *" . $featureType->title . "*";
+						$returnObject->collections [$collectionCount]->links [$i]->href = $schema . "://" . $_SERVER ['HTTP_HOST'] . "/" . "/mapbender/php/mod_dataISOMetadata.php?outputFormat=iso19139&id=" . $row['uuid'];
+						// give url to geoportal metadata proxy 
+					}
+				}
 				// TODO
 				$returnObject->collections [$collectionCount]->extent->crs = array ();
 				$collectionCount ++;
