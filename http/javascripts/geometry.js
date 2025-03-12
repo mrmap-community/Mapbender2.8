@@ -546,7 +546,7 @@ GeometryArray.prototype.importMultiPolygon = function(currentGeometry, featureEp
 	this.close();
 };
 
-GeometryArray.prototype.importFeature = function(currentFeature){
+GeometryArray.prototype.importFeature = function(currentFeature, featureCollectionEpsg=false){
 	var isFeature = (currentFeature.type == "Feature") ? true : false;
 
 	// add geometry ...
@@ -554,11 +554,12 @@ GeometryArray.prototype.importFeature = function(currentFeature){
 		var featureEpsg = "EPSG:4326";
 		if (!currentFeature.crs || currentFeature.crs.type !== "name" || !currentFeature.crs.properties.name) {
 			var e = new Mb_warning("SRS not set or unknown in GeoJSON. Using 'EPSG:4326'.");
-		}
-		else {
+			if (featureCollectionEpsg != false) {
+				featureEpsg = featureCollectionEpsg;
+			}
+		} else {
 			featureEpsg = currentFeature.crs.properties.name;
 		}
-
 		//
 		// GEOMETRY
 		//
@@ -623,10 +624,17 @@ GeometryArray.prototype.importGeoJSON = function (geoJSON) {
 	var isFeatureCollection = (geoJSON.type == "FeatureCollection") ? true : false;
 	switch (geoJSON.type) {
 		case "FeatureCollection" :
+			//get crs from collection
+			var featureCollectionEpsg = "EPSG:4326";
+			if (!geoJSON.crs || geoJSON.crs.type !== "name" || !geoJSON.crs.properties.name) {
+				var e = new Mb_warning("SRS not set or unknown in GeoJSON FeatureCollection. Using 'EPSG:4326'.");
+			} else {
+				featureCollectionEpsg = geoJSON.crs.properties.name;
+			}
 			var featureArray = geoJSON.features;
 			for (var j = 0; j < featureArray.length; j++) {
 				var currentFeature = featureArray[j];
-				this.importFeature(currentFeature);
+				this.importFeature(currentFeature, featureCollectionEpsg);
 			}
 			break;
 		case "Feature" :
