@@ -169,7 +169,7 @@ SQL;
                     $stat = $za->statIndex( $i );
                     //$e = new mb_exception('plugins/mb_geometry_server.php: file in zip: ' . basename( $stat['name'] ) );
                     $file_parts = pathinfo( basename( $stat['name'] ) );
-                    if (!in_array(strtolower($file_parts['extension']), array('shx', 'shp', 'qix', 'cpg', 'dbf', 'prj'))) {
+                    if (!in_array(strtolower($file_parts['extension']), array('shx', 'shp', 'qix', 'cpg', 'dbf', 'prj', 'qmd'))) {
                         abort('Found unexpected file in zip archive: ' . $file_parts['extension']);
                     }
                     if (strtolower($file_parts['extension']) == 'shp') {
