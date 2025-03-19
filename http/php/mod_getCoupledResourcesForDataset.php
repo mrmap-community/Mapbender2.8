@@ -64,6 +64,58 @@ function correctWmsUrl($wms_url) {
 	$wms_url = str_replace('&amp;', '&', $wms_url);
 	return $wms_url;
 }
+/*
+Function to get the right service access url from an array of urls which was found in a metdata record
+*/
+function getServiceUrl($mdServiceType, $mdServiceTypeVersion, $accessUrls) {
+	if (is_array($accessUrls)) {
+		if (in_array(strtoupper($mdServiceType), array('VIEW','OGC:WMS','WMS','PREDEFINED ATOM','DOWNLOAD','WFS','ATOM'))) {
+			if (in_array(strtoupper($mdServiceType), array('PREDEFINED ATOM','DOWNLOAD','WFS','ATOM')) || in_array(strtoupper($mdServiceTypeVersion), array('PREDEFINED ATOM','DOWNLOAD','WFS','ATOM'))) {
+				if (in_array(strtoupper($mdServiceType), array('PREDEFINED ATOM','ATOM')) || in_array(strtoupper($mdServiceTypeVersion), array('PREDEFINED ATOM','ATOM'))) {
+					//return first entry as atom feed access url
+					return $accessUrls[0];
+				} else {
+					//check for WFS
+					foreach ($accessUrls as $url) {
+						$pos = strpos(strtolower($url), 'service=wfs');
+						if ($pos !== false) {
+							$accessUrl = $url; 
+							$accessUrlFound = true;
+							break;
+						}
+					}
+					if ($accessUrlFound) {
+						return $accessUrl;
+					} else {
+						return $accessUrls[0];
+					}
+				}
+			} else {
+				//check for WMS
+				foreach ($accessUrls as $url) {
+					$pos = strpos(strtolower($url), 'service=wms');
+					if ($pos !== false) {
+						$accessUrl = $url; 
+						$accessUrlFound = true;
+						break;
+					}
+				}
+				if ($accessUrlFound) {
+					return correctWmsUrl($accessUrl);
+				} else {
+					return correctWmsUrl($accessUrls[0]);
+				}
+			}
+		} else {
+			if ($accessUrls == "" || count($accessUrls) == 0) {
+				return null;
+			}
+		}
+	} else {
+		//only one option ;-)
+		return (string)$accessUrls;
+	}
+}
 
 $languageCode = "de";
 $url = urldecode($_REQUEST['getRecordByIdUrl']);
@@ -262,11 +314,15 @@ if ($mbMetadata->hierarchyLevel == 'dataset' || $mbMetadata->hierarchyLevel == '
 				$mdAccessUrl = (string)$mdAccessUrl[0];*/
 				//first read the inspire kind of implementation of the access to capabilities documents
 				$accessUrl = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL');
-				if ($accessUrl[0] == '') {
+				//try to match best
+				$mdAccessUrl = getServiceUrl($mdServiceType, $mdServiceTypeVersion, $accessUrl);
+				
+				if ($mdAccessUrl == '' || count($mdAccessUrl) == 0 || $mdAccessUrl == null) {
 					//search for another accessUrl - as defined in csw ap iso
 					$accessUrl = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata/srv:connectPoint/gmd:CI_OnlineResource/gmd:linkage/gmd:URL');
 				}
-				$mdAccessUrl = $accessUrl[0];
+				$mdAccessUrl = getServiceUrl($mdServiceType, $mdServiceTypeVersion, $accessUrl);
+				
 				//get service type - view / download
 
 				//get service title
@@ -288,9 +344,10 @@ if ($mbMetadata->hierarchyLevel == 'dataset' || $mbMetadata->hierarchyLevel == '
 				$serviceMetadata->service[$k]->serviceDate = $mdDateStamp;
 				$serviceMetadata->service[$k]->mdLink = $urlWithoutRequest."?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecordById&ElementSetName=full&outputSchema=".urlencode('http://www.isotc211.org/2005/gmd')."&id=".$fileIdentifier;
 				$serviceMetadata->service[$k]->htmlLink = $scheme.'://'.$hostName.str_replace(basename($_SERVER['SCRIPT_NAME']), "mod_exportIso19139.php", $_SERVER['PHP_SELF'])."?url=".urlencode($urlWithoutRequest."?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecordById&ElementSetName=full&outputSchema=".urlencode('http://www.isotc211.org/2005/gmd')."&id=".$fileIdentifier);
-				if (is_array($mdAccessUrl)) {
+				/*if (is_array($mdAccessUrl)) {
 					$mdAccessUrl = $mdAccessUrl[0];
-				}
+				}*/
+				
 				//$serviceMetadata->service[$k]->accessUrl = $mdAccessUrl;
 
 				if (in_array(strtoupper($mdServiceType), array('VIEW','OGC:WMS','WMS','PREDEFINED ATOM','DOWNLOAD','WFS','ATOM'))) {
