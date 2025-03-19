@@ -526,6 +526,8 @@ function getServiceUrl($mdServiceType, $mdServiceTypeVersion, $accessUrls) {
 		} else {
 			if ($accessUrls == "" || count($accessUrls) == 0) {
 				return null;
+			} else {
+				return $accessUrls[0];
 			}
 		}
 	} else {
@@ -1016,9 +1018,15 @@ foreach ($searchResourcesArray as $searchResource) {
 			//service access url
 			//first read the inspire kind of implementation of the access to capabilities documents
 			$accessUrl = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:distributionInfo/gmd:MD_Distribution/gmd:transferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL');
-			if ($accessUrl[0] == '') {
+			
+			if ($searchResource == 'service') {
+				$accessUrl = getServiceUrl($typeOfService, $typeOfServiceVersion, $accessUrl);
+			}
+			$e = new mb_exception("accessUrl 1: ". json_encode($accessUrl));
+			if ($accessUrl == '' || $accessUrl == null) {
 				//search for another accessUrl - as defined in csw ap iso
 				$accessUrl = $cswClient->operationResult->xpath('/csw:GetRecordsResponse/csw:SearchResults/gmd:MD_Metadata['.$k.']/gmd:identificationInfo/srv:SV_ServiceIdentification/srv:containsOperations/srv:SV_OperationMetadata/srv:connectPoint/gmd:CI_OnlineResource/gmd:linkage/gmd:URL');
+				$accessUrl = getServiceUrl($typeOfService, $typeOfServiceVersion, $accessUrl);
 			}
 			$isViewService = false;
 			$isDownloadService = false;
@@ -1031,9 +1039,6 @@ foreach ($searchResourcesArray as $searchResource) {
 			if ($typeOfServiceUpper == 'DOWNLOAD' || $typeOfServiceUpper == 'ATOM'  || strpos($typeOfServiceUpper,'PREDEFINED ATOM') !== false) {
 				$isDownloadService = true;
 				//echo "view service identified<br>";
-			}
-			if ($searchResource == 'service') {
-				$accessUrl = getServiceUrl($typeOfService, $typeOfServiceVersion, $accessUrls);
 			}
 			if ($isViewService == true) {
 				$resultObject->{$searchResource}->srv[$k-1]->showMapUrl = $accessUrl;

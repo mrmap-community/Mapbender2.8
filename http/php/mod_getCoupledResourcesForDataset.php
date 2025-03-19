@@ -109,6 +109,8 @@ function getServiceUrl($mdServiceType, $mdServiceTypeVersion, $accessUrls) {
 		} else {
 			if ($accessUrls == "" || count($accessUrls) == 0) {
 				return null;
+			} else {
+				return $accessUrls[0];
 			}
 		}
 	} else {
