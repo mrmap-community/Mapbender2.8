@@ -650,7 +650,10 @@ class SpatialDataCache():
                         #    log.info('single bbox numberMatched: ' + str(json_result['numberMatched']))
                         #if 'numberReturned' in json_result.keys():
                         #    log.info('single bbox numberReturned:' + str(json_result['numberReturned']))
-                        number_matched = int(json_result['numberMatched'])
+                        if 'numberMatched' in json_result.keys():
+                            number_matched = int(json_result['numberMatched'])
+                        else:
+                            number_matched = 0
                         if number_matched < self.max_features_oaf:
                             bboxes_new.append(bbox)
                         else:
@@ -663,7 +666,7 @@ class SpatialDataCache():
                                 bboxes_new.append(sub_bbox)
                 else:
                     geom_box = box(polygon_box[0], polygon_box[1], polygon_box[2], polygon_box[3])
-                    bboxes_new.append(geom_box)
+                    bboxes.append(geom_box)
             else:
                 geom_box = box(polygon_box[0], polygon_box[1], polygon_box[2], polygon_box[3])
                 bboxes.append(geom_box)
