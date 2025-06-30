@@ -599,7 +599,7 @@ function fillISO19139($iso19139, $recordId)
 	$MD_Metadata->setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 	$MD_Metadata->setAttribute("xmlns:gml", "http://www.opengis.net/gml");
 	$MD_Metadata->setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-
+	$MD_Metadata->setAttribute("xmlns:gmx", "http://www.isotc211.org/2005/gmx");
 	//generate fileidentifier part (metadata record identification) 
 	$identifier = $iso19139->createElement("gmd:fileIdentifier");
 	$identifierString = $iso19139->createElement("gco:CharacterString");
