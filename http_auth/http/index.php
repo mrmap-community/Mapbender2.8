@@ -35,15 +35,37 @@ $urlsToExclude = array();
 $postData = false;
 $authType = 'digest';
 
-if (isset($_REQUEST["forceBasicAuth"]) && $_REQUEST["forceBasicAuth"] != "") {
-    $testMatch = $_REQUEST["forceBasicAuth"];
-    if (!($testMatch == 'true')) {
-        echo 'Parameter <b>forceBasicAuth</b> is not valid (true).<br/>';
-        die();
-    } else {
-        $authType = 'basic';
+//Ticket #4747: Make forceBasicAuth optional - Instead read from header 
+$httpAuthHeader = null;
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $httpAuthHeader = $_SERVER['HTTP_AUTHORIZATION'];
+} elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    $httpAuthHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+}
+
+if ($httpAuthHeader && stripos($httpAuthHeader, 'Basic ') === 0) {
+    $authType = 'basic';
+}
+
+//Ticket #5690: Case-insensitive check for "forceBasicAuth"
+if ($authType !== "basic") {
+    $forceBasicAuthKey = null;
+    foreach ($_REQUEST as $key => $value) {
+        if (strcasecmp($key, 'forceBasicAuth') === 0) {
+            $forceBasicAuthKey = $key;
+            break;
+        }
     }
-    $testMatch = NULL;
+    if ($forceBasicAuthKey !== null && $_REQUEST[$forceBasicAuthKey] !== "") {
+        $testMatch = $_REQUEST[$forceBasicAuthKey];
+        if (!($testMatch == 'true')) {
+            echo 'Parameter <b>forceBasicAuth</b> is not valid (true).<br/>';
+            die();
+        } else {
+            $authType = 'basic';
+        }
+        $testMatch = NULL;
+    }
 }
 
 if (is_file(dirname(__FILE__) . "/../../conf/excludeproxyurls.conf")) {
