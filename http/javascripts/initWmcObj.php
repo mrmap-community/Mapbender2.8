@@ -616,7 +616,8 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			//$e = new mb_exception("javascripts/initWmcObj.php: found url unencoded ".$inputGeojson);
 			$jsonFileConnector = new connector();
 			$jsonFileConnector->set('externalHeaders', 'empty');
-			$jsonFileConnector->set('executionTimeOut', 5000); //to prohibit big geojson files, set max download time to 2000 mseconds ;-)
+			//Timeout set to 10 seconds to allow bigger geojson files to be downloaded
+			$jsonFileConnector->set('executionTimeOut', 10000); //to prohibit big geojson files, set max download time to 2000 mseconds ;-)
 			$jsonFileConnector->load($inputGeojson);
 			if ($jsonFileConnector->curlError !== false) {
 			    $e = new mb_exception("javascripts/initWmcObj.php: curl error message: " . $jsonFileConnector->curlError);
@@ -670,7 +671,7 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 		        $geojson = json_decode($styledGeojson);
 		        //add default title for geojson collection, if not given 
 			    if (!empty($geojson->title)) {
-				    $geojsonTitle = $geojson->title . " " . $i;
+				    $geojsonTitle = $geojson->title . " " ._mb("Group")." ". $i;
 			    } else {
 				    $geojsonTitle = "notTitleGivenForCollection " . $i;
 			    }
@@ -679,26 +680,38 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 			    $kmls->{$geojsonTitle}->data = $geojson;
 			    $kmls->{$geojsonTitle}->url = $geojsonTitle;
 			    $kmls->{$geojsonTitle}->display = true;
-			    foreach($kmls->{$geojsonTitle}->data->features as $feature) {
-			        //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);
-			        //explode multipolygons to polygon before further processing, because we don't support multi geometries at this time
-			        if ($feature->geometry->type == 'MultiPolygon') {
-			            $numberOfPolygon = 1;
-			            foreach ($feature->geometry->coordinates as $polygons) {
-			                $newFeature = new stdClass();
-			                $newFeature->type = "Feature";
-			                $newFeature->properties = clone $feature->properties;
-			                //$newFeature->properties->title = $newFeature->properties->title . " - Polygon " . $numberOfPolygon;
-			                $newFeature->geometry->coordinates = $polygons;
-			                $newFeature->geometry->type = "Polygon";		       
-			                $kmls->{$geojsonTitle}->data->features[] = $newFeature;
-			                unset($newFeature);
-			                $numberOfPolygon++;
-			            }
-			            //TODO: delete feature from parent
-			            //$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON MULTIPOLYGON: ".json_encode($feature));
-			        }
-			    }
+				//Ticket 8549: In the context of compatibility changes in geojson fileuploads,
+				//this logic was fixed to allow for multiple polygons in a geojson file.
+				//but also deletes the old multipolygon features
+				$indexArrayToDeleteMultiPolygons = array();
+				foreach ($kmls->{$geojsonTitle}->data->features as $idx => $feature) {
+					//$e = new mb_exception("javascripts/initWmcObj.php: GEOJSON TYPE : ".$feature->geometry->type);
+					//explode multipolygons to polygon before further processing, because we don't support multi geometries at this time
+					if ($feature->geometry->type == 'MultiPolygon') {
+						$numberOfPolygon = 1;
+						foreach ($feature->geometry->coordinates as $polygons) {
+							$newFeature = new stdClass();
+							$newFeature->type = "Feature";
+							$newFeature->properties = clone $feature->properties;
+							$newFeature->properties->title = $newFeature->properties->title . " - Polygon " . $numberOfPolygon;
+							$newFeature->geometry = new stdClass();
+							$newFeature->geometry->coordinates = $polygons;
+							$newFeature->geometry->type = "Polygon";
+							$kmls->{$geojsonTitle}->data->features[] = $newFeature;
+							unset($newFeature);
+							$numberOfPolygon++;
+						}
+
+					}
+					$indexArrayToDeleteMultiPolygons[] = $idx;
+				}
+				foreach ($indexArrayToDeleteMultiPolygons as $idx) {
+					//unset the multipolygon feature
+					unset($kmls->{$geojsonTitle}->data->features[$idx]);
+				}
+				//reindex the array
+				$kmls->{$geojsonTitle}->data->features = array_values($kmls->{$geojsonTitle}->data->features);
+
 			    if ($zoomToExtent == 'true') {
 				    $latitudes = array();
 				    $longitudes = array();

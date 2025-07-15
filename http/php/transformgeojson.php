@@ -58,17 +58,21 @@ try {
             $geom = json_decode(db_result($res, 0, 'geom'));
             $feat->geometry = $geom;
         }
+        //Ticket #8549: Added support for inner boundaries (holes) in polygons
         if(preg_match('/polygon/i', $feat->geometry->type)) {
             $sql = "SELECT st_asgeojson(st_transform(st_setsrid(st_geomfromtext($1), 4326), $2::INT)) as geom";
-            $geom = 'POLYGON((';
-            $coords = array();
-            foreach($feat->geometry->coordinates[0] as $coord) {
-                $coords[] = $coord[0] . ' ' . $coord[1];
+            $rings = array();
+            foreach($feat->geometry->coordinates as $ring) {
+                $coords = array();
+                foreach($ring as $coord) {
+                    $coords[] = $coord[0] . ' ' . $coord[1];
+                }
+                $rings[] = '(' . implode(',', $coords) . ')';
             }
-            $geom = $geom . implode(',', $coords) . '))';
+            $geom = 'POLYGON(' . implode(',', $rings) . ')';
             $v = array($geom, $epsg);
             $t = array('s', 'i');
-            $res = db_prep_query($sql,$v,$t);
+            $res = db_prep_query($sql, $v, $t);
             db_fetch_row($res);
             $geom = json_decode(db_result($res, 0, 'geom'));
             $feat->geometry = $geom;
