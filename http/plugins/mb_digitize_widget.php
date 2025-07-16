@@ -183,7 +183,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                         icons = data;
                     }, 1000);
                 },
-                timeout: 500
+                timeout: 1500
             });
 
             //
@@ -398,7 +398,7 @@ require_once dirname(__FILE__) . "/../../core/globalSettings.php";
                 url: '/mapbender/extensions/makiicons/selection.json',
                 dataType: 'json',
                 async: false,
-                timeout: 500
+                timeout: 1500
             }).responseText);
 
             var referenceFeature = features[0];

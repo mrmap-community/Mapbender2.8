@@ -117,8 +117,10 @@ if (isset($_REQUEST["minify"]) & $_REQUEST["minify"] != "") {
 $linebreak = "\n";
 if ($representationType == "htmlComplete") {
     $html = "";
-    $html .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">".$linebreak;
-    $html .= "<html>".$linebreak;
+    //$html .= "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">".$linebreak;
+    $html .= "<!DOCTYPE HTML>".$linebreak;
+	//DOCTYPE html leads to miscalculated heights of jquery dialogs and therefor places vertical scrollbars - fixed with css manipulation of iframe= height:calc(100% - 3px);
+	$html .= "<html>".$linebreak;
     $html .= "<head>".$linebreak;
     $html .= "<!-- Licensing: See the GNU General Public License for more details. http://www.gnu.org/copyleft/gpl.html or: mapbender/licence/ -->".$linebreak;
     $html .= "<meta http-equiv=\"cache-control\" content=\"no-cache\">".$linebreak;

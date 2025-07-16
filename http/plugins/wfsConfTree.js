@@ -115,7 +115,7 @@ var ConfTree = function(o){
 				return function(){
 
 				var querystring = 'resource=wfs-conf&id='+wfsConf.id;
-				var $iframe = $('<iframe name="'+o.id+'_" style="border:none; width: 100%; height: 100%;" src="../php/mod_showMetadata.php?'+querystring+'"></iframe>');
+				var $iframe = $('<iframe name="'+o.id+'_" style="border:none; width: 100%; height: calc(100% - 3px);" src="../php/mod_showMetadata.php?'+querystring+'"></iframe>');
 				$wfsConfDialog.empty();
 				$wfsConfDialog.append($iframe);	
 				$wfsConfDialog.dialog("open");
@@ -132,7 +132,7 @@ var ConfTree = function(o){
 					case 0: 
 					/* download */
 					case 2: 
-						var $iframe = $('<iframe name="'+o.id+'_" style="border:none; width: 100%; height: 100%;" src="../javascripts/mod_wfsGazetteerEditor_client.php?'+querystring+'"></iframe>');
+						var $iframe = $('<iframe name="'+o.id+'_" style="border:none; width: 100%; height: calc(100% - 3px);" src="../javascripts/mod_wfsGazetteerEditor_client.php?'+querystring+'"></iframe>');
 						$wfsConfDialog.empty();
 						$wfsConfDialog.append($iframe);	
 						$wfsConfDialog.dialog("open");
