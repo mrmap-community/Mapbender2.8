@@ -28,7 +28,7 @@ $t = array('s');
 $res = db_prep_query($sql, $v, $t);
 if ($res) {
     $row = db_fetch_array($res);
-    header("Location: "."https://www.geoportal.rlp.de/search/external/?start=true&registratingDepartments=" . $row['mb_group_id']);
+    header("Location: "."https://www.geoportal.hessen.de/search/external/?start=true&registratingDepartments=" . $row['mb_group_id']);
 } else {
     echo "No information for requested organization found!";
 }
