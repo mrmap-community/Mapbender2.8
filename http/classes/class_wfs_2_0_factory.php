@@ -331,7 +331,8 @@ class Wfs_2_0_Factory extends WfsFactory {
 				$e = new mb_notice("class_wfs_2_0_factory.php - createFromXml - no athentication info given!");
 			}
 			$myWfs->auth = $auth; //always!
-			$featuretype_crsArray = array();
+			//Ticket #8491: Fix for otherCRS-Array declaration
+			//$featuretype_crsArray = array();
 			try {
 //				$xml = str_replace('xlink:href', 'xlinkhref', $xml);
 				#http://forums.devshed.com/php-development-5/simplexml-namespace-attributes-problem-452278.html
@@ -434,6 +435,8 @@ class Wfs_2_0_Factory extends WfsFactory {
 				$capFeatureTypes = $xpath->query('/wfs:WFS_Capabilities/wfs:FeatureTypeList/wfs:FeatureType', $wfs20Cap);
 				$i = 1; //cause index of xml objects begin with 1
 				foreach ($capFeatureTypes as $featureType) {
+					//Ticket #8491: Fix for otherCRS-Array declaration
+					$featuretype_crsArray = array();
 					$featuretype_name = $this->stripEndlineAndCarriageReturn($this->getValue($xpath, './wfs:Name/text()', $featureType));
 					$featuretype_title = $this->stripEndlineAndCarriageReturn($this->getValue($xpath, './wfs:Title/text()', $featureType));
 					$featuretype_abstract = $this->stripEndlineAndCarriageReturn($this->getValue($xpath, './wfs:Abstract/text()', $featureType));
@@ -476,6 +479,7 @@ class Wfs_2_0_Factory extends WfsFactory {
 					$featuretype_latlon_maxy = $upperCorner[1];
 
 					try {
+						//Hm..hier wird srs und crsArray initialisiert..aber später
 						$currentFeatureType = $this->createFeatureTypeFromUrlGet($myWfs, $featuretype_name, $featureTypeNsArray);
 						if ($currentFeatureType !== null) {
 							$currentFeatureType->name = $featuretype_name;
