@@ -701,9 +701,8 @@ if(is_array($inputGeojsonArray) && count($inputGeojsonArray) > 0 && !empty($inpu
 							unset($newFeature);
 							$numberOfPolygon++;
 						}
-
+						$indexArrayToDeleteMultiPolygons[] = $idx;
 					}
-					$indexArrayToDeleteMultiPolygons[] = $idx;
 				}
 				foreach ($indexArrayToDeleteMultiPolygons as $idx) {
 					//unset the multipolygon feature
