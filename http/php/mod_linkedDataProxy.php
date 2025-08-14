@@ -3065,12 +3065,14 @@ switch ($f) {
 			if (isset ( $collection ) || $collections == 'all') {
 				$html .= '    <li><a href="' . get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=xml' ) . '" target="_blank">GML</a></li>' . $newline;
 				//Ticket #8549: Allowing to directly load the geojson in mapclient and by that pusblishing encoded json url 
-				$urlJSON = get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=json' );
-				//Encoded urlJson
-				$urlJSONEncoded = urlencode ( $urlJSON );
-				// Add map icon with link to /mapbender/frames/index.php?GEOJSON=...
-				$html .= '    <li style="display:inline;"><a href="#" onclick="window.open(\'//' . $_SERVER['HTTP_HOST'] . '/mapbender/frames/index.php?lang=de&gui_id=Geoportal-SL-2020&GEOJSON=' . $urlJSONEncoded . '\', \'_blank\');return false;" title="' . _mb("Open in Mapclient") . '"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/map.svg" alt="Map" style="width:16px;height:16px;vertical-align:middle;cursor:pointer;margin-left:4px;filter:invert(16%) sepia(100%) saturate(7476%) hue-rotate(202deg) brightness(50%) contrast(110%);"></a></li>' . $newline;
-			} else {
+				if ($collections != 'all'){
+					$urlJSON = get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=json' );
+					//Encoded urlJson
+					$urlJSONEncoded = urlencode ( $urlJSON );
+					// Add map icon with link to /mapbender/frames/index.php?GEOJSON=...
+					$html .= '    <li style="display:inline;"><a href="#" onclick="window.open(\'//' . $_SERVER['HTTP_HOST'] . '/mapbender/frames/index.php?lang=de&gui_id=Geoportal-SL-2020&GEOJSON=' . $urlJSONEncoded . '\', \'_blank\');return false;" title="' . _mb("Open in Mapclient") . '"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/map.svg" alt="Map" style="width:16px;height:16px;vertical-align:middle;cursor:pointer;margin-left:4px;filter:invert(16%) sepia(100%) saturate(7476%) hue-rotate(202deg) brightness(50%) contrast(110%);"></a></li>' . $newline;
+				}
+				} else {
 				$html .= '    <li><a href="' . get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=xml' ) . '" target="_blank">XML</a></li>' . $newline;
 			}
 			$html .= '</ul> ' . $newline;
