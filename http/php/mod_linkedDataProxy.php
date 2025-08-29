@@ -3065,13 +3065,13 @@ switch ($f) {
 			if (isset ( $collection ) || $collections == 'all') {
 				$html .= '    <li><a href="' . get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=xml' ) . '" target="_blank">GML</a></li>' . $newline;
 				//Ticket #8549: Allowing to directly load the geojson in mapclient and by that pusblishing encoded json url 
-				if ($collections != 'all'){
+				if ($collections != 'all' && $limit <= 200){
 					$urlJSON = get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=json' );
 					//Encoded urlJson
 					$urlJSONEncoded = urlencode ( $urlJSON );
 					// Add map icon with link to /mapbender/frames/index.php?GEOJSON=...
-					$html .= '    <li style="display:inline;"><a href="#" onclick="window.open(\'//' . $_SERVER['HTTP_HOST'] . '/mapbender/frames/index.php?lang=de&gui_id=Geoportal-SL-2020&GEOJSON=' . $urlJSONEncoded . '\', \'_blank\');return false;" title="' . _mb("Open in Mapclient") . '"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/map.svg" alt="Map" style="width:16px;height:16px;vertical-align:middle;cursor:pointer;margin-left:4px;filter:invert(16%) sepia(100%) saturate(7476%) hue-rotate(202deg) brightness(50%) contrast(110%);"></a></li>' . $newline;
-				}
+					$html .= '    <li style="display:inline;"><a href="#" onclick="window.open(\'//' . $_SERVER['HTTP_HOST'] . '/mapbender/frames/index.php?lang=de&gui_id=Geoportal-SL-2020&GEOJSON=' . $urlJSONEncoded . '\', \'_blank\');return false;" title="' . _mb("Open in Mapclient") . '"><i alt="Map" style="width:1em;display:inline-block;vertical-align:middle;cursor:pointer;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v5.15.4 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M560.02 32c-1.96 0-3.98.37-5.96 1.16L384.01 96H384L212 35.28A64.252 64.252 0 0 0 191.76 32c-6.69 0-13.37 1.05-19.81 3.14L20.12 87.95A32.006 32.006 0 0 0 0 117.66v346.32C0 473.17 7.53 480 15.99 480c1.96 0 3.97-.37 5.96-1.16L192 416l172 60.71a63.98 63.98 0 0 0 40.05.15l151.83-52.81A31.996 31.996 0 0 0 576 394.34V48.02c0-9.19-7.53-16.02-15.98-16.02zM224 90.42l128 45.19v285.97l-128-45.19V90.42zM48 418.05V129.07l128-44.53v286.2l-.64.23L48 418.05zm480-35.13l-128 44.53V141.26l.64-.24L528 93.95v288.97z"/></svg></i></a></li>' . $newline;
+					}
 				} else {
 				$html .= '    <li><a href="' . get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=xml' ) . '" target="_blank">XML</a></li>' . $newline;
 			}
