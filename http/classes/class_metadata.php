@@ -986,7 +986,14 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->layer[0]->maxScale = $legendInfo['maxScale'];
 					//pull downloadOptions as json with function from other script: php/mod_getDownloadOptions.php
 					$downloadOptionsCs = str_replace("{", "", str_replace("}", "", str_replace("}{", ",", $legendInfo['downloadOptions'])));
-					$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
+					// begin of performance optimusprime by @lvgl-cs
+					if (!isset($functionResults[$downloadOptionsCs])) {
+						$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+	   					$functionResults[$downloadOptionsCs] = $downloadOptions; // Store the result
+					}else{
+						$downloadOptions =$functionResults[$downloadOptionsCs]; // Retrieve the stored result
+					}
+					// end of performance optimusprime by @lvgl-cs
 					$this->wmsJSON->wms->srv[$j]->layer[0]->downloadOptions = $downloadOptions;
 
 					if ($subLayers[$rootIndex]['layer_name'] == '') {
