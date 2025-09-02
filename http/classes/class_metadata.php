@@ -722,7 +722,7 @@ class searchMetadata
 			if ($countUniqueLayers >= 1) {
 				//Ticket 6655: Changed order of Datasetsearch subservices
 				//als Argument für OrderBy wurde in dem Aufruf 'intern' gesetzt, damit die Layer nach layer_title und wms_id sortiert werden. Dafür wurde oben eine switch - Anweisung um 'intern' erweitert (Zeile 317)
-				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, 'intern', implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https);
+				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, 'intern', implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
 				$srvCount = 0;
 				foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
 					
