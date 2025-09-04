@@ -3065,7 +3065,10 @@ switch ($f) {
 			if (isset ( $collection ) || $collections == 'all') {
 				$html .= '    <li><a href="' . get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=xml' ) . '" target="_blank">GML</a></li>' . $newline;
 				//Ticket #8549: Allowing to directly load the geojson in mapclient and by that pusblishing encoded json url 
-				if ($collections != 'all' && $limit <= 200){
+				if ($collections != 'all' && (
+					(defined('MAPVIEWER_FEATURE_LIMIT') && $limit <= MAPVIEWER_FEATURE_LIMIT) ||
+					(!defined('MAPVIEWER_FEATURE_LIMIT') && $limit <= 200)
+				)){
 					$urlJSON = get2Rest ( rtrim ( delTotalFromQuery ( "f", $_SERVER ['REQUEST_URI'] ), '?' ) . '&f=json' );
 					//Encoded urlJson
 					$urlJSONEncoded = urlencode ( $urlJSON );
