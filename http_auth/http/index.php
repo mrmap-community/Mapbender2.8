@@ -535,7 +535,7 @@ switch (strtolower($reqParams['request'])) {
     case 'getfeature':
         if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
             $storedQueryId = $reqParams['storedquery_id'];
-            $arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
+            $arrayOnlineresources = checkWfsStoredQueryPermission($wfsId, $storedQueryId, $userId);
         } else {
             $arrayFeatures = array($reqParams[$typeNameParameter]);
             $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
@@ -1494,11 +1494,11 @@ function checkWfsPermission($wfsOws, $features, $userId)
  * validates the access permission by getting the appropriate wfs_conf
  * to each feature requested and check the wfs_conf permission
  * 
- * @param string owsproxy md5
- * @param array array of requested featuretype names
+ * @param int id of requested wfs
+ * @param string requested featuretype name
  * @return array array with detailed information on reqested wfs
  */
-function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
+function checkWfsStoredQueryPermission($wfsId, $storedQueryId, $userId)
 {
     global $con, $n;
     $myconfs = $n->getWfsConfByPermission($userId);
@@ -1507,9 +1507,9 @@ function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
         throwE(array("No storedquery_id data available."));
         die();
     }
-    $sql = "SELECT * FROM wfs WHERE wfs_owsproxy = $1";
-    $v = array($wfsOws);
-    $t = array("s");
+    $sql = "SELECT * FROM wfs WHERE wfs_id = $1";
+    $v = array($wfsId);
+    $t = array("i");
     $res = db_prep_query($sql, $v, $t);
     $service = array();
     if ($row = db_fetch_array($res)) {

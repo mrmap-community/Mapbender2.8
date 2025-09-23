@@ -211,11 +211,12 @@ class WfsToDb {
 		}
 		// update WFS
 		if (!$updateMetadataOnly) {
+			#Ticket 8490: wfs_license_source_note should not be updated by update without "overwrite"-flag (updateMetadaOnly)
 			$e = new mb_notice("classes/class_wfsToDb.php: - function update - not from metadata editor");
 			$sql = "UPDATE wfs SET wfs_version = $1, wfs_name = $2, wfs_getcapabilities = $3, wfs_getcapabilities_doc = $4, ";
 			$sql .= "wfs_upload_url = $5, wfs_describefeaturetype = $6, wfs_getfeature = $7, ";
 			$sql .= "wfs_transaction = $8, wfs_timestamp = $9, wfs_network_access = $10, fkey_mb_group_id = $11, ";
-			$sql .=  "wfs_max_features = $12, inspire_annual_requests = $13, wfs_username = $14, wfs_password = $15, wfs_auth_type = $16, wfs_license_source_note = $18, wfs_alternate_title = $19 ";
+			$sql .=  "wfs_max_features = $12, inspire_annual_requests = $13, wfs_username = $14, wfs_password = $15, wfs_auth_type = $16, wfs_alternate_title = $18 ";
 			$sql .= "WHERE wfs_id = $17";
 			$v = array(
 				$aWfs->getVersion(),
@@ -235,7 +236,6 @@ class WfsToDb {
 				$aWfs->auth['password'],
 				$aWfs->auth['auth_type'],
 				$aWfs->id,
-				$aWfs->wfs_license_source_note,
 			    $aWfs->alternate_title
 			);
 			$t = array('s','s','s','s','s','s','s','s','s','i','i','i','i','s','s','s','i','s','s');

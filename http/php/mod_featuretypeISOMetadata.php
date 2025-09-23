@@ -415,6 +415,8 @@ function fillISO19139(XmlBuilder $xmlBuilder, $recordId) {
 	    $row = db_fetch_array($res);
 	    if (isset($row['wfs_id'])) {
 	        if ($row['isopen'] == "1") {
+                    #Ticket #8498: Added position incrementation to prevent overwriting the last keyword
+                    $pos++;
 	            $xmlBuilder->addValue($MD_Metadata,
 	                './gmd:identificationInfo/srv:SV_ServiceIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword['.$pos.']/gco:CharacterString',
 	                OPENDATAKEYWORD);
