@@ -254,7 +254,7 @@
         			//console.log(currentLayer);
         		}
     		}
-    		console.log(sdi_list);
+    		//console.log(sdi_list);
             //get list of layers db ids
             layer_ids = [];
             // TODO - does deeper hierachies exists?
@@ -270,12 +270,13 @@
         			}
         		}
     		}
+			const sdi_list_filtered = sdi_list.filter(char => char !== '['); 
     		// load identifier and send them with an ajax call to python wrapper script
     		//console.log('http://localhost/mapbender/php/mod_getDatasetIdentifierByLayer.php?layerIds=' + layer_ids.join(','));
             fetch('../php/mod_getDatasetIdentifierByLayer.php?layerIds=' + layer_ids.join(','))
                 .then((response) => response.json())
                 	.then((data) => {
-                		that.requestDownloadOptions(data.concat(sdi_list), JSON.parse(multi.toString()));
+                		that.requestDownloadOptions(data.concat(sdi_list_filtered), JSON.parse(multi.toString()));
                 	});
                 	
             inProgress = false;
