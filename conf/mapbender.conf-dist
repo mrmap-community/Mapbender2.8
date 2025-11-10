@@ -484,6 +484,12 @@ define("GPKG_AREA_LIMIT", "100");
 # --------------------------------------------
 #define("OPENDATAKEYWORD", "opendata");
 
+
+# --------------------------------------------
+# Configuration for max features to load from OGC API into mapviewer
+# --------------------------------------------
+define('MAPVIEWER_FEATURE_LIMIT', 200);
+
 #
 ###HACK for GLOBALS
 $DBSERVER=DBSERVER;

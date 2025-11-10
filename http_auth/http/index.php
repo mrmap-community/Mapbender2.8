@@ -35,15 +35,37 @@ $urlsToExclude = array();
 $postData = false;
 $authType = 'digest';
 
-if (isset($_REQUEST["forceBasicAuth"]) && $_REQUEST["forceBasicAuth"] != "") {
-    $testMatch = $_REQUEST["forceBasicAuth"];
-    if (!($testMatch == 'true')) {
-        echo 'Parameter <b>forceBasicAuth</b> is not valid (true).<br/>';
-        die();
-    } else {
-        $authType = 'basic';
+//Ticket #4747: Make forceBasicAuth optional - Instead read from header 
+$httpAuthHeader = null;
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $httpAuthHeader = $_SERVER['HTTP_AUTHORIZATION'];
+} elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    $httpAuthHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+}
+
+if ($httpAuthHeader && stripos($httpAuthHeader, 'Basic ') === 0) {
+    $authType = 'basic';
+}
+
+//Ticket #5690: Case-insensitive check for "forceBasicAuth"
+if ($authType !== "basic") {
+    $forceBasicAuthKey = null;
+    foreach ($_REQUEST as $key => $value) {
+        if (strcasecmp($key, 'forceBasicAuth') === 0) {
+            $forceBasicAuthKey = $key;
+            break;
+        }
     }
-    $testMatch = NULL;
+    if ($forceBasicAuthKey !== null && $_REQUEST[$forceBasicAuthKey] !== "") {
+        $testMatch = $_REQUEST[$forceBasicAuthKey];
+        if (!($testMatch == 'true')) {
+            echo 'Parameter <b>forceBasicAuth</b> is not valid (true).<br/>';
+            die();
+        } else {
+            $authType = 'basic';
+        }
+        $testMatch = NULL;
+    }
 }
 
 if (is_file(dirname(__FILE__) . "/../../conf/excludeproxyurls.conf")) {
@@ -535,7 +557,7 @@ switch (strtolower($reqParams['request'])) {
     case 'getfeature':
         if (isset($reqParams['storedquery_id']) && $reqParams['storedquery_id'] !== "") {
             $storedQueryId = $reqParams['storedquery_id'];
-            $arrayOnlineresources = checkWfsStoredQueryPermission($owsproxyString, $storedQueryId, $userId);
+            $arrayOnlineresources = checkWfsStoredQueryPermission($wfsId, $storedQueryId, $userId);
         } else {
             $arrayFeatures = array($reqParams[$typeNameParameter]);
             $arrayOnlineresources = checkWfsPermission($owsproxyString, $arrayFeatures, $userId);
@@ -1494,11 +1516,11 @@ function checkWfsPermission($wfsOws, $features, $userId)
  * validates the access permission by getting the appropriate wfs_conf
  * to each feature requested and check the wfs_conf permission
  * 
- * @param string owsproxy md5
- * @param array array of requested featuretype names
+ * @param int id of requested wfs
+ * @param string requested featuretype name
  * @return array array with detailed information on reqested wfs
  */
-function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
+function checkWfsStoredQueryPermission($wfsId, $storedQueryId, $userId)
 {
     global $con, $n;
     $myconfs = $n->getWfsConfByPermission($userId);
@@ -1507,9 +1529,9 @@ function checkWfsStoredQueryPermission($wfsOws, $storedQueryId, $userId)
         throwE(array("No storedquery_id data available."));
         die();
     }
-    $sql = "SELECT * FROM wfs WHERE wfs_owsproxy = $1";
-    $v = array($wfsOws);
-    $t = array("s");
+    $sql = "SELECT * FROM wfs WHERE wfs_id = $1";
+    $v = array($wfsId);
+    $t = array("i");
     $res = db_prep_query($sql, $v, $t);
     $service = array();
     if ($row = db_fetch_array($res)) {

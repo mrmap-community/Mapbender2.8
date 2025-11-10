@@ -65,6 +65,7 @@ class searchMetadata
 	var $protocol;
 	var $hvdInspireCats;
 	var $hvdCustomCats;
+	var $internalProcessCoupledWMS = false;
 	function __construct($userId, $searchId, $searchText, $registratingDepartments, $isoCategories, $inspireThemes, $timeBegin, $timeEnd, $regTimeBegin, $regTimeEnd, $maxResults, $searchBbox, $searchTypeBbox, $accessRestrictions, $languageCode, $searchEPSG, $searchResources, $searchPages, $outputFormat, $resultTarget, $searchURL, $customCategories, $hostName, $orderBy, $resourceIds, $restrictToOpenData, $originFromHeader, $resolveCoupledResources = false, $https = false, $restrictToHvd)
 	{
 		$this->userId = (int) $userId;
@@ -332,6 +333,11 @@ class searchMetadata
 						break;
 					case "date":
 						$this->orderBy = " ORDER BY wms_timestamp DESC ";
+						break;
+					//Ticket 6655: Changed order of Datasetsearch subservices 
+					case "intern":					
+						$this->orderBy = " ORDER BY wms_id,layer_pos,layer_title ASC";
+						$this->internalProcessCoupledWMS = true;
 						break;
 					default:
 						$this->orderBy = " ORDER BY load_count DESC";
@@ -714,10 +720,14 @@ class searchMetadata
 			$countUniqueLayers = count($uniqueAllCoupledLayers);
 			$countUniqueFeaturetypes = count($uniqueAllCoupledFeaturetypes);
 			if ($countUniqueLayers >= 1) {
-				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, $this->orderBy, implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
+				//Ticket 6655: Changed order of Datasetsearch subservices
+				//als Argument für OrderBy wurde in dem Aufruf 'intern' gesetzt, damit die Layer nach layer_title und wms_id sortiert werden. Dafür wurde oben eine switch - Anweisung um 'intern' erweitert (Zeile 317)
+				$coupledLayers = new self($this->userId, 'dummysearch', '*', null, null, null, null, null, null, null, $countUniqueLayers, null, null, null, $this->languageCode, null, 'wms', 1, 'json', 'internal', null, null, $this->hostName, 'intern', implode(',', $uniqueAllCoupledLayers), $this->restrictToOpenData, $this->originFromHeader, false, $this->https, $this->restrictToHvd);
 				$srvCount = 0;
 				foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
+					
 					foreach ($server->layer as $layer) {
+						
 						$layerSearchArray[$layer->id] = $srvCount;
 						//pull inspire downloadoptions from layer information
 						foreach ($layer->downloadOptions as $downloadOption) {
@@ -726,15 +736,16 @@ class searchMetadata
 							}
 						}
 						//TODO!: do this also for the next hierachylevel - maybe invoke it recursive!!!
-						foreach ($layer->layer as $sublayer) {
-							$layerSearchArray[$sublayer->id] = $srvCount;
-							//pull inspire downloadoptions from layer information
-							foreach ($sublayer->downloadOptions as $downloadOption) {
-								if ($downloadOption->uuid != null) {
-									$downloadOptionsArray[$downloadOption->uuid] = json_encode($downloadOption->option);
-								}
-							}
-						}
+						// foreach ($layer->layer as $sublayer) {
+							
+						// 	$layerSearchArray[$sublayer->id] = $srvCount;
+						// 	//pull inspire downloadoptions from layer information
+						// 	foreach ($sublayer->downloadOptions as $downloadOption) {
+						// 		if ($downloadOption->uuid != null) {
+						// 			$downloadOptionsArray[$downloadOption->uuid] = json_encode($downloadOption->option);
+						// 		}
+						// 	}
+						// }
 					}
 					$srvCount++;
 				}
@@ -749,31 +760,31 @@ class searchMetadata
 					$srvCount++;
 				}
 			}
+/*
+//Ticket 6655: Changed order of Datasetsearch subservices
+zum Sortieren der Treffer bei Datensatzsuche nach title:	
+$layer_id_sorted wird befüllt mit der obigen getMetadata Abfrage
+
+
+*/
+			$layer_id_sorted = array();
+			
+			foreach (json_decode($coupledLayers->internalResult)->wms->srv as $server) {
+				foreach ($server->layer as $layer) {
+				
+					$layer_id_sorted[] = $layer->id;
+			
+				}
+			}
+			
+			$this->sortMetadataJSON($datasetMatrix,$layer_id_sorted,$coupledLayers,$layerSearchArray) ;
+			
+			
+			
 			//insert objects into dataset result list
 			for ($i = 0; $i < count($datasetMatrix); $i++) {
-				$layerCount = 0;
-				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->layer as $layer) {
-					
-					//first add whole srv result
-					$subTree = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-					$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = $subTree;
-					# not only add the service object, but also the layer title, ...
-					# maybe it is easier to get the right layer and add this as the "root" layer object instead of the whole subtree
-					// extract layer with id from subtree
-					if (is_array($subTree->layer) && isset($layer->id)) {
-						$coupledLayer = $this->findLayer($subTree->layer, $layer->id);
-					
-						//reinitialize layer array
-						if ($coupledLayer != false) {
-							//delete sublayers from found layer !
-							unset($coupledLayer->layer);
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer = array();
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv->layer[0] = $coupledLayer; 
-						}
-					}
-					//$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$layerCount]->srv = json_decode($coupledLayers->internalResult)->wms->srv[$layerSearchArray[$layer->id]];
-					$layerCount++;
-				}
+			//Ticket 6655: Changed order of Datasetsearch subservices
+			//Some lines were deleted due to this change -> In case of issues compare this against rlp branch	
 				$featuretypeCount = 0;
 				foreach ($this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype as $ft) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->featuretype[$featuretypeCount]->srv = json_decode($coupledFeaturetypes->internalResult, true)->wfs->srv[$featuretypeSearchArray[$ft->id]];
@@ -791,6 +802,8 @@ class searchMetadata
 				//check for atom feed entry
 				if ($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']] != null) {
 					$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds = json_decode($downloadOptionsArray[$datasetMatrix[$i]['fileidentifier']]);
+					//Ticket 6655: Changed order of Datasetsearch subservices
+					usort($this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds, fn($a, $b) => $a->type <=> $b->type);
 				} else {
 					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
 					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
@@ -799,16 +812,38 @@ class searchMetadata
 							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
 						}
 					}
+
 				}
-				/*if ($featuretypeCount == 0 && $layerCount == 0) {
-					$downloadOptionsFromMetadata = json_decode(getDownloadOptions(array($datasetMatrix[$i]['fileidentifier']), $this->protocol . "://" . $this->hostName . "/mapbender/"));
-					//try to load coupled atom feeds from mod_getDownloadOptions and add them to result list! (if no wms layer nor wfs featuretype is available)
-					foreach ($downloadOptionsFromMetadata->{$datasetMatrix[$i]['fileidentifier']}->option as $dlOption) {
-						if ($dlOption->type == "downloadlink" || $dlOption->type == "distribution" || $dlOption->type == "remotelist") {
-							$this->datasetJSON->dataset->srv[$i]->coupledResources->inspireAtomFeeds[] = $dlOption;
-						}
-					}
-				}*/
+			}
+		}
+	}
+//Ticket 6655: Changed order of Datasetsearch subservices
+//$matrix ist Matrix von oben
+//$sorted_id_list ist die nach Titeln und WMS sortierte LayerID Liste
+
+	private function sortMetadataJSON($matrix, $sorted_id_list, $coupled_layers, $layerSearchArray) {
+		$sorted_id_map = array_flip($sorted_id_list);
+		$coupled_layers_srv = json_decode($coupled_layers->internalResult)->wms->srv;
+	
+		for ($i = 0; $i < count($matrix); $i++) {
+			$layers = $this->datasetJSON->dataset->srv[$i]->coupledResources->layer;
+			$sorted_layers = array();
+	
+			foreach ($layers as $layer) {
+				$layer_id = $layer->id;
+				if (isset($sorted_id_map[$layer_id])) {
+					$position = $sorted_id_map[$layer_id];
+					$sorted_layers[$position] = $layer_id;
+				}
+			}
+	
+			ksort($sorted_layers);
+			$c = 0;
+	
+			foreach ($sorted_layers as $position => $layer_id) {
+				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->id = $layer_id;
+				$this->datasetJSON->dataset->srv[$i]->coupledResources->layer[$c]->srv = $coupled_layers_srv[$layerSearchArray[$layer_id]];
+				$c++;
 			}
 		}
 	}
@@ -909,19 +944,38 @@ class searchMetadata
 		if ($n != 0) {
 			for ($i = 0; $i < count($wmsMatrix); $i++) {
 				$layerID = $wmsMatrix[$i]['layer_id'];
-				if (!in_array($layerID, $layerIdArray) or !in_array($rootLayerId, $layerIdArray)) {
+				if (!in_array($layerID, $layerIdArray) or !in_array($rootLayerId, $layerIdArray) or $this->internalProcessCoupledWMS) {
 					$wmsID = $wmsMatrix[$i]['wms_id']; //get first wms id - in the next loop - dont get second, but some else!
 					//Select all layers of with this wms_id into new array per WMS - the grouping should be done by wms!
 					$subLayers = $this->filter_by_value($wmsMatrix, 'wms_id', $wmsID);
 					//Sort array by load_count - problem: maybe there are some groups between where count is to low (they have no load count because you cannot load them by name)? - Therefor we need some ideas - or pull them out of the database and show them greyed out. Another way will be to define a new group (or wms with the same id) for those layers which are more than one integer away from their parents
 					$subLayersFlip = $this->flipDiagonally($subLayers);
 					$index = array_search($layerID, $subLayersFlip['layer_id']);
-					$rootIndex = $this->getLayerParent($subLayersFlip, $index);
+					//Ticket #7889: Optimization of coupled WMS logic to optimize runtime -> Handling coupled layers in a flat structure
+					if ($this->internalProcessCoupledWMS){
+						$rootIndex = $index;
+					}else{
+						$rootIndex = $this->getLayerParent($subLayersFlip, $index);
+					}
 					$rootLayerPos = $subLayers[$rootIndex]['layer_pos'];
+					//This rootLayerID is not necessarily the layer with layer_pos = 0 - because of the search result - it is just the "root" of the selected layer in the search result overview - there it can be itself				
 					$rootLayerId = $subLayers[$rootIndex]['layer_id'];
+					//Retrieval of the actual root layer id - with layer_pos = 0 - to identify the wms service
+					if( $rootLayerPos == 0){
+						$wmsRootLayerId = $rootLayerId;
+					}else {
+						$sql = "SELECT layer_id FROM layer WHERE fkey_wms_id = $1 AND layer_pos = 0";
+						$v = array((int) $subLayers[$rootIndex]['wms_id']);
+						$t = array("i");
+						$res = db_prep_query($sql, $v, $t);
+						$row = db_fetch_array($res);
+						$wmsRootLayerId = $row['layer_id'];
+					}
 					array_push($layerIdArray, $rootLayerId);
 					//Create object for wms service level
 					$this->wmsJSON->wms->srv[$j]->id = (int) $subLayers[$rootIndex]['wms_id'];
+					$this->wmsJSON->wms->srv[$j]->wmsRootLayerId = $wmsRootLayerId;
+					$this->wmsJSON->wms->srv[$j]->wmsGetCapabilitiesUrl = $this->protocol . "://" . $this->hostName . "/mapbender/php/wms.php?layer_id=" . $wmsRootLayerId . "&VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities&withChilds=1";
 					$this->wmsJSON->wms->srv[$j]->title = $subLayers[$rootIndex]['wms_title'];
 					$this->wmsJSON->wms->srv[$j]->abstract = $subLayers[$rootIndex]['wms_abstract'];
 					$this->wmsJSON->wms->srv[$j]->date = date("d.m.Y", $subLayers[$rootIndex]['wms_timestamp']);
@@ -986,7 +1040,14 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->layer[0]->maxScale = $legendInfo['maxScale'];
 					//pull downloadOptions as json with function from other script: php/mod_getDownloadOptions.php
 					$downloadOptionsCs = str_replace("{", "", str_replace("}", "", str_replace("}{", ",", $legendInfo['downloadOptions'])));
-					$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/", $this->protocol . "://" . $this->hostName));
+					// begin of performance optimusprime by @lvgl-cs
+					if (!isset($functionResults[$downloadOptionsCs])) {
+						$downloadOptions = json_decode(getDownloadOptions(explode(',', $downloadOptionsCs), $this->protocol . "://" . $this->hostName . "/mapbender/"));
+	   					$functionResults[$downloadOptionsCs] = $downloadOptions; // Store the result
+					}else{
+						$downloadOptions =$functionResults[$downloadOptionsCs]; // Retrieve the stored result
+					}
+					// end of performance optimusprime by @lvgl-cs
 					$this->wmsJSON->wms->srv[$j]->layer[0]->downloadOptions = $downloadOptions;
 
 					if ($subLayers[$rootIndex]['layer_name'] == '') {
@@ -1016,7 +1077,10 @@ class searchMetadata
 					$this->wmsJSON->wms->srv[$j]->layer[0]->bbox = $subLayers[$rootIndex]['bbox'];
 					$this->wmsJSON->wms->srv[$j]->layer[0]->permission = $this->getPermissionValueForLayer($subLayers[$rootIndex]['layer_id'], $subLayers[$rootIndex]['wms_id']); //TODO: Make this much more faster
 					//when the entry for the first server has been written, the server entry is fixed and the next one will be a new server or a part of the old one.
-					$layerIdArray = $this->writeWMSChilds($layerIdArray, $rootLayerPos, $subLayers, $this->wmsJSON->wms->srv[$j]->layer[0]);
+					//Ticket #7889: Optimization of coupled WMS logic to optimize runtime -> Handling coupled layers in a flat structure
+					if (!$this->internalProcessCoupledWMS){
+						$layerIdArray = $this->writeWMSChilds($layerIdArray, $rootLayerPos, $subLayers, $this->wmsJSON->wms->srv[$j]->layer[0]);
+					}
 					$j++;
 				}
 			}

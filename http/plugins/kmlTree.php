@@ -603,6 +603,39 @@ var KmlTree = function(o) {
                 var name;
                 // check the features for properties - old handling!!!!!
                 //data = setFeatureAttr(data);
+                //Ticket #8549: Added support for multipolygons in geojson-files
+                if (data && data.type === "FeatureCollection" && Array.isArray(data.features)) {
+                    // Collect new features and indices to remove
+                    var featuresToAdd = [];
+                    var indicesToRemove = [];
+                    data.features.forEach(function(feature, idx) {
+                        if (feature.geometry && feature.geometry.type === "MultiPolygon") {
+                            feature.geometry.coordinates.forEach(function(polygon, i) {
+                                // Deep clone properties to avoid reference issues
+                                var newProperties = $.extend(true, {}, feature.properties);
+                                if (typeof newProperties.title === "string") {
+                                    newProperties.title = newProperties.title + " - Polygon " + (i + 1);
+                                }
+                                var newFeature = {
+                                    type: "Feature",
+                                    properties: newProperties,
+                                    geometry: {
+                                        type: "Polygon",
+                                        coordinates: polygon
+                                    }
+                                };
+                                featuresToAdd.push(newFeature);
+                            });
+                            indicesToRemove.push(idx);
+                        }
+                    });
+                    // Remove MultiPolygon features (from last to first to keep indices valid)
+                    indicesToRemove.sort(function(a, b) { return b - a; }).forEach(function(idx) {
+                        data.features.splice(idx, 1);
+                    });
+                    // Add new Polygon features
+                    data.features = data.features.concat(featuresToAdd);
+                }
 
                 if (data.hasOwnProperty('title')) {
 
