@@ -113,6 +113,8 @@ $mapbenderServerUrl = $mapbenderPathArray['scheme']."://".$mapbenderPathArray['h
 
 function getDownloadOptions($idList, $webPath=false, $mapbenderServerUrl=false) {
 	global $configObject;
+	$mapbenderPathArray = parse_url($webPath);
+	$mapbenderServerUrl = $mapbenderPathArray['scheme']."://".$mapbenderPathArray['host'];
 	//define query to pull all download options - actually only the inspire download services (atom feeds, ogc api features, directwfs)
 	
 	//pull also termsofuse to allow license info at distribution level for dcat-ap 3.0
