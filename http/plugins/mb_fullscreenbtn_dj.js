@@ -10,7 +10,9 @@ $(document).ready(function(){
 		/* inside iFrame */
 		$('#fullscreenbtn').click(function(){
 		//window.open('../../mapbender/frames/index.php','_parent','');
-		window.open(window.location.href,'_parent','');
+		//window.open(window.location.href,'_parent','');
+		// need the URL without parameters or the sessionWMC is overwritten again
+        window.open(location.origin + location.pathname,'_parent','');
 		});
 		$('.outsideIframe').css("display", "none");
 		$('#fullscreenbtn').attr('title', 'Vollbild aktivieren');
