@@ -437,7 +437,7 @@ require_once(dirname(__FILE__)."/../classes/class_kml_placemark.php");
 			if (mb_strtoupper($this->sepNameSpace($child->nodeName)) == "LINEARRING") {
 				$coordinatesNode = $this->getCoordinatesNode($child);
 				$geomString = $coordinatesNode->nodeValue;
-				return new KMLLinearRing($geomString);
+				return new KMLLinearRing($geomString, 4326);
 			}
 		}
 		return null;
