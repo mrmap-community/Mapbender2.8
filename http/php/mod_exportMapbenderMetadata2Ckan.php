@@ -1085,7 +1085,7 @@ if ($outputFormat == 'rdfxml') {
                                             "description" =>   "Objektart: " . $value1->resourceName. " - ISO19168-1:20202 API",
                                             "format" => "HTML",
                                             "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
-                                            "id" => $gpDataset->uuid . "_ogc_api_interface_" . $value1->resourceName . "_" . $value1->serviceId,
+                                            "id" => $gpDataset->uuid . "_ogc_api_interface_" . str_replace(":", "__colon__", $value1->resourceName) . "_" . $value1->serviceId,
                                             "license_id" => $inspireAtomFeedsLicenseId,
                                             "license_source_note" => $value1->licenseSourceNote
                                             );
@@ -1097,7 +1097,7 @@ if ($outputFormat == 'rdfxml') {
                                                 "format" => "WFS",
                                                 "url" => str_replace($mapbenderWebserviceUrl, $mapbenderBaseUrl, $value1->accessClient),
                                                 "original_url" => str_replace("http://127.0.0.1", $baseUrlPortal, str_replace("http://localhost", $baseUrlPortal, $value1->originalGetCapabilitiesUrl)),
-                                                "id" => $gpDataset->uuid . "_wfs_interface_" . $value1->resourceName . "_" . $value1->serviceId,
+                                                "id" => $gpDataset->uuid . "_wfs_interface_" . str_replace(":", "__colon__", $value1->resourceName) . "_" . $value1->serviceId,
                                                 "license_id" => $inspireAtomFeedsLicenseId,
                                                 "license_source_note" => $value1->licenseSourceNote
                                                 );
