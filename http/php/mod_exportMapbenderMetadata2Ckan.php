@@ -360,7 +360,8 @@ $license_map = array(
     "cc-by-sa-4.0" => "http://dcat-ap.de/def/licenses/cc-by-sa/4.0",
     "cc-by-3.0" => "http://dcat-ap.de/def/licenses/cc-by-de/3.0",
     "dl-de-by-1.0" => "http://dcat-ap.de/def/licenses/dl-by-de/1.0",
-    "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0"
+    "cc-nc-3.0" => "http://dcat-ap.de/def/licenses/cc-by-nc-de/3.0",
+    "other-closed" => "http://dcat-ap.de/def/licenses/other-closed"
 );
 
 //TODO add crontributor id? - test for ogdp 
@@ -544,6 +545,10 @@ function createDistributionElement($rdfXmlDoc, $uri, $title, $description=false,
             $dcatdeLicenseAttributionByText->appendChild($dcatdeLicenseAttributionByTextText);
             $Distribution->appendChild($dcatdeLicenseAttributionByText);
         }
+    } else {
+        $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+        $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
+        $Distribution->appendChild($dctLicense);
     }
     $distributionFormat = $rdfXmlDoc->createElement ( "dct:format" );
     //$distributionFormatText = $rdfXmlDoc->createTextNode( $format );
@@ -915,6 +920,10 @@ if ($outputFormat == 'rdfxml') {
                         //TODO add source_note to search_views!!!!
                     } else {
                         if (is_null($gpDataset->license_id) || ($gpDataset->license_id == false)) {
+                            $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
+                            $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
+                            $Dataset->appendChild($dctLicense);
+                        } else {
                             $dctLicense = $rdfXmlDoc->createElement ( "dct:license" );
                             $dctLicense->setAttribute('rdf:resource', $license_map["other-closed"]);
                             $Dataset->appendChild($dctLicense);
